@@ -1,4 +1,4 @@
-function [f, dfdxu, x,u] = generalized_msd(M,nl_index,k,d, k_wall, d_wall)
+function [f, dfdxu, x,u] = generalized_msd_1(M,nl_index,k,d, k_wall, d_wall)
 %GENERALIZED_MSD Generates the equations of motion of a custom
 %Mass-Spring-Damper system. Each mass is interconnected with the adjacent
 %mass blocks, and to an infinitely rigid wall. Each connection contains a
