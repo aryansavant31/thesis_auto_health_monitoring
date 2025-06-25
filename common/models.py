@@ -1,13 +1,14 @@
 import torch.nn as nn
 
 class MLP(nn.Module):
-    def __init__(self, input_size, mlp_config, do_prob=0.0, batch_norm=False):
+    def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False, is_gnn=False):
         super(MLP, self).__init__()
 
         current_dim = input_size
         self.model_type = 'MLP' 
         self.layers = nn.ModuleList()
-        self.batch_norm = batch_norm
+        self.is_batch_norm = is_batch_norm
+        self.is_gnn = is_gnn
 
         activation_map = {
             'relu': nn.ReLU(),
@@ -25,7 +26,7 @@ class MLP(nn.Module):
             self.layers.append(nn.Linear(current_dim, layer_output_size))
 
             # add batch normalization
-            if self.batch_norm:
+            if self.is_batch_norm:
                 self.layers.append(nn.BatchNorm1d(layer_output_size))
 
             # add activation functions
@@ -40,6 +41,14 @@ class MLP(nn.Module):
         
         # output layer
         # self.layers.append(nn.Linear(current_dim, output_size))
+
+    def batch_norm(self, inputs, bn_layer):
+        """
+        Changes input shape if MLP used for GNNs
+        """
+        x = inputs.view(inputs.size(0) * inputs.size(1), -1)
+        x = bn_layer(x)
+        return x.view(inputs.size(0), inputs.size(1), -1)
 
     def check_invalid_layer_indices(self, get_fex):
         """
@@ -56,16 +65,15 @@ class MLP(nn.Module):
         """
         Parameters
         ----------
-        x : torch.Tensor
-            Input tensor of shape (batch_size, (n_nodes), n_features).
+        x : torch.Tensor, shape (batch_size, (n_nodes), n_features).
+            Input tensor 
 
         get_fex : list
             List of layer indices to return features from. If None, no features are returned.
         
         Returns
         -------
-        x : torch.Tensor
-            Output tensor of shape (batch_size, (n_nodes), n_output_features).
+        x : torch.Tensor, shape (batch_size, (n_nodes), n_output_features).
         fex : list
             List of feature tensors from specified layers, if get_fex is not None.
 
@@ -75,7 +83,11 @@ class MLP(nn.Module):
 
         fex = []
         for layer_num, layer in enumerate(self.layers):
-            x = layer(x)
+            # check if layer is batchnorm
+            if isinstance(layer, nn.BatchNorm1d):
+                x = self.batch_norm(x, layer) if self.is_gnn else layer(x)
+            else:    
+                x = layer(x)
             if layer_num in get_fex:
                 fex.append(x)
 

@@ -190,7 +190,7 @@ class TopologyConfigUtils():
 
         cnn_configs = {
             'default': [[5, 2, 64], 
-                        [8]] # the last list for CNN will have one element i.e. the output size
+                        [8]] # the last list for CNN will have one element i.e. the output CHANNEL size
         }
 
         configs = {}
