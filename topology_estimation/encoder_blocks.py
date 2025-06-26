@@ -155,22 +155,37 @@ class Encoder(nn.Module):
 
     # -------- Message passing funtions -----------------
 
-    def pairwise_op(self, node_emb, rec_rel, send_rel, pairwise_op):
+    def pairwise_op(self, emd_fn_rank, node_emb, rec_rel, send_rel, pairwise_op, batch_size, n_nodes, next_emb_fn_type):
         """
         Returns
         -------
         edge_feature : torch.Tensor
-            Shape (batch_size, num_edges, num_features)
+            if next_emb_fn_type = mlp, Shape (batch_size, num_edges, num_features)
+            if next_emb_fn_type = cnn, Shape (batch_size * num_edges, dim_size, num_features)
         """
-        receiver_emd = torch.matmul(rec_rel, node_emb)
-        sender_emd = torch.matmul(send_rel, node_emb)
+        # reshape input (for both 1st time and subsequent times (cnn or mlp output))
+        node_emb = node_emb.view(batch_size, n_nodes, -1)
 
+        receiver_emds = torch.matmul(rec_rel, node_emb)
+        sender_emds = torch.matmul(send_rel, node_emb)
+
+        # optimize receiver and sender emd shape for next edge emb type
+        receiver_emds, sender_emds = self.optimize_shape_for_pairwise_op(
+            receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank)
+            
         if pairwise_op == 'sum':
-            edge_feature = receiver_emd + sender_emd
+            edge_feature = receiver_emds + sender_emds
+
         elif pairwise_op == 'concat':
-            edge_feature = torch.cat((receiver_emd, sender_emd), dim=-1)
+            # change dim to concat depending on next emb fn type
+            if next_emb_fn_type == 'mlp':
+                dim = 2
+            elif next_emb_fn_type == 'cnn':
+                dim = 1
+            edge_feature = torch.cat((receiver_emds, sender_emds), dim=dim)
+
         elif pairwise_op == 'mean':
-            edge_feature = (receiver_emd + sender_emd) / 2
+            edge_feature = (receiver_emds + sender_emds) / 2
 
         return edge_feature
     
@@ -200,8 +215,10 @@ class Encoder(nn.Module):
     def combine(self):
         pass
 
-    def reshape_for_node_emd(self, x, rank, emd_fn_type, batch_size, n_nodes):
-        if rank == 1:
+    # -------- Helper functions -----------------
+
+    def optimize_shape_for_node_emd(self, x, rank, emd_fn_type, batch_size, n_nodes):
+        if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
             if emd_fn_type == 'mlp':
                 x = x.view(batch_size, n_nodes, self.n_timesteps * self.n_dims)
             elif emd_fn_type == 'cnn':
@@ -213,6 +230,40 @@ class Encoder(nn.Module):
                 x = x.view(batch_size * n_nodes, 1, x.size(-1))
 
         return x
+    
+    def optimize_shape_for_edge_emd(self, x, emd_fn_type, batch_size, n_edges):
+        """
+        Reshape the input for edge embedding function
+        """
+        if emd_fn_type == 'mlp':
+            # reshape to (batch_size, n_edges, n_feat)
+            x = x.view(batch_size, n_edges, -1)
+        elif emd_fn_type == 'cnn':
+            # reshape to (batch_size * n_edges, 1, n_feat)
+            x = x.view(batch_size * n_edges, 1, -1)
+
+        return x
+    
+    def optimize_shape_for_pairwise_op(self, receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank):
+        """
+        Reshape the receiver and sender embeddings if edge emd after pairwise in cnn
+        """
+        if next_emb_fn_type == 'cnn':
+            # check dim for cnn for given rank of pariwise operation
+            if emd_fn_rank == 1:  # if this is the first pairwise operation
+                dim_size = self.n_dims
+            else:
+                dim_size = 1
+            # reshape receiver and sender emb for CNN input
+            # (batch_size * n_edges, dim_size, n_feat (n_timestep if rank = 1, else n_hid))
+            receiver_emds = receiver_emds.view(batch_size * receiver_emds.size(1), dim_size, -1)
+            sender_emds = sender_emds.view(batch_size * sender_emds.size(1), dim_size, -1)
+
+            return receiver_emds, sender_emds
+        
+        elif next_emb_fn_type == 'mlp':
+            # no reshape requried if mlp
+            return receiver_emds, sender_emds
 
     def forward(self, x, rec_rel, send_rel):
         """
@@ -233,6 +284,7 @@ class Encoder(nn.Module):
         emd_fn_rank = 0
         batch_size = x.size(0)
         n_nodes = x.size(1)
+        n_edges = rec_rel.size(0)
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]
@@ -242,12 +294,14 @@ class Encoder(nn.Module):
                 emd_fn_rank += 1
                 emb_fn = self.emb_fn_dict[layer[0]]
 
-                x = self.reshape_for_node_emd(x, emd_fn_rank, layer[1], batch_size, n_nodes)  
+                x = self.optimize_shape_for_node_emd(x, emd_fn_rank, layer[1], batch_size, n_nodes)  
                 x = emb_fn(x)
                     
             # pairwise operation    
             elif layer_type == 'pairwise_op':
-                x = self.pairwise_op(x, rec_rel, send_rel, layer[1])
+                emd_fn_rank += 1
+                next_emd_fn_type = self.pipeline[layer_num+1][1]
+                x = self.pairwise_op(emd_fn_rank, x, rec_rel, send_rel, layer[1], batch_size, n_nodes, next_emd_fn_type)
 
             # aggregation
             elif layer_type == 'aggregate':
@@ -259,16 +313,16 @@ class Encoder(nn.Module):
 
             # edge embedding
             elif layer_type == 'edge_emd':
-                emd_fn_rank += 1
                 emb_fn = self.emb_fn_dict[layer[0]]
+                x = self.optimize_shape_for_edge_emd(x, layer[1], batch_size, n_edges)
 
                 if layer_num < len(self.pipeline) - 1:
                     x = emb_fn(x)
 
                     if layer[0].split('.')[-1] == '@':
-                        x_skip = x
-
+                        x_skip = x             
                 else:
+                    # skip connection for last edge embedding layer
                     if self.par.residual_connection:
                         x = torch.cat((x, x_skip), dim=-1)
                     x = emb_fn(x)
