@@ -5,22 +5,294 @@ import torch
 import torch.nn as nn
 from common.models import MLP
 
+class MessagePassingLayers(nn.Module):
+    def __init__(self):
+        super(MessagePassingLayers, self).__init__()
+    
+    def pairwise_op(self, node_emb, rec_rel, send_rel, pairwise_op, emd_fn_rank, batch_size, n_nodes, next_emb_fn_type):
+        """
+        It forms edge features from node embeddings using pairwise operations.
 
-class Encoder(nn.Module):
-    def __init__(self, par, n_timesteps, n_dims):
+        Parameters
+        ----------
+        node_emb : torch.Tensor
+            Shape depends on rank and prev layer type:
+            - If rank == 1: (batch_size, n_nodes, n_timesteps, n_dims)
+            - If rank > 1:
+                - If prev_emb_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
+                - If prev_emb_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
+
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Receiver matrix, used to get node embeddings on the receiving end of edges.
+
+        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Sender matrix, used to get node embeddings on the sending end of edges.
+
+        pairwise_op : str
+            Type of pairwise operation to perform on node embeddings.
+
+        emd_fn_rank : int
+            Rank of the layer in the pipeline, used to determine the shape of the output.
+
+        batch_size : int
+            Number of samples in the batch.
+
+        n_nodes : int
+            Number of nodes per sample.
+
+        next_emb_fn_type : str
+            Type of the next embedding function in the pipeline, used to determine the shape of the output.
+
+        Returns
+        -------
+        edge_feature : torch.Tensor
+            Shape depends on next_emb_fn_type:
+            - If next_emb_fn_type = 'mlp': (batch_size, num_edges, num_features)
+            - If next_emb_fn_type = 'cnn': (batch_size * num_edges, dim_size, num_features)
+        """
+        # reshape input (for both 1st time and subsequent times (cnn or mlp output))
+        node_emb = node_emb.view(batch_size, n_nodes, -1)
+
+        receiver_emds = torch.matmul(rec_rel, node_emb)
+        sender_emds = torch.matmul(send_rel, node_emb)
+
+        # optimize receiver and sender emd shape for next edge emb type
+        receiver_emds, sender_emds = self.optimize_shape_for_pairwise_op(
+            receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank)
+            
+        if pairwise_op == 'sum':
+            edge_feature = receiver_emds + sender_emds
+
+        elif pairwise_op == 'concat':
+            # change dim to concat depending on next emb fn type
+            if next_emb_fn_type == 'mlp':
+                dim = 2
+            elif next_emb_fn_type == 'cnn':
+                dim = 1
+            edge_feature = torch.cat((receiver_emds, sender_emds), dim=dim)
+
+        elif pairwise_op == 'mean':
+            edge_feature = (receiver_emds + sender_emds) / 2
+
+        return edge_feature
+    
+    def aggregate(self, edge_emb, rel_rec, agg_type, layer_type):
+        """
+        Aggregates edge embeddings or messages to form main message for each node
+        
+        Parameters
+        ----------
+        edge_emb : torch.Tensor
+            Shape depends on prev edge_emd_fn type:
+            - If prev edge_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
+            - If prev edge_emd_fn_type == 'cnn': (batch_size * n_edges, n_chn_out)
+
+        rel_rec : torch.Tensor, shape (n_edges, n_nodes)
+            Receiver matrix, used to get node features using the reciver type edges
+
+        agg_type : str
+            Type of aggregation to perform on edge embeddings/message
+
+        
+        Returns
+        -------
+        node_feature : torch.Tensor, shape (batch_size, n_nodes, n_features)
+
+        """
+        if agg_type == 'sum':
+            node_feature = torch.matmul(rel_rec.t(), edge_emb)
+        elif agg_type == 'mean':
+            node_feature = torch.matmul(rel_rec.t(), edge_emb) / rel_rec.sum(dim=0, keepdim=True)
+        # elif agg_type == 'weighted_sum':  
+
+        #     alpha = self.get_attention_weights(edge_emb)
+        #     node_feature = torch.matmul(rel_rec.t(), edge_emb * alpha)
+
+        return node_feature
+    
+    # def get_attention_weights(self, edge_emb, layer_type):
+    #     """
+    #     Returns attention weights for the edges.
+    #     """
+    #     if layer_type not in self.attention_layer_dict:
+    #         raise ValueError(f"Attention layer {layer_type} not found in attention layer dictionary.")
+
+    #     attention_layer = self.attention_layer_dict[layer_type]
+    #     alpha = attention_layer(edge_emb)
+    #     alpha = torch.softmax(alpha, dim=1)
+
+    def combine(self):
+        pass
+
+    # -------- Helper functions -----------------
+
+    def optimize_shape_for_node_emd(self, x, rank, emd_fn_type, batch_size, n_nodes):
+        """
+        Reshape the input for node embedding function based on its type and rank in pipeline.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Shape depends on rank and emd_fn_type:
+            - If rank == 1: (batch_size, n_nodes, n_timesteps, n_dims)
+            - If rank > 1:
+                - If prev_layer is 'aggregate': (batch_size, n_nodes, n_features)
+                - If prev_layer is 'emd_fn':
+                    - If prev_emd_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
+                    - If prev_emd_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
+        
+        rank : int
+            Rank of the node embedding function in the pipeline.
+       
+        emd_fn_type : str
+            Type of the node embedding function
+        
+        batch_size : int
+        
+        n_nodes : int
+            Number of nodes per sample
+
+        Returns
+        -------
+        x : torch.Tensor
+            Reshaped tensor ready for input in node embedding function. Shapes are as follows:
+            - If rank == 1:
+                - If emd_fn_type == 'mlp': (batch_size, n_nodes, n_timesteps * n_dims)
+                - If emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_timesteps
+            - If rank > 1:
+                - If emd_fn_type == 'mlp': (batch_size, n_nodes, n_features)
+                - If emd_fn_type == 'cnn': (batch_size * n_nodes, 1, n_features)
+
+        """
+        if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
+            if emd_fn_type == 'mlp':
+                x = x.view(batch_size, n_nodes, self.n_timesteps * self.n_dims)
+            elif emd_fn_type == 'cnn':
+                x = x.view(batch_size * n_nodes, self.n_dims, self.n_timesteps)
+        elif rank == 2:
+            if emd_fn_type == 'mlp':
+                x = x.view(batch_size, n_nodes, x.size(-1))
+            elif emd_fn_type == 'cnn':
+                x = x.view(batch_size * n_nodes, 1, x.size(-1))
+
+        return x
+    
+    def optimize_shape_for_edge_emd(self, x, emd_fn_type, batch_size, n_edges):
+        """
+        Reshape the input for edge embedding function. 
+        This function is only used when prev layer is not pairwise operation.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor. Shape depends on prev_emd_fn_type:
+            - If prev_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
+            - If prev_emd_fn_type == 'cnn': (batch_size * n_edges, n_chn_out)
+        
+        emd_fn_type : str
+            Type of the edge embedding function
+
+        batch_size : int
+
+        n_edges : int
+            Number of edges per sample
+
+        Returns
+        -------
+        x : torch.Tensor
+            Reshaped tensor ready for input in edge embedding function. Shapes are as follows:
+            - If emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
+            - If emd_fn_type == 'cnn': (batch_size * n_edges, 1, n_features)
+        """
+
+        if emd_fn_type == 'mlp':
+            # reshape to (batch_size, n_edges, n_feat)
+            x = x.view(batch_size, n_edges, -1)
+        elif emd_fn_type == 'cnn':
+            # reshape to (batch_size * n_edges, 1, n_feat)
+            x = x.view(batch_size * n_edges, 1, -1)
+
+        return x
+    
+    def optimize_shape_for_pairwise_op(self, receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank):
+        """
+        Reshape the receiver and sender embeddings if edge emd after pairwise in cnn
+
+        Parameters
+        ----------
+        receiver_emds : torch.Tensor, shape (batch_size, n_edges, n_features)
+            Node embeddings on reciver end on each edge
+
+        sender_emds : torch.Tensor, shape (batch_size, n_edges, n_features)
+            Node embeddings on sender end on each edge
+
+        next_emb_fn_type : str
+            Type of the next embedding function in the pipeline, used to determine the shape of the output
+
+        batch_size : int
+
+        emd_fn_rank : int
+            Rank of the pairwise op layer in the pipeline, used to determine the shape of the output
+
+        Returns
+        -------
+        receiver_emds : torch.Tensor
+        sender_emds : torch.Tensor
+            Rehsaped tensors. Shapes are as follows:
+            - If next_emb_fn_type = 'mlp': (batch_size, n_edges, n_features)
+            - If next_emb_fn_type = 'cnn': (batch_size * n_edges, dim_size, n_features)
+        """
+
+        if next_emb_fn_type == 'cnn':
+            # check dim for cnn for given rank of pariwise operation
+            if emd_fn_rank == 1:  # if this is the first pairwise operation
+                dim_size = self.n_dims
+            else:
+                dim_size = 1
+            # reshape receiver and sender emb for CNN input
+            # (batch_size * n_edges, dim_size, n_feat (n_timestep if rank = 1, else n_hid))
+            receiver_emds = receiver_emds.view(batch_size * receiver_emds.size(1), dim_size, -1)
+            sender_emds = sender_emds.view(batch_size * sender_emds.size(1), dim_size, -1)
+
+            return receiver_emds, sender_emds
+        
+        elif next_emb_fn_type == 'mlp':
+            # no reshape requried if mlp
+            return receiver_emds, sender_emds
+
+
+
+class Encoder(nn.Module, MessagePassingLayers):
+    def __init__(self, pipeline, n_timesteps, n_dims, edge_emd_configs, node_emd_configs, 
+                 n_edge_types, is_residual_connection, drop_out_prob, batch_norm, attention_output_size):
         super(Encoder, self).__init__()
-        self.par = par
-        self.pipeline= self.par.encoder_pipeline
+        MessagePassingLayers.__init__(self)
+
+        # pipeline parameters
+        self.pipeline = pipeline
+        self.n_edge_types = n_edge_types
+        self.is_residual_connection = is_residual_connection
+
+        # input parameters
         self.n_timesteps = n_timesteps
         self.n_dims = n_dims
+
+        # embedding configurations
+        self.edge_emb_configs = edge_emd_configs
+        self.node_emb_configs = node_emd_configs
+        self.dropout_prob = drop_out_prob
+        self.batch_norm = batch_norm
+
+        # attention parameters
+        self.attention_output_size = attention_output_size
 
         self.init_embedding_functions()
         self.init_attention_layers()
 
         # define output layer
         final_emd_type = self.pipeline[-1][1]
-        final_input_size = self.par.edge_emb_configs[final_emd_type][-1][0]
-        self.output_layer = nn.Linear(final_input_size, self.par.n_edge_types)
+        final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
+        self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
 
 
     def init_attention_layers(self):
@@ -32,8 +304,8 @@ class Encoder(nn.Module):
             if layer_type == 'aggregate':
                 if layer[1] == 'weighted_sum':
                     prev_edge_emb_type = self.pipeline[layer_num-1][1]
-                    input_size = self.par.edge_emb_configs[prev_edge_emb_type][-1][0]
-                    self.attention_layer_dict[layer[0]] = nn.Linear(input_size, self.par.attention_output_size)
+                    input_size = self.edge_emb_configs[prev_edge_emb_type][-1][0]
+                    self.attention_layer_dict[layer[0]] = nn.Linear(input_size, self.attention_output_size)
     
     def init_embedding_functions(self):
         self.emb_fn_dict = {}
@@ -66,9 +338,9 @@ class Encoder(nn.Module):
                     if layer[1] == 'mlp':
                         # Check if edge embedding is repeated more than once
                         if edge_emd_fn_rank < 2:
-                            edge_main_input_size = self.par.node_emb_configs[layer[1]][-1][0]
+                            edge_main_input_size = self.node_emb_configs[layer[1]][-1][0]
                         else:
-                            edge_main_input_size = self.par.edge_emb_configs[layer[1]][-1][0]
+                            edge_main_input_size = self.edge_emb_configs[layer[1]][-1][0]
 
                     elif layer[1] == 'cnn':
                         edge_main_input_size = 1  # input dim to CNN type edge_emb after emb fn rank > 1
@@ -85,7 +357,7 @@ class Encoder(nn.Module):
 
                 # input size for last layer (which is always edge embedding)
                 else:
-                    if self.par.residual_connection:
+                    if self.is_residual_connection:
                         if self.pipeline[layer_num-1][1] == 'concat':
                             edge_emd_input_size = 3 * edge_main_input_size
                         else:
@@ -100,9 +372,9 @@ class Encoder(nn.Module):
                 # Initialize edge embedding fn
                 if layer[1] == 'mlp':
                     self.emb_fn_dict[layer[0]] = MLP(edge_emd_input_size, 
-                                                    self.par.edge_emb_configs['mlp'],
-                                                    do_prob=self.par.dropout_prob_mlp,
-                                                    is_batch_norm=self.par.batch_norm_mlp,
+                                                    self.edge_emb_configs['mlp'],
+                                                    do_prob=self.dropout_prob['mlp'],
+                                                    is_batch_norm=self.batch_norm['mlp'],
                                                     is_gnn=True
                                                     )
                 elif layer[1] == 'cnn':
@@ -129,9 +401,9 @@ class Encoder(nn.Module):
                     if layer[1] == 'mlp':
                         # Check if edge embedding is repeated more than once
                         if node_emd_fn_rank < 2:
-                            node_main_input_size = self.par.edge_emb_configs[layer[1]][-1][0]
+                            node_main_input_size = self.edge_emb_configs[layer[1]][-1][0]
                         else:
-                            node_main_input_size = self.par.node_emb_configs[layer[1]][-1][0]
+                            node_main_input_size = self.node_emb_configs[layer[1]][-1][0]
                     elif layer[1] == 'cnn':
                         node_main_input_size = 1 # input dim to CNN type node emb after emb fn rank > 1
 
@@ -144,126 +416,14 @@ class Encoder(nn.Module):
                 # Initialize node embedding fn
                 if layer[1] == 'mlp':
                     self.emb_fn_dict[layer[0]] = MLP(node_emd_input_size, 
-                                                    self.par.node_emb_configs['mlp'],
-                                                    do_prob=self.par.dropout_prob_mlp,
-                                                    is_batch_norm=self.par.batch_norm_mlp,
+                                                    self.node_emb_configs['mlp'],
+                                                    do_prob=self.dropout_prob['mlp'],
+                                                    is_batch_norm=self.batch_norm['mlp'],
                                                     is_gnn=True
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0]] = 'CNN'
     
-
-    # -------- Message passing funtions -----------------
-
-    def pairwise_op(self, emd_fn_rank, node_emb, rec_rel, send_rel, pairwise_op, batch_size, n_nodes, next_emb_fn_type):
-        """
-        Returns
-        -------
-        edge_feature : torch.Tensor
-            if next_emb_fn_type = mlp, Shape (batch_size, num_edges, num_features)
-            if next_emb_fn_type = cnn, Shape (batch_size * num_edges, dim_size, num_features)
-        """
-        # reshape input (for both 1st time and subsequent times (cnn or mlp output))
-        node_emb = node_emb.view(batch_size, n_nodes, -1)
-
-        receiver_emds = torch.matmul(rec_rel, node_emb)
-        sender_emds = torch.matmul(send_rel, node_emb)
-
-        # optimize receiver and sender emd shape for next edge emb type
-        receiver_emds, sender_emds = self.optimize_shape_for_pairwise_op(
-            receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank)
-            
-        if pairwise_op == 'sum':
-            edge_feature = receiver_emds + sender_emds
-
-        elif pairwise_op == 'concat':
-            # change dim to concat depending on next emb fn type
-            if next_emb_fn_type == 'mlp':
-                dim = 2
-            elif next_emb_fn_type == 'cnn':
-                dim = 1
-            edge_feature = torch.cat((receiver_emds, sender_emds), dim=dim)
-
-        elif pairwise_op == 'mean':
-            edge_feature = (receiver_emds + sender_emds) / 2
-
-        return edge_feature
-    
-    def aggregate(self, edge_emb, rel_rec, agg_type, layer_type):
-        if agg_type == 'sum':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb)
-        elif agg_type == 'mean':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb) / rel_rec.sum(dim=0, keepdim=True)
-        # elif agg_type == 'weighted_sum':  
-
-        #     alpha = self.get_attention_weights(edge_emb)
-        #     node_feature = torch.matmul(rel_rec.t(), edge_emb * alpha)
-
-        return node_feature
-    
-    # def get_attention_weights(self, edge_emb, layer_type):
-    #     """
-    #     Returns attention weights for the edges.
-    #     """
-    #     if layer_type not in self.attention_layer_dict:
-    #         raise ValueError(f"Attention layer {layer_type} not found in attention layer dictionary.")
-
-    #     attention_layer = self.attention_layer_dict[layer_type]
-    #     alpha = attention_layer(edge_emb)
-    #     alpha = torch.softmax(alpha, dim=1)
-
-    def combine(self):
-        pass
-
-    # -------- Helper functions -----------------
-
-    def optimize_shape_for_node_emd(self, x, rank, emd_fn_type, batch_size, n_nodes):
-        if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
-            if emd_fn_type == 'mlp':
-                x = x.view(batch_size, n_nodes, self.n_timesteps * self.n_dims)
-            elif emd_fn_type == 'cnn':
-                x = x.view(batch_size * n_nodes, self.n_dims, self.n_timesteps)
-        elif rank == 2:
-            if emd_fn_type == 'mlp':
-                x = x.view(batch_size, n_nodes, x.size(-1))
-            elif emd_fn_type == 'cnn':
-                x = x.view(batch_size * n_nodes, 1, x.size(-1))
-
-        return x
-    
-    def optimize_shape_for_edge_emd(self, x, emd_fn_type, batch_size, n_edges):
-        """
-        Reshape the input for edge embedding function
-        """
-        if emd_fn_type == 'mlp':
-            # reshape to (batch_size, n_edges, n_feat)
-            x = x.view(batch_size, n_edges, -1)
-        elif emd_fn_type == 'cnn':
-            # reshape to (batch_size * n_edges, 1, n_feat)
-            x = x.view(batch_size * n_edges, 1, -1)
-
-        return x
-    
-    def optimize_shape_for_pairwise_op(self, receiver_emds, sender_emds, next_emb_fn_type, batch_size, emd_fn_rank):
-        """
-        Reshape the receiver and sender embeddings if edge emd after pairwise in cnn
-        """
-        if next_emb_fn_type == 'cnn':
-            # check dim for cnn for given rank of pariwise operation
-            if emd_fn_rank == 1:  # if this is the first pairwise operation
-                dim_size = self.n_dims
-            else:
-                dim_size = 1
-            # reshape receiver and sender emb for CNN input
-            # (batch_size * n_edges, dim_size, n_feat (n_timestep if rank = 1, else n_hid))
-            receiver_emds = receiver_emds.view(batch_size * receiver_emds.size(1), dim_size, -1)
-            sender_emds = sender_emds.view(batch_size * sender_emds.size(1), dim_size, -1)
-
-            return receiver_emds, sender_emds
-        
-        elif next_emb_fn_type == 'mlp':
-            # no reshape requried if mlp
-            return receiver_emds, sender_emds
 
     def forward(self, x, rec_rel, send_rel):
         """
@@ -279,9 +439,7 @@ class Encoder(nn.Module):
             Sender matrix
 
         """
-        # change input shape to (batch_size, n_nodes, n_timesteps * n_dims)
-        # x = input.view(input.size(0), input.size(1), -1)
-        emd_fn_rank = 0
+        emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
         batch_size = x.size(0)
         n_nodes = x.size(1)
         n_edges = rec_rel.size(0)
@@ -301,7 +459,7 @@ class Encoder(nn.Module):
             elif layer_type == 'pairwise_op':
                 emd_fn_rank += 1
                 next_emd_fn_type = self.pipeline[layer_num+1][1]
-                x = self.pairwise_op(emd_fn_rank, x, rec_rel, send_rel, layer[1], batch_size, n_nodes, next_emd_fn_type)
+                x = self.pairwise_op(x, rec_rel, send_rel, layer[1], emd_fn_rank, batch_size, n_nodes, next_emd_fn_type)
 
             # aggregation
             elif layer_type == 'aggregate':
@@ -323,7 +481,7 @@ class Encoder(nn.Module):
                         x_skip = x             
                 else:
                     # skip connection for last edge embedding layer
-                    if self.par.residual_connection:
+                    if self.is_residual_connection:
                         x = torch.cat((x, x_skip), dim=-1)
                     x = emb_fn(x)
 

@@ -1,7 +1,5 @@
-import torch.nn as nn
-
 class MLP(nn.Module):
-    def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False, is_gnn=False):
+    def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False):
         super(MLP, self).__init__()
 
         current_dim = input_size
@@ -161,3 +159,47 @@ class CNN(nn.Module):
         # output = self.output_layer(output)
 
         return output, self.flatten_input_size
+    
+
+class LSTM(nn.Module):
+    def __init__(self, n_dim, n_layers, n_hid, is_gnn=False):
+        """
+        Parameters
+        ----------
+        n_dim : int
+            Dimension of the input features (e.g., number of parameters per sample).
+        n_layers: int
+            number of LSTMs to stack
+        n_hid: int
+            output_size per roll from the LSTM
+
+        """
+        super (LSTM, self).__init__()
+        self.model_type = 'LSTM' 
+        self.n_layers = n_layers
+        self.hidden_size = n_hid
+        self.is_gnn = is_gnn
+        self.lstm = nn.LSTM(n_dim, n_hid, n_layers, batch_first=True)
+        # self.linear = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        """
+        Parameters
+        ----------
+        x: torch.tensor
+            Shape depends on the use case:
+            - if used in GNN, shape: (batch_size, n_timesteps, n_nodes, n_dim)
+            - else, shape: (batch_size, n_timesteps, n_dim)
+        return:
+            hidden[-1] contains the hidden state from the last layer for each sample in the batch.
+            output contains the output values from each lstm unit that is unrolled. Shape: (batch_size, num_features, 1 <output_size (per step)>)
+        """
+        h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size) # shape = (n_layers, batch_size, output_size (per step))
+        c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size) # shape = (n_layers, batch_size, output_size (per step))
+        output, (hidden, _) = self.lstm(x, (h0,c0)) # shape(out) = (batch_size, num_features, 1 <output_size (per step)>)
+        
+        # output contains the short term memory or hidden states from all the rolls of LSTM unit. 
+        # So if I have 10 timesteps as input, output contains 10 hidden state, each pertaining to the individual timestep
+        # features extracted
+    
+        return output
