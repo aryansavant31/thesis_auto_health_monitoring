@@ -47,7 +47,6 @@ class TopologyConfig:
         # ------ Attention Parameters ------
         self.attention_output_size  = 6         # output size for attention layer
 
-
     def set_decoder_params(self):
 
         self.msg_out_size           = 64
@@ -71,6 +70,7 @@ class TopologyConfig:
         self.optimizer = 'adam'
         self.loss_type_encd = 'kld'
         self.loss_type_decd = 'nnl'
+        self.is_prior = False
 
         
     # =======================================

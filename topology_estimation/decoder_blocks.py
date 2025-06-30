@@ -45,15 +45,23 @@ class Decoder(nn.Module):
                                         self.n_layers_recurrent,
                                         self.msg_out_size)
         
-        # Make output MLP
-        self.out_mlp = MLP(self.msg_out_size,
+        # Make MLP to predict mean of prediction
+        self.mean_mlp = MLP(self.msg_out_size,
+                           self.out_mlp_config,
+                           do_prob,
+                           is_batch_norm,
+                           is_gnn=True)
+        
+        # Make MLP to predict variance of prediction
+        self.var_mlp = MLP(self.msg_out_size,
                            self.out_mlp_config,
                            do_prob,
                            is_batch_norm,
                            is_gnn=True)
         
         self.output_layer_size = out_mlp_config[-1][0]  
-        self.output_layer = nn.Linear(self.output_layer_size, n_dim)  
+        self.mean_output_layer = nn.Linear(self.output_layer_size, n_dim) 
+        self.var_output_layer = nn.Linear(self.output_layer_size, n_dim) 
                            
         
     def pairwise_op(self, node_emb, rec_rel, send_rel):
@@ -96,14 +104,18 @@ class Decoder(nn.Module):
         # Recurrent embedding function
         hidden = self.recurrent_emb_fn(inputs, agg_msgs)         #### h_tilde_j^t+1   
 
-        # Output MLP
-        x = self.out_mlp(hidden)  
-        pred = self.output_layer(x)       #### fout(h_tilde_j^t+1)
+        # Predict mean delta of signal
+        x_m = self.mean_mlp(hidden)  
+        mean = self.mean_output_layer(x_m)       #### fout(h_tilde_j^t+1)
 
-        # Predict position/velocity difference
-        pred = inputs + pred            #### mu_j^t+1
+        # Predict variance of delta of signal
+        x_v = self.var_mlp(hidden)
+        var = self.var_output_layer(x_v)   
 
-        return pred, hidden
+        # Add mean delta to get next step prediction
+        pred = inputs + mean            #### mu_j^t+1
+
+        return pred, var, hidden
     
     def get_edge_type(data, encoder, rec_rel, send_rel, temp):
         logits = encoder(data, rec_rel, send_rel)
@@ -111,19 +123,44 @@ class Decoder(nn.Module):
 
         return edge_type
 
-    def forward(self, data, edge_type, rec_rel, send_rel, pred_steps=1,
+    def forward(self, data, edge_matrix, rec_rel, send_rel, pred_steps=1,
                 burn_in=False, burn_in_steps=1, dynamic_graph=False,
                 encoder=None, temp=None):
+        """
+        Parameters
+        ----------
+        data : torch.Tensor, shape (batch_size, n_timesteps, n_nodes, n_dim)
+            Input data tensor containing the entire trajectory data of all nodes.
 
+        edge_matrix : torch.Tensor, shape (batch_size, n_edge=sn_nodes*(n_nodes-1), n_edge_types)
+            Edge matrix containing the probability of edge types for all possible edges 
+            for given number of nodes
+
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+        
+        dynamic_graph : bool
+            If True, the edge types are estimated dynamically at each step.
+            - Example:
+                when step number (eg 42) is beyond the burn in step (40 in my eg), 
+                if dynamics graph is true,  new latent graph will be estimated for data from 
+                42 - 40 = 2nd timestep till 42th timestep. 
+                So basically, for burn-in step sized trajectory (in my case, trajectory size = 40), 
+                the graph will be estimated from encoder. 
+                So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
+
+
+        Returns
+        -------
+        preds : torch.Tensor, shape (batch_size, n_timesteps, n_nodes, n_dim)
+        
+        vars : torch.Tensor, shape (batch_size, n_timesteps, n_nodes, n_dim)
+            
+        """
         inputs = data.transpose(1, 2).contiguous()
+        # inputs has shape [batch_size, n_timesteps, n_nodes, n_dims]
 
-        time_steps = inputs.size(1)
-
-        # inputs has shape
-        # [batch_size, num_timesteps, num_atoms, num_dims]
-
-        # rel_type has shape:
-        # [batch_size, num_atoms*(num_atoms-1), num_edge_types]
+        n_timesteps = inputs.size(1)
 
         hidden = Variable(
             torch.zeros(inputs.size(0), inputs.size(2), self.msg_out_shape))
@@ -131,6 +168,7 @@ class Decoder(nn.Module):
             hidden = hidden.cuda()
 
         pred_all = []
+        var_all = []
 
         for step in range(0, inputs.size(1) - 1):
 
@@ -148,20 +186,18 @@ class Decoder(nn.Module):
                     ins = pred_all[step - 1]
 
             if dynamic_graph and step >= burn_in_steps: 
-                # when step number (eg 42) is beyond the burn in step (40 in my eg), 
-                # if dynamics graph is true, this code will estiamte a new latent graph for data from 
-                # 42 - 40 = 2 timestep till 42th timestep. 
-                # So basically, for burn-in step sized trajectory (in my case, trajectory size = 40), 
-                # the graph will be estimated from encoder. 
-                # So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
-
+                
                 # NOTE: Assumes burn_in_steps = args.timesteps
                 edge_type = self.get_edge_type(ins, encoder, rec_rel, send_rel, temp)
 
-            pred, hidden = self.single_step_forward(ins, rec_rel, send_rel,
+            pred, var, hidden = self.single_step_forward(ins, rec_rel, send_rel,
                                                     edge_type, hidden)
             pred_all.append(pred)
+            var_all.append(var)
 
         preds = torch.stack(pred_all, dim=1)
+        vars = torch.stack(var_all, dim=1)
+        preds = preds.transpose(1, 2).contiguous()
+        vars = vars.transpose(1, 2).contiguous()
 
-        return preds.transpose(1, 2).contiguous()
+        return preds, vars

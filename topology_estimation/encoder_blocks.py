@@ -133,13 +133,13 @@ class MessagePassingLayers(nn.Module):
         Parameters
         ----------
         x : torch.Tensor
-            Shape depends on rank and emd_fn_type:
+            Shape depends on rank and node_emd_fn_type:
             - If rank == 1: (batch_size, n_nodes, n_timesteps, n_dims)
             - If rank > 1:
                 - If prev_layer is 'aggregate': (batch_size, n_nodes, n_features)
-                - If prev_layer is 'emd_fn':
-                    - If prev_emd_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
-                    - If prev_emd_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
+                - If prev_layer is 'node_emd_fn':
+                    - If prev_node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
+                    - If prev_node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
         
         rank : int
             Rank of the node embedding function in the pipeline.
@@ -157,11 +157,11 @@ class MessagePassingLayers(nn.Module):
         x : torch.Tensor
             Reshaped tensor ready for input in node embedding function. Shapes are as follows:
             - If rank == 1:
-                - If emd_fn_type == 'mlp': (batch_size, n_nodes, n_timesteps * n_dims)
-                - If emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_timesteps
+                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_timesteps * n_dims)
+                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_timesteps
             - If rank > 1:
-                - If emd_fn_type == 'mlp': (batch_size, n_nodes, n_features)
-                - If emd_fn_type == 'cnn': (batch_size * n_nodes, 1, n_features)
+                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_features)
+                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, 1, n_features)
 
         """
         if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
@@ -185,9 +185,9 @@ class MessagePassingLayers(nn.Module):
         Parameters
         ----------
         x : torch.Tensor
-            Input tensor. Shape depends on prev_emd_fn_type:
-            - If prev_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
-            - If prev_emd_fn_type == 'cnn': (batch_size * n_edges, n_chn_out)
+            Input tensor. Shape depends on prev_edge_emd_fn_type:
+            - If prev_edge_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
+            - If prev_edge_emd_fn_type == 'cnn': (batch_size * n_edges, n_chn_out)
         
         emd_fn_type : str
             Type of the edge embedding function
@@ -201,8 +201,8 @@ class MessagePassingLayers(nn.Module):
         -------
         x : torch.Tensor
             Reshaped tensor ready for input in edge embedding function. Shapes are as follows:
-            - If emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
-            - If emd_fn_type == 'cnn': (batch_size * n_edges, 1, n_features)
+            - If edge_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
+            - If edge_emd_fn_type == 'cnn': (batch_size * n_edges, 1, n_features)
         """
 
         if emd_fn_type == 'mlp':
@@ -239,8 +239,8 @@ class MessagePassingLayers(nn.Module):
         receiver_emds : torch.Tensor
         sender_emds : torch.Tensor
             Rehsaped tensors. Shapes are as follows:
-            - If next_emb_fn_type = 'mlp': (batch_size, n_edges, n_features)
-            - If next_emb_fn_type = 'cnn': (batch_size * n_edges, dim_size, n_features)
+            - If next_edge_emb_fn_type = 'mlp': (batch_size, n_edges, n_features)
+            - If next_edge_emb_fn_type = 'cnn': (batch_size * n_edges, dim_size, n_features)
         """
 
         if next_emb_fn_type == 'cnn':
@@ -438,6 +438,10 @@ class Encoder(nn.Module, MessagePassingLayers):
         send_rel: torch.Tensor, shape (n_edges, n_nodes)
             Sender matrix
 
+        Returns
+        -------
+        edge_matrix: torch.Tensor, shape (batch_size, n_edges, n_edge_types) 
+
         """
         emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
         batch_size = x.size(0)
@@ -485,8 +489,8 @@ class Encoder(nn.Module, MessagePassingLayers):
                         x = torch.cat((x, x_skip), dim=-1)
                     x = emb_fn(x)
 
-        return self.output_layer(x)
-
+        edge_matrix = self.output_layer(x)
+        return edge_matrix
                 
 
         
