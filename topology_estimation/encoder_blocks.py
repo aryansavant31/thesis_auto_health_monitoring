@@ -4,8 +4,9 @@ Will contain the encoder and decoder models
 import torch
 import torch.nn as nn
 from common.models import MLP
+import lightning as L
 
-class MessagePassingLayers(nn.Module):
+class MessagePassingLayers(L.LightningModule):
     def __init__(self):
         super(MessagePassingLayers, self).__init__()
     
@@ -262,20 +263,22 @@ class MessagePassingLayers(nn.Module):
 
 
 
-class Encoder(nn.Module, MessagePassingLayers):
-    def __init__(self, pipeline, n_timesteps, n_dims, edge_emd_configs, node_emd_configs, 
-                 n_edge_types, is_residual_connection, drop_out_prob, batch_norm, attention_output_size):
+class Encoder(L.LightningModule, MessagePassingLayers):
+    def __init__(self, n_timesteps, n_dims, 
+                 pipeline, n_edge_types, is_residual_connection, 
+                 edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):
+        
         super(Encoder, self).__init__()
         MessagePassingLayers.__init__(self)
+
+        # input parameters
+        self.n_timesteps = n_timesteps
+        self.n_dims = n_dims
 
         # pipeline parameters
         self.pipeline = pipeline
         self.n_edge_types = n_edge_types
         self.is_residual_connection = is_residual_connection
-
-        # input parameters
-        self.n_timesteps = n_timesteps
-        self.n_dims = n_dims
 
         # embedding configurations
         self.edge_emb_configs = edge_emd_configs
@@ -423,21 +426,35 @@ class Encoder(nn.Module, MessagePassingLayers):
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0]] = 'CNN'
-    
 
-    def forward(self, x, rec_rel, send_rel):
+    def set_input_graph(self, rec_rel, send_rel):
         """
+        Set the relationship matrices defining the input graph structure.
+        
         Parameters
         ----------
-        x: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
-            Input node data
-            
         rec_rel: torch.Tensor, shape (n_edges, n_nodes)
             Reciever matrix
             
         send_rel: torch.Tensor, shape (n_edges, n_nodes)
             Sender matrix
+        """
+        self.rec_rel = rec_rel
+        self.send_rel = send_rel
 
+    def forward(self, x):
+        """
+        Forward pass through the encoder pipeline to compute edge logits.
+
+        Note
+        ----
+        Ensure to run `set_input_graph()` before running this method.
+
+        Parameters
+        ----------
+        x: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            Input node data
+            
         Returns
         -------
         edge_matrix: torch.Tensor, shape (batch_size, n_edges, n_edge_types) 
@@ -446,7 +463,7 @@ class Encoder(nn.Module, MessagePassingLayers):
         emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
         batch_size = x.size(0)
         n_nodes = x.size(1)
-        n_edges = rec_rel.size(0)
+        n_edges = self.rec_rel.size(0)
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]
@@ -463,11 +480,11 @@ class Encoder(nn.Module, MessagePassingLayers):
             elif layer_type == 'pairwise_op':
                 emd_fn_rank += 1
                 next_emd_fn_type = self.pipeline[layer_num+1][1]
-                x = self.pairwise_op(x, rec_rel, send_rel, layer[1], emd_fn_rank, batch_size, n_nodes, next_emd_fn_type)
+                x = self.pairwise_op(x, self.rec_rel, self.send_rel, layer[1], emd_fn_rank, batch_size, n_nodes, next_emd_fn_type)
 
             # aggregation
             elif layer_type == 'aggregate':
-                x = self.aggregate(x, rec_rel, layer[1], layer[0])
+                x = self.aggregate(x, self.rec_rel, layer[1], layer[0])
 
             # combine
             elif layer_type == 'combine':

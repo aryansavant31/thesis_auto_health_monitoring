@@ -35,3 +35,15 @@ fault isolation:
         for fi model to run)
     
 """
+
+import argparse
+from topology_estimation.main import main as topology_estimation_main
+from topology_estimation.config import TopologyEstimatorConfig
+
+# Convert the class instance to a dictionary to add tp config params in weights and biases project
+
+# Weights and biases project init
+
+# if choice is topology block
+    # if choice is train
+        # weight and biases topology block init (add the configuration of topology_estimator here)

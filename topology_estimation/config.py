@@ -1,4 +1,4 @@
-class TopologyConfig:
+class TopologyEstimatorConfig:
     def __init__(self):
         self.tp = TopologyConfigUtils()
         
@@ -22,7 +22,7 @@ class TopologyConfig:
         self.encoder_pipeline       = self._get_encoder_pipeline(pipeline_type)
 
         self.n_edge_types           = 2         # output size 
-        self.residual_connection    = True      # if True, then use residual connection in the last layer
+        self.is_residual_connection    = True      # if True, then use residual connection in the last layer
 
 
         # ------ Embedding Function Parameters ------
@@ -47,6 +47,10 @@ class TopologyConfig:
         # ------ Attention Parameters ------
         self.attention_output_size  = 6         # output size for attention layer
 
+        # ------ Gumble Softmax Parameters ------
+        self.temp                   = 1.0       # temperature for Gumble Softmax
+        self.is_hard                = True      # if True, use hard Gumble Softmax
+
     def set_decoder_params(self):
 
         self.msg_out_size           = 64
@@ -68,10 +72,13 @@ class TopologyConfig:
         self.epochs = 100
         self.lr = 0.001
         self.optimizer = 'adam'
-        self.loss_type_encd = 'kld'
-        self.loss_type_decd = 'nnl'
-        self.is_prior = False
 
+        self.loss_type_encd = 'kld'
+        self.prior = None
+        self.add_const_kld = False  # if True, adds a constant term to the KL divergence
+
+        self.loss_type_decd = 'nnl'
+        
         
     # =======================================
     # Extra methods
