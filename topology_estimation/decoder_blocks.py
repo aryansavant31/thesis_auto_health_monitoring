@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-from models import MLP, LSTM, RNN, GRU
-import lightning as L
+from .utils.models import MLP, LSTM, RNN, GRU
+import lightning as pl
 
-class Decoder(L.LightningModule):
+class Decoder(pl.LightningModule):
 
     def __init__(self, n_dim, 
                  msg_out_size, n_edge_types, skip_first,

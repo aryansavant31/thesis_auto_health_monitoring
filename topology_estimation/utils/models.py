@@ -88,10 +88,11 @@ class MLP(nn.Module):
                 x = self.batch_norm(x, layer)
             else:    
                 x = layer(x)
-            if layer_num in get_fex:
-                fex.append(x)
+            if get_fex:
+                if layer_num in get_fex:
+                    fex.append(x)
 
-        return x, fex if get_fex is not None else x
+        return x
 
 class LSTM(nn.Module):
     def __init__(self, n_dim, n_layers, hidden_size):

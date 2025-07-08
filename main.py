@@ -12,6 +12,9 @@ fault detection:
     main.py --fault-detection --train
         With this option, a fault detection model will be trained. 
 
+    main.py --fault-detection --test -- <fd_model_num>
+        With this option, a fault detection model will be loaded and tested
+
     main.py --fault-detection --run -- <fd_model_num>
         With this option, the fault detection model will be loaded and run for inference.
 
@@ -19,6 +22,9 @@ fault detection:
 topology estimation:    
     main.py --topology-estimation --train
         With this option, a topology estimation model will be trained.
+
+    main.py --topology-estimation --test -- <tp_model_num>
+        With this option, a topology estimation model will be loaded and tested.
 
     main.py --topology-estimation --run -- <tp_model_num>
         With this option, the topology estimation model will be loaded and run for inference.
@@ -28,6 +34,11 @@ fault isolation:
     main.py --fault-isolation --train
         With this option, a fault isolation model will be trained
         (where topology and fault detection model will be loaded as per fault_isolation.config file)
+
+    main.py --fault-isolation --test -- <fi_model_num>
+        With this option, a fault isolation model will be loaded and tested.
+        (Depending on the fi_model_num, the approproate fd model and tp model will be also loaded alongside 
+        for fi model to run)
 
     main.py --fault-isolation --run -- <fi_model_num>
         With this option, the fault isolation model will be loaded and run for inference. 

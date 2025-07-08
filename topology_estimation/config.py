@@ -12,7 +12,7 @@ class TopologyEstimatorConfig:
         self.test_rt    = 0.2
         self.val_rt     = 1 - (self.train_rt + self.test_rt)
 
-    def encoder_params(self):
+    def set_encoder_params(self):
         """
         Sets encoder parameters for the model.
 
@@ -22,7 +22,7 @@ class TopologyEstimatorConfig:
         self.encoder_pipeline       = self._get_encoder_pipeline(pipeline_type)
 
         self.n_edge_types           = 2         # output size 
-        self.is_residual_connection    = True      # if True, then use residual connection in the last layer
+        self.is_residual_connection = True      # if True, then use residual connection in the last layer
 
 
         # ------ Embedding Function Parameters ------
@@ -92,13 +92,15 @@ class TopologyEstimatorConfig:
         pipelines = {
             'mlp_1': [
                         ['1/node_emd.1', 'mlp'],
-                        ['1/pairwise_op', 'concat'],
+                        ['1/node_emd.2', 'mlp'],
+                        ['1/pairwise_op', 'sum'],
                         ['1/edge_emd.1.@', 'mlp'],
-                        ['2/aggregate', 'weighted_sum'],
-                        ['2/combine', 'concat'],
+                        ['2/aggregate', 'sum'],
                         ['2/node_emd.1', 'mlp'],
+                        ['2/node_emd.2', 'mlp'],
                         ['2/pairwise_op', 'concat'],
-                        ['2/edge_emd.1', 'mlp']
+                        ['2/edge_emd.1', 'mlp'],
+                        ['2/edge_emd.2', 'mlp']
                      ],
             'cnn1': [] 
         }
@@ -129,7 +131,9 @@ class TopologyEstimatorConfig:
         # Dictionaries
         mlp_configs = {
             'default': [[64, 'relu'],
-                        [32, None]] # the last layer is the output layer here
+                        [32, 'relu'],
+                        [16, 'relu'],
+                        [8, None]] # the last layer is the output layer here
         }
 
         cnn_configs = {

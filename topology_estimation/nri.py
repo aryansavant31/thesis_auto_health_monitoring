@@ -2,7 +2,7 @@ import lightning  as L
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam, SGD
-from utils import kl_categorical, kl_categorical_uniform, nll_gaussian
+from utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
 
 
 class TopologyEstimator(L.LightningModule):

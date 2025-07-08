@@ -3,10 +3,10 @@ Will contain the encoder and decoder models
 """
 import torch
 import torch.nn as nn
-from common.models import MLP
-import lightning as L
+from .utils.models import MLP
+import lightning as pl
 
-class MessagePassingLayers(L.LightningModule):
+class MessagePassingLayers():
     def __init__(self):
         super(MessagePassingLayers, self).__init__()
     
@@ -263,7 +263,7 @@ class MessagePassingLayers(L.LightningModule):
 
 
 
-class Encoder(L.LightningModule, MessagePassingLayers):
+class Encoder(pl.LightningModule, MessagePassingLayers):
     def __init__(self, n_timesteps, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
                  edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):
@@ -341,9 +341,11 @@ class Encoder(L.LightningModule, MessagePassingLayers):
                     if layer[1] == 'mlp':
                         # Check if edge embedding is repeated more than once
                         if edge_emd_fn_rank < 2:
-                            edge_main_input_size = self.node_emb_configs[layer[1]][-1][0]
+                            prev_node_emd_fn_type = self.pipeline[layer_num-2][1]
+                            edge_main_input_size = self.node_emb_configs[prev_node_emd_fn_type][-1][0]
                         else:
-                            edge_main_input_size = self.edge_emb_configs[layer[1]][-1][0]
+                            prev_edge_emd_fn_type = self.pipeline[layer_num-1][1]
+                            edge_main_input_size = self.edge_emb_configs[prev_edge_emd_fn_type][-1][0]
 
                     elif layer[1] == 'cnn':
                         edge_main_input_size = 1  # input dim to CNN type edge_emb after emb fn rank > 1
@@ -378,7 +380,6 @@ class Encoder(L.LightningModule, MessagePassingLayers):
                                                     self.edge_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
                                                     is_batch_norm=self.batch_norm['mlp'],
-                                                    is_gnn=True
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0]] = 'CNN' # placeholder
@@ -402,11 +403,14 @@ class Encoder(L.LightningModule, MessagePassingLayers):
                     prev_layer_type = self.pipeline[layer_num-1][0].split('/')[1].split('.')[0]
                     
                     if layer[1] == 'mlp':
-                        # Check if edge embedding is repeated more than once
+                        # Check if node embedding is repeated more than once
                         if node_emd_fn_rank < 2:
-                            node_main_input_size = self.edge_emb_configs[layer[1]][-1][0]
+                            prev_edge_emd_fn_type = self.pipeline[layer_num-2][1]
+                            node_main_input_size = self.edge_emb_configs[prev_edge_emd_fn_type][-1][0]
                         else:
-                            node_main_input_size = self.node_emb_configs[layer[1]][-1][0]
+                            prev_node_emd_fn_type = self.pipeline[layer_num-1][1]
+                            node_main_input_size = self.node_emb_configs[prev_node_emd_fn_type][-1][0]
+                            
                     elif layer[1] == 'cnn':
                         node_main_input_size = 1 # input dim to CNN type node emb after emb fn rank > 1
 
@@ -422,7 +426,6 @@ class Encoder(L.LightningModule, MessagePassingLayers):
                                                     self.node_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
                                                     is_batch_norm=self.batch_norm['mlp'],
-                                                    is_gnn=True
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0]] = 'CNN'
