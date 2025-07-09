@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-from .utils.models import MLP, LSTM, RNN, GRU
+from .utils.models import MLP, GRU
 import lightning as pl
 
 class Decoder(pl.LightningModule):
 
     def __init__(self, n_dim, 
                  msg_out_size, n_edge_types, skip_first,
-                 edge_mlp_config, recurrent_emd_type, n_layers_recurrent, out_mlp_config, do_prob, is_batch_norm 
+                 edge_mlp_config, recurrent_emd_type, out_mlp_config, do_prob, is_batch_norm 
                  ):
         super(Decoder, self).__init__()
         # input parameters
@@ -23,7 +23,6 @@ class Decoder(pl.LightningModule):
         # embedding parameters
         self.edge_mlp_config = edge_mlp_config
         self.recurremt_emb_type = recurrent_emd_type
-        self.n_layers_recurrent = n_layers_recurrent
         self.out_mlp_config = out_mlp_config
         self.do_prob = do_prob
         self.is_batch_norm = is_batch_norm
@@ -32,36 +31,24 @@ class Decoder(pl.LightningModule):
         self.edge_mlp_fn = [MLP(2*self.msg_out_size, 
                                 self.edge_mlp_config,
                                 self.do_prob, 
-                                self.is_batch_norm,
-                                is_gnn=True) for _ in range(self.n_edge_types)]
+                                self.is_batch_norm) for _ in range(self.n_edge_types)]
         
         # Make recurrent embedding function
-        if self.recurremt_emb_type == 'lstm':
-            self.recurrent_emb_fn = LSTM(self.n_dim, 
-                                         self.n_layers_recurrent,
-                                         self.msg_out_size)
-        elif self.recurremt_emb_type == 'rnn':
-            self.recurrent_emb_fn = RNN(self.n_dim, 
-                                        self.n_layers_recurrent,
-                                        self.msg_out_size)
-        elif self.recurremt_emb_type == 'gru':
-            self.recurrent_emb_fn = GRU(self.n_dim, 
-                                        self.n_layers_recurrent,
+        if self.recurremt_emb_type == 'gru':
+            self.recurrent_emb_fn = GRU(self.n_dim,
                                         self.msg_out_size)
         
         # Make MLP to predict mean of prediction
         self.mean_mlp = MLP(self.msg_out_size,
                            self.out_mlp_config,
                            self.do_prob,
-                           self.is_batch_norm,
-                           is_gnn=True)
+                           self.is_batch_norm)
         
         # Make MLP to predict variance of prediction
         self.var_mlp = MLP(self.msg_out_size,
                            self.out_mlp_config,
                            self.do_prob,
-                           self.is_batch_norm,
-                           is_gnn=True)
+                           self.is_batch_norm)
         
         self.output_layer_size = out_mlp_config[-1][0]  
         self.mean_output_layer = nn.Linear(self.output_layer_size, n_dim) 
@@ -136,7 +123,23 @@ class Decoder(pl.LightningModule):
     
     def single_step_forward(self, inputs, rec_rel, send_rel,
                             rel_type, hidden):
+        """
+        Parameters
+        ----------
+        inputs : torch.Tensor, shape (batch_size, n_nodes, n_dim)
 
+        hidden : torch.Tensor, shape (batch_size, n_nodes, msg_out_size)
+        Returns
+        -------
+        pred : torch.Tensor, shape (batch_size, n_nodes, n_dim)
+            Predicted next step for each node.
+
+        var : torch.Tensor, shape (batch_size, n_nodes, n_dim)
+            Predicted variance of the next step for each node.
+            
+        hidden : torch.Tensor, shape (batch_size, n_nodes, msg_out_size)
+            Hidden state for the next step, used for recurrent embedding.
+        """
         # node2edge
         pre_msg = self.pairwise_op(hidden, rec_rel, send_rel) 
 
@@ -155,9 +158,10 @@ class Decoder(pl.LightningModule):
         agg_msgs = all_msgs.transpose(-2, -1).matmul(rec_rel).transpose(-2,     #### MSG (MeSsage aGgregation)
                                                                         -1)
         agg_msgs = agg_msgs.contiguous() / inputs.size(2)  # Average
+        # agg_msgs has shape (batch_size, n_nodes, msg_out_size)
 
         # Recurrent embedding function
-        hidden = self.recurrent_emb_fn(inputs, agg_msgs)         #### h_tilde_j^t+1   
+        hidden = self.recurrent_emb_fn(inputs, agg_msgs, hidden)         #### h_tilde_j^t+1   
 
         # Predict mean delta of signal
         x_m = self.mean_mlp(hidden)  
@@ -227,10 +231,10 @@ class Decoder(pl.LightningModule):
             if self.is_dynamic_graph and step >= self.burn_in_steps: 
                 
                 # NOTE: Assumes burn_in_steps = args.timesteps
-                edge_matrix = self.get_edge_matrix(ins, self.encoder, self.rec_rel, self.send_rel, self.temp, self.is_hard)
+                self.edge_matrix = self.get_edge_matrix(ins, self.encoder, self.rec_rel, self.send_rel, self.temp, self.is_hard)
 
             pred, var, hidden = self.single_step_forward(ins, self.rec_rel, self.send_rel,
-                                                    edge_matrix, hidden)
+                                                    self.edge_matrix, hidden)
             pred_all.append(pred)
             var_all.append(var)
 

@@ -299,7 +299,7 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
 
 
     def init_attention_layers(self):
-        self.attention_layer_dict = {}
+        self.attention_layer_dict = nn.ModuleDict()
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]
@@ -311,7 +311,7 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
                     self.attention_layer_dict[layer[0]] = nn.Linear(input_size, self.attention_output_size)
     
     def init_embedding_functions(self):
-        self.emb_fn_dict = {}
+        self.emb_fn_dict = nn.ModuleDict()
 
         emd_fn_rank = 0
         node_emd_fn_rank = 0
@@ -376,13 +376,13 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
 
                 # Initialize edge embedding fn
                 if layer[1] == 'mlp':
-                    self.emb_fn_dict[layer[0]] = MLP(edge_emd_input_size, 
+                    self.emb_fn_dict[layer[0].replace(".", "")] = MLP(edge_emd_input_size, 
                                                     self.edge_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
                                                     is_batch_norm=self.batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
-                    self.emb_fn_dict[layer[0]] = 'CNN' # placeholder
+                    self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN' # placeholder
 
             # Node embedding functions
 
@@ -422,13 +422,13 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
 
                 # Initialize node embedding fn
                 if layer[1] == 'mlp':
-                    self.emb_fn_dict[layer[0]] = MLP(node_emd_input_size, 
+                    self.emb_fn_dict[layer[0].replace(".", "")] = MLP(node_emd_input_size, 
                                                     self.node_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
                                                     is_batch_norm=self.batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
-                    self.emb_fn_dict[layer[0]] = 'CNN'
+                    self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN'
 
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -474,7 +474,7 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
             # node embedding
             if layer_type == 'node_emd':
                 emd_fn_rank += 1
-                emb_fn = self.emb_fn_dict[layer[0]]
+                emb_fn = self.emb_fn_dict[layer[0].replace(".", "")]
 
                 x = self.optimize_shape_for_node_emd(x, emd_fn_rank, layer[1], batch_size, n_nodes)  
                 x = emb_fn(x)
@@ -495,7 +495,7 @@ class Encoder(pl.LightningModule, MessagePassingLayers):
 
             # edge embedding
             elif layer_type == 'edge_emd':
-                emb_fn = self.emb_fn_dict[layer[0]]
+                emb_fn = self.emb_fn_dict[layer[0].replace(".", "")]
                 x = self.optimize_shape_for_edge_emd(x, layer[1], batch_size, n_edges)
 
                 if layer_num < len(self.pipeline) - 1:

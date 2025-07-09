@@ -33,14 +33,14 @@ class TopologyEstimatorConfig:
         node_emb_config             = {'mlp': 'default',
                                        'cnn': 'default'}
 
-        self.edge_emb_configs_enc   = self._get_emb_config(config_type=edge_emd_config)  
-        self.node_emb_configs_enc   = self._get_emb_config(config_type=node_emb_config)
+        self.edge_emb_configs_enc   = self._get_encoder_emb_config(config_type=edge_emd_config)  
+        self.node_emb_configs_enc   = self._get_encoder_emb_config(config_type=node_emb_config)
         
         # other embedding parameters
-        self.dropout_prob_mlp_enc   = {'mlp': 0.0,
+        self.dropout_prob_enc       = {'mlp': 0.0,
                                        'cnn': 0.0}
         
-        self.batch_norm_mlp_enc     = {'mlp': False,
+        self.batch_norm_enc         = {'mlp': False,
                                        'cnn': False}
 
 
@@ -54,16 +54,22 @@ class TopologyEstimatorConfig:
     def set_decoder_params(self):
 
         self.msg_out_size           = 64
-
-        # edge embedding config
+    
+        # ---------- Embedding function parameters ----------
+        # embedding config
         edge_mlp_config             = {'mlp': 'default'}
-        self.edge_mlp_configs_dec   = self._get_emb_config(config_type=edge_mlp_config)['mlp']
+        self.edge_mlp_config_dec    = self._get_decoder_emb_config(config_type=edge_mlp_config)['mlp']
 
         output_mlp_config           = {'mlp': 'default'}
-        self.out_mlp_config_dec     = self._get_emb_config(config_type=output_mlp_config)['mlp']
+        self.out_mlp_config_dec     = self._get_decoder_emb_config(config_type=output_mlp_config)['mlp']
 
-        self.reccurent_emd_type     = 'lstm'
-        self.n_layers_recurrent     = 1
+        # other embedding parameters
+        self.skip_first_edge_type   = True 
+        self.dropout_prob_dec       = 0
+        self.is_batch_norm_dec      = True
+
+        # ------ Recurrent Embedding Parameters ------
+        self.recurrent_emd_type     = 'gru' # options: gru
 
     def set_sparsifier_params(self):
         pass
@@ -118,7 +124,7 @@ class TopologyEstimatorConfig:
             return custom_pipeline
         
         
-    def _get_emb_config(self, config_type, custom_config=None): 
+    def _get_encoder_emb_config(self, config_type, custom_config=None): 
         """
         config_type : dict
         custom_config : dict
@@ -133,7 +139,7 @@ class TopologyEstimatorConfig:
             'default': [[64, 'relu'],
                         [32, 'relu'],
                         [16, 'relu'],
-                        [8, None]] # the last layer is the output layer here
+                        [8, None]],
         }
 
         cnn_configs = {
@@ -161,6 +167,40 @@ class TopologyEstimatorConfig:
                         raise ValueError("Custom CNN config must be provided when value is 'custom'.")
                     else:
                         configs[key] = custom_config[key]
+
+        return configs
+    
+    def _get_decoder_emb_config(self, config_type, custom_config=None):
+        """
+        config_type : dict
+        custom_config : dict
+
+        Attributes
+        ----------
+        Write description of the mlp_config names, cnn_config names etc.
+        """     
+
+        # Dictionaries
+        mlp_configs = {
+            'default': [[64, 'tanh'],
+                        [32, 'tanh'],
+                        [16, 'tanh'],
+                        [self.msg_out_size, None]], # the last layer should look like this for any configs for decoder
+        }
+
+        # ------ Validate config_type -------
+        configs = {}
+        for key, value in config_type.items():
+            if key == 'mlp':
+                if value in mlp_configs: 
+                    configs[key] = mlp_configs[value]
+                elif value == 'custom':
+                    if custom_config is None:
+                        raise ValueError("Custom MLP config must be provided when value is 'custom'.")
+                    else:
+                        configs[key] = custom_config[key] 
+            else:
+                raise ValueError(f"Unsupported config type: {key}. Supported types are 'mlp'.")
 
         return configs
 

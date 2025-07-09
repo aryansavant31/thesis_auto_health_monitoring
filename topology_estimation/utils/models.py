@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch
+import lightning as pl
 
-class MLP(nn.Module):
+class MLP(pl.LightningModule):
     def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False):
         super(MLP, self).__init__()
 
@@ -94,129 +95,154 @@ class MLP(nn.Module):
 
         return x
 
-class LSTM(nn.Module):
-    def __init__(self, n_dim, n_layers, hidden_size):
-        """
-        Parameters
-        ----------
-        n_dim : int
-            Dimension of the input features (e.g., number of parameters per sample).
-        n_layers: int
-            number of LSTMs to stack
-        n_hid: int
-            output_size per roll from the LSTM
+# class LSTM(nn.Module):
+#     def __init__(self, n_dim, n_layers, hidden_size):
+#         """
+#         Parameters
+#         ----------
+#         n_dim : int
+#             Dimension of the input features (e.g., number of parameters per sample).
+#         n_layers: int
+#             number of LSTMs to stack
+#         n_hid: int
+#             output_size per roll from the LSTM
 
-        """
-        super(LSTM, self).__init__()
-        self.model_type = 'LSTM' 
-        self.n_layers = n_layers
-        self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(n_dim, hidden_size, n_layers, batch_first=True)
-        # self.linear = nn.Linear(hidden_size, output_size)
+#         """
+#         super(LSTM, self).__init__()
+#         self.model_type = 'LSTM' 
+#         self.n_layers = n_layers
+#         self.hidden_size = hidden_size
+#         self.lstm = nn.LSTM(n_dim, hidden_size, n_layers, batch_first=True)
+#         # self.linear = nn.Linear(hidden_size, output_size)
 
-    def forward(self, x, h):
-        """
-        Parameters
-        ----------
-        x: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, n_dim)
-            Input tensor.
-        h: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+#     def forward(self, input, h):
+#         """
+#         Parameters
+#         ----------
+#         x: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, n_dim)
+#             Input tensor.
+#         h: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
 
-        Returns
-        -------
-        output: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, hidden_size)
-            Output tensor containing the hidden states (short term memory) from the LSTM unit for each timestep.
-        """
-        c0 = torch.zeros(self.n_layers, x.size(0), x.size(2), self.hidden_size) # shape = (n_layers, batch_size, output_size (per step))
+#         Returns
+#         -------
+#         output: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, hidden_size)
+#             Output tensor containing the hidden states (short term memory) from the LSTM unit for each timestep.
+#         """
+#         c0 = torch.zeros(self.n_layers, x.size(0)*x.size(2), self.hidden_size) # shape = (n_layers, batch_size, output_size (per step))
 
-        # reshape h to (n_layers, batch_size, n_nodes, hidden_size)
-        h = h.view(self.n_layers, h.size(0), h.size(1), h.size(2)) 
+#         # reshape h to (n_layers, batch_size * n_nodes, hidden_size)
+#         h = h.view(self.n_layers, h.size(0)*h.size(1), h.size(2)) 
 
-        output, (hidden, _) = self.lstm(x, (h,c0)) # shape(out) = (batch_size, num_features, 1 <output_size (per step)>)
+#         # reshape x to (batch_size*n_nodes, n_timesteps, n_dim)
+#         x = input.permute(0, 2, 1, 3)  # (batch_size, n_nodes, n_timesteps, n_dim)
+#         x = x.contiguous().view(x.size(0) * x.size(1), x.size(2), x.size(3))  # (batch_size*n_nodes, n_timesteps, n_dim)
+
+#         output, (hidden, _) = self.lstm(x, (h,c0)) 
         
-        # output contains the short term memory or hidden states from all the rolls of LSTM unit. 
-        # So if I have 10 timesteps as input, output contains 10 hidden state, each pertaining to the individual timestep
-        # features extracted
-    
-        return output
-    
-    
-class RNN(nn.Module):
-    def __init__(self, n_dim, n_layers, hidden_size):
-        """
-        Parameters
-        ----------
-        n_dim : int
-            Dimension of the input features (e.g., number of parameters per sample).
-        n_layers: int
-            number of RNNs to stack
-        hidden_size: int
-            output_size per roll from the LSTM
+#         # output contains the short term memory or hidden states from all the rolls of LSTM unit. 
+#         # So if I have 10 timesteps as input, output contains 10 hidden state, each pertaining to the individual timestep
 
-        """
-        super(RNN, self).__init__()
-        self.model_type = 'RNN' 
-        self.n_layers = n_layers
-        self.hidden_size = hidden_size
-        self.rnn = nn.RNN(n_dim, hidden_size, n_layers, batch_first=True)
-        # self.linear = nn.Linear(hidden_size, output_size)
+#         output = output.view(input.size(0), input.size(1), input.size(2), input.size(3))  # (batch_size, n_nodes, n_timesteps, hidden_size)
+#         output = output.permute(0, 2, 1, 3)  # (batch_size, n_timesteps, n_nodes, hidden_size)
+#         return output
+    
+    
+# class RNN(nn.Module):
+#     def __init__(self, n_dim, n_layers, hidden_size):
+#         """
+#         Parameters
+#         ----------
+#         n_dim : int
+#             Dimension of the input features (e.g., number of parameters per sample).
+#         n_layers: int
+#             number of RNNs to stack
+#         hidden_size: int
+#             output_size per roll from the LSTM
 
-    def forward(self, x, h):
-        """
-        Parameters
-        ----------
-        x: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, n_dim)
-            Input tensor. 
-        h: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+#         """
+#         super(RNN, self).__init__()
+#         self.model_type = 'RNN' 
+#         self.n_layers = n_layers
+#         self.hidden_size = hidden_size
+#         self.rnn = nn.RNN(n_dim, hidden_size, n_layers, batch_first=True)
+#         # self.linear = nn.Linear(hidden_size, output_size)
 
-        Returns
-        -------
-        output: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, hidden_size)
-            Output tensor containing the hidden states from the RNN unit for each timestep.
-        """
-        # reshape h to (n_layers, batch_size, n_nodes, hidden_size)
-        h = h.view(self.n_layers, h.size(0), h.size(1), h.size(2))  
+#     def forward(self, x, h):
+#         """
+#         Parameters
+#         ----------
+#         x: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, n_dim)
+#             Input tensor. 
+#         h: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+
+#         Returns
+#         -------
+#         output: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, hidden_size)
+#             Output tensor containing the hidden states from the RNN unit for each timestep.
+#         """
+#         # reshape h to (n_layers, batch_size, n_nodes, hidden_size)
+#         h = h.view(self.n_layers, h.size(0)*h.size(1), h.size(2))  
    
-        output, hidden, = self.rnn(x, h)
+#         output, hidden, = self.rnn(x, h)
     
-        return output
+#         return output
     
     
-class GRU(nn.Module):
-    def __init__(self, n_dim, n_layers, hidden_size):
+class GRU(pl.LightningModule):
+    def __init__(self, n_dim, hidden_size):
         """
         Parameters
         ----------
         n_dim : int
             Dimension of the input features (e.g., number of parameters per sample).
-        n_layers: int
-            number of GRUs to stack
         hidden_size: int
-            output_size per roll from the LSTM
+            output_size per roll from the GRU
 
         """
         super(GRU, self).__init__()
         self.model_type = 'GRU' 
-        self.n_layers = n_layers
         self.hidden_size = hidden_size
-        self.gru = nn.GRU(n_dim, hidden_size, n_layers, batch_first=True)
+        
+        # update gate parameters
+        self.input_u = nn.Linear(n_dim, hidden_size)
+        self.hidden_u = nn.Linear(hidden_size, hidden_size)
 
-    def forward(self, x, h):
+        # reset gate parameters
+        self.input_r = nn.Linear(n_dim, hidden_size)
+        self.hidden_r = nn.Linear(hidden_size, hidden_size)
+        
+        # candidate hidden state parameters
+        self.input_h = nn.Linear(n_dim, hidden_size)
+        self.hidden_h = nn.Linear(hidden_size, hidden_size)
+
+        
+    def forward(self, input, agg_msgs, hidden_prev):
         """
         Parameters
         ----------
-        x: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, n_dim)
+        input: torch.tensor, shape: (batch_size, n_nodes, n_dims)
             Input tensor.
-        h: torch.tensor, shape: (batch_size, n_nodes, hidden_size) 
-
+        agg_msgs: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+            Aggregated messages from the edges
+        hidden_prev: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+            Previous hidden state
         Returns
         -------
-        output: torch.tensor, shape: (batch_size, n_timesteps, n_nodes, hidden_size)
-            Output tensor containing the hidden states from the GRU unit for each timestep.
+        hidden: torch.tensor, shape: (batch_size, n_nodes, hidden_size)
+            Updated hidden state after processing the input and aggregated messages through update and reset gates
         """
-        # reshape h to (n_layers, batch_size, n_nodes, hidden_size)
-        h = h.view(self.n_layers, h.size(0), h.size(1), h.size(2)) 
-   
-        output, hidden = self.gru(x, h)
-    
-        return output
+        
+        # update gate
+        u = torch.sigmoid(self.input_u(input) + self.hidden_u(agg_msgs))
+
+        # reset gate
+        r = torch.sigmoid(self.input_r(input) + self.hidden_r(agg_msgs))
+
+        # candidate hidden state
+        h_tilde = torch.tanh(self.input_h(input) + self.hidden_h(r * agg_msgs))
+
+        # new hidd(en state
+        hidden = ((1 - u) * hidden_prev) + (u * h_tilde)
+
+        return hidden
+        
