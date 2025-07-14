@@ -3,9 +3,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 from .utils.models import MLP, GRU
-import lightning as pl
+from pytorch_lightning import LightningModule
 
-class Decoder(pl.LightningModule):
+class Decoder(LightningModule):
 
     def __init__(self, n_dim, 
                  msg_out_size, n_edge_types, skip_first,
@@ -28,10 +28,10 @@ class Decoder(pl.LightningModule):
         self.is_batch_norm = is_batch_norm
         
         # Make MLPs for each edge type
-        self.edge_mlp_fn = [MLP(2*self.msg_out_size, 
+        self.edge_mlp_fn = nn.ModuleList(MLP(2*self.msg_out_size, 
                                 self.edge_mlp_config,
                                 self.do_prob, 
-                                self.is_batch_norm) for _ in range(self.n_edge_types)]
+                                self.is_batch_norm) for _ in range(self.n_edge_types))
         
         # Make recurrent embedding function
         if self.recurremt_emb_type == 'gru':
@@ -52,8 +52,7 @@ class Decoder(pl.LightningModule):
         
         self.output_layer_size = out_mlp_config[-1][0]  
         self.mean_output_layer = nn.Linear(self.output_layer_size, n_dim) 
-        self.var_output_layer = nn.Linear(self.output_layer_size, n_dim)   
-
+        self.var_output_layer = nn.Linear(self.output_layer_size, n_dim) 
     
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -143,8 +142,7 @@ class Decoder(pl.LightningModule):
         # node2edge
         pre_msg = self.pairwise_op(hidden, rec_rel, send_rel) 
 
-        all_msgs = Variable(torch.zeros(pre_msg.size(0), pre_msg.size(1),
-                                        self.msg_out_size))
+        all_msgs = torch.zeros(pre_msg.size(0), pre_msg.size(1), self.msg_out_size, device=inputs.device)
 
         # skip first edge type if specified
         start_idx, norm = self.get_start_idx()
@@ -169,7 +167,7 @@ class Decoder(pl.LightningModule):
 
         # Predict variance of delta of signal
         x_v = self.var_mlp(hidden)
-        var = self.var_output_layer(x_v)   
+        var = F.softplus(self.var_output_layer(x_v)) + 1e-6  # softplus to ensure variance is positive
 
         # Add mean delta to get next step prediction
         pred = inputs + mean            #### mu_j^t+1
@@ -205,8 +203,8 @@ class Decoder(pl.LightningModule):
 
         n_timesteps = inputs.size(1)
 
-        hidden = Variable(
-            torch.zeros(inputs.size(0), inputs.size(2), self.msg_out_size))
+        hidden = torch.zeros(inputs.size(0), inputs.size(2), self.msg_out_size, device=inputs.device)
+        
         if inputs.is_cuda:
             hidden = hidden.cuda()
 

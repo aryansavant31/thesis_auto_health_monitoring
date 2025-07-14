@@ -4,7 +4,7 @@ Will contain the encoder and decoder models
 import torch
 import torch.nn as nn
 from .utils.models import MLP
-import lightning as pl
+from pytorch_lightning import LightningModule
 
 class MessagePassingLayers():
     def __init__(self):
@@ -263,7 +263,7 @@ class MessagePassingLayers():
 
 
 
-class Encoder(pl.LightningModule, MessagePassingLayers):
+class Encoder(LightningModule, MessagePassingLayers):
     def __init__(self, n_timesteps, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
                  edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):

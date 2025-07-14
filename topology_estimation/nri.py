@@ -1,23 +1,30 @@
-import lightning  as L
+from pytorch_lightning import LightningModule
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam, SGD
-from utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+import matplotlib
+matplotlib.use('Agg')  # <-- Add this at the very top, before importing pyplot
+import matplotlib.pyplot as plt
+from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
 
-
-class TopologyEstimator(L.LightningModule):
+class NRI(LightningModule):
     def __init__(self, encoder, decoder):
-        super(TopologyEstimator, self).__init__()
+        super(NRI, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
 
     def set_training_params(self, lr=0.001, optimizer='adam', loss_type_encoder='kld',
-                             loss_type_decoder='nnl', prior=None):
+                             loss_type_decoder='nll', prior=None):
         self.lr = lr
         self.optimizer = optimizer
         self.prior = prior
         self.loss_type_encoder = loss_type_encoder
         self.loss_type_decoder = loss_type_decoder
+
+        self.train_losses_per_epoch = []
+
+    def set_input_example_for_graph(self, n_nodes):
+        self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_timesteps, self.encoder.n_dims))
 
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -36,7 +43,7 @@ class TopologyEstimator(L.LightningModule):
 
     def set_run_params(self, pred_steps=1,
                 is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-                encoder=None, temp=None, is_hard=False):
+                encoder=None, temp=0.5, is_hard=False):
         """
         Parameters
         ----------
@@ -54,7 +61,7 @@ class TopologyEstimator(L.LightningModule):
         self.is_hard = is_hard
 
         self.decoder.set_run_params(pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
-                                    is_dynamic_graph=is_dynamic_graph, encoder=self.encoder,
+                                    is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)
 
     def forward(self, data):
@@ -113,6 +120,7 @@ class TopologyEstimator(L.LightningModule):
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
         data, relations = batch
+
         num_nodes = data.size(1)
         target = data[:, :, 1:, :]
 
@@ -125,23 +133,52 @@ class TopologyEstimator(L.LightningModule):
                 loss_encoder = kl_categorical(edge_pred, self.prior, num_nodes)
             else:
                 loss_encoder = kl_categorical_uniform(edge_pred, num_nodes)
-        
+
         # decoder loss
-        if self.loss_type_decoder == 'nnl':
+        if self.loss_type_decoder == 'nll':
             loss_decoder = nll_gaussian(x_pred, target, x_var)
 
         # total loss
         loss = loss_encoder + loss_decoder
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss_encoder', loss_encoder, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_loss_decoder', loss_decoder, on_step=True, on_epoch=True, prog_bar=True, logger=True)
 
         if relations is not None:
             edge_accuracy = (edge_pred.argmax(dim=-1) == relations).float().mean()
-            self.log('train_edge_accuracy', edge_accuracy, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+            self.log('train_edge_accuracy', edge_accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        else:
+            edge_accuracy = 'None'
+
+        self.log_dict(
+            {
+                'train_loss': loss,
+                'train_loss_encoder': loss_encoder,
+                'train_loss_decoder': loss_decoder,
+                'train_edge_accuracy': edge_accuracy,
+            },
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True
+        )
             
         return loss
     
+    def on_train_epoch_end(self):
+        avg_loss = self.trainer.callback_metrics['train_loss'].item()
+        self.train_losses_per_epoch.append(avg_loss)
+
+    def on_train_end(self):
+        if self.logger:
+            fig, ax = plt.subplots()
+            ax.plot(range(1, len(self.train_losses_per_epoch) + 1), self.train_losses_per_epoch)
+            ax.set_xlabel("Epoch")
+            ax.set_ylabel("Average Training Loss")
+            ax.set_title("Training Loss vs Epoch")
+            
+            self.logger.experiment.add_figure("Loss vs Epoch", fig, global_step=self.global_step)
+            plt.close(fig)
+        else:
+            print("No logger set, so no plots made.")
+        
     def validation_step(self, batch, batch_idx):
         pass
 

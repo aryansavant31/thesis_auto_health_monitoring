@@ -1,8 +1,8 @@
 import torch.nn as nn
 import torch
-import lightning as pl
+from pytorch_lightning import LightningModule
 
-class MLP(pl.LightningModule):
+class MLP(LightningModule):
     def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False):
         super(MLP, self).__init__()
 
@@ -89,6 +89,7 @@ class MLP(pl.LightningModule):
                 x = self.batch_norm(x, layer)
             else:    
                 x = layer(x)
+                
             if get_fex:
                 if layer_num in get_fex:
                     fex.append(x)
@@ -188,7 +189,7 @@ class MLP(pl.LightningModule):
 #         return output
     
     
-class GRU(pl.LightningModule):
+class GRU(LightningModule):
     def __init__(self, n_dim, hidden_size):
         """
         Parameters

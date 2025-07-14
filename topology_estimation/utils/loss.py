@@ -141,7 +141,7 @@ def nll_gaussian(pred, target, variance):
     """
 
     term_1 = ((pred - target) ** 2 / (2 * variance))
-    term_2 = 0.5 * np.log(2 * np.pi * variance)
+    term_2 = 0.5 * torch.log(2 * torch.pi * variance)
     nll = term_1 + term_2       # shape (batch_size, n_nodes, n_timesteps-1, n_dim)
 
     return nll.sum() / (target.size(0) * target.size(1)) # shape (scalar)
