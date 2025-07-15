@@ -60,10 +60,10 @@ class Decoder(LightningModule):
         
         Parameters
         ----------
-        rec_rel: torch.Tensor, shape (n_edges, n_nodes)
+        rec_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Reciever matrix
             
-        send_rel: torch.Tensor, shape (n_edges, n_nodes)
+        send_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Sender matrix
         """
         self.rec_rel = rec_rel
@@ -106,8 +106,8 @@ class Decoder(LightningModule):
         self.is_hard = is_hard
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
-        receivers = torch.matmul(rec_rel, node_emb)
-        senders = torch.matmul(send_rel, node_emb)
+        receivers = torch.bmm(rec_rel, node_emb)
+        senders = torch.bmm(send_rel, node_emb)
         return torch.cat([senders, receivers], dim=-1)
     
     def get_start_idx(self):
@@ -153,8 +153,7 @@ class Decoder(LightningModule):
             msg = msg * rel_type[:, :, i:i + 1]
             all_msgs += msg / norm
 
-        agg_msgs = all_msgs.transpose(-2, -1).matmul(rec_rel).transpose(-2,     #### MSG (MeSsage aGgregation)
-                                                                        -1)
+        agg_msgs = torch.bmm(all_msgs.transpose(1, 2), rec_rel).transpose(1, 2)    #### MSG (MeSsage aGgregation)
         agg_msgs = agg_msgs.contiguous() / inputs.size(2)  # Average
         # agg_msgs has shape (batch_size, n_nodes, msg_out_size)
 
@@ -190,18 +189,18 @@ class Decoder(LightningModule):
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dim)
+        data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dim)
             Input data tensor containing the entire trajectory data of all nodes.
         
         Returns
         -------
-        preds : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
-        vars : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+        preds : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
+        vars : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
         """
         inputs = data.transpose(1, 2).contiguous()
-        # inputs has shape [batch_size, n_timesteps, n_nodes, n_dims]
+        # inputs has shape [batch_size, n_datapoints, n_nodes, n_dims]
 
-        n_timesteps = inputs.size(1)
+        n_datapoints = inputs.size(1)
 
         hidden = torch.zeros(inputs.size(0), inputs.size(2), self.msg_out_size, device=inputs.device)
         
@@ -219,7 +218,7 @@ class Decoder(LightningModule):
                 else:
                     ins = pred_all[step - 1]    # here, ins = last prediction wrt to current step
             else:
-                assert (self.pred_steps <= n_timesteps) # if pred_Step is 100 and timesteps is 50, this will return error
+                assert (self.pred_steps <= n_datapoints) # if pred_Step is 100 and timesteps is 50, this will return error
                 # Use ground truth trajectory input vs. last prediction
                 if not step % self.pred_steps:
                     ins = inputs[:, step, :, :]

@@ -24,7 +24,7 @@ class NRI(LightningModule):
         self.train_losses_per_epoch = []
 
     def set_input_example_for_graph(self, n_nodes):
-        self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_timesteps, self.encoder.n_dims))
+        self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_datapoints, self.encoder.n_dims))
 
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -32,10 +32,10 @@ class NRI(LightningModule):
         
         Parameters
         ----------
-        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+        rec_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Receiver relationship matrix.
         
-        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+        send_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Sender relationship matrix.
         """
         self.encoder.set_input_graph(rec_rel, send_rel)
@@ -74,16 +74,16 @@ class NRI(LightningModule):
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
             Input data tensor containing the entire trajectory data of all nodes.
         
         Returns
         -------
         edge_pred : torch.Tensor, shape (batch_size, n_edges, n_edge_types)
             Predicted edge probabilities.
-        x_pred : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+        x_pred : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
             Predicted node data
-        x_var : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+        x_var : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
             Variance of the predicted node data.
         """
         # Encoder
@@ -116,7 +116,7 @@ class NRI(LightningModule):
         ----------
         batch : tuple
             A tuple containing the node data and the edge matrix label
-            - data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            - data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
         data, relations = batch
@@ -143,7 +143,6 @@ class NRI(LightningModule):
 
         if relations is not None:
             edge_accuracy = (edge_pred.argmax(dim=-1) == relations).float().mean()
-            self.log('train_edge_accuracy', edge_accuracy, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         else:
             edge_accuracy = 'None'
 

@@ -18,15 +18,15 @@ class MessagePassingLayers():
         ----------
         node_emb : torch.Tensor
             Shape depends on rank and prev layer type:
-            - If rank == 1: (batch_size, n_nodes, n_timesteps, n_dims)
+            - If rank == 1: (batch_size, n_nodes, n_datapoints, n_dims)
             - If rank > 1:
                 - If prev_emb_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
                 - If prev_emb_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
 
-        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+        rec_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Receiver matrix, used to get node embeddings on the receiving end of edges.
 
-        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+        send_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Sender matrix, used to get node embeddings on the sending end of edges.
 
         pairwise_op : str
@@ -54,8 +54,8 @@ class MessagePassingLayers():
         # reshape input (for both 1st time and subsequent times (cnn or mlp output))
         node_emb = node_emb.view(batch_size, n_nodes, -1)
 
-        receiver_emds = torch.matmul(rec_rel, node_emb)
-        sender_emds = torch.matmul(send_rel, node_emb)
+        receiver_emds = torch.bmm(rec_rel, node_emb)
+        sender_emds = torch.bmm(send_rel, node_emb)
 
         # optimize receiver and sender emd shape for next edge emb type
         receiver_emds, sender_emds = self.optimize_shape_for_pairwise_op(
@@ -101,9 +101,11 @@ class MessagePassingLayers():
 
         """
         if agg_type == 'sum':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb)
+            node_feature = torch.bmm(rel_rec.transpose(1, 2), edge_emb)
         elif agg_type == 'mean':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb) / rel_rec.sum(dim=0, keepdim=True)
+            n_edges_per_node = rel_rec.sum(dim=1, keepdim=True).transpose(1, 2) # shape (batch_size, n_nodes, 1)
+            edge_feature_sum = torch.bmm(rel_rec.transpose(1, 2), edge_emb) # shape (batch_size, n_nodes, n_features)   
+            node_feature = edge_feature_sum / n_edges_per_node
         # elif agg_type == 'weighted_sum':  
 
         #     alpha = self.get_attention_weights(edge_emb)
@@ -135,7 +137,7 @@ class MessagePassingLayers():
         ----------
         x : torch.Tensor
             Shape depends on rank and node_emd_fn_type:
-            - If rank == 1: (batch_size, n_nodes, n_timesteps, n_dims)
+            - If rank == 1: (batch_size, n_nodes, n_datapoints, n_dims)
             - If rank > 1:
                 - If prev_layer is 'aggregate': (batch_size, n_nodes, n_features)
                 - If prev_layer is 'node_emd_fn':
@@ -158,8 +160,8 @@ class MessagePassingLayers():
         x : torch.Tensor
             Reshaped tensor ready for input in node embedding function. Shapes are as follows:
             - If rank == 1:
-                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_timesteps * n_dims)
-                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_timesteps
+                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_datapoints * n_dims)
+                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_datapoints
             - If rank > 1:
                 - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_features)
                 - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, 1, n_features)
@@ -167,9 +169,9 @@ class MessagePassingLayers():
         """
         if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
             if emd_fn_type == 'mlp':
-                x = x.view(batch_size, n_nodes, self.n_timesteps * self.n_dims)
+                x = x.view(batch_size, n_nodes, self.n_datapoints * self.n_dims)
             elif emd_fn_type == 'cnn':
-                x = x.view(batch_size * n_nodes, self.n_dims, self.n_timesteps)
+                x = x.view(batch_size * n_nodes, self.n_dims, self.n_datapoints)
         elif rank == 2:
             if emd_fn_type == 'mlp':
                 x = x.view(batch_size, n_nodes, x.size(-1))
@@ -264,7 +266,7 @@ class MessagePassingLayers():
 
 
 class Encoder(LightningModule, MessagePassingLayers):
-    def __init__(self, n_timesteps, n_dims, 
+    def __init__(self, n_datapoints, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
                  edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):
         
@@ -272,7 +274,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         MessagePassingLayers.__init__(self)
 
         # input parameters
-        self.n_timesteps = n_timesteps
+        self.n_datapoints = n_datapoints
         self.n_dims = n_dims
 
         # pipeline parameters
@@ -334,7 +336,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first edge embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        edge_main_input_size = self.n_timesteps * self.n_dims
+                        edge_main_input_size = self.n_datapoints * self.n_dims
                     elif layer[1] == 'cnn':
                         edge_main_input_size = self.n_dims
                 else:
@@ -394,7 +396,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first node embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        node_emd_input_size = self.n_timesteps * self.n_dims
+                        node_emd_input_size = self.n_datapoints * self.n_dims
                     elif layer[1] == 'cnn':
                         node_emd_input_size = self.n_dims
 
@@ -436,10 +438,10 @@ class Encoder(LightningModule, MessagePassingLayers):
         
         Parameters
         ----------
-        rec_rel: torch.Tensor, shape (n_edges, n_nodes)
+        rec_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Reciever matrix
             
-        send_rel: torch.Tensor, shape (n_edges, n_nodes)
+        send_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
             Sender matrix
         """
         self.rec_rel = rec_rel
@@ -455,7 +457,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         Parameters
         ----------
-        x: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        x: torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
             Input node data
             
         Returns
@@ -466,7 +468,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
         batch_size = x.size(0)
         n_nodes = x.size(1)
-        n_edges = self.rec_rel.size(0)
+        n_edges = self.rec_rel.size(1)
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]

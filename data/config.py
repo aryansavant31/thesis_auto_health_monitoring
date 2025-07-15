@@ -50,14 +50,14 @@ class DataConfig:
         self.signal_types   = ['vel', 'pos'] # in hdf5 format
         self.custom_test_ds = False
         
-    def set_train_valid_dataset(self):
+    def set_train_dataset(self):
         self.healthy_config   = [['H1', ['OG']], # N = Noise
         ]
         
         self.unhealthy_config = [       
         ]
     
-    def set_test_dataset(self):
+    def set_custom_test_dataset(self):
         self.custom_test_ratio = 0.6
         self.healthy_config   = [
         ]

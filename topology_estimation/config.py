@@ -14,9 +14,9 @@ class TopologyEstimatorConfig:
         self.continue_training = False
 
         self.is_log = False
-        self.is_sparsifier = False
+        self.is_sparsifier = True
         self.is_nri = True
-        self.fex_type = None
+        self.fex_type_nri = None
 
     def set_tp_dataset_params(self):
         self.batch_size = 50
@@ -95,7 +95,8 @@ class TopologyEstimatorConfig:
         self.recurrent_emd_type     = 'gru' # options: gru
 
     def set_sparsifier_params(self):
-        pass
+        self.sparsif_type = 'knn'
+        self.fex_type_sparsif = None
 
     
         
@@ -113,9 +114,9 @@ class TopologyEstimatorConfig:
             'mlp_1': [
                         ['1/node_emd.1', 'mlp'],
                         ['1/node_emd.2', 'mlp'],
-                        ['1/pairwise_op', 'sum'],
+                        ['1/pairwise_op', 'mean'],
                         ['1/edge_emd.1.@', 'mlp'],
-                        ['2/aggregate', 'sum'],
+                        ['2/aggregate', 'mean'],
                         ['2/node_emd.1', 'mlp'],
                         ['2/node_emd.2', 'mlp'],
                         ['2/pairwise_op', 'concat'],
@@ -217,7 +218,7 @@ class TopologyEstimatorConfig:
 
         return configs
     
-    def set_log_path(self, data_config, n_datapoints):
+    def get_log_path(self, data_config, n_datapoints):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -233,18 +234,22 @@ class TopologyEstimatorConfig:
                                 f'{data_config.machine_type}',
                                 f'{data_config.scenario}')
         
-        if self.is_nri and self.is_sparsifier:
-            self.log_path = os.path.join(self.log_path, 'novel_nri')
-        elif self.is_nri and not self.is_sparsifier:
-            self.log_path = os.path.join(self.log_path, 'std_nri')
+        # for directed graph path 
+        if self.is_nri:
+            self.log_path = os.path.join(self.log_path, 'directed_graph')
+            self.log_path = os.path.join(self.log_path, f'enc={self.pipeline_type}_dec={self.recurrent_emd_type}')
+ 
+        # for skeleton graph path
         elif self.is_sparsifier and not self.is_nri:
             self.log_path = os.path.join(self.log_path, 'skeleton_graph')
+            self.log_path = os.path.join(self.log_path, f'sparsif={self.sparsif_type}')
+
         elif not self.is_nri and not self.is_sparsifier:
             raise ValueError("Both is_nri and is_sparsifier cannot be False. At least one should be True.")
 
-        self.log_path = os.path.join(self.log_path, f'enc={self.pipeline_type}_dec={self.recurrent_emd_type}',
-                                f'dp={n_datapoints}')
-        
+        # add number of datapoints to path
+        self.log_path = os.path.join(self.log_path, f'dp={n_datapoints}')
+
         # add healthy or healthy_unhealthy config to path
         if data_config.unhealthy_config == []:
             self.log_path = os.path.join(self.log_path, 'healthy')
@@ -277,15 +282,33 @@ class TopologyEstimatorConfig:
             config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
 
         self.log_path = os.path.join(self.log_path, config_str)
+
+        # add sparsifier type to path
+        if self.is_sparsifier:
+            if self.is_nri:
+                self.log_path = os.path.join(self.log_path, f'sparsif_{self.sparsif_type}')
+
+            if self.fex_type_sparsif is not None:
+                self.log_path = os.path.join(self.log_path, f'(sparsif)-{self.fex_type_sparsif}')
+            else:
+                self.log_path = os.path.join(self.log_path, '(sparsif)_no_fex') 
+
+            # for skeleton graph, my log path should be till here
+            if not self.is_nri:
+                return self.log_path
+        else:
+            self.log_path = os.path.join(self.log_path, '_no_sparsif')
                 
         # add feature type to path
-        if self.fex_type is not None:
-            self.log_path = os.path.join(self.log_path, self.fex_type)
+        if self.fex_type_nri is not None:
+            self.log_path = os.path.join(self.log_path, f'(nri)-{self.fex_type_nri}')
         else:
-            self.log_path = os.path.join(self.log_path, '_no_fex')
+            self.log_path = os.path.join(self.log_path, '(nri)_no_fex')
 
         # add model version to path
         self.log_path = os.path.join(self.log_path, f'v{self.version}')
+
+        return self.log_path
     
     def remove_version(self):
         """
@@ -344,7 +367,7 @@ def get_checkpoint_path(log_path):
     ckpt_path = os.path.join(log_path, 'checkpoints')
 
     contents = os.listdir(ckpt_path)
-    print(f".ckpt_files available in {ckpt_path}:")
+    print(f"\n.ckpt_files available in {ckpt_path}:")
     print(contents)
 
     if len(contents) > 1:
@@ -364,17 +387,18 @@ def get_checkpoint_path(log_path):
     return ckpt_path
 
 class SelectTopologyEstimatorModel():
-    def __init__(self, application, machine, scenario, logs_dir="logs"):
+    def __init__(self, application, machine, scenario, framework, logs_dir="logs"):
         self.logs_dir = Path(logs_dir)
         self.application = application
         self.machine = machine
         self.scenario = scenario
+        self.framework = framework
         self.structure = {}
         self.version_paths = []
         self._build_structure()
 
     def _build_structure(self):
-        base = self.logs_dir / self.application / self.machine / self.scenario
+        base = self.logs_dir / self.application / self.machine / self.scenario / self.framework
         if not base.exists():
             raise FileNotFoundError(f"Path does not exist: {base}")
         self.structure = self._explore(base, 0)
@@ -383,7 +407,8 @@ class SelectTopologyEstimatorModel():
         structure = {}
         if not path.is_dir():
             return structure
-        for item in sorted(path.iterdir()):
+        # Sort by name, ascending (case-insensitive)
+        for item in sorted(path.iterdir(), key=lambda x: x.name.lower()):
             if item.is_dir():
                 key = item.name
                 if key.startswith("v") and key[1:].isdigit():
@@ -394,48 +419,74 @@ class SelectTopologyEstimatorModel():
 
     def print_tree(self):
         console = Console()
-        # Build mapping from normalized version path to index
         version_index_map = {os.path.normpath(v): idx for idx, v in enumerate(self.version_paths)}
 
+        # Green up to and including framework
         tree = Tree(f"[green]{self.application}[/green]")
         machine_node = tree.add(f"[green]{self.machine}[/green]")
         scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
-        self._build_rich_tree(scenario_node, self.structure, 0, [], version_index_map)
+        framework_node = scenario_node.add(f"[green]{self.framework}[/green]")
+        self._build_rich_tree(framework_node, self.structure, 0, [], version_index_map)
         console.print(tree)
         print("\nAvailable version paths:")
         for idx, vpath in enumerate(self.version_paths):
             print(f"{idx}: logs/{vpath}")
 
     def _build_rich_tree(self, parent_node, structure, level, parent_keys, version_index_map):
-        label_map = {
-            0: "<framework>",
-            1: "<model>",
-            2: "<n_datapoints>",
-            3: "<ds_type>",
-            4: "<ds_subtype>",
-            5: "<fex_type>",
-            6: "<versions>"
-        }
+        current_path = [self.application, self.machine, self.scenario, self.framework] + parent_keys
+        is_no_sparsif = any("_no_sparsif" in k for k in parent_keys)
+
+        # Label maps
+        if self.framework == "skeleton_graph":
+            label_map = {
+                0: "<sparsifi_type>",
+                1: "<timesteps>",
+                2: "<ds_type>",
+                3: "<ds_subtype>",
+                4: "<sparsif_fex_type>"
+            }
+        elif is_no_sparsif:
+            label_map = {
+                0: "<model>",
+                1: "<n_datapoints>",
+                2: "<ds_type>",
+                3: "<ds_subtype>",
+                4: "<sparsif_type>",
+                5: "<nri_fex_type>",
+                6: "<versions>"
+            }
+        else:
+            label_map = {
+                0: "<model>",
+                1: "<n_datapoints>",
+                2: "<ds_type>",
+                3: "<ds_subtype>",
+                4: "<sparsif_type>",
+                5: "<sparsif_fex_type>",
+                6: "<nri_fex_type>",
+                7: "<versions>"
+            }
         added_labels = set()
         for key, value in structure.items():
-            # Add normal blue label if at the correct level and not already added
+            # Add blue label if at the correct level and not already added
             if level in label_map and label_map[level] not in added_labels:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
-            # Model folder in yellow
-            if level == 1:
+            # For skeleton_graph, make the first folder under framework yellow (sparsifi_type)
+            if level == 0:
                 branch = parent_node.add(f"[bright_yellow]{key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
                 continue
-            # Version folders: white name, yellow index, do not recurse inside
+            # Version folders: bold italic yellow/green name, cyan index, do not recurse inside
             if key.startswith("v") and key[1:].isdigit():
-                # Prepend application, machine, scenario to match version_index_map keys
                 rel_path = os.path.normpath(os.path.join(
-                    self.application, self.machine, self.scenario, *parent_keys, key
+                    self.application, self.machine, self.scenario, self.framework, *parent_keys, key
                 ))
-
                 idx = version_index_map[rel_path]
-                parent_node.add(f"[bright_yellow]{key}[/bright_yellow] [bright_cyan][{idx}][/bright_cyan]")
+                if is_no_sparsif:
+                    parent_node.add(f"[bold][italic][bright_yellow]{key}[/bright_yellow][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                else:
+                    parent_node.add(f"[bold][italic][bright_green]{key}[/bright_green][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
                 continue
             # All other folders: white
             branch = parent_node.add(f"[white]{key}[/white]")
