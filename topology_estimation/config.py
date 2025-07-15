@@ -243,7 +243,7 @@ class TopologyEstimatorConfig:
             raise ValueError("Both is_nri and is_sparsifier cannot be False. At least one should be True.")
 
         self.log_path = os.path.join(self.log_path, f'enc={self.pipeline_type}_dec={self.recurrent_emd_type}',
-                                f'dp-{n_datapoints}')
+                                f'dp={n_datapoints}')
         
         # add healthy or healthy_unhealthy config to path
         if data_config.unhealthy_config == []:

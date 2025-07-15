@@ -1,0 +1,6 @@
+data/datasets/
+fault_detection/logs/asml/
+fault_isolation/logs/asml/
+topology_estimation/logs/asml/
+topology_estimation
+**/__pycache__/
