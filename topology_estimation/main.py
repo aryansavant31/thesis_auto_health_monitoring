@@ -16,25 +16,45 @@ import os
 
 class TopologyEstimatiorMain:
     def __init__(self, run_type, model_num=None):
-        self.tp_config = TopologyEstimatorConfig()
+        self.tp_config = TopologyEstimatorConfig(run_type)
         self.data_config = DataConfig()
-
+        
         self.load_data(run_type)
-        self.set_relation_matrices()
+        self.set_relation_matrices() # over her, i can pass teh data for sparsification
 
-        if run_type == 'train':
-            untrained_nri_model = self.init_model()
-            self.train_model(untrained_nri_model)
-            self.test_model() # TASK: Set up the test loop
+    def train_nri(self):
+        # initialize the model
+        untrained_nri_model = self.init_model()
 
-        elif run_type == 'run':
-            model = self.load_model()
-            self.run_model(model)
+        # set training parameters
+        untrained_nri_model.set_training_params() # TASK: pass params from tp.config for set_training_params()
 
+        if self.tp_config.is_log:
+            logger = TensorBoardLogger(os.path.dirname(self.log_path), name=None, version=os.path.basename(self.log_path))
+        else:
+            logger = None
 
+        trainer = Trainer(
+            max_epochs=self.tp_config.max_epochs,
+            logger=logger,
+            enable_progress_bar=True,
+            log_every_n_steps=1,)
+        
+        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader, self.test_loader) # TASK: Set up the validation and test loop
+
+    def predict(self):
+        model = self.load_model()
+
+    def log_hyperparameters(self):
+        """
+        Logs the topology model hypperparametrs
+        """
+        pass
+    
     def load_data(self, run_type):
-        # set data parameters
-        if run_type == 'train':    
+        # set train data parameters
+        if run_type == 'train':  
+            # set parameters  
             self.data_config.set_train_dataset()
             # get dataset paths
             node_ds_paths, edge_ds_paths = self.data_config.get_dataset_paths()
@@ -52,7 +72,8 @@ class TopologyEstimatiorMain:
             dataiter = iter(self.train_loader)
             data = next(dataiter)
 
-        elif run_type == 'run':
+        # set predict data parameters
+        elif run_type == 'predict':
             self.data_config.set_predict_dataset()
             # get predict dataset paths
             node_ds_paths, edge_ds_paths = self.data_config.get_dataset_paths()
@@ -71,22 +92,29 @@ class TopologyEstimatiorMain:
 
         self._verbose_load_data()
 
-        self.log_path = self.tp_config.get_log_path(self.data_config, self.n_datapoints)
+        self.log_path_nri, self.log_path_sk = self.tp_config.get_log_path(self.data_config, self.n_datapoints)
 
-    def set_relation_matrices(self):
-        if self.tp_config.is_sparsifier:
-            self.rec_rel, self.send_rel = SparisifiedGraph(self.n_nodes).get_relation_matrix()
+    def set_relation_matrices(self, run_type):
 
-        # if no sparsifier, then fully connected graph
-        else:
-            self.rec_rel, self.send_rel = FullyConnectedGraph(self.n_nodes, self.batch_size).get_relation_matrices()
+        if run_type == 'train':
+            if self.tp_config.is_sparsifier:
+                # some sparsifier model may have to be loaded
+                self.rec_rel, self.send_rel = SparisifiedGraph(self.n_nodes).get_relation_matrix()
+
+            # if no sparsifier, then fully connected graph
+            else:
+                self.rec_rel, self.send_rel = FullyConnectedGraph(self.n_nodes, self.batch_size).get_relation_matrices()
+
+        elif run_type == 'predict':
+            self.tp_config.set_predict_params()
 
     def init_model(self):
         # initialize encoder
+        self.tp_config.set_encoder_params() 
         encoder = Encoder(n_timesteps=self.n_datapoints, 
                         n_dims=self.n_dims,
                         pipeline=self.tp_config.encoder_pipeline, 
-                        n_edge_types=self.tp_config.n_edge_types, 
+                        n_edge_types=self.tp_config.n_edge_types_enc, 
                         is_residual_connection=self.tp_config.is_residual_connection,
                         edge_emd_configs=self.tp_config.edge_emb_configs_enc, 
                         node_emd_configs=self.tp_config.node_emb_configs_enc, 
@@ -95,10 +123,10 @@ class TopologyEstimatiorMain:
                         attention_output_size=self.tp_config.attention_output_size)
         
         # initialize decoder
+        self.tp_config.set_decoder_params()
         decoder = Decoder(n_dim=self.n_dims,
                         msg_out_size=self.tp_config.msg_out_size,
-                        n_edge_types=self.tp_config.n_edge_types,
-                        skip_first=self.tp_config.skip_first_edge_type,
+                        n_edge_types=self.tp_config.n_edge_types_dec,
                         edge_mlp_config=self.tp_config.edge_mlp_config_dec,
                         recurrent_emd_type=self.tp_config.recurrent_emd_type,
                         out_mlp_config=self.tp_config.out_mlp_config_dec,
@@ -121,34 +149,13 @@ class TopologyEstimatiorMain:
         # TASK: Implement the logic to load the model from the log path
         pass    
 
-    def train_model(self, untrained_nri_model):
-        self.tp_config.set_training_params()
-        untrained_nri_model.set_training_params() # TASK: pass params from tp.config for set_training_params()
-
-        if self.tp_config.is_log:
-            logger = TensorBoardLogger(os.path.dirname(self.log_path), name=None, version=os.path.basename(self.log_path))
-        else:
-            logger = None
-
-        trainer = Trainer(
-            max_epochs=self.tp_config.max_epochs,
-            logger=logger,
-            enable_progress_bar=True,
-            log_every_n_steps=1,)
-        
-        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader) # TASK: Set up the validation and test loop
+    
 
     def test_model():
         """
         Loads and tests the trained model"""  
         pass
 
-    def run_model(self, model):
-        """
-        Loads and runs the trained model
-        """
-        # TASK: Implement the logic to run the model on the predict dataset
-        pass
 
     # ======================================================
     # Verbose methods for printing data and model stats

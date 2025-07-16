@@ -41,7 +41,7 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, pred_steps=1,
+    def set_run_params(self, skip_first_edge_type=False,pred_steps=1,
                 is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                 encoder=None, temp=0.5, is_hard=False):
         """
@@ -60,7 +60,7 @@ class NRI(LightningModule):
         self.temp = temp
         self.is_hard = is_hard
 
-        self.decoder.set_run_params(pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
+        self.decoder.set_run_params(skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
                                     is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)
 

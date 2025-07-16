@@ -8,7 +8,7 @@ from pytorch_lightning import LightningModule
 class Decoder(LightningModule):
 
     def __init__(self, n_dim, 
-                 msg_out_size, n_edge_types, skip_first,
+                 msg_out_size, n_edge_types,
                  edge_mlp_config, recurrent_emd_type, out_mlp_config, do_prob, is_batch_norm 
                  ):
         super(Decoder, self).__init__()
@@ -18,7 +18,6 @@ class Decoder(LightningModule):
         # pipeline parameters
         self.msg_out_size = msg_out_size
         self.n_edge_types = n_edge_types
-        self.skip_first_edge_type = skip_first  # skip edge type = 0
 
         # embedding parameters
         self.edge_mlp_config = edge_mlp_config
@@ -81,7 +80,7 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, pred_steps=1,
+    def set_run_params(self, skip_first_edge_type=False, pred_steps=1,
                 is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                 encoder=None, temp=None, is_hard=False):
         """
@@ -97,6 +96,7 @@ class Decoder(LightningModule):
                 the graph will be estimated from encoder. 
                 So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
         """
+        self.skip_first_edge_type = skip_first_edge_type  # skip edge type = 0
         self.pred_steps = pred_steps
         self.is_burn_in = is_burn_in
         self.burn_in_steps = burn_in_steps
