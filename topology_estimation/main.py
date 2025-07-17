@@ -3,7 +3,7 @@ main class for topology estimation with both training and inference code
 
 will contain train loop, test loop and run/prediction loop
 """
-from config import TopologyEstimatorConfig
+from config import TopologyEstimatorConfig, get_checkpoint_path
 from encoder_blocks import Encoder
 from decoder_blocks import Decoder
 from nri import NRI
@@ -23,35 +23,6 @@ class TopologyEstimatiorMain:
         self.load_data(run_type)
         self.set_relation_matrices() # over her, i can pass teh data for sparsification
 
-    def train_nri(self):
-        # initialize the model
-        untrained_nri_model = self.init_model()
-
-        # set training parameters
-        untrained_nri_model.set_training_params() # [TODO]: pass params from tp.config for set_training_params()
-
-        if self.tp_config.is_log:
-            logger = TensorBoardLogger(os.path.dirname(self.log_path), name=None, version=os.path.basename(self.log_path))
-        else:
-            logger = None
-
-        trainer = Trainer(
-            max_epochs=self.tp_config.max_epochs,
-            logger=logger,
-            enable_progress_bar=True,
-            log_every_n_steps=1,)
-        
-        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader, self.test_loader) # [TODO]: Set up the validation and test loop
-
-    def predict(self):
-        model = self.load_model()
-
-    def log_hyperparameters(self):
-        """
-        Logs the topology model hypperparametrs
-        """
-        pass
-    
     def load_data(self, run_type):
         # set train data parameters
         if run_type == 'train':  
@@ -116,10 +87,8 @@ class TopologyEstimatiorMain:
         # [TODO]: Implement feature extraction logic here
 
         return data
-
+    
     def set_relation_matrices(self, run_type):
-
-        if run_type == 'train':
             if self.tp_config.is_sparsifier:
                 # some sparsifier model may have to be loaded
                 self.rec_rel, self.send_rel = SparisifiedGraph(self.n_nodes).get_relation_matrix()
@@ -127,9 +96,6 @@ class TopologyEstimatiorMain:
             # if no sparsifier, then fully connected graph
             else:
                 self.rec_rel, self.send_rel = FullyConnectedGraph(self.n_nodes, self.batch_size).get_relation_matrices()
-
-        elif run_type == 'predict':
-            self.tp_config.set_predict_params()
 
     def init_model(self):
         # initialize encoder
@@ -164,21 +130,66 @@ class TopologyEstimatiorMain:
         self._verbose_init_model(encoder, decoder, nri_model)
 
         return nri_model
-    
-    def load_model(self):
+
+    def train_nri(self):
+        # initialize model
+        untrained_nri_model = self.init_model()
+
+        # if continue training, load ckpt path of untrained model 
+        if self.tp_config.continue_training:
+            ckpt_path = get_checkpoint_path(self.log_path_nri)
+        else:
+            ckpt_path = None
+
+        # set training parameters
+        untrained_nri_model.set_training_params() # [TODO]: pass params from tp.config for set_training_params()
+
+        if self.tp_config.is_log:
+            logger = TensorBoardLogger(os.path.dirname(self.log_path_nri), name=None, version=os.path.basename(self.log_path_nri))
+        else:
+            logger = None
+
+        trainer = Trainer(
+            max_epochs=self.tp_config.max_epochs,
+            logger=logger,
+            enable_progress_bar=True,
+            log_every_n_steps=1,)
+        
+        # train the model
+        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader, ckpt_path=ckpt_path) 
+
+    def train_sparsifier(self):
+        """
+        Train the sparsifier model if needed.
+        """
+        # [TODO]: Implement the logic to train the sparsifier model
+        pass
+
+    def log_hyperparameters(self):
+        """
+        Logs the topology model hypperparametrs
+        """
+        # [TODO]: Implement the logic to log all hyperparameters of the model.
+        # Some hyperparameters can be logged seperately to track its correlation with model accuracy
+        pass
+
+    def load_model(self, log_path):
         """
         Loads the trained model from the log path.
         """
-        # [TODO]: Implement the logic to load the model from the log path
-        pass    
-
-    
+        ckpt_path = get_checkpoint_path(log_path)  
+        # [TODO]: Implement the logic to load the model from the ckpt path
 
     def test_model():
         """
         Loads and tests the trained model"""  
+        # [TODO]: Implement the logic to test the model
         pass
 
+    def predict(self):
+        model = self.load_model(self.tp_config.load_path_nri)
+
+        # [TODO]: Implement the logic to predict results using the loaded model
 
     # ======================================================
     # Verbose methods for printing data and model stats

@@ -23,7 +23,7 @@ class TopologyEstimatorConfig:
         self.is_nri = True          # if True, means i want to see the NRI model results
         self.is_sparsifier = False  # if True, means i want to see the sparsifier results
 
-        self.ckpt_path_nri = None
+        self.load_path_nri = None # the path till the model version
         self.batch_size = 50
         self.amt_rt = 0.8
 
