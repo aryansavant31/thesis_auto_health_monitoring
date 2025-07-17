@@ -13,6 +13,7 @@ from data.load import load_spring_particle_data
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import os
+from data.transform import DataTransformer
 
 class TopologyEstimatiorMain:
     def __init__(self, run_type, model_num=None):
@@ -27,7 +28,7 @@ class TopologyEstimatiorMain:
         untrained_nri_model = self.init_model()
 
         # set training parameters
-        untrained_nri_model.set_training_params() # TASK: pass params from tp.config for set_training_params()
+        untrained_nri_model.set_training_params() # [TODO]: pass params from tp.config for set_training_params()
 
         if self.tp_config.is_log:
             logger = TensorBoardLogger(os.path.dirname(self.log_path), name=None, version=os.path.basename(self.log_path))
@@ -40,7 +41,7 @@ class TopologyEstimatiorMain:
             enable_progress_bar=True,
             log_every_n_steps=1,)
         
-        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader, self.test_loader) # TASK: Set up the validation and test loop
+        trainer.fit(untrained_nri_model, self.train_loader, self.valid_loader, self.test_loader) # [TODO]: Set up the validation and test loop
 
     def predict(self):
         model = self.load_model()
@@ -59,7 +60,7 @@ class TopologyEstimatiorMain:
             # get dataset paths
             node_ds_paths, edge_ds_paths = self.data_config.get_dataset_paths()
             # load data
-            self.train_loader, self.valid_loader, self.test_loader = load_spring_particle_data(node_ds_paths, edge_ds_paths, self.tp_config.batch_size)
+            self.train_loader, self.valid_loader, self.test_loader, self.data_stats = load_spring_particle_data(node_ds_paths, edge_ds_paths, self.tp_config.batch_size)
 
             if self.data_config.custom_test_ds:
                 self.data_config.set_custom_test_dataset()
@@ -71,6 +72,8 @@ class TopologyEstimatiorMain:
             # for getting data stats
             dataiter = iter(self.train_loader)
             data = next(dataiter)
+
+            # transform data
 
         # set predict data parameters
         elif run_type == 'predict':
@@ -84,6 +87,12 @@ class TopologyEstimatiorMain:
             dataiter = iter(self.predict_loader)
             data = next(dataiter)
         
+        # process the input data to get correct data shape for the model initialization
+        self.transform = DataTransformer(domain=self.tp_config.domain_encoder, 
+                                         norm_type=self.tp_config.norm_type_encoder, 
+                                        data_stats=self.data_stats)
+        data = self.process_input_data(data)    
+
         # set data stats
         self.batch_size = data[0].shape[0]
         self.n_nodes = data[0].shape[1]
@@ -92,7 +101,21 @@ class TopologyEstimatiorMain:
 
         self._verbose_load_data()
 
-        self.log_path_nri, self.log_path_sk = self.tp_config.get_log_path(self.data_config, self.n_datapoints)
+        self.log_path_nri, self.log_path_sk = self.tp_config.get_log_path(self.data_config, self.n_datapoints, self.n_dims)
+
+    def process_input_data(self, data):
+        """
+        Transform the data
+            - domain change
+            - normalization
+        Feature extraction
+        """
+        # transform data
+        data = self.transform(data)
+
+        # [TODO]: Implement feature extraction logic here
+
+        return data
 
     def set_relation_matrices(self, run_type):
 
@@ -111,7 +134,7 @@ class TopologyEstimatiorMain:
     def init_model(self):
         # initialize encoder
         self.tp_config.set_encoder_params() 
-        encoder = Encoder(n_timesteps=self.n_datapoints, 
+        encoder = Encoder(n_datapoints=self.n_datapoints, 
                         n_dims=self.n_dims,
                         pipeline=self.tp_config.encoder_pipeline, 
                         n_edge_types=self.tp_config.n_edge_types_enc, 
@@ -135,7 +158,7 @@ class TopologyEstimatiorMain:
         
         # initialize NRI model
         nri_model = NRI(encoder, decoder)
-        nri_model.set_run_params()  # TASK: pass params from tp.config for set_run_params() 
+        nri_model.set_run_params()  # [TODO]: pass params from tp.config for set_run_params() 
         nri_model.set_input_graph(self.rec_rel, self.send_rel)  
 
         self._verbose_init_model(encoder, decoder, nri_model)
@@ -146,7 +169,7 @@ class TopologyEstimatiorMain:
         """
         Loads the trained model from the log path.
         """
-        # TASK: Implement the logic to load the model from the log path
+        # [TODO]: Implement the logic to load the model from the log path
         pass    
 
     

@@ -4,6 +4,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from .utils.models import MLP, GRU
 from pytorch_lightning import LightningModule
+from data.transform import DataTransformer
 
 class Decoder(LightningModule):
 
@@ -80,9 +81,10 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, skip_first_edge_type=False, pred_steps=1,
-                is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-                encoder=None, temp=None, is_hard=False):
+    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_type=None, 
+                        skip_first_edge_type=False, pred_steps=1,
+                        is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
+                        encoder=None, temp=None, is_hard=False):
         """
         Parameters
         ----------
@@ -104,6 +106,10 @@ class Decoder(LightningModule):
         self.encoder = encoder
         self.temp = temp
         self.is_hard = is_hard
+        
+        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
+
+        # [TODO] Initialize feature extraction pipeline class (fex_type as argument)
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
         receivers = torch.bmm(rec_rel, node_emb)
@@ -179,6 +185,21 @@ class Decoder(LightningModule):
 
         return edge_matrix
     
+    def process_input_data(self, data):
+        """
+        Transform the data
+            - domain change
+            - normalization
+        Feature extraction
+        """
+        # transform data
+        data = self.transform(data)
+
+        # extract features from data
+        # [TODO]: Implement feature extraction logic here
+
+        return data
+    
     def forward(self, data):
         """
         Run the forward pass of the decoder.
@@ -197,6 +218,10 @@ class Decoder(LightningModule):
         preds : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
         vars : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
         """
+        # process data
+        data = self.process_input_data(data)
+
+        # data has shape [batch_size, n_nodes, n_datapoints, n_dim]
         inputs = data.transpose(1, 2).contiguous()
         # inputs has shape [batch_size, n_datapoints, n_nodes, n_dims]
 

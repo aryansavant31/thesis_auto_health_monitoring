@@ -17,7 +17,7 @@ class TopologyEstimatorConfig:
             self.set_predict_params()
             self.set_predict_run_params()
 
-    # Predict parameters ------------
+    # --------- Predict parameters ------------
 
     def set_predict_params(self):
         self.is_nri = True          # if True, means i want to see the NRI model results
@@ -28,21 +28,26 @@ class TopologyEstimatorConfig:
         self.amt_rt = 0.8
 
     def set_predict_run_params(self):
-        # input graph paramters
-        self.sparsif_type     = None
-        self.fex_type_sparsif = None
+       # input graph paramters
+        self.sparsif_type     = 'knn'
+        self.domain_sparsif   = 'time'  # options: time, frequency
+        self.fex_type_sparsif = 'lucas'
 
-        self.fex_type_nri = None
+        self.domain_encoder   = "from ckpt file"
+        self.fex_type_encoder = "from ckpt file"
 
         # Gumble Softmax Parameters
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
+        self.domain_decoder = "from ckpt file"
+        self.fex_type_decoder = "from ckpt file"
+
         self.skip_first_edge_type = True 
         # TASK: add rest of the decoder run params
 
-    # Train parameters -----------
+    # ---------- Train parameters -----------
 
     def set_training_params(self):        
         self.version = 1
@@ -50,7 +55,7 @@ class TopologyEstimatorConfig:
 
         self.is_log = False
         
-        self.is_nri = False # if True, means i want to train the NRI model
+        self.is_nri = True # if True, means i want to train the NRI model
         self.is_sparsifier = True # if True, means i want to train the sparsifier
 
         # dataset parameters
@@ -71,17 +76,44 @@ class TopologyEstimatorConfig:
         self.loss_type_decd = 'nnl'
 
     def set_training_run_params(self):
+        """
+        Attributes
+        ----------
+        sparsif_type : str
+            The type of sparsifier to use. 
+            ('knn', 'none')
+
+        norm_type_sparsif : str
+        norm_type_encoder : str
+        norm_type_decoder : str
+            The normalization type to use for the sparsifier, encoder, and decoder.
+            ('std', 'minmax', 'none')
+
+        [TODO] Add all the attributes of this method in docstring
+
+        """
         # input graph paramters
         self.sparsif_type     = 'knn'
-        self.fex_type_sparsif = 'lucas'
+        self.domain_sparsif   = 'time'  # options: time, frequency
+        self.fex_type_sparsif = None
+        self.norm_type_sparsif = 'std'  # options: std, minmax, none
 
-        self.fex_type_nri = 'PCA'
+        # encoder run parameters
+        self.domain_encoder   = 'freq'  # options: time, frequency
+        self.norm_type_encoder = 'std'  # options: std, minmax, none
 
-        # Gumble Softmax Parameters
+        self.fex_type_encoder = 'PCA'
+
+        # gumble softmax parameters
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
+        self.domain_decoder = 'time'   # options: time, frequency
+        self.norm_type_decoder = 'std' # options: std, minmax, none
+
+        self.fex_type_decoder = 'PCA'
+
         self.skip_first_edge_type = True 
         # TASK: add rest of the decoder run params
 
@@ -297,7 +329,7 @@ class TopologyEstimatorConfig:
         log_path = os.path.join(log_path, config_str)
         return log_path
     
-    def get_log_path(self, data_config, n_datapoints):
+    def get_log_path(self, data_config, n_datapoints, n_dim):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -320,29 +352,38 @@ class TopologyEstimatorConfig:
         if self.is_nri:
             log_path_nri = os.path.join(log_path, 
                                         'directed_graph',  # add framework type
-                                        f'enc={self.pipeline_type}_dec={self.recurrent_emd_type}', # add model type
-                                        f'dp={n_datapoints}_etype={self.n_edge_types_enc}') # add datapoints and edgetypes
-            
+                                        f'enc={self.pipeline_type}-dec={self.recurrent_emd_type}',) # add model type
+                                        
             # add healthy or healthy_unhealthy config to path
             log_path_nri = self._set_ds_types_in_path(data_config, log_path_nri)
 
+            # add datapoints and edgetypes
+            log_path_nri = os.path.join(log_path_nri, f'dp={n_datapoints}-dim={n_dim}-etype={self.n_edge_types_enc}')
+
             # add sparsifier type to path
             if self.sparsif_type is not None:
-                log_path_nri = os.path.join(log_path_nri, f'sparsif_{self.sparsif_type}')
+                log_path_nri = os.path.join(log_path_nri, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
 
                 # sparsifer features
                 if self.fex_type_sparsif is not None:
-                    log_path_nri = os.path.join(log_path_nri, f'(sparsif)-{self.fex_type_sparsif}')
+                    log_path_nri = os.path.join(log_path_nri, f'(sparsif)={self.fex_type_sparsif}')
                 else:
-                    log_path_nri = os.path.join(log_path_nri, '(sparsif)_no_fex')           
+                    log_path_nri = os.path.join(log_path_nri, '(sparsif)=_no_fex')           
             else:
-                log_path_nri = os.path.join(log_path_nri, '_no_sparsif')
+                log_path_nri = os.path.join(log_path_nri, 'sparsif=_no_sparsif')
+
+            # add domain type of encoder and decoder to path
+            log_path_nri = os.path.join(log_path_nri, f'[enc]={self.domain_encoder}-[dec]={self.domain_decoder}')
 
             # add feature type to path
-            if self.fex_type_nri is not None:
-                log_path_nri = os.path.join(log_path_nri, f'(nri)-{self.fex_type_nri}')
-            else:
-                log_path_nri = os.path.join(log_path_nri, '(nri)_no_fex')
+            if self.fex_type_encoder and self.fex_type_decoder:
+                log_path_nri = os.path.join(log_path_nri, f'(enc)={self.fex_type_encoder}-(dec)={self.fex_type_decoder}')
+            elif self.fex_type_encoder and not self.fex_type_decoder:
+                log_path_nri = os.path.join(log_path_nri, f'(enc)={self.fex_type_encoder}-(dec)=_no_fex')
+            elif not self.fex_type_encoder and self.fex_type_decoder:
+                log_path_nri = os.path.join(log_path_nri, f'(enc)=_no_fex-(dec)={self.fex_type_decoder}')
+            elif not self.fex_type_encoder and not self.fex_type_decoder:
+                log_path_nri = os.path.join(log_path_nri, '(enc)=_no_fex-(dec)=_no_fex')
 
             # add model version to path
             log_path_nri = os.path.join(log_path_nri, f'v{self.version}')
@@ -354,17 +395,22 @@ class TopologyEstimatorConfig:
         if self.is_sparsifier and self.sparsif_type is not None:
             log_path_sk = os.path.join(log_path,
                                         'skeleton_graph', # add framework type
-                                        f'sparsif={self.sparsif_type}', # add sparsifier type
-                                        f'dp={n_datapoints}') # add datapoints
+                                        f'sparsif={self.sparsif_type}',) # add sparsifier type
             
             # add healthy or healthy_unhealthy config to path
             log_path_sk = self._set_ds_types_in_path(data_config, log_path_sk)
 
+            # add datapoints 
+            log_path_sk = os.path.join(log_path_sk, f'dp={n_datapoints}')
+
+            # add domain type
+            log_path_sk = os.path.join(log_path_sk, f'domain={self.domain_sparsif}')
+
             # sparsifer features
             if self.fex_type_sparsif is not None:
-                log_path_sk = os.path.join(log_path_sk, f'(sparsif)-{self.fex_type_sparsif}')
+                log_path_sk = os.path.join(log_path_sk, f'(sparsif)={self.fex_type_sparsif}')
             else:
-                log_path_sk = os.path.join(log_path_sk, '(sparsif)_no_fex')
+                log_path_sk = os.path.join(log_path_sk, '(sparsif)=_no_fex')
 
         else:
             log_path_sk = None
@@ -500,44 +546,50 @@ class SelectTopologyEstimatorModel():
         # Label maps
         if self.framework == "skeleton_graph":
             label_map = {
-                0: "<sparsifi_type>",
-                1: "<timesteps>",
-                2: "<ds_type>",
-                3: "<ds_subtype>",
-                4: "<sparsif_fex_type>"
+                0: "<sparsif_type>",
+                1: "<ds_type>",
+                2: "<ds_subtype>",
+                3: "<n_datapoints>",
+                4: "<domain>",
+                5: "<sparsif_fex_type>"
             }
         elif is_no_sparsif:
             label_map = {
                 0: "<model>",
-                1: "<n_datapoints>",
-                2: "<ds_type>",
-                3: "<ds_subtype>",
+                1: "<ds_type>",
+                2: "<ds_subtype>",
+                3: "<n_datapoints>",
                 4: "<sparsif_type>",
-                5: "<nri_fex_type>",
-                6: "<versions>"
+                5: "<domain>",
+                6: "<nri_fex_type>",
+                7: "<versions>"
             }
         else:
             label_map = {
                 0: "<model>",
-                1: "<n_datapoints>",
-                2: "<ds_type>",
-                3: "<ds_subtype>",
+                1: "<ds_type>",
+                2: "<ds_subtype>",
+                3: "<n_datapoints>",
                 4: "<sparsif_type>",
                 5: "<sparsif_fex_type>",
-                6: "<nri_fex_type>",
-                7: "<versions>"
+                6: "<domain>",
+                7: "<nri_fex_type>",
+                8: "<versions>"
             }
         added_labels = set()
         for key, value in structure.items():
+            # Escape brackets for Rich markup
+            safe_key = key.replace('[', '\\[')
             # Add blue label if at the correct level and not already added
             if level in label_map and label_map[level] not in added_labels:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For skeleton_graph, make the first folder under framework yellow (sparsifi_type)
             if level == 0:
-                branch = parent_node.add(f"[bright_yellow]{key}[/bright_yellow]")
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
                 continue
+
             # Version folders: bold italic yellow/green name, cyan index, do not recurse inside
             if key.startswith("v") and key[1:].isdigit():
                 rel_path = os.path.normpath(os.path.join(
@@ -545,14 +597,14 @@ class SelectTopologyEstimatorModel():
                 ))
                 idx = version_index_map[rel_path]
                 if is_no_sparsif:
-                    parent_node.add(f"[bold][italic][bright_yellow]{key}[/bright_yellow][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                    parent_node.add(f"[bold][italic][bright_yellow]{safe_key}[/bright_yellow][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
                 else:
-                    parent_node.add(f"[bold][italic][bright_green]{key}[/bright_green][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                    parent_node.add(f"[bold][italic][bright_green]{safe_key}[/bright_green][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
                 continue
             # All other folders: white
-            branch = parent_node.add(f"[white]{key}[/white]")
+            branch = parent_node.add(f"[white]{safe_key}[/white]")
             self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
-
+    
     def select_and_get_ckpt(self):
         self.print_tree()
         if not self.version_paths:

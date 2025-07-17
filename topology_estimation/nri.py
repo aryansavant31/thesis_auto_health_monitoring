@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')  # <-- Add this at the very top, before importing pyplot
 import matplotlib.pyplot as plt
 from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+from data.transform import DataTransformer
 
 class NRI(LightningModule):
     def __init__(self, encoder, decoder):
@@ -41,9 +42,11 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, skip_first_edge_type=False,pred_steps=1,
-                is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-                encoder=None, temp=0.5, is_hard=False):
+    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder='std', fex_type_encoder=None,
+                        domain_decoder='time', norm_type_decoder='std', fex_type_decoder=None, 
+                        skip_first_edge_type=False,pred_steps=1,
+                        is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
+                        encoder=None, temp=0.5, is_hard=False):
         """
         Parameters
         ----------
@@ -60,9 +63,14 @@ class NRI(LightningModule):
         self.temp = temp
         self.is_hard = is_hard
 
-        self.decoder.set_run_params(skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
+        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_type=fex_type_encoder)
+
+        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_type=fex_type_decoder, 
+                                    skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
                                     is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)
+        
+        self.transform_decoder = DataTransformer(domain=domain_decoder, norm_type=norm_type_decoder, data_stats=data_stats)
 
     def forward(self, data):
         """
@@ -120,10 +128,11 @@ class NRI(LightningModule):
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
         data, relations = batch
-
+        
         num_nodes = data.size(1)
-        target = data[:, :, 1:, :]
+        target = self.transform_decoder(data)[:, :, 1:, :] # get target for decoder based on its transform 
 
+        # Forward pass
         edge_pred, x_pred, x_var = self.forward(data)
 
         # Loss calculation

@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from .utils.models import MLP
 from pytorch_lightning import LightningModule
+from data.transform import DataTransformer
 
 class MessagePassingLayers():
     def __init__(self):
@@ -447,7 +448,30 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.rec_rel = rec_rel
         self.send_rel = send_rel
 
-    def forward(self, x):
+    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_type=None):
+        """
+        Set the run parameters for the encoder.
+        """
+        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
+
+        # [TODO] Initialize feature extraction pipeline class (fex_type as argument)
+
+    def process_input_data(self, data):
+        """
+        Transform the data
+            - domain change
+            - normalization
+        Feature extraction
+        """
+        # transform data
+        data = self.transform(data)
+
+        # extract features from data
+        # [TODO]: Implement feature extraction logic here
+
+        return data
+
+    def forward(self, data):
         """
         Forward pass through the encoder pipeline to compute edge logits.
 
@@ -457,7 +481,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         Parameters
         ----------
-        x: torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
+        data: torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
             Input node data
             
         Returns
@@ -466,9 +490,15 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         """
         emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
-        batch_size = x.size(0)
-        n_nodes = x.size(1)
+        batch_size = data.size(0)
+        n_nodes = data.size(1)
         n_edges = self.rec_rel.size(1)
+
+        # process the input data
+        x = self.process_input_data(data)
+
+        # extract features from data
+        # [TODO] Add the feature extraction logic here if needed
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]

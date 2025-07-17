@@ -1,8 +1,26 @@
+"""
+This moduel contains:
+- pipeline class `DataLoader` which load the data using the address and put the loaded data in the dataloaders (trainloader, valloader, testlaoder, custum_loader)
+- data loading functions
+- trainset dataloader and custom dataloader functions.
+"""
+
 import numpy as np
 import os
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader
+
+class Loader:
+    """
+    Step 1. Load the data usign address
+    Step 2. Then see if they are part of train or custum
+                if train, then split into train, test, val
+                if custum, only take data that is requried (80%, 70% etc.)
+    Step 3. put data inside dataloader and return it
+    """
+    def __init__(self):
+        pass
 
 def load_spring_particle_data(node_ds_path, edge_ds_path, batch_size=10):
     
@@ -86,4 +104,10 @@ def load_spring_particle_data(node_ds_path, edge_ds_path, batch_size=10):
     valid_data_loader = DataLoader(valid_data, batch_size=batch_size)
     test_data_loader = DataLoader(test_data, batch_size=batch_size)
 
-    return train_data_loader, valid_data_loader, test_data_loader
+    data_stats = {
+        'min': [], # minimum of all dimensions
+        'max': [], # maximum of all dimensions
+        'mean': [], # mean of all dimensions
+        'std': []  # standard deviation of all dimensions
+    }
+    return train_data_loader, valid_data_loader, test_data_loader, data_stats
