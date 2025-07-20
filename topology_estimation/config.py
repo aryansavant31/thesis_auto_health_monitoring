@@ -1,53 +1,167 @@
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
+
 import shutil
 import re
 from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
-import sys
+from feature_extraction import get_fex_config
+from data.config import DataConfig
+import pickle
 
 
-class TopologyEstimatorConfig:
-    def __init__(self, run_type):
-        if run_type == 'train':
-            self.set_training_params()
-            self.set_training_run_params()
-
-        elif run_type == 'predict':
-            self.set_predict_params()
-            self.set_predict_run_params()
-
-    # --------- Predict parameters ------------
-
+class PredictNRIConfig:
+    def __init__(self):
+        self.data_config = DataConfig()
+        self.set_predict_params()
+        self.set_run_params()
+        self.set_ckpt_path()
+        
     def set_predict_params(self):
-        self.is_nri = True          # if True, means i want to see the NRI model results
-        self.is_sparsifier = False  # if True, means i want to see the sparsifier results
-
-        self.load_path_nri = None # the path till the model version
+        self.version = 1
+        self.is_custom_test = True
         self.batch_size = 50
         self.amt_rt = 0.8
 
-    def set_predict_run_params(self):
-       # input graph paramters
-        self.sparsif_type     = 'knn'
-        self.domain_sparsif   = 'time'  # options: time, frequency
-        self.fex_type_sparsif = 'lucas'
+    def set_custom_test_params(self):
+        pass
 
-        self.domain_encoder   = "from ckpt file"
-        self.fex_type_encoder = "from ckpt file"
+    def set_run_params(self):
+        log_config = self.load_log_config()
+
+       # input graph paramters
+        self.sparsif_type     = 'path'
+        self.domain_sparsif   = log_config.domain_sparsif  # options: time, frequency
+        self.fex_configs_sparsif = log_config.fex_configs_sparsif  # first feature extraction config type
+
+        self.domain_encoder   = log_config.domain_encoder
+        self.norm_type_encoder = log_config.norm_type_encoder
+        self.fex_configs_encoder = log_config.fex_configs_encoder
 
         # Gumble Softmax Parameters
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
-        self.domain_decoder = "from ckpt file"
-        self.fex_type_decoder = "from ckpt file"
+        self.domain_decoder = log_config.domain_decoder   # options: time, frequency
+        self.norm_type_decoder = log_config.norm_type_decoder
+        self.fex_configs_decoder = log_config.fex_configs_decoder
 
         self.skip_first_edge_type = True 
         # TASK: add rest of the decoder run params
 
-    # ---------- Train parameters -----------
+    def set_ckpt_path(self):
+         with open(".\\docs\\loaded_ckpt_path.txt", "r") as f:
+            self.ckpt_path = f.read() 
+
+    def load_log_config(self):
+        log_config = TrainNRIConfig()
+
+        with open(".\\docs\\loaded_config_path.txt", "r") as f:
+            log_config_path = f.read()
+
+        if not os.path.exists(log_config_path):
+            raise ValueError(f"\nThe parameter file does not exists")
+        
+        with open(log_config_path, 'rb') as f:
+            log_config.__dict__.update(pickle.load(f))
+
+        return log_config
+    
+    def _set_ds_types_in_path(self, log_path):
+        """
+        Takes into account both empty healthy and unhealthy config and sets the path accordingly.
+        """
+        if self.data_config.unhealthy_config == []:
+            log_path = os.path.join(log_path, 'healthy')
+
+        elif self.data_config.unhealthy_config != []:
+            log_path = os.path.join(log_path, 'healthy_unhealthy')
+
+        # add ds_subtype to path
+        config_str = ''
+        
+        if self.data_config.healthy_config != []:    
+            healthy_config_str_list = []
+            for config in self.data_config.healthy_config:
+                healthy_type = config[0]
+                augments = config[1]
+
+                augment_str = '+'.join(augments) 
+
+                healthy_config_str_list.append(f'{healthy_type}_[{augment_str}]')
+
+            config_str = '_+_'.join(healthy_config_str_list)
+
+        if self.data_config.unhealthy_config != []:
+            unhealthy_config_str_list = []
+            for config in self.data_config.unhealthy_config:
+                unhealthy_type = config[0]
+                augments = config[1]
+
+                augment_str = '+'.join(augments) 
+
+                unhealthy_config_str_list.append(f'{unhealthy_type}_[{augment_str}]')
+
+            if config_str:
+                config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+            else:
+                config_str += '_+_'.join(unhealthy_config_str_list)
+
+        log_path = os.path.join(log_path, config_str)
+        return log_path
+    
+    def get_infer_log_path(self):
+        """
+        Sets the log path for the predict run.
+        """
+        log_config = self.load_log_config()
+
+        train_log_path = log_config.train_log_path
+        if self.is_custom_test:
+            self.data_config.set_custom_test_dataset()
+            infer_log_path = os.path.join(train_log_path, 'test')
+        else:
+            self.data_config.set_predict_dataset()
+            infer_log_path= os.path.join(train_log_path, 'predict')
+
+        # add healthy or healthy_unhealthy config to path
+        infer_log_path = self._set_ds_types_in_path(infer_log_path)
+
+        # add timestep_id to path
+        infer_log_path = os.path.join(infer_log_path, f'{self.data_config.timestep_id}')
+
+        # add sparsifier type to path
+        if self.sparsif_type is not None:
+            infer_log_path = os.path.join(infer_log_path, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
+
+            # sparsifer features
+            fex_types_sparsif = [fex['type'] for fex in log_config.fex_configs_sparsif]
+            if fex_types_sparsif:
+                infer_log_path = os.path.join(infer_log_path, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+            else:
+                infer_log_path = os.path.join(infer_log_path, '(sparsif)=_no_fex')
+        else:
+            infer_log_path = os.path.join(infer_log_path, 'sparsif=_no_sparsif')
+
+        # add version
+        if self.is_custom_test:
+            infer_log_path = os.path.join(infer_log_path, f'test_v{self.version}')
+        else:
+            infer_log_path = os.path.join(infer_log_path, f'predict_v{self.version}')
+
+        return infer_log_path
+
+
+class TrainNRIConfig:
+    def __init__(self):
+        self.set_training_params()
+        self.set_run_params()
+
+        self.data_config = DataConfig()
+        self.data_config.set_train_dataset()
 
     def set_training_params(self):        
         self.version = 1
@@ -55,8 +169,7 @@ class TopologyEstimatorConfig:
 
         self.is_log = False
         
-        self.is_nri = True # if True, means i want to train the NRI model
-        self.is_sparsifier = True # if True, means i want to train the sparsifier
+        self.n_edge_types = 2
 
         # dataset parameters
         self.batch_size = 50
@@ -69,13 +182,13 @@ class TopologyEstimatorConfig:
         self.lr = 0.001
         self.optimizer = 'adam'
 
-        self.loss_type_encd = 'kld'
+        self.loss_type_enc = 'kld'
         self.prior = None
-        self.add_const_kld = False  # if True, adds a constant term to the KL divergence
+        self.add_const_kld = True  # this needs to be True, adds a constant term to the KL divergence
 
-        self.loss_type_decd = 'nnl'
+        self.loss_type_dec = 'nnl'
 
-    def set_training_run_params(self):
+    def set_run_params(self):
         """
         Attributes
         ----------
@@ -93,17 +206,21 @@ class TopologyEstimatorConfig:
 
         """
         # input graph paramters
-        self.sparsif_type     = 'knn'
+        self.sparsif_type = 'knn'  # [TODO]: Get sparsif type from get_sparsif_config() method
         self.domain_sparsif   = 'time'  # options: time, frequency
-        self.fex_type_sparsif = None
+        self.fex_configs_sparsif = [
+            get_fex_config('first_n_modes'),
+            get_fex_config('lucas', height=9, age=20)
+        ]    
         self.norm_type_sparsif = 'std'  # options: std, minmax, none
 
         # encoder run parameters
         self.domain_encoder   = 'freq'  # options: time, frequency
         self.norm_type_encoder = 'std'  # options: std, minmax, none
 
-        self.fex_type_encoder = 'PCA'
-
+        self.fex_configs_encoder = [
+            get_fex_config('first_n_modes', n_modes=69),
+        ]
         # gumble softmax parameters
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      # if True, use hard Gumble Softmax
@@ -112,7 +229,9 @@ class TopologyEstimatorConfig:
         self.domain_decoder = 'time'   # options: time, frequency
         self.norm_type_decoder = 'std' # options: std, minmax, none
 
-        self.fex_type_decoder = 'PCA'
+        self.fex_configs_decoder = [
+            get_fex_config('first_n_modes', n_modes=10),
+        ]
 
         self.skip_first_edge_type = True 
         # TASK: add rest of the decoder run params
@@ -125,10 +244,8 @@ class TopologyEstimatorConfig:
         # ------ Pipeline Parameters ------
         self.pipeline_type          = 'mlp_1'   # default pipeline type
         self.encoder_pipeline       = self._get_encoder_pipeline(self.pipeline_type)
-
          
         self.is_residual_connection = True      # if True, then use residual connection in the last layer
-        self.n_edge_types_enc       = 2   # output size
 
         # ------ Embedding Function Parameters ------
         # embedding config
@@ -155,7 +272,7 @@ class TopologyEstimatorConfig:
     def set_decoder_params(self):
 
         self.msg_out_size           = 64
-        self.n_edge_types_dec       = self.n_edge_types_enc
+        self.n_edge_types_dec       = self.n_edge_types
     
         # ---------- Embedding function parameters ----------
         # embedding config
@@ -172,12 +289,12 @@ class TopologyEstimatorConfig:
         # ------ Recurrent Embedding Parameters ------
         self.recurrent_emd_type     = 'gru' # options: gru, 'mlp', if mlp, then only output mlp
 
-    def set_sparsifier_params(self):
-        if self.sparsif_type == 'knn':
-            pass
-        
+    def get_sparsif_config(self, sparsif_type, **kwargs):
+        config = {}
+        config['type'] = sparsif_type
 
-     
+        # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
+        
     # =======================================
     # Extra methods
     # =======================================
@@ -295,28 +412,34 @@ class TopologyEstimatorConfig:
 
         return configs
     
-    def _set_ds_types_in_path(self, data_config, log_path):
-        if data_config.unhealthy_config == []:
+    def _set_ds_types_in_path(self, log_path):
+        """
+        Takes into account both empty healthy and unhealthy config and sets the path accordingly.
+        """
+        if self.data_config.unhealthy_config == []:
             log_path = os.path.join(log_path, 'healthy')
 
-        elif data_config.unhealthy_config != []:
+        elif self.data_config.unhealthy_config != []:
             log_path = os.path.join(log_path, 'healthy_unhealthy')
 
-        healthy_config_str_list = []
+        # add ds_subtype to path
+        config_str = ''
+        
+        if self.data_config.healthy_config != []:    
+            healthy_config_str_list = []
+            for config in self.data_config.healthy_config:
+                healthy_type = config[0]
+                augments = config[1]
 
-        for config in data_config.healthy_config:
-            healthy_type = config[0]
-            augments = config[1]
+                augment_str = '+'.join(augments) 
 
-            augment_str = '+'.join(augments) 
+                healthy_config_str_list.append(f'{healthy_type}_[{augment_str}]')
 
-            healthy_config_str_list.append(f'{healthy_type}_[{augment_str}]')
+            config_str = '_+_'.join(healthy_config_str_list)
 
-        config_str = '_+_'.join(healthy_config_str_list)
-
-        if data_config.unhealthy_config != []:
+        if self.data_config.unhealthy_config != []:
             unhealthy_config_str_list = []
-            for config in data_config.unhealthy_config:
+            for config in self.data_config.unhealthy_config:
                 unhealthy_type = config[0]
                 augments = config[1]
 
@@ -324,12 +447,30 @@ class TopologyEstimatorConfig:
 
                 unhealthy_config_str_list.append(f'{unhealthy_type}_[{augment_str}]')
 
-            config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+            if config_str:
+                config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+            else:
+                config_str += '_+_'.join(unhealthy_config_str_list)
 
         log_path = os.path.join(log_path, config_str)
         return log_path
     
-    def get_log_path(self, data_config, n_datapoints, n_dim):
+    def _set_sparsifier_in_path(self, log_path):
+        if self.sparsif_type is not None:
+            log_path = os.path.join(log_path, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
+
+            # sparsifer features
+            fex_types_sparsif = [fex['type'] for fex in self.fex_configs_sparsif]
+            if fex_types_sparsif:
+                log_path = os.path.join(log_path, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+            else:
+                log_path = os.path.join(log_path, '(sparsif)=_no_fex')           
+        else:
+            log_path = os.path.join(log_path, 'sparsif=_no_sparsif')
+
+        return log_path
+    
+    def get_train_log_path(self, n_components, n_dim):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -337,102 +478,92 @@ class TopologyEstimatorConfig:
         ----------
         data_config : Object
             The data configuration object of class DataConfig
-        n_datapoints : int
-            The number of data points in the dataset (time or frequency domain)
+        n_components : int
+            The number of components in each datapoint/sample in the dataset
         """
-        log_path = os.path.join('logs', 
-                                f'{data_config.application_map[data_config.application]}', 
-                                f'{data_config.machine_type}',
-                                f'{data_config.scenario}')
         
-        if not self.is_nri and not self.is_sparsifier:
-            raise ValueError("Both is_nri and is_sparsifier cannot be False. At least one should be True.")
-        
+        base_path = os.path.join('logs', 
+                                f'{self.data_config.application_map[self.data_config.application]}', 
+                                f'{self.data_config.machine_type}',
+                                f'{self.data_config.scenario}')
+
         # For directed graph path 
-        if self.is_nri:
-            log_path_nri = os.path.join(log_path, 
-                                        'directed_graph',  # add framework type
-                                        f'enc={self.pipeline_type}-dec={self.recurrent_emd_type}',) # add model type
-                                        
-            # add healthy or healthy_unhealthy config to path
-            log_path_nri = self._set_ds_types_in_path(data_config, log_path_nri)
+        train_log_path = os.path.join(base_path, 'directed_graph',)  # add framework type
 
-            # add datapoints and edgetypes
-            log_path_nri = os.path.join(log_path_nri, f'dp={n_datapoints}-dim={n_dim}-etype={self.n_edge_types_enc}')
+        # add num of edge types to path
+        train_log_path = os.path.join(train_log_path, f'etypes={self.n_edge_types}')
+                       
+        # add healthy or healthy_unhealthy config to path
+        train_log_path = self._set_ds_types_in_path(train_log_path)
 
-            # add sparsifier type to path
-            if self.sparsif_type is not None:
-                log_path_nri = os.path.join(log_path_nri, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
+        # add model type to path
+        train_log_path = os.path.join(train_log_path, f'enc={self.pipeline_type}-dec={self.recurrent_emd_type}',)
 
-                # sparsifer features
-                if self.fex_type_sparsif is not None:
-                    log_path_nri = os.path.join(log_path_nri, f'(sparsif)={self.fex_type_sparsif}')
-                else:
-                    log_path_nri = os.path.join(log_path_nri, '(sparsif)=_no_fex')           
-            else:
-                log_path_nri = os.path.join(log_path_nri, 'sparsif=_no_sparsif')
+        # add datastats to path
+        train_log_path = os.path.join(train_log_path, f'{self.data_config.timestep_id}_measurements=[{'+'.join(self.data_config.signal_types)}]')
 
-            # add domain type of encoder and decoder to path
-            log_path_nri = os.path.join(log_path_nri, f'[enc]={self.domain_encoder}-[dec]={self.domain_decoder}')
+        # add sparsifier type to path
+        train_log_path = self._set_sparsifier_in_path(train_log_path)
 
-            # add feature type to path
-            if self.fex_type_encoder and self.fex_type_decoder:
-                log_path_nri = os.path.join(log_path_nri, f'(enc)={self.fex_type_encoder}-(dec)={self.fex_type_decoder}')
-            elif self.fex_type_encoder and not self.fex_type_decoder:
-                log_path_nri = os.path.join(log_path_nri, f'(enc)={self.fex_type_encoder}-(dec)=_no_fex')
-            elif not self.fex_type_encoder and self.fex_type_decoder:
-                log_path_nri = os.path.join(log_path_nri, f'(enc)=_no_fex-(dec)={self.fex_type_decoder}')
-            elif not self.fex_type_encoder and not self.fex_type_decoder:
-                log_path_nri = os.path.join(log_path_nri, '(enc)=_no_fex-(dec)=_no_fex')
+        # add domain type of encoder and decoder to path
+        train_log_path = os.path.join(train_log_path, f'[enc]={self.domain_encoder}-[dec]={self.domain_decoder}')
 
-            # add model version to path
-            log_path_nri = os.path.join(log_path_nri, f'v{self.version}')
+        # add feature type to path
+        fex_types_encoder = [fex['type'] for fex in self.fex_configs_encoder]
+        fex_types_decoder = [fex['type'] for fex in self.fex_configs_decoder]
 
-        else:
-            log_path_nri = None
+        if fex_types_encoder and fex_types_decoder:
+            train_log_path = os.path.join(train_log_path, f'(enc)=[{'+'.join(fex_types_encoder)}]-(dec)=[{'+'.join(fex_types_decoder)}]')
+        elif fex_types_encoder and not fex_types_decoder:
+            train_log_path = os.path.join(train_log_path, f'(enc)=[{'+'.join(fex_types_encoder)}]-(dec)=_no_fex')
+        elif not fex_types_encoder and fex_types_decoder:
+            train_log_path = os.path.join(train_log_path, f'(enc)=_no_fex-(dec)=[{'+'.join(fex_types_decoder)}]')
+        elif not fex_types_encoder and not fex_types_decoder:
+            train_log_path = os.path.join(train_log_path, '(enc)=_no_fex-(dec)=_no_fex')
 
-        # For skeleton graph path
-        if self.is_sparsifier and self.sparsif_type is not None:
-            log_path_sk = os.path.join(log_path,
-                                        'skeleton_graph', # add framework type
-                                        f'sparsif={self.sparsif_type}',) # add sparsifier type
-            
-            # add healthy or healthy_unhealthy config to path
-            log_path_sk = self._set_ds_types_in_path(data_config, log_path_sk)
+        # add model shape compatibility stats to path
+        train_log_path = os.path.join(train_log_path, f'enc(comps)={n_components}-dec(dims)={n_dim}')
 
-            # add datapoints 
-            log_path_sk = os.path.join(log_path_sk, f'dp={n_datapoints}')
+        # add model version to path
+        self.train_log_path = os.path.join(train_log_path, f'v{self.version}')
 
-            # add domain type
-            log_path_sk = os.path.join(log_path_sk, f'domain={self.domain_sparsif}')
+        return self.train_log_path
 
-            # sparsifer features
-            if self.fex_type_sparsif is not None:
-                log_path_sk = os.path.join(log_path_sk, f'(sparsif)={self.fex_type_sparsif}')
-            else:
-                log_path_sk = os.path.join(log_path_sk, '(sparsif)=_no_fex')
+    def get_test_log_path(self):
+        
+        test_log_path = os.path.join(self.train_log_path, 'test')
 
-        else:
-            log_path_sk = None
+        # add healthy or healthy_unhealthy config to path
+        test_log_path = self._set_ds_types_in_path(test_log_path)
 
-        return log_path_nri, log_path_sk
+        # add timestep id to path
+        test_log_path = os.path.join(test_log_path, f'{self.data_config.timestep_id}')
+
+        # add sparsifier type to path
+        test_log_path = self._set_sparsifier_in_path(test_log_path)
+
+        # add test version to path
+        test_log_path = os.path.join(test_log_path, f'test_v0')
+
+        return test_log_path
+
     
-    def _remove_version(self, log_path):
+    def _remove_version(self):
         """
         Removes the version from the log path.
         """
-        if os.path.exists(log_path):
-            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {log_path}? (y/n): ")
+        if os.path.exists(self.train_log_path):
+            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
-                shutil.rmtree(log_path)
-                print(f"Removed version {self.version} from the log path {log_path}.")
+                shutil.rmtree(self.train_log_path)
+                print(f"Removed version {self.version} from the log path {self.train_log_path}.")
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
 
     
-    def _get_next_version(self, log_path):
-        parent_dir = os.path.dirname(log_path)
+    def _get_next_version(self):
+        parent_dir = os.path.dirname(self.train_log_path)
 
         # List all folders in parent_dir that match 'v<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
@@ -446,21 +577,37 @@ class TopologyEstimatorConfig:
             new_v = 'v1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_v)
+    
+    def save_params(self):
+        """
+        Saves the training parameters to a pickle file in the log path.
+        """
+        if not os.path.exists(self.train_log_path):
+            os.makedirs(self.train_log_path)
 
-    def check_if_version_exists(self, log_path):
+        param_path = os.path.join(self.train_log_path, f'train_config.pkl')
+        with open(param_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+
+    def check_if_version_exists(self):
         """
         Checks if the version already exists in the log path.
+
+        Parameters
+        ----------
+        log_path : str
+            The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
 
-        if os.path.isdir(log_path):
-            print(f"Version {self.version} already exists in the log path '{log_path}'.")
+        if os.path.isdir(self.train_log_path):
+            print(f"Version {self.version} already exists in the log path '{self.train_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
-                self._remove_version(log_path)
+                self._remove_version()
 
             elif user_input.lower() == 'b':
-                self.log_path = self._get_next_version(log_path)
+                self.log_path = self._get_next_version()
 
             elif user_input.lower() == 'c':
                 print("Stopped training.")
@@ -474,11 +621,11 @@ def get_checkpoint_path(log_path):
     ckpt_path = os.path.join(log_path, 'checkpoints')
 
     contents = os.listdir(ckpt_path)
-    print(f"\n.ckpt_files available in {ckpt_path}:")
+    print(f"\n.ckpt_files available in {ckpt_path}:\n")
     print(contents)
 
     if len(contents) > 1:
-        user_input = input("Enter the ckpt file to load (e.g., 'epoch=1-step=1000.ckpt'): ")
+        user_input = input("\nEnter the ckpt file to load (e.g., 'epoch=1-step=1000.ckpt'): ").strip("'\"")
 
         if user_input not in contents:
             raise ValueError(f"Invalid ckpt file name: {user_input}. Available files: {contents}")
@@ -493,12 +640,29 @@ def get_checkpoint_path(log_path):
     
     return ckpt_path
 
+def get_param_pickle_path(log_path):
+    """
+    Returns the path to the training parameters pickle file.
+    """
+    param_path = os.path.join(log_path, 'train_config.pkl')
+    if not os.path.exists(param_path):
+        raise FileNotFoundError(f"Training parameters file not found: {param_path}. Please check the log path.")
+    
+    return param_path
+    
 class SelectTopologyEstimatorModel():
-    def __init__(self, application, machine, scenario, framework, logs_dir="logs"):
+    def __init__(self, framework, application=None, machine=None, scenario=None, logs_dir="logs"):
+        data_config = DataConfig()
+
         self.logs_dir = Path(logs_dir)
-        self.application = application
-        self.machine = machine
-        self.scenario = scenario
+        if application is None or machine is None or scenario is None:
+            self.application = data_config.application_map[data_config.application]
+            self.machine = data_config.machine_type
+            self.scenario = data_config.scenario
+        else:
+            self.application = application
+            self.machine = machine
+            self.scenario = scenario
         self.framework = framework
         self.structure = {}
         self.version_paths = []
@@ -546,35 +710,39 @@ class SelectTopologyEstimatorModel():
         # Label maps
         if self.framework == "skeleton_graph":
             label_map = {
-                0: "<sparsif_type>",
-                1: "<ds_type>",
-                2: "<ds_subtype>",
-                3: "<n_datapoints>",
+                0: "<ds_type>",
+                1: "<ds_subtype>",
+                2: "<sparsif_type>",
+                3: "<n_components>",
                 4: "<domain>",
                 5: "<sparsif_fex_type>"
             }
         elif is_no_sparsif:
             label_map = {
-                0: "<model>",
+                0: "<n_edge_types>",
                 1: "<ds_type>",
                 2: "<ds_subtype>",
-                3: "<n_datapoints>",
-                4: "<sparsif_type>",
-                5: "<domain>",
-                6: "<nri_fex_type>",
-                7: "<versions>"
+                3: "<model>",     
+                4: "<ds_stats>",
+                5: "<sparsif_type>",
+                6: "<domain>",
+                7: "<nri_fex_type>",
+                8: "<shape_compatibility>",
+                9: "<versions>"
             }
         else:
             label_map = {
-                0: "<model>",
+                0: "<n_edge_types>",
                 1: "<ds_type>",
                 2: "<ds_subtype>",
-                3: "<n_datapoints>",
-                4: "<sparsif_type>",
-                5: "<sparsif_fex_type>",
-                6: "<domain>",
-                7: "<nri_fex_type>",
-                8: "<versions>"
+                3: "<model>", 
+                4: "<ds_stats>",
+                5: "<sparsif_type>",
+                6: "<sparsif_fex_type>",
+                7: "<domain>",
+                8: "<nri_fex_type>",
+                9: "<shape_compatibility>",
+                10: "<versions>"
             }
         added_labels = set()
         for key, value in structure.items():
@@ -584,8 +752,13 @@ class SelectTopologyEstimatorModel():
             if level in label_map and label_map[level] not in added_labels:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
-            # For skeleton_graph, make the first folder under framework yellow (sparsifi_type)
-            if level == 0:
+            # For directed graph, make the model folder under framework yellow
+            if self.framework == "directed_graph" and level == 3:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
+                continue
+            # For skeleton graph, make the model folder under framework yellow
+            if self.framework == "skeleton_graph" and level == 2:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
                 continue
@@ -605,7 +778,7 @@ class SelectTopologyEstimatorModel():
             branch = parent_node.add(f"[white]{safe_key}[/white]")
             self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
     
-    def select_and_get_ckpt(self):
+    def select_ckpt_and_params(self):
         self.print_tree()
         if not self.version_paths:
             print("No version paths found.")
@@ -616,15 +789,106 @@ class SelectTopologyEstimatorModel():
             return None
         selected_log_path = os.path.join("logs", self.version_paths[idx])
         ckpt_file_path = get_checkpoint_path(selected_log_path)
+        config_file_path = get_param_pickle_path(selected_log_path)
+
+        with open(".\\docs\\loaded_ckpt_path.txt", "w") as f:
+            f.write(ckpt_file_path)
+
+        with open(".\\docs\\loaded_config_path.txt", "w") as f:
+            f.write(config_file_path)
+
         print(f"\nSelected .ckpt file path: {ckpt_file_path}")
-        return ckpt_file_path
+        print(f"\nSelected logged config file path: {config_file_path}\n")
 
 
+class SparsifierConfig:
+    def __init__(self):
+        self.data_config = DataConfig()
+        self.set_sparsif_params()
+
+    def set_sparsif_params(self):
+        self.sparsif_type = 'knn'  # default sparsifier type
+        self.domain = 'time'  # default domain type
+        self.fex_configs = []
+
+    def _set_ds_types_in_path(self, log_path):
+        """
+        Takes into account both empty healthy and unhealthy config and sets the path accordingly.
+        """
+        if self.data_config.unhealthy_config == []:
+            log_path = os.path.join(log_path, 'healthy')
+
+        elif self.data_config.unhealthy_config != []:
+            log_path = os.path.join(log_path, 'healthy_unhealthy')
+
+        # add ds_subtype to path
+        config_str = ''
+        
+        if self.data_config.healthy_config != []:    
+            healthy_config_str_list = []
+            for config in self.data_config.healthy_config:
+                healthy_type = config[0]
+                augments = config[1]
+
+                augment_str = '+'.join(augments) 
+
+                healthy_config_str_list.append(f'{healthy_type}_[{augment_str}]')
+
+            config_str = '_+_'.join(healthy_config_str_list)
+
+        if self.data_config.unhealthy_config != []:
+            unhealthy_config_str_list = []
+            for config in self.data_config.unhealthy_config:
+                unhealthy_type = config[0]
+                augments = config[1]
+
+                augment_str = '+'.join(augments) 
+
+                unhealthy_config_str_list.append(f'{unhealthy_type}_[{augment_str}]')
+
+            if config_str:
+                config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+            else:
+                config_str += '_+_'.join(unhealthy_config_str_list)
+
+        log_path = os.path.join(log_path, config_str)
+        return log_path
+    
+
+    def get_log_path(self, n_components):
+        # For skeleton path
+        base_path = os.path.join('logs', 
+                            f'{self.data_config.application_map[self.data_config.application]}', 
+                            f'{self.data_config.machine_type}',
+                            f'{self.data_config.scenario}')
+        
+        infer_log_path_sk = os.path.join(base_path,
+                                    'skeleton_graph', # add framework type
+                                    f'sparsif={self.sparsif_type}',) # add sparsifier type
+        
+        # add healthy or healthy_unhealthy config to path
+        infer_log_path_sk = self._set_ds_types_in_path(infer_log_path_sk)
+
+        # add datapoints 
+        infer_log_path_sk = os.path.join(infer_log_path_sk, f'dp={n_components}')
+
+        # add domain type
+        infer_log_path_sk = os.path.join(infer_log_path_sk, f'domain={self.domain}')
+
+        # sparsifer features
+        fex_types_sparsif = [fex['type'] for fex in self.fex_configs]
+        if fex_types_sparsif:
+            infer_log_path_sk = os.path.join(infer_log_path_sk, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+        else:
+            infer_log_path_sk = os.path.join(infer_log_path_sk, '(sparsif)=_no_fex')
+
+        return infer_log_path_sk
 
 
+if __name__ == "__main__":
 
-
-
+    model_selector = SelectTopologyEstimatorModel(framework='directed_graph',)
+    model_selector.select_ckpt_and_params()
 
 
 

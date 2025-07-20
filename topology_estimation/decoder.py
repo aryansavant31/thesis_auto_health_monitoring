@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from .utils.models import MLP, GRU
 from pytorch_lightning import LightningModule
 from data.transform import DataTransformer
+from feature_extraction import FeatureExtractor
 
 class Decoder(LightningModule):
 
@@ -81,7 +82,7 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_type=None, 
+    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_configs=[], 
                         skip_first_edge_type=False, pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=None, is_hard=False):
@@ -106,10 +107,11 @@ class Decoder(LightningModule):
         self.encoder = encoder
         self.temp = temp
         self.is_hard = is_hard
+        self.fex_configs = fex_configs
         
         self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
-
-        # [TODO] Initialize feature extraction pipeline class (fex_type as argument)
+        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs)
+        
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
         receivers = torch.bmm(rec_rel, node_emb)
@@ -195,8 +197,9 @@ class Decoder(LightningModule):
         # transform data
         data = self.transform(data)
 
-        # extract features from data
-        # [TODO]: Implement feature extraction logic here
+        # extract features from data if fex_configs are provided
+        if self.fex_configs:
+            data = self.feature_extractor(data)
 
         return data
     
@@ -210,22 +213,22 @@ class Decoder(LightningModule):
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dim)
+        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dim)
             Input data tensor containing the entire trajectory data of all nodes.
         
         Returns
         -------
-        preds : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
-        vars : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
+        preds : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
+        vars : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
         """
         # process data
         data = self.process_input_data(data)
 
-        # data has shape [batch_size, n_nodes, n_datapoints, n_dim]
+        # data has shape [batch_size, n_nodes, n_components, n_dim]
         inputs = data.transpose(1, 2).contiguous()
-        # inputs has shape [batch_size, n_datapoints, n_nodes, n_dims]
+        # inputs has shape [batch_size, n_components, n_nodes, n_dims]
 
-        n_datapoints = inputs.size(1)
+        n_components = inputs.size(1)
 
         hidden = torch.zeros(inputs.size(0), inputs.size(2), self.msg_out_size, device=inputs.device)
         
@@ -243,7 +246,7 @@ class Decoder(LightningModule):
                 else:
                     ins = pred_all[step - 1]    # here, ins = last prediction wrt to current step
             else:
-                assert (self.pred_steps <= n_datapoints) # if pred_Step is 100 and timesteps is 50, this will return error
+                assert (self.pred_steps <= n_components) # if pred_Step is 100 and timesteps is 50, this will return error
                 # Use ground truth trajectory input vs. last prediction
                 if not step % self.pred_steps:
                     ins = inputs[:, step, :, :]

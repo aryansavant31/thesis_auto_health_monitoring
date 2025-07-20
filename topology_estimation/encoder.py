@@ -6,6 +6,7 @@ import torch.nn as nn
 from .utils.models import MLP
 from pytorch_lightning import LightningModule
 from data.transform import DataTransformer
+from feature_extraction import FeatureExtractor
 
 class MessagePassingLayers():
     def __init__(self):
@@ -19,7 +20,7 @@ class MessagePassingLayers():
         ----------
         node_emb : torch.Tensor
             Shape depends on rank and prev layer type:
-            - If rank == 1: (batch_size, n_nodes, n_datapoints, n_dims)
+            - If rank == 1: (batch_size, n_nodes, n_components, n_dims)
             - If rank > 1:
                 - If prev_emb_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
                 - If prev_emb_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
@@ -138,7 +139,7 @@ class MessagePassingLayers():
         ----------
         x : torch.Tensor
             Shape depends on rank and node_emd_fn_type:
-            - If rank == 1: (batch_size, n_nodes, n_datapoints, n_dims)
+            - If rank == 1: (batch_size, n_nodes, n_components, n_dims)
             - If rank > 1:
                 - If prev_layer is 'aggregate': (batch_size, n_nodes, n_features)
                 - If prev_layer is 'node_emd_fn':
@@ -161,8 +162,8 @@ class MessagePassingLayers():
         x : torch.Tensor
             Reshaped tensor ready for input in node embedding function. Shapes are as follows:
             - If rank == 1:
-                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_datapoints * n_dims)
-                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_datapoints
+                - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_components * n_dims)
+                - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, n_dims, n_components
             - If rank > 1:
                 - If node_emd_fn_type == 'mlp': (batch_size, n_nodes, n_features)
                 - If node_emd_fn_type == 'cnn': (batch_size * n_nodes, 1, n_features)
@@ -170,9 +171,9 @@ class MessagePassingLayers():
         """
         if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
             if emd_fn_type == 'mlp':
-                x = x.view(batch_size, n_nodes, self.n_datapoints * self.n_dims)
+                x = x.view(batch_size, n_nodes, self.n_components * self.n_dims)
             elif emd_fn_type == 'cnn':
-                x = x.view(batch_size * n_nodes, self.n_dims, self.n_datapoints)
+                x = x.view(batch_size * n_nodes, self.n_dims, self.n_components)
         elif rank == 2:
             if emd_fn_type == 'mlp':
                 x = x.view(batch_size, n_nodes, x.size(-1))
@@ -267,7 +268,7 @@ class MessagePassingLayers():
 
 
 class Encoder(LightningModule, MessagePassingLayers):
-    def __init__(self, n_datapoints, n_dims, 
+    def __init__(self, n_components, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
                  edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):
         
@@ -275,7 +276,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         MessagePassingLayers.__init__(self)
 
         # input parameters
-        self.n_datapoints = n_datapoints
+        self.n_components = n_components
         self.n_dims = n_dims
 
         # pipeline parameters
@@ -337,7 +338,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first edge embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        edge_main_input_size = self.n_datapoints * self.n_dims
+                        edge_main_input_size = self.n_components * self.n_dims
                     elif layer[1] == 'cnn':
                         edge_main_input_size = self.n_dims
                 else:
@@ -397,7 +398,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first node embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        node_emd_input_size = self.n_datapoints * self.n_dims
+                        node_emd_input_size = self.n_components * self.n_dims
                     elif layer[1] == 'cnn':
                         node_emd_input_size = self.n_dims
 
@@ -448,13 +449,14 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.rec_rel = rec_rel
         self.send_rel = send_rel
 
-    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_type=None):
+    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_configs=[]):
         """
         Set the run parameters for the encoder.
         """
-        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
+        self.fex_configs = fex_configs
 
-        # [TODO] Initialize feature extraction pipeline class (fex_type as argument)
+        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
+        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs)
 
     def process_input_data(self, data):
         """
@@ -462,12 +464,22 @@ class Encoder(LightningModule, MessagePassingLayers):
             - domain change
             - normalization
         Feature extraction
+
+        Parameters
+        ----------
+        data: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            Input node data
+
+        Returns
+        -------
+        data: torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
         """
         # transform data
         data = self.transform(data)
 
-        # extract features from data
-        # [TODO]: Implement feature extraction logic here
+        # extract features from data if fex_configs are provided
+        if self.fex_configs:
+            data = self.feature_extractor(data)
 
         return data
 
@@ -481,7 +493,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         Parameters
         ----------
-        data: torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
+        data: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             Input node data
             
         Returns

@@ -12,7 +12,17 @@ class DataTransformer:
     v
     Normalization (std, min-max)
     """
-    def __init__(self, domain, norm_type, data_stats:dict):
+    def __init__(self, domain='time', norm_type=None, data_stats=None):
+        """
+        Parameters
+        ----------
+        domain : str
+            The domain transformation to be applied (e.g., 'time', 'freq').
+        norm_type : str
+            The type of normalization to be applied (e.g., 'std', 'min_max').
+        data_stats : dict
+            Statistics for normalization (e.g., mean, std, min, max).
+        """
         self.domain = domain
         self.norm_type = norm_type
         self.data_stats = data_stats
@@ -37,6 +47,11 @@ class DataTransformer:
 
         elif self.norm_type == 'std':
             data = std_normalize(data, self.data_stats['mean'], self.data_stats['std'])
+
+        elif self.norm_type is None:
+            pass
+
+        return data
 
 def min_max_normalize(data, min, max):
     """

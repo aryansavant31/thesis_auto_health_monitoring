@@ -2,17 +2,26 @@ from pytorch_lightning import LightningModule
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam, SGD
-import matplotlib
-matplotlib.use('Agg')  # <-- Add this at the very top, before importing pyplot
 import matplotlib.pyplot as plt
 from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
 from data.transform import DataTransformer
+from .encoder import Encoder
+from .decoder import Decoder
+from feature_extraction import FeatureExtractor
+import time
 
 class NRI(LightningModule):
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder_params, decoder_params):
         super(NRI, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        self.save_hyperparameters()  # This will log encoder_params and decoder_params
+        self.encoder = Encoder(**encoder_params)
+        self.decoder = Decoder(**decoder_params)
+
+    def print_model_info(self):
+        """
+        Print the model information
+        """
+        pass  # [TODO]: Implement this method to print model information
 
     def set_training_params(self, lr=0.001, optimizer='adam', loss_type_encoder='kld',
                              loss_type_decoder='nll', prior=None):
@@ -25,7 +34,7 @@ class NRI(LightningModule):
         self.train_losses_per_epoch = []
 
     def set_input_example_for_graph(self, n_nodes):
-        self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_datapoints, self.encoder.n_dims))
+        self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_components, self.encoder.n_dims))
 
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -42,8 +51,8 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder='std', fex_type_encoder=None,
-                        domain_decoder='time', norm_type_decoder='std', fex_type_decoder=None, 
+    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder='std', fex_configs_encoder=[],
+                        domain_decoder='time', norm_type_decoder='std', fex_configs_decoder=[], 
                         skip_first_edge_type=False,pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=0.5, is_hard=False):
@@ -62,15 +71,33 @@ class NRI(LightningModule):
         """
         self.temp = temp
         self.is_hard = is_hard
+        self.fex_configs_decoder = fex_configs_decoder
 
-        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_type=fex_type_encoder)
+        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_type=fex_configs_encoder)
 
-        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_type=fex_type_decoder, 
+        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_type=fex_configs_decoder, 
                                     skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
                                     is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)
         
         self.transform_decoder = DataTransformer(domain=domain_decoder, norm_type=norm_type_decoder, data_stats=data_stats)
+        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs_decoder)
+
+    def process_decoder_input_data(self, data):
+        """
+        Transform the data
+            - domain change
+            - normalization
+        Feature extraction
+        """
+        # transform data
+        data = self.transform_decoder(data)
+
+        # extract features from data if fex_configs for decoder are provided
+        if self.fex_configs_decoder:
+            data = self.feature_extractor(data)
+
+        return data
 
     def forward(self, data):
         """
@@ -82,16 +109,16 @@ class NRI(LightningModule):
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
+        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             Input data tensor containing the entire trajectory data of all nodes.
         
         Returns
         -------
         edge_pred : torch.Tensor, shape (batch_size, n_edges, n_edge_types)
             Predicted edge probabilities.
-        x_pred : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
+        x_pred : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
             Predicted node data
-        x_var : torch.Tensor, shape (batch_size, n_nodes, n_datapoints-1, n_dim)
+        x_var : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
             Variance of the predicted node data.
         """
         # Encoder
@@ -124,13 +151,16 @@ class NRI(LightningModule):
         ----------
         batch : tuple
             A tuple containing the node data and the edge matrix label
-            - data : torch.Tensor, shape (batch_size, n_nodes, n_datapoints, n_dims)
+            - data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
+        if batch_idx == 0:
+            self.start_time = time.time()
+
         data, relations = batch
         
         num_nodes = data.size(1)
-        target = self.transform_decoder(data)[:, :, 1:, :] # get target for decoder based on its transform 
+        target = self.process_decoder_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
         edge_pred, x_pred, x_var = self.forward(data)
@@ -175,6 +205,9 @@ class NRI(LightningModule):
         self.train_losses_per_epoch.append(avg_loss)
 
     def on_train_end(self):
+        training_time = time.time() - self.start_time
+        print(f"\nTraining completed in {training_time:.2f} seconds")
+
         if self.logger:
             fig, ax = plt.subplots()
             ax.plot(range(1, len(self.train_losses_per_epoch) + 1), self.train_losses_per_epoch)
@@ -188,12 +221,15 @@ class NRI(LightningModule):
             print("No logger set, so no plots made.")
         
     def validation_step(self, batch, batch_idx):
+        # [TODO]: Implement the validation step logic
         pass
 
     def test_step(self, batch, batch_idx):
+        # [TODO]: Implement the test step logic
         pass
 
     def predict_step(self, batch, batch_idx):
+        # [TODO]: Implement the prediction step logic
         pass
 
 

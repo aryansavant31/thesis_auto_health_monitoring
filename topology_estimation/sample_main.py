@@ -59,7 +59,7 @@ rec_rel = rec_rel.to(device)
 send_rel = send_rel.to(device)
 
 from topology_estimation.config import TopologyEstimatorConfig
-from topology_estimation.encoder_blocks import Encoder
+from topology_estimation.encoder import Encoder
 from torchinfo import summary
 
 tp_config = TopologyEstimatorConfig()
@@ -82,7 +82,7 @@ enocder = encoder.to(device)
 # print(summary(encoder, (64, 5, n_timesteps, n_dims)))
 print(encoder)
 
-from topology_estimation.decoder_blocks import Decoder
+from topology_estimation.decoder import Decoder
 
 tp_config.set_decoder_params()
 
