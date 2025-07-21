@@ -5,3 +5,4 @@ topology_estimation/logs/asml/
 **/__pycache__/
 
 topology_estimation/logs/
+fault_detection/logs/
