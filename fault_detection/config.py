@@ -33,7 +33,7 @@ class TrainAnomalyDetectornConfig:
         self.test_rt    = 0.2
 
     def set_run_params(self):
-        self.domain = 'time'
+        self.domain = 'time', # freq-psd, freq-amp
         self.norm_type = 'std'
         self.fex_configs = [
             get_fex_config('first_n_modes', n_modes=5)
@@ -122,15 +122,17 @@ class TrainAnomalyDetectornConfig:
                                 f'{self.data_config.machine_type}',
                                 f'{self.data_config.scenario}')
 
-                       
+        # add node name to path
+        train_log_path = os.path.join(base_path, f'node={self.data_config.node_type}')
+
         # add healthy or healthy_unhealthy config to path
-        train_log_path = self._set_ds_types_in_path(base_path)
+        train_log_path = self._set_ds_types_in_path(train_log_path)
 
         # add model type to path
         train_log_path = os.path.join(train_log_path, f'anom={self.anom_config['type']}')
 
         # add datastats to path
-        train_log_path = os.path.join(train_log_path, f'{self.data_config.timestep_id}_measurements=[{'+'.join(self.data_config.signal_types)}]')
+        train_log_path = os.path.join(train_log_path, f'{self.data_config.timestep_id}_measures=[{'+'.join(self.data_config.signal_types)}]')
 
         # add domain type to path
         train_log_path = os.path.join(train_log_path, f'domain={self.domain}')
@@ -251,7 +253,7 @@ def get_param_pickle_path(log_path):
     
     return param_path
 
-class SelectTopologyEstimatorModel():
+class SelectFaultDetectionModel():
     def __init__(self, application=None, machine=None, scenario=None, logs_dir="logs"):
         data_config = DataConfig()
 
@@ -309,14 +311,15 @@ class SelectTopologyEstimatorModel():
         # Label maps
         
         label_map = {
-            0: "<ds_type>",
-            1: "<ds_subtype>",
-            2: "<model>",
-            3: "<ds_stats>",
-            4: "<domain>",
-            5: "<fex_type>",
-            6: "<shape_compatibility>",
-            7: "<version>"
+            0: "<node_name>",
+            1: "<ds_type>",
+            2: "<ds_subtype>",
+            3: "<model>",
+            4: "<ds_stats>",
+            5: "<domain>",
+            6: "<fex_type>",
+            7: "<shape_compatibility>",
+            8: "<version>"
             }
         
         added_labels = set()

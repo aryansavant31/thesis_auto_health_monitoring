@@ -207,7 +207,7 @@ class TrainNRIConfig:
         """
         # input graph paramters
         self.sparsif_type = 'knn'  # [TODO]: Get sparsif type from get_sparsif_config() method
-        self.domain_sparsif   = 'time'  # options: time, frequency
+        self.domain_sparsif   = 'time'  # options: time, freq-psd, freq-amp
         self.fex_configs_sparsif = [
             get_fex_config('first_n_modes'),
             get_fex_config('lucas', height=9, age=20)
@@ -215,7 +215,7 @@ class TrainNRIConfig:
         self.norm_type_sparsif = 'std'  # options: std, minmax, none
 
         # encoder run parameters
-        self.domain_encoder   = 'freq'  # options: time, frequency
+        self.domain_encoder   = 'freq'  # options: time, freq-psd, freq-amp
         self.norm_type_encoder = 'std'  # options: std, minmax, none
 
         self.fex_configs_encoder = [
@@ -226,7 +226,7 @@ class TrainNRIConfig:
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
-        self.domain_decoder = 'time'   # options: time, frequency
+        self.domain_decoder = 'time'   # options: time, freq-psd, freq-amp
         self.norm_type_decoder = 'std' # options: std, minmax, none
 
         self.fex_configs_decoder = [
@@ -500,7 +500,7 @@ class TrainNRIConfig:
         train_log_path = os.path.join(train_log_path, f'enc={self.pipeline_type}-dec={self.recurrent_emd_type}',)
 
         # add datastats to path
-        train_log_path = os.path.join(train_log_path, f'{self.data_config.timestep_id}_measurements=[{'+'.join(self.data_config.signal_types)}]')
+        train_log_path = os.path.join(train_log_path, f'{self.data_config.timestep_id}_measures=[{'+'.join(self.data_config.signal_types)}]')
 
         # add sparsifier type to path
         train_log_path = self._set_sparsifier_in_path(train_log_path)
