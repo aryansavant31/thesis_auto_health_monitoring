@@ -449,7 +449,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.rec_rel = rec_rel
         self.send_rel = send_rel
 
-    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_configs=[]):
+    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[]):
         """
         Set the run parameters for the encoder.
         """

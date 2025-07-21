@@ -1,5 +1,8 @@
 import os
 import sys
+FAULT_DETECTION_DIR = os.path.dirname(os.path.abspath(__file__))
+LOGS_DIR = os.path.join(FAULT_DETECTION_DIR, "logs")
+
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
 from feature_extraction import get_fex_config
@@ -19,8 +22,11 @@ class PredictAnomalyDetectorConfig:
 class TrainAnomalyDetectornConfig:
     def __init__(self):
         self.data_config = DataConfig()
+        self.data_config.set_train_dataset()
+
         self.set_training_params()
-        self.anom_config = self.get_anom_config('SVM', kernel='rbf', C=1.0, gamma='scale')
+        self.set_run_params()
+        self.anom_config = self.get_anom_config('IF')
 
     def set_training_params(self):
         self.version = 1
@@ -33,8 +39,8 @@ class TrainAnomalyDetectornConfig:
         self.test_rt    = 0.2
 
     def set_run_params(self):
-        self.domain = 'time', # freq-psd, freq-amp
-        self.norm_type = 'std'
+        self.domain = 'time'   # freq-psd, freq-amp
+        self.norm_type = None
         self.fex_configs = [
             get_fex_config('first_n_modes', n_modes=5)
         ]  
@@ -49,8 +55,8 @@ class TrainAnomalyDetectornConfig:
             - 'IF': Isolation Forest)
         **kwargs : dict
             For all options of `anom_type`:
-            - 'SVM': `kernel`, `C`, `gamma`
-            - 'IF': `n_estimators`, `max_depth`, `min_samples_split`
+            - 'SVM': `kernel`, `nu`, `gamma`
+            - 'IF': `n_estimators`, `seed`, `contam`, `n_jobs`
 
         """
         anom_config = {}
@@ -59,6 +65,13 @@ class TrainAnomalyDetectornConfig:
         if anom_type == 'SVM':
             anom_config['kernel'] = kwargs.get('kernel', 'rbf')
             anom_config['gamma'] = kwargs.get('gamma', 'scale')
+            anom_config['nu'] = kwargs.get('nu', 0.5)
+
+        elif anom_type == 'IF':
+            anom_config['n_estimators'] = kwargs.get('n_estimators', 100)
+            anom_config['seed'] = kwargs.get('seed', 42)
+            anom_config['contam'] = kwargs.get('contam', 'auto')
+            anom_config['n_jobs'] = kwargs.get('n_jobs', -1)
 
         return anom_config  
     
@@ -117,7 +130,7 @@ class TrainAnomalyDetectornConfig:
             The number of components in each datapoint/sample in the dataset
         """
         
-        base_path = os.path.join('logs', 
+        base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
                                 f'{self.data_config.machine_type}',
                                 f'{self.data_config.scenario}')
@@ -151,6 +164,9 @@ class TrainAnomalyDetectornConfig:
         # add model version to path
         self.train_log_path = os.path.join(train_log_path, f'v{self.version}')
 
+        # check if version already exists
+        self.check_if_version_exists()
+
         return self.train_log_path
         
     def get_test_log_path(self):
@@ -168,6 +184,17 @@ class TrainAnomalyDetectornConfig:
 
         return test_log_path
     
+    def save_params(self):
+        """
+        Saves the training parameters to a pickle file in the log path.
+        """
+        if not os.path.exists(self.train_log_path):
+            os.makedirs(self.train_log_path)
+
+        param_path = os.path.join(self.train_log_path, f'train_config.pkl')
+        with open(param_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+
     def _remove_version(self):
         """
         Removes the version from the log path.
@@ -176,10 +203,10 @@ class TrainAnomalyDetectornConfig:
             user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.train_log_path)
-                print(f"Removed version {self.version} from the log path {self.train_log_path}.")
+                print(f"Overwrote exsiting version 'v{self.version}' from the log path {self.train_log_path}.")
 
             else:
-                print(f"Operation cancelled. Version {self.version} still remains.")
+                print(f"Operation cancelled. Version 'v{self.version}' still remains.")
 
     
     def _get_next_version(self):
@@ -193,6 +220,7 @@ class TrainAnomalyDetectornConfig:
             # Extract numbers and find the max
             max_v = max(int(f[1:]) for f in v_folders)
             new_v = f'v{max_v + 1}'
+            print(f"Next version folder will be: {new_v}")
         else:
             new_v = 'v1'  # If no v folders exist
 
@@ -220,14 +248,14 @@ class TrainAnomalyDetectornConfig:
         """
 
         if os.path.isdir(self.train_log_path):
-            print(f"Version {self.version} already exists in the log path '{self.train_log_path}'.")
+            print(f"'Version {self.version}' already exists in the log path '{self.train_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
                 self._remove_version()
 
             elif user_input.lower() == 'b':
-                self.log_path = self._get_next_version()
+                self.train_log_path = self._get_next_version()
 
             elif user_input.lower() == 'c':
                 print("Stopped training.")
@@ -294,7 +322,7 @@ class SelectFaultDetectionModel():
         console = Console()
         version_index_map = {os.path.normpath(v): idx for idx, v in enumerate(self.version_paths)}
 
-        # Green up to and including framework
+        # Green up to and including scenario
         tree = Tree(f"[green]{self.application}[/green]")
         machine_node = tree.add(f"[green]{self.machine}[/green]")
         scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
@@ -306,7 +334,7 @@ class SelectFaultDetectionModel():
             print(f"{idx}: logs/{vpath}")
 
     def _build_rich_tree(self, parent_node, structure, level, parent_keys, version_index_map):
-        current_path = [self.application, self.machine, self.scenario, self.framework] + parent_keys
+        current_path = [self.application, self.machine, self.scenario] + parent_keys
         is_no_fex = any("_no_fex" in k for k in parent_keys)
         # Label maps
         
@@ -330,8 +358,8 @@ class SelectFaultDetectionModel():
             if level in label_map and label_map[level] not in added_labels:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
-            # For directed graph, make the model folder under framework yellow
-            if level == 2:
+            # For directed graph, make the model folder yellow
+            if level == 3:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
                 continue
@@ -339,7 +367,7 @@ class SelectFaultDetectionModel():
             # Version folders: bold italic yellow/green name, cyan index, do not recurse inside
             if key.startswith("v") and key[1:].isdigit():
                 rel_path = os.path.normpath(os.path.join(
-                    self.application, self.machine, self.scenario, self.framework, *parent_keys, key
+                    self.application, self.machine, self.scenario, *parent_keys, key
                 ))
                 idx = version_index_map[rel_path]
                 if is_no_fex:
@@ -351,7 +379,7 @@ class SelectFaultDetectionModel():
             branch = parent_node.add(f"[white]{safe_key}[/white]")
             self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
     
-    def select_ckpt_and_params(self):
+    def select_model_and_params(self):
         self.print_tree()
         if not self.version_paths:
             print("No version paths found.")
@@ -364,11 +392,11 @@ class SelectFaultDetectionModel():
         model_file_path = get_model_pickle_path(selected_log_path)
         config_file_path = get_param_pickle_path(selected_log_path)
 
-        with open(".\\docs\\loaded_ckpt_path.txt", "w") as f:
+        with open(".\\docs\\loaded_model_path.txt", "w") as f:
             f.write(model_file_path)
 
         with open(".\\docs\\loaded_config_path.txt", "w") as f:
             f.write(config_file_path)
 
-        print(f"\nSelected .ckpt file path: {model_file_path}")
+        print(f"\nSelected model file path: {model_file_path}")
         print(f"\nSelected logged config file path: {config_file_path}\n")

@@ -51,8 +51,8 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder='std', fex_configs_encoder=[],
-                        domain_decoder='time', norm_type_decoder='std', fex_configs_decoder=[], 
+    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder=None, fex_configs_encoder=[],
+                        domain_decoder='time', norm_type_decoder=None, fex_configs_decoder=[], 
                         skip_first_edge_type=False,pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=0.5, is_hard=False):
@@ -73,9 +73,9 @@ class NRI(LightningModule):
         self.is_hard = is_hard
         self.fex_configs_decoder = fex_configs_decoder
 
-        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_type=fex_configs_encoder)
+        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_configs=fex_configs_encoder)
 
-        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_type=fex_configs_decoder, 
+        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_configs=fex_configs_decoder, 
                                     skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
                                     is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)

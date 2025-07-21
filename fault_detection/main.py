@@ -4,6 +4,7 @@ from data.config import DataConfig
 from data.load import load_spring_particle_data
 from data.transform import DataTransformer
 from feature_extraction import FeatureExtractor
+from torch.utils.tensorboard import SummaryWriter
 
 class PredictAnomalyDetectorMain:
     pass
@@ -78,7 +79,11 @@ class TrainAnomalyDetectorMain:
         self.train_log_path = self.fdet_config.get_train_log_path()
 
         # initialize logger
-        # [TODO] Implement a logger from tensorboard
+        if self.fdet_config.is_log:
+            self.fdet_config.save_params()
+            logger = SummaryWriter(log_dir=self.train_log_path)
+        else:
+            logger = None
 
         # initialize trainer
         trainer = TrainerAnomalyDetector(log_path=self.train_log_path)
@@ -90,6 +95,12 @@ class TrainAnomalyDetectorMain:
         test_log_path = self.fdet_config.get_test_log_path()
         trainer = TrainerAnomalyDetector(log_path=test_log_path)
         trainer.test(trained_anomaly_detector, self.test_loader)
+
+    def log_hyperparameters(self):
+        """
+        Logs the topology model hypperparametrs
+        """
+        pass
 
     def _verbose_load_data(self):
         """

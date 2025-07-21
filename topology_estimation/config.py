@@ -1,5 +1,9 @@
 import os
 import sys
+
+TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.abspath(__file__))
+LOGS_DIR = os.path.join(TOPOLOGY_ESTIMATION_DIR, "logs")
+
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
 import shutil
@@ -113,46 +117,68 @@ class PredictNRIConfig:
         log_path = os.path.join(log_path, config_str)
         return log_path
     
-    def get_infer_log_path(self):
+    def _set_sparsifier_in_path(self, log_path):
+        if self.sparsif_type is not None:
+            log_path = os.path.join(log_path, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
+
+            # sparsifer features
+            fex_types_sparsif = [fex['type'] for fex in self.fex_configs_sparsif]
+            if fex_types_sparsif:
+                log_path = os.path.join(log_path, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+            else:
+                log_path = os.path.join(log_path, '(sparsif)=_no_fex')           
+        else:
+            log_path = os.path.join(log_path, 'sparsif=_no_sparsif')
+
+        return log_path
+    
+    def get_test_log_path(self):
         """
         Sets the log path for the predict run.
         """
         log_config = self.load_log_config()
 
         train_log_path = log_config.train_log_path
-        if self.is_custom_test:
-            self.data_config.set_custom_test_dataset()
-            infer_log_path = os.path.join(train_log_path, 'test')
-        else:
-            self.data_config.set_predict_dataset()
-            infer_log_path= os.path.join(train_log_path, 'predict')
+        self.data_config.set_custom_test_dataset()
+        test_log_path = os.path.join(train_log_path, 'test')
 
         # add healthy or healthy_unhealthy config to path
-        infer_log_path = self._set_ds_types_in_path(infer_log_path)
+        test_log_path = self._set_ds_types_in_path(test_log_path)
 
         # add timestep_id to path
-        infer_log_path = os.path.join(infer_log_path, f'{self.data_config.timestep_id}')
+        test_log_path = os.path.join(test_log_path, f'{self.data_config.timestep_id}')
 
         # add sparsifier type to path
-        if self.sparsif_type is not None:
-            infer_log_path = os.path.join(infer_log_path, f'sparsif=[{self.sparsif_type}+{self.domain_sparsif}]') 
-
-            # sparsifer features
-            fex_types_sparsif = [fex['type'] for fex in log_config.fex_configs_sparsif]
-            if fex_types_sparsif:
-                infer_log_path = os.path.join(infer_log_path, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
-            else:
-                infer_log_path = os.path.join(infer_log_path, '(sparsif)=_no_fex')
-        else:
-            infer_log_path = os.path.join(infer_log_path, 'sparsif=_no_sparsif')
+        test_log_path = self._set_sparsifier_in_path(test_log_path)
 
         # add version
-        if self.is_custom_test:
-            infer_log_path = os.path.join(infer_log_path, f'test_v{self.version}')
-        else:
-            infer_log_path = os.path.join(infer_log_path, f'predict_v{self.version}')
+        test_log_path = os.path.join(test_log_path, f'test_v{self.version}')
 
-        return infer_log_path
+        return test_log_path
+    
+    def get_predict_log_path(self):
+        """
+        Sets the log path for the predict run.
+        """
+        log_config = self.load_log_config()
+
+        train_log_path = log_config.train_log_path
+        self.data_config.set_predict_dataset()
+        predict_log_path= os.path.join(train_log_path, 'predict')
+
+        # add healthy or healthy_unhealthy config to path
+        predict_log_path = self._set_ds_types_in_path(predict_log_path)
+
+        # add timestep_id to path
+        predict_log_path = os.path.join(predict_log_path, f'{self.data_config.timestep_id}')
+
+        # add sparsifier type to path
+        predict_log_path = self._set_sparsifier_in_path(predict_log_path)
+
+        # add version
+        predict_log_path = os.path.join(predict_log_path, f'predict_v{self.version}')
+
+        return predict_log_path
 
 
 class TrainNRIConfig:
@@ -167,7 +193,7 @@ class TrainNRIConfig:
         self.version = 1
         self.continue_training = False
 
-        self.is_log = False
+        self.is_log = True
         
         self.n_edge_types = 2
 
@@ -206,20 +232,19 @@ class TrainNRIConfig:
 
         """
         # input graph paramters
-        self.sparsif_type = 'knn'  # [TODO]: Get sparsif type from get_sparsif_config() method
+        self.sparsif_type = None  # [TODO]: Get sparsif type from get_sparsif_config() method
         self.domain_sparsif   = 'time'  # options: time, freq-psd, freq-amp
         self.fex_configs_sparsif = [
             get_fex_config('first_n_modes'),
             get_fex_config('lucas', height=9, age=20)
         ]    
-        self.norm_type_sparsif = 'std'  # options: std, minmax, none
+        self.norm_type_sparsif = None  # options: std, minmax, none
 
         # encoder run parameters
         self.domain_encoder   = 'freq'  # options: time, freq-psd, freq-amp
-        self.norm_type_encoder = 'std'  # options: std, minmax, none
+        self.norm_type_encoder = None  # options: std, minmax, none
 
         self.fex_configs_encoder = [
-            get_fex_config('first_n_modes', n_modes=69),
         ]
         # gumble softmax parameters
         self.temp = 1.0       # temperature for Gumble Softmax
@@ -227,7 +252,7 @@ class TrainNRIConfig:
 
         # decoder run parameters
         self.domain_decoder = 'time'   # options: time, freq-psd, freq-amp
-        self.norm_type_decoder = 'std' # options: std, minmax, none
+        self.norm_type_decoder = None # options: std, minmax, none
 
         self.fex_configs_decoder = [
             get_fex_config('first_n_modes', n_modes=10),
@@ -482,7 +507,7 @@ class TrainNRIConfig:
             The number of components in each datapoint/sample in the dataset
         """
         
-        base_path = os.path.join('logs', 
+        base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
                                 f'{self.data_config.machine_type}',
                                 f'{self.data_config.scenario}')
@@ -526,6 +551,9 @@ class TrainNRIConfig:
 
         # add model version to path
         self.train_log_path = os.path.join(train_log_path, f'v{self.version}')
+
+        # check if version already exists
+        self.check_if_version_exists()
 
         return self.train_log_path
 
@@ -598,21 +626,26 @@ class TrainNRIConfig:
         log_path : str
             The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
-
-        if os.path.isdir(self.train_log_path):
-            print(f"Version {self.version} already exists in the log path '{self.train_log_path}'.")
-            user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
-
-            if user_input.lower() == 'a':
-                self._remove_version()
-
-            elif user_input.lower() == 'b':
-                self.log_path = self._get_next_version()
-
-            elif user_input.lower() == 'c':
-                print("Stopped training.")
-                sys.exit()  # Exit the program gracefully
+        if self.continue_training:
+            if os.path.isdir(self.train_log_path):
+                print(f"\nContinuing training from version {self.version} in the log path '{self.train_log_path}'.")
                 
+            else:
+                print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
+        else:
+            if os.path.isdir(self.train_log_path):
+                print(f"\nVersion {self.version} already exists in the log path '{self.train_log_path}'.")
+                user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
+
+                if user_input.lower() == 'a':
+                    self._remove_version()
+
+                elif user_input.lower() == 'b':
+                    self.train_log_path = self._get_next_version()
+
+                elif user_input.lower() == 'c':
+                    print("Stopped training.")
+                    sys.exit()  # Exit the program gracefully
 
     
 # Functions to load checkpoint files

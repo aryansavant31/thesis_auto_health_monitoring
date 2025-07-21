@@ -55,12 +55,31 @@ class DataTransformer:
 
 def min_max_normalize(data, min, max):
     """
-    Normalize the data based on min and max values.
+    Normalize the data based on min and max values along the components axis (axis=2)
+
+    Parameters
+    ----------
+    data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+        Input data tensor
+    max : torch.Tensor, shape (n_nodes, 1, n_dims)
+    min : torch.Tensor, shape (n_nodes, 1, n_dims)
+        Min and max values for normalization
+
     """
-    pass
+    norm_data = (data - min) / (max - min + 1e-8)
+    return norm_data
 
 def std_normalize(data, mean, std):
     """
-    Normalize the data based on mean and standard deviation.
+    Normalize the data based on mean and standard deviation along the components axis (axis=2)
+
+    Parameters
+    ----------
+    data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+        Input data tensor
+    mean : torch.Tensor, shape (n_nodes, 1, n_dims)  
+    std : torch.Tensor, shape (n_nodes, 1, n_dims)
+        Mean and standard deviation for normalization 
     """
-    pass
+    norm_data = (data - mean) / (std + 1e-8)
+    return norm_data

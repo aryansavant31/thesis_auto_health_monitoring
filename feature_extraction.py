@@ -36,7 +36,7 @@ def get_fex_config(fex_type, **kwargs):
         return config
 
 class FeatureExtractor:
-    def __init__(self, fex_configs):
+    def __init__(self, fex_configs=[]):
         """
         Initialize the feature extractor model with the specified type.
         
@@ -48,14 +48,17 @@ class FeatureExtractor:
         self.fex_configs = fex_configs
 
     def __call__(self, data):
-        for fex_config in self.fex_configs:
+        if self.fex_configs:
+            for fex_config in self.fex_configs:
 
-            if fex_config['type'] == 'first_n_modes':
-                feature = first_n_modes(data, fex_config['n_modes'])
-            
-            #[TODO] add rest of the feature extraction methods here
+                if fex_config['type'] == 'first_n_modes':
+                    feature = first_n_modes(data, fex_config['n_modes'])
+                
+                #[TODO] add rest of the feature extraction methods here
 
-        # [TODO] concatenate the features obtained from all the fex types into a single tensor
+            # [TODO] concatenate the features obtained from all the fex types into a single tensor
+        else:
+            return data
 
 def first_n_modes(data, n_modes):
     # [TODO] Implement function to extract the first n modes from the data

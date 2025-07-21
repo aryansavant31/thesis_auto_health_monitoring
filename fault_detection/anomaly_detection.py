@@ -23,7 +23,7 @@ class AnomalyDetector:
                                      nu=anom_config['nu'])
             
             
-    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_configs=[]):
+    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[]):
         """
         Set the run parameters for the anomaly detection model
 
@@ -48,11 +48,9 @@ class AnomalyDetector:
         print("Model type:", type(self.model).__name__)
         
         if self.anom_config['type'] == 'IF':
-            print("\nNumber of input features:", self.model.n_features_in_)
             print("Number of trees in the forest:", self.model.n_estimators)
         
         elif self.anom_config['type'] == 'SVM':
-            print("\nNumber of input features:", self.model.n_features_in_)
             print("Number of support vectors:", self.model.n_support_)
             print("Support vectors shape:", self.model.support_vectors_.shape)
             print("Kernel:", self.model.kernel)
@@ -128,17 +126,22 @@ class TrainerAnomalyDetector:
         training_time = time.time() - start_time
         print(f"\nModel fitted successfully in {training_time:.2f} seconds")
 
-        # model stats
-        self.model_stats = {}
+        # model stats 
+        model_log = {}
+        model_log['metrics'] = {}
+        model_log['metrics']['training_time'] = training_time
+
         if isinstance(anomaly_detector.model, IsolationForest):
-            self.model_stats['n_in_features'] = self.model.n_features_in_
+            model_log['model_type'] = 'IsolationForest'
+            model_log['metrics']['n_trees'] = anomaly_detector.model.n_estimators
 
         elif isinstance(anomaly_detector.model, OneClassSVM):
-            self.model_stats['n_in_features'] = self.model.n_features_in_
-            self.model_stats['n_support_vectors'] = self.model.n_support_
+            model_log['model_type'] = 'OneClassSVM'
+            model_log['metrics']['n_in_features'] = anomaly_detector.model.n_features_in_
+            model_log['metrics']['n_support_vectors'] = anomaly_detector.model.n_support_  
 
-        self.log_model(anomaly_detector)
-            
+        self.log_model(anomaly_detector, model_log)
+   
     def predict(self, anomaly_detector, loader):
         """
         Predict anomalies in the provided data.
@@ -163,14 +166,21 @@ class TrainerAnomalyDetector:
         """
         Along with prediction, this method calcualtes model accuracy, precision, recall, and F1 score.
         """
-        pass
+        # process the input data
+        data = self.process_input_data(anomaly_detector, loader)
+
+        # predict anomalies
+        y_pred = anomaly_detector.model.predict(data)
+        scores = anomaly_detector.model.decision_function(data)
+        
     
-    def log_model(self, anomaly_detector):
+    def log_model(self, anomaly_detector, model_log):
         """
         Log the model information such as number of input features, support vectors, kernel type, etc.
         """
         if self.logger:
-            # [TODO]: Implement tensorboard's writter logging logic here
+            for key, value in model_log['metrics'].items():
+                self.logger.add_scalar(f"{model_log['model_type']}/{key}", value)
 
             # save model
             if not os.path.exists(self.log_path):

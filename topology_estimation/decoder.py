@@ -82,7 +82,7 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, data_stats, domain='time', norm_type='std', fex_configs=[], 
+    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[], 
                         skip_first_edge_type=False, pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=None, is_hard=False):

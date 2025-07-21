@@ -1,0 +1,88 @@
+decoder_params:
+  do_prob: 0
+  edge_mlp_config:
+  - - 64
+    - tanh
+  - - 32
+    - tanh
+  - - 16
+    - tanh
+  - - 64
+    - null
+  is_batch_norm: true
+  msg_out_size: 64
+  n_dim: 4
+  n_edge_types: 2
+  out_mlp_config:
+  - - 64
+    - tanh
+  - - 32
+    - tanh
+  - - 16
+    - tanh
+  - - 64
+    - null
+  recurrent_emd_type: gru
+encoder_params:
+  attention_output_size: 5
+  batch_norm:
+    cnn: false
+    mlp: false
+  drop_out_prob:
+    cnn: 0.0
+    mlp: 0.0
+  edge_emd_configs:
+    cnn:
+    - - 5
+      - 2
+      - 64
+    - - 8
+    mlp:
+    - - 64
+      - relu
+    - - 32
+      - relu
+    - - 16
+      - relu
+    - - 8
+      - null
+  is_residual_connection: true
+  n_components: 49
+  n_dims: 4
+  n_edge_types: 2
+  node_emd_configs:
+    cnn:
+    - - 5
+      - 2
+      - 64
+    - - 8
+    mlp:
+    - - 64
+      - relu
+    - - 32
+      - relu
+    - - 16
+      - relu
+    - - 8
+      - null
+  pipeline:
+  - - 1/node_emd.1
+    - mlp
+  - - 1/node_emd.2
+    - mlp
+  - - 1/pairwise_op
+    - mean
+  - - 1/edge_emd.1.@
+    - mlp
+  - - 2/aggregate
+    - mean
+  - - 2/node_emd.1
+    - mlp
+  - - 2/node_emd.2
+    - mlp
+  - - 2/pairwise_op
+    - concat
+  - - 2/edge_emd.1
+    - mlp
+  - - 2/edge_emd.2
+    - mlp

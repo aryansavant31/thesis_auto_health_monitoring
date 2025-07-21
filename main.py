@@ -48,13 +48,29 @@ fault isolation:
 """
 
 import argparse
-from topology_estimation.main import main as topology_estimation_main
-from topology_estimation.config import TopologyEstimatorConfig
+from topology_estimation.main import TrainNRIMain, PredictNRIMain
 
-# Convert the class instance to a dictionary to add tp config params in weights and biases project
+parser = argparse.ArgumentParser(description="Run the AFD implementation")
+parser.add_argument('--package', type=str, 
+                    choices=['fault-detection', 'topology-estimation', 'fault-isolation'],
+                    required=True, help="Package to run")
 
-# Weights and biases project init
+parser.add_argument('--run-type', type=str, 
+                    choices=['train', 'custom_test', 'predict'],
+                    required=True, help="Run type: train or infer")
 
-# if choice is topology block
-    # if choice is train
-        # weight and biases topology block init (add the configuration of topology_estimator here)
+args = parser.parse_args()
+print(f"Running '{args.run_type}' for '{args.package}' package")
+
+if args.package == 'fault-detection':
+    pass # [TODO] complete fault detection main file
+
+if args.package == 'topology-estimation':
+    if args.run_type == 'train':
+        TrainNRIMain().train()
+    elif args.run_type == 'custom_test':
+        PredictNRIMain().test_model()
+    elif args.run_type == 'predict':
+        PredictNRIMain().predict()
+    
+    
