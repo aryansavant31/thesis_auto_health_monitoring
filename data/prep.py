@@ -10,8 +10,9 @@ import os
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader
+from config import DataConfig
 
-class Loader:
+class DataPreprocessor:
     """
     Step 1. Load the data usign address
     Step 2. Then see if they are part of train or custum
@@ -21,6 +22,31 @@ class Loader:
     """
     def __init__(self):
         pass
+
+def segment_data(data, window_length, stride):
+    """
+    Segment the data into windows of window_length with given stride.
+    Parameters
+    ----------
+    data : np.ndarray, shape (n_samples, n_timesteps)
+        Input data to be segmented.
+    window_length : int
+        Length of each segment.
+    stride : int
+        Step size for moving the window.
+    
+    Returns
+    -------
+    segments : np.ndarray, shape (n_segments, window_length)
+    """
+    n_samples, n_timesteps = data.shape
+    segments = []
+    
+    for i in range(0, n_timesteps - window_length + 1, stride):
+        segment = data[:, i:i + window_length]
+        segments.append(segment)
+    
+    return np.concatenate(segments, axis=0)
 
 def load_spring_particle_data(node_ds_path, edge_ds_path, batch_size=10):
     

@@ -3,6 +3,30 @@ from typing import List, Dict
 from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
+import glob
+
+def get_augment_config(augment_type, **kwargs):
+        """
+        Get the configuration for a specific augmentation type.
+
+        Parameters
+        ----------
+        augment_type : str
+            Type of augmentation to get configuration for.
+            - 'gau': Gaussian noise
+
+        **kwargs : dict
+            For all `augment_type`, the following parameters are available:
+            - 'gau': `mean`, `std`
+        """
+        config = {}
+        config['type'] = augment_type
+
+        if augment_type == 'gau':
+            config['mean'] = kwargs.get('mean', 0.0)
+            config['std'] = kwargs.get('std', 0.1)
+        
+        return config
 
 class DataConfig:
     def __init__(self, ):
@@ -36,50 +60,56 @@ class DataConfig:
 
         To view rest of the attribute options, run this file directly.
         """
-        self.application_map = {'BER':'bearing_cwru',
+        self.application_map = {'BER':'bearing',
                                 'MSD':'mass_spring_damper',
                                 'SPP':'spring_particles',
                                 'ASM':'ASML'}
         
-        self.application    = 'SPP'
+        self.application    = 'BER'
 
-        self.machine_type   = 'P005'
-        self.scenario       = 'scenario_1'
-        self.timestep_id    = 'T50'  
-        self.node_type      = 'all_nodes'           # options ALL or the specific node type
-        self.signal_types   = ['vel', 'pos'] # in hdf5 format
+        self.machine_type   = 'cwru'
+        self.scenario       = 'scene_1'
+        self.node_type      = 'gearbox'           # options ALL or the specific node type
+        self.signal_types   = ['acc'] # in hdf5 format
+        self.format         = 'hdf5'  # options: hdf5, csv
         self.custom_test_ds = False
+
+        # segement data
+        self.window_length  = 500
+        self.stride         = 100 
         
     def set_train_dataset(self):
-        self.healthy_config   = [['H1', ['OG']], # N = Noise
-        ]
+        self.healthy_configs   = {'0_N': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)],
+        }
         
-        self.unhealthy_config = [       
-        ]
+        self.unhealthy_configs = {'0_B-007': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)], 
+                                 '0_B-021': [],    
+        }
     
     def set_custom_test_dataset(self):
         self.custom_test_ratio = 0.6
-        self.healthy_config   = [
+        self.healthy_configs   = [
         ]
         
-        self.unhealthy_config = [
+        self.unhealthy_configs = [
         ]
         
     def set_predict_dataset(self):
-        self.healthy_config   = [
+        self.healthy_configs   = [
         ]
         
-        self.unhealthy_config = [
+        self.unhealthy_configs = [
         ]
 
-    def _process_ds_addresses(self, config, ds_type):
+                
+    def _process_ds_addresses(self, config:dict, ds_type):
         """
         Process the dataset address list
 
         Parameters
         ----------
-        config : 2D list
-            Configuration list containing dataset types and their augmentations.
+        config : dict
+            Configuration dictionary containing dataset types and their augmentations.
         ds_type : str
             Type of dataset to be processed,
             Options: 'healthy' or 'unhealthy'
@@ -89,29 +119,33 @@ class DataConfig:
         node_ds_paths : list
         edge_ds_paths : list
         """
-        node_ds_paths = []
-        edge_ds_paths = []
+        node_ds_paths = {}
+        edge_ds_paths = {}
 
-        if config != []:
-            for data_level in config:
-                ds_subtype = data_level[0]  # e.g., 'H1'
-                augments = data_level[1]     # e.g., ['N1.25', 'N2.5']
-
-                # Build edge path
+        if config != {}:
+            # Build edge path
+            for ds_subtype, _ in config.items():     
                 edge_path = os.path.join(
-                    self.main_ds_path, ds_type, ds_subtype, 'processed_data', 'edges'
+                    self.main_ds_path, ds_type, ds_subtype, 'processed', 'edges'
                 )
-                edge_ds_paths.append(edge_path)
+                edge_ds_paths[ds_subtype] = edge_path
                 
-                # Build node paths
-                for augment in augments:
-                    for node_type in self.node_options:
-                        for signal_type in self.signal_types:
-                            node_path = os.path.join(
-                                self.main_ds_path, ds_type, ds_subtype, 'processed_data', 
-                                'nodes', self.timestep_id, augment, node_type, signal_type
-                            )
-                            node_ds_paths.append(node_path)
+            # Build node paths
+            for node_type in self.node_options:
+                node_ds_paths[node_type] = {}
+
+                for ds_subtype, _ in config.items():
+                    node_ds_paths[node_type][ds_subtype] = []
+
+                    for signal_type in self.signal_types:
+                        node_path = os.path.join(
+                            self.main_ds_path, ds_type, ds_subtype, 'processed', 
+                            'nodes', node_type, signal_type
+                        )
+                        # find .hdf5 file in the signal_type folder
+                        hdf5_files = glob.glob(os.path.join(node_path, f"*.{self.format}"))
+                        # append each file path to node_ds_paths
+                        node_ds_paths[node_type][ds_subtype].extend(hdf5_files)
         else:
             node_ds_paths = None
             edge_ds_paths = None
@@ -140,16 +174,16 @@ class DataConfig:
             raise FileNotFoundError(f"Dataset path does not exist: {self.main_ds_path}. Please check the dataset configuration.")
         
         # initialize dictionaries
-        node_ds_path_main = {'H': [], 'UH': []}
-        edge_ds_path_main = {'H': [], 'UH': []}
+        node_ds_path_main = {}
+        edge_ds_path_main = {}
         
         # get actual node types to iterate over
         self.view = DatasetViewer()
         self.node_options = self.view.node_types  if self.node_type == 'ALL' else [self.node_type]
         
         # Process healthy and unhealthy dataset addresses
-        node_ds_path_main['H'], edge_ds_path_main['H'] = self._process_ds_addresses(self.healthy_config, 'healthy')
-        node_ds_path_main['UH'], edge_ds_path_main['UH'] = self._process_ds_addresses(self.unhealthy_config, 'unhealthy')                                                                 
+        node_ds_path_main['OK'], edge_ds_path_main['OK'] = self._process_ds_addresses(self.healthy_configs, 'healthy')
+        node_ds_path_main['NOK'], edge_ds_path_main['NOK'] = self._process_ds_addresses(self.unhealthy_configs, 'unhealthy')                                                                 
         
         
         return node_ds_path_main, edge_ds_path_main
@@ -169,8 +203,6 @@ class DatasetViewer(DataConfig):
         self.scenarios: List[str] = []
         self.healthy_types: List[str] = []
         self.unhealthy_types: List[str] = []
-        self.ds_timesteps: List[str] = []
-        self.augment_types: List[str] = []
         self.node_types: List[str] = []
         self.signal_types: List[str] = []
 
@@ -215,8 +247,6 @@ class DatasetViewer(DataConfig):
         self.scenarios = list(set(self.scenarios))
         self.healthy_types = list(set(self.healthy_types))
         self.unhealthy_types = list(set(self.unhealthy_types))
-        self.ds_timesteps = list(set(self.ds_timesteps))
-        self.augment_types = list(set(self.augment_types))
         self.node_types = list(set(self.node_types))
         self.signal_types = list(set(self.signal_types))
     
@@ -262,7 +292,7 @@ class DatasetViewer(DataConfig):
         Returns:
             Dict: Structure of processed_data folder
         """
-        processed_data_path = health_type_path / "processed_data"
+        processed_data_path = health_type_path / "processed"
         if not processed_data_path.exists():
             return {}
         
@@ -278,41 +308,46 @@ class DatasetViewer(DataConfig):
         if nodes_path.exists():
             structure["nodes"] = {}
             
-            # Get timesteps
-            for timestep in nodes_path.iterdir():
-                if timestep.is_dir():
-                    self.ds_timesteps.append(timestep.name)
-                    structure["nodes"][timestep.name] = {}
+            # # Get timesteps
+            # for timestep in nodes_path.iterdir():
+            #     if timestep.is_dir():
+            #         self.ds_timesteps.append(timestep.name)
+            #         structure["nodes"][timestep.name] = {}
                     
-                    # Get augmentations
-                    for augment in timestep.iterdir():
-                        if augment.is_dir():
-                            self.augment_types.append(augment.name)
-                            structure["nodes"][timestep.name][augment.name] = {}
+            #         # Get augmentations
+            #         for augment in timestep.iterdir():
+            #             if augment.is_dir():
+            #                 self.augment_types.append(augment.name)
+            #                 structure["nodes"][timestep.name][augment.name] = {}
                             
-                            # Get node types
-                            for node_type in augment.iterdir():
-                                if node_type.is_dir():
-                                    self.node_types.append(node_type.name)
-                                    structure["nodes"][timestep.name][augment.name][node_type.name] = []
-                                    
-                                    # Get signal types
-                                    for signal_type in node_type.iterdir():
-                                        if signal_type.is_dir():
-                                            self.signal_types.append(signal_type.name)
-                                            structure["nodes"][timestep.name][augment.name][node_type.name].append(signal_type.name)
+            # Get node types
+            for node_type in nodes_path.iterdir():
+                if node_type.is_dir():
+                    self.node_types.append(node_type.name)
+                    structure["nodes"][node_type.name] = []
+                    
+                    # Get signal types
+                    for signal_type in node_type.iterdir():
+                        if signal_type.is_dir():
+                            self.signal_types.append(signal_type.name)
+                            structure["nodes"][node_type.name].append(signal_type.name)
+                            
+                            # # get all files in the signal type folder
+                            # for file_type in signal_type.iterdir():
+                            #     self.file_types.append(file_type.name)
+                            #     structure["nodes"][node_type.name].append
         
         return structure
     
     def get_node_path(self, application: str, machine_type: str, scenario: str, 
-                     ds_type: str, ds_subtype: str, timestep: str, 
-                     augment: str, node_type: str, signal_type: str) -> Path:
+                     ds_type: str, ds_subtype: str,
+                     node_type: str, signal_type: str) -> Path:
         """
         Get full path to a specific node dataset.
         """
         return (self.base_dir / self.base_path / application / machine_type / scenario /
-                ds_type / ds_subtype / "processed_data" / "nodes" /
-                timestep / augment / node_type / signal_type)
+                ds_type / ds_subtype / "processed" / "nodes" /
+                node_type / signal_type)
     
     def get_edges_path(self, application: str, machine_type: str, scenario: str,
                       ds_type: str, ds_subtype: str) -> Path:
@@ -320,7 +355,7 @@ class DatasetViewer(DataConfig):
         Get full path to edges dataset.
         """
         return (self.base_dir / self.base_path / application / machine_type / scenario /
-                ds_type / ds_subtype / "processed_data" / "edges")
+                ds_type / ds_subtype / "processed" / "edges")
     
     def print_rich_tree(self) -> None:
         """
@@ -334,7 +369,7 @@ class DatasetViewer(DataConfig):
     def _build_rich_tree(self, parent_node, structure, level=0):
         """Helper method to build rich tree structure."""
         # Define folder names that should be white
-        white_folders = {'healthy', 'unhealthy', 'nodes', 'edges', 'processed_data'}
+        white_folders = {'healthy', 'unhealthy', 'nodes', 'edges', 'processed'}
         
         # Track which type labels have been added at this level
         added_labels = set()
@@ -354,12 +389,6 @@ class DatasetViewer(DataConfig):
                 if key in self.unhealthy_types and 'unhealthy_type' not in added_labels:
                     parent_node.add(f"[blue]<unhealthy_type>[/blue]")
                     added_labels.add('unhealthy_type')
-                if key in self.ds_timesteps and 'timestep' not in added_labels:
-                    parent_node.add(f"[blue]<timestep>[/blue]")
-                    added_labels.add('timestep')
-                if key in self.augment_types and 'augment_type' not in added_labels:
-                    parent_node.add(f"[blue]<augment_type>[/blue]")
-                    added_labels.add('augment_type')
                 if key in self.node_types and 'node_type' not in added_labels:
                     parent_node.add(f"[blue]<node_type>[/blue]")
                     added_labels.add('node_type')

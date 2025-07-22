@@ -86,6 +86,21 @@ class TrainerAnomalyDetector:
             - normalization
         Feature extraction
         Conversion from tensor to numpy array for fitting
+
+        Parameters
+        ----------
+        anomaly_detector : AnomalyDetector
+            The anomaly detection model to be trained.
+        loader : DataLoader
+            DataLoader containing the training data.
+            data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+                Input data tensor containing the trajectory data
+
+        Returns
+        -------
+        data_np : np.ndarray
+            Numpy array of shape (batch_size * n_nodes, n_components * n_dims) ready for fitting.
+            (shape meaning (total number of signals/samples, total number of features))
         """
         data_list = []
         for data, _ in loader:
@@ -97,7 +112,7 @@ class TrainerAnomalyDetector:
                 data = anomaly_detector.feature_extractor(data)
 
             # convert data to numpy array for fitting
-            data_np = data.view(data.size(0), -1).detach().numpy() # shape (batch size, n_nodes*n_components*n_dims)
+            data_np = data.view(data.size(0)*data.size(1), -1).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
             data_list.append(data_np)
 
         return np.vstack(data_list)
@@ -172,7 +187,7 @@ class TrainerAnomalyDetector:
         # predict anomalies
         y_pred = anomaly_detector.model.predict(data)
         scores = anomaly_detector.model.decision_function(data)
-        
+
     
     def log_model(self, anomaly_detector, model_log):
         """
