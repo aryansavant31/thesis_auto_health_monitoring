@@ -9,19 +9,323 @@ import numpy as np
 import os
 import torch
 from torch.utils.data.dataset import TensorDataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
+from config import DataConfig
+import h5py
+from augment import add_gaussian_noise
+from collections import defaultdict
 from config import DataConfig
 
 class DataPreprocessor:
     """
     Step 1. Load the data usign address
-    Step 2. Then see if they are part of train or custum
-                if train, then split into train, test, val
-                if custum, only take data that is requried (80%, 70% etc.)
-    Step 3. put data inside dataloader and return it
+    Step 2. Process the data (augmentation and segmentation of data)
+    Step 3. Then see if they are part of fault_detection or topology_estimation
+                if fault_detection, label is node_label
+                if topology_estimation, label is edge_label
+    Step 4. call either get_train_val_test_dataloaders or get_custom_dataloader
     """
-    def __init__(self):
-        pass
+    def __init__(self, package):
+        """
+        Parameters
+        ----------
+        package : str
+            The package to load data for.
+            ('fault_detection', 'topology_estimation')
+        """
+        self.data_config = DataConfig()
+        self.package = package
+      
+    def load_dataset(self, run_type):
+        """
+        Load the dataset based on the run type.
+        """
+        if run_type == 'train':
+            self.data_config.set_train_dataset()
+        elif run_type == 'custom_test':
+            self.data_config.set_custom_test_dataset()
+        elif run_type == 'predict':
+            self.data_config.set_predict_dataset()
+        else:
+            raise ValueError(f"Unknown run type: {run_type}")
+        
+        # load node and edge data paths
+        node_path_map, edge_path_map = self.data_config.get_dataset_paths()
+
+        # prepare data and labels from paths
+        x_node, y_node, y_edge = {}, {}, {}
+
+        for ds_type in node_path_map.keys():
+            node_type_map = node_path_map[ds_type]
+            ds_subtype_map = edge_path_map[ds_type]
+            if node_type_map is not None and ds_subtype_map is not None:
+                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = self.prepare_data_from_path(node_type_map, ds_subtype_map, ds_type)
+            else:
+                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = None, None, None
+
+        # create datasets
+        if self.package == 'fault_detection':
+            dataset = self.make_dataset(x_node, y_node)
+        elif self.package == 'topology_estimation':
+            dataset = self.make_dataset(x_node, y_edge)    
+
+        return dataset
+
+    def get_custom_dataloader(self, run_type, batch_size=50):
+        """
+        Create a custom dataloader for the specified run type.
+        Parameters
+        ----------
+        run_type : str
+            The type of run to perform.
+            ('custom_test', 'predict').
+        batch_size : int
+        """
+        # load the dataset
+        dataset = self.load_dataset(run_type)
+
+        # retain only the desired number of samples
+        total_samples = len(dataset)
+
+        if run_type == 'custom_test':
+            desired_samples = int(total_samples * self.data_config.custom_test_ratio)
+        elif run_type == 'predict':
+            desired_samples = int(total_samples * self.data_config.predict_ratio)
+        else:
+            raise ValueError(f"Unknown run type: {run_type}")
+        
+        remainder_samples = total_samples - desired_samples
+
+        if desired_samples < total_samples:
+            dataset, _ = random_split(dataset, [desired_samples, remainder_samples])
+        
+        # create custom dataloader
+        custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+        return custom_loader
+    
+    def get_train_val_test_dataloaders(self, train_rt, test_rt, val_rt=0, batch_size=50):
+        """
+        Create train, validation, and test dataloaders.
+
+        Parameters
+        ----------
+        batch_size : int
+            The batch size for the dataloaders.
+        """
+        # load the dataset
+        dataset = self.load_dataset('train')
+
+        # split the dataset into train, validation, and test sets
+        total_samples = len(dataset)
+
+        # error checks
+        if train_rt + test_rt + val_rt > 1:
+            raise ValueError("The sum of train, test, and validation ratios must not exceed 1.")
+        
+        if self.package == 'topology_estimation' and val_rt == 0:
+            raise ValueError("Validation set is required for topology estimation. Please provide a non-zero validation ratio.")
+        
+        n_train = int(train_rt * total_samples)
+        n_test = int(test_rt * total_samples)
+        n_val = int(val_rt * total_samples)
+        remainder_samples = total_samples - n_train - n_test - n_val
+
+        if self.package == 'topology_estimation':
+            if n_train + n_test + n_val < total_samples:
+                train_set, test_set, val_set, _ = random_split(dataset, [n_train, n_test, n_val, remainder_samples])
+            else:
+                train_set, test_set, val_set = random_split(dataset, [n_train, n_test, n_val])
+
+        elif self.package == 'fault_detection':
+            if n_train + n_test < total_samples:
+                train_set, test_set, _ = random_split(dataset, [n_train, n_test, remainder_samples])
+            else:
+                train_set, test_set = random_split(dataset, [n_train, n_test])
+
+            val_set = None  # No validation set for fault detection
+        
+        # create dataloaders
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True) if val_set is not None else None
+        
+        return train_loader, test_loader ,val_loader
+        
+
+    def make_dataset(self, x, y):
+        """
+        Create a TensorDataset from the provided data and labels.
+        Parameters
+        ----------
+        x : dict
+            Dictionary containing tensor data for each dataset type.
+        y : dict
+            Dictionary containing tensor labels for each dataset type.
+        Returns
+        -------
+        TensorDataset
+            A dataset containing the (concatenated) data and labels.
+        """
+        x_list, y_list = [], []
+        for ds_type in x.keys():
+            if x[ds_type] is not None and y[ds_type] is not None:
+                x_list.append(x[ds_type])
+                y_list.append(y[ds_type])
+
+        if not x_list or not y_list:
+            raise ValueError("No data available to create datasets.")
+        
+        x_all = torch.cat(x_list, dim=0)
+        y_all = torch.cat(y_list, dim=0)
+
+        return TensorDataset(x_all, y_all)
+
+    def prepare_data_from_path(self, node_type_map, ds_subtype_map, ds_type):
+        """
+        Parameters
+        ----------
+        node_type_map : dict
+            A dictionary containing paths to the datasets.
+        ds_subtype_map : dict
+            A dictionary containing paths to the edge datasets.
+        ds_type : str
+            The type of dataset
+            ('OK' for healthy, 'NOK' for unhealthy).
+
+        Returns
+        -------
+        final_node_data : torch.Tensor
+            The processed node data.
+        final_node_labels : torch.Tensor
+            The labels for the node data.
+        final_edge_data : torch.Tensor
+            The processed edge label data.
+        """
+        # step 1: process node data
+        node_dim_collect = self.process_node_data(node_type_map, ds_type)
+
+        # step 2: flatten edge matrices per ds_subtype
+        ds_subtype_edge_map = self.process_edge_data(ds_subtype_map)
+
+        # step 3: prepare node and edge data
+        all_ds_subtype_node_blocks = []  # each: (n_samples, n_nodes, t, d)
+        all_ds_subtype_edges = []        # each: (n_samples, n_edges)
+
+        for ds_subtype in ds_subtype_map.keys():
+            per_node_tensors = []
+
+            for node_type in sorted(node_type_map.keys()):
+                dim_segment_arrays = []
+
+                for dim_idx in sorted(node_dim_collect[node_type][ds_subtype].keys()):
+                    all_segments = np.concatenate(node_dim_collect[node_type][ds_subtype][dim_idx], axis=0)
+                    dim_segment_arrays.append(all_segments)
+
+                # truncate to min_segments across dims
+                min_segments = min(arr.shape[0] for arr in dim_segment_arrays)
+                trimmed_segments = [arr[:min_segments] for arr in dim_segment_arrays]
+
+                # concatenate dims → (min_segments, t, n_dims)
+                node_tensor = np.concatenate(trimmed_segments, axis=-1)
+                per_node_tensors.append(node_tensor)
+
+            # Now we have list of (min_segments, t, n_dims) for each node
+            # stack nodes → (min_segments, n_nodes, t, n_dims)
+            node_block = np.stack(per_node_tensors, axis=1)
+            all_ds_subtype_node_blocks.append(node_block)
+
+            # copy flat edge per segment
+            edge_vec = ds_subtype_edge_map[ds_subtype]
+            edge_block = np.tile(edge_vec, (min_segments, 1))  # (min_segments, n_edges)
+            all_ds_subtype_edges.append(edge_block)
+
+        # step 4: Final concatenation across ds_subtypes
+        final_node_data_np = np.concatenate(all_ds_subtype_node_blocks, axis=0)  # (n_samples, n_nodes, t, d)
+        final_edge_data_np = np.concatenate(all_ds_subtype_edges, axis=0)        # (n_samples, n_edges)
+        
+        if ds_type == 'OK':
+            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
+        elif ds_type == 'NOK':
+            final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+
+        # convert to torch tensors
+        final_node_data = torch.tensor(final_node_data_np, dtype=torch.float32)
+        final_node_labels = torch.tensor(final_node_labels_np, dtype=torch.float32)
+        final_edge_data = torch.tensor(final_edge_data_np, dtype=torch.float32)
+
+        return final_node_data, final_node_labels, final_edge_data
+
+    def process_node_data(self, node_type_map, ds_type):
+        # node_type -> ds_subtype -> dim -> segments
+        node_dim_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+        # process node data
+        for node_type, ds_subtype_map in node_type_map.items():
+            for ds_subtype, signal_type_paths in ds_subtype_map.items():
+                for dim_idx, hdf5_path in enumerate(signal_type_paths):
+
+                    # load node data
+                    with h5py.File(hdf5_path, 'r') as f:
+                        data = f['data'][:]
+
+                    # Apply augmentations
+                    if ds_type == 'OK':
+                       data = self.add_augmentations(data, self.data_config.healthy_configs[ds_subtype], ds_subtype)   
+
+                    elif ds_type == 'NOK':
+                       data = self.add_augmentations(data, self.data_config.unhealthy_configs[ds_subtype], ds_subtype) 
+                                                     
+                    data_segments = segment_data(data, self.data_config.window_length, self.data_config.stride)
+                    data_segments = np.expand_dims(data_segments, axis=-1)  # (n_segments, n_timesteps, 1)
+
+                    # store segments
+                    node_dim_collect[node_type][ds_subtype][dim_idx].append(data_segments)
+
+        return node_dim_collect
+    
+    def add_augmentations(self, data, augment_configs, ds_subtype="_"):
+        augmented_data_list = []
+
+        if augment_configs == []:
+            raise ValueError(f"No original or augmentation configs for the dataset subtype {ds_subtype} provided.")
+
+        for augment_config in augment_configs:
+            # original data
+            if augment_config['type'] == 'OG':
+                augmented_data = data
+            # gaussian noise
+            if augment_config['type'] == 'gau':
+                augmented_data = add_gaussian_noise(data, augment_config['mean'], augment_config['std'])
+
+            # apply other augmentations if needed
+            # ...
+
+            augmented_data_list.append(augmented_data)
+
+        return np.concatenate(augmented_data_list, axis=0)
+    
+    def process_edge_data(self, ds_subtype_map):
+        ds_subtype_edge_map = {}
+
+        for ds_subtype, edge_hdf5_path in ds_subtype_map.items():
+            with h5py.File(edge_hdf5_path, 'r') as f:
+                adj_mat = f['adj_mat'][:]  # shape: (n_nodes, n_nodes)
+
+            flat_edge = []
+            for r in range(adj_mat.shape[0]):
+                for c in range(adj_mat.shape[1]):
+                    if r != c:
+                        flat_edge.append(adj_mat[r, c])
+            ds_subtype_edge_map[ds_subtype] = np.array(flat_edge)
+        
+        return ds_subtype_edge_map
+    
+
+
+# =======================================================================
+# Helper functions for data processing
+# =======================================================================    
 
 def segment_data(data, window_length, stride):
     """
@@ -47,6 +351,7 @@ def segment_data(data, window_length, stride):
         segments.append(segment)
     
     return np.concatenate(segments, axis=0)
+
 
 def load_spring_particle_data(node_ds_path, edge_ds_path, batch_size=10):
     

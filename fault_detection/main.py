@@ -1,7 +1,7 @@
 from anomaly_detection import AnomalyDetector, TrainerAnomalyDetector
 from config import TrainAnomalyDetectornConfig, PredictAnomalyDetectorConfig, get_model_pickle_path
 from data.config import DataConfig
-from data.load import load_spring_particle_data
+from data.prep import load_spring_particle_data
 from data.transform import DataTransformer
 from feature_extraction import FeatureExtractor
 from torch.utils.tensorboard import SummaryWriter

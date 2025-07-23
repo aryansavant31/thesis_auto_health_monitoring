@@ -145,8 +145,8 @@ class TrainNRIConfig:
         # dataset parameters
         self.batch_size = 50
         self.train_rt   = 0.8
-        self.test_rt    = 0.2
-        self.val_rt     = 1 - (self.train_rt + self.test_rt)
+        self.test_rt    = 0.1
+        self.val_rt     = 0.1
 
         # optimization parameters
         self.max_epochs = 5
@@ -811,11 +811,15 @@ class HelperClass:
         Returns a list of strings representing the augment configurations.
         """
         augment_str_list = []
-
+        
         for augment_config in augment_configs:
-            augment_str = f"{augment_config['type']}_"
+            idx = 0
+            augment_str = f"{augment_config['type']}"
             for key, value in augment_config.items():
                 if key != 'type':
+                    if idx == 0:
+                        augment_str += "_" 
+                        idx += 1
                     augment_str += f"{key[0]}={value}"
 
             augment_str_list.append(augment_str)

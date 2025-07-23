@@ -7,7 +7,7 @@ from .config import TrainNRIConfig, PredictNRIConfig, get_checkpoint_path
 from .nri import NRI
 from data.config import DataConfig
 from .graph_structures import FullyConnectedGraph, SparisifiedGraph
-from data.load import load_spring_particle_data
+from data.prep import load_spring_particle_data
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import os

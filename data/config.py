@@ -13,11 +13,11 @@ def get_augment_config(augment_type, **kwargs):
         ----------
         augment_type : str
             Type of augmentation to get configuration for.
-            - 'gau': Gaussian noise
 
         **kwargs : dict
             For all `augment_type`, the following parameters are available:
-            - 'gau': `mean`, `std`
+            - 'OG' (Original data): No additional parameters
+            - 'gau' (Gaussian noise): `mean`, `std`
         """
         config = {}
         config['type'] = augment_type
@@ -79,29 +79,37 @@ class DataConfig:
         self.stride         = 100 
         
     def set_train_dataset(self):
-        self.healthy_configs   = {'0_N': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)],
+        self.healthy_configs   = {
+            '0_N': [get_augment_config('OG'), 
+                    get_augment_config('gau', mean=0.1, std=0.2), 
+                    get_augment_config('gau', mean=0.2, std=0.3)],
         }
         
-        self.unhealthy_configs = {'0_B-007': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)], 
-                                 '0_B-021': [],    
+        self.unhealthy_configs = {
+            '0_B-007': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)], 
+            '0_B-021': [get_augment_config('OG')],    
         }
     
     def set_custom_test_dataset(self):
         self.custom_test_ratio = 0.6
-        self.healthy_configs   = [
-        ]
+        self.healthy_configs   = {
+        }
         
-        self.unhealthy_configs = [
-        ]
+        self.unhealthy_configs = {
+
+        }
         
     def set_predict_dataset(self):
-        self.healthy_configs   = [
-        ]
+        self.predict_ratio = 0.8
+        self.healthy_configs   = {
+            '0_N': [get_augment_config('OG'), 
+                    get_augment_config('gau', mean=0.1, std=0.2), 
+                    get_augment_config('gau', mean=0.2, std=0.3)],
+        }
         
-        self.unhealthy_configs = [
-        ]
-
-                
+        self.unhealthy_configs = {
+        }
+    
     def _process_ds_addresses(self, config:dict, ds_type):
         """
         Process the dataset address list
@@ -128,7 +136,9 @@ class DataConfig:
                 edge_path = os.path.join(
                     self.main_ds_path, ds_type, ds_subtype, 'processed', 'edges'
                 )
-                edge_ds_paths[ds_subtype] = edge_path
+                # find .hdf5 file in the signal_type folder
+                edge_hdf5_files = glob.glob(os.path.join(edge_path, f"*.{self.format}"))[0]
+                edge_ds_paths[ds_subtype] = edge_hdf5_files
                 
             # Build node paths
             for node_type in self.node_options:
@@ -143,9 +153,9 @@ class DataConfig:
                             'nodes', node_type, signal_type
                         )
                         # find .hdf5 file in the signal_type folder
-                        hdf5_files = glob.glob(os.path.join(node_path, f"*.{self.format}"))
+                        node_hdf5_files = glob.glob(os.path.join(node_path, f"*.{self.format}"))
                         # append each file path to node_ds_paths
-                        node_ds_paths[node_type][ds_subtype].extend(hdf5_files)
+                        node_ds_paths[node_type][ds_subtype].extend(node_hdf5_files)
         else:
             node_ds_paths = None
             edge_ds_paths = None
