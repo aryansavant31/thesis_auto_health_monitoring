@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
-from feature_extraction import get_fex_config
+from feature_extraction.features import get_fex_config
 from data.config import DataConfig
 import pickle
 
@@ -135,7 +135,7 @@ class TrainNRIConfig:
         self.helper = HelperClass()
 
     def set_training_params(self):        
-        self.version = 1
+        self.model_num = 1
         self.continue_training = False
 
         self.is_log = True
@@ -410,32 +410,32 @@ class TrainNRIConfig:
         train_log_path = self.helper.set_ds_types_in_path(self.data_config, train_log_path)
 
         # add model type to path
-        train_log_path = os.path.join(train_log_path, f'enc={self.pipeline_type}-dec={self.recurrent_emd_type}',)
+        train_log_path = os.path.join(train_log_path, f'E={self.pipeline_type}-D={self.recurrent_emd_type}',)
 
         # add datastats to path
-        train_log_path = os.path.join(train_log_path, f'T{self.data_config.window_length}_measures=[{'+'.join(self.data_config.signal_types)}]')
+        train_log_path = os.path.join(train_log_path, f"T{self.data_config.window_length}_m=[{'+'.join(self.data_config.signal_types)}]")
 
         # add sparsifier type to path
         train_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, train_log_path)
 
         # add domain type of encoder and decoder to path
-        train_log_path = os.path.join(train_log_path, f'[enc]={self.domain_encoder}-[dec]={self.domain_decoder}')
+        train_log_path = os.path.join(train_log_path, f'[E]={self.domain_encoder}-[D]={self.domain_decoder}')
 
         # add feature type to path
         fex_types_encoder = [fex['type'] for fex in self.fex_configs_encoder]
         fex_types_decoder = [fex['type'] for fex in self.fex_configs_decoder]
 
         if fex_types_encoder and fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f'(enc)=[{'+'.join(fex_types_encoder)}]-(dec)=[{'+'.join(fex_types_decoder)}]')
+            train_log_path = os.path.join(train_log_path, f"(E)=[{'+'.join(fex_types_encoder)}]-(D)=[{'+'.join(fex_types_decoder)}]")
         elif fex_types_encoder and not fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f'(enc)=[{'+'.join(fex_types_encoder)}]-(dec)=_no_fex')
+            train_log_path = os.path.join(train_log_path, f"(E)=[{'+'.join(fex_types_encoder)}]-(D)=_no_fex")
         elif not fex_types_encoder and fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f'(enc)=_no_fex-(dec)=[{'+'.join(fex_types_decoder)}]')
+            train_log_path = os.path.join(train_log_path, f"(E)=_no_fex-(D)=[{'+'.join(fex_types_decoder)}]")
         elif not fex_types_encoder and not fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, '(enc)=_no_fex-(dec)=_no_fex')
+            train_log_path = os.path.join(train_log_path, "(E)=_no_fex-(D)=_no_fex")
 
         # add model shape compatibility stats to path
-        train_log_path = os.path.join(train_log_path, f'enc(comps)={n_components}-dec(dims)={n_dim}')
+        train_log_path = os.path.join(train_log_path, f'E(comps)={n_components}-D(dims)={n_dim}')
 
         # add model version to path
         self.train_log_path = os.path.join(train_log_path, f'v{self.version}')
@@ -626,7 +626,7 @@ class SelectTopologyEstimatorModel():
 
     def _build_rich_tree(self, parent_node, structure, level, parent_keys, version_index_map):
         current_path = [self.application, self.machine, self.scenario, self.framework] + parent_keys
-        is_no_sparsif = any("_no_sparsif" in k for k in parent_keys)
+        is_no_sparsif = any("_no_spf" in k for k in parent_keys)
 
         # Label maps
         if self.framework == "skeleton_graph":
@@ -768,7 +768,7 @@ class SparsifierConfig:
                 unhealthy_config_str_list.append(f'{unhealthy_type}_[{augment_str}]')
 
             if config_str:
-                config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+                config_str += f"_+_{'_+_'.join(unhealthy_config_str_list)}"
             else:
                 config_str += '_+_'.join(unhealthy_config_str_list)
 
@@ -799,7 +799,7 @@ class SparsifierConfig:
         # sparsifer features
         fex_types_sparsif = [fex['type'] for fex in self.fex_configs]
         if fex_types_sparsif:
-            infer_log_path_sk = os.path.join(infer_log_path_sk, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+            infer_log_path_sk = os.path.join(infer_log_path_sk, f"(sparsif)=[{'+'.join(fex_types_sparsif)}]")
         else:
             infer_log_path_sk = os.path.join(infer_log_path_sk, '(sparsif)=_no_fex')
 
@@ -831,10 +831,10 @@ class HelperClass:
         Takes into account both empty healthy and unhealthy config and sets the path accordingly.
         """
         if data_config.unhealthy_configs == {}:
-            log_path = os.path.join(log_path, 'healthy')
+            log_path = os.path.join(log_path, 'OK')
 
         elif data_config.unhealthy_configs != {}:
-            log_path = os.path.join(log_path, 'healthy_unhealthy')
+            log_path = os.path.join(log_path, 'OK_NOK')
 
         # add ds_subtype to path
         config_str = ''
@@ -861,7 +861,7 @@ class HelperClass:
                 unhealthy_config_str_list.append(f'{unhealthy_type}[{augment_str_main}]')
 
             if config_str:
-                config_str += f'_+_{'_+_'.join(unhealthy_config_str_list)}'
+                config_str += f"_+_{'_+_'.join(unhealthy_config_str_list)}"
             else:
                 config_str += '_+_'.join(unhealthy_config_str_list)
 
@@ -870,16 +870,16 @@ class HelperClass:
     
     def set_sparsifier_in_path(self, sparsif_type, domain_sparsif, fex_configs_sparsif, log_path):
         if sparsif_type is not None:
-            log_path = os.path.join(log_path, f'sparsif=[{sparsif_type}+{domain_sparsif}]') 
+            log_path = os.path.join(log_path, f'spf=[{sparsif_type}+{domain_sparsif}]') 
 
             # sparsifer features
             fex_types_sparsif = [fex['type'] for fex in fex_configs_sparsif]
             if fex_types_sparsif:
-                log_path = os.path.join(log_path, f'(sparsif)=[{'+'.join(fex_types_sparsif)}]')
+                log_path = os.path.join(log_path, f"(spf)=[{'+'.join(fex_types_sparsif)}]")
             else:
-                log_path = os.path.join(log_path, '(sparsif)=_no_fex')           
+                log_path = os.path.join(log_path, '(spf)=_no_fex')           
         else:
-            log_path = os.path.join(log_path, 'sparsif=_no_sparsif')
+            log_path = os.path.join(log_path, 'spf=_no_spf')
 
         return log_path
     
