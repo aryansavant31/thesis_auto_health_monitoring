@@ -136,7 +136,7 @@ class PredictAnomalyDetectorConfig:
             user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(log_path)
-                print(f"Removed version {self.version} from the log path {log_path}.")
+                print(f"Overwrote version {self.version} from the log path {log_path}.")
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
@@ -182,7 +182,7 @@ class PredictAnomalyDetectorConfig:
                     self.predict_log_path = self._get_next_version(log_path, run_type)
 
             elif user_input.lower() == 'c':
-                print("Stopped training.")
+                print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully
 
 
@@ -364,22 +364,6 @@ class TrainAnomalyDetectorConfig:
 
         return os.path.join(parent_dir, new_model)
     
-    # def save_params(self):
-    #     """
-    #     Saves the training parameters.
-    #     """
-    #     if not os.path.exists(self.train_log_path):
-    #         os.makedirs(self.train_log_path)
-
-    #     config_path = os.path.join(self.train_log_path, f'train_config.pkl')
-    #     with open(config_path, 'wb') as f:
-    #         pickle.dump(self.__dict__, f)
-
-    #     model_path = os.path.join(self.train_log_path, f'{self.node_type}_fault_detector_{self.model_num}.txt')
-    #     with open(model_path, 'w') as f:
-    #         f.write(self.model_id)
-
-    #     print(f"Model parameters saved to {self.train_log_path}.")
 
     def check_if_version_exists(self):
         """
@@ -683,4 +667,17 @@ class SelectFaultDetectionModel():
             print(f"\nSelected model file path: {model_file_path}")
             print(f"\nSelected logged config file path: {config_file_path}\n")
 
-
+    
+if __name__ == "__main__":
+    user_text = "To view/select trained fault detection models, type (a)\nTo view custom tested models, type (b)\nTo view predicted models, type (c)\nEnter input: "
+    user_input = input(user_text).strip("'\"")
+    if user_input.lower() == 'a':
+        run_type = 'train'
+    elif user_input.lower() == 'b':
+        run_type = 'custom_test'
+    elif user_input.lower() == 'c':
+        run_type = 'predict'
+    else:
+        raise ValueError("Invalid input. Please enter 'a', 'b', or 'c'.")
+    model_selector = SelectFaultDetectionModel(run_type=run_type)
+    model_selector.select_model_and_params()

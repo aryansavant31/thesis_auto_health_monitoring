@@ -1,1 +1,1 @@
-c:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\train\etypes=2\model_2.2\train_config.pkl
+c:\AFD\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\(gearbox)_fault_detector_1\train_config.pkl

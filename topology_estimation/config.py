@@ -217,7 +217,7 @@ class PredictNRIConfig:
                     self.predict_log_path = self._get_next_version(log_path, run_type)
 
             elif user_input.lower() == 'c':
-                print("Stopped training.")
+                print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully
 
 
@@ -565,16 +565,16 @@ class TrainNRIConfig:
     
     def _remove_version(self):
         """
-        Removes the version from the log path.
+        Removes the model from the log path.
         """
         if os.path.exists(self.train_log_path):
-            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.train_log_path}? (y/n): ")
+            user_input = input(f"Are you sure you want to remove the 'edge_estimator_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.train_log_path)
-                print(f"Removed version {self.model_num} from the log path {self.train_log_path}.")
+                print(f"Overwrote 'edge_estimator_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}.")
 
             else:
-                print(f"Operation cancelled. Version {self.model_num} still remains.")
+                print(f"Operation cancelled. edge_estimator_{self.n_edge_types}.{self.model_num} still remains.")
 
     
     def _get_next_version(self):
@@ -623,13 +623,13 @@ class TrainNRIConfig:
         """
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
-                print(f"\nContinuing training from model {self.model_num} in the log path '{self.train_log_path}'.")
+                print(f"\nContinuing training from 'edge_estimator_{self.n_edge_types}.{self.model_num}' in the log path '{self.train_log_path}'.")
                 
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
         else:
             if os.path.isdir(self.train_log_path):
-                print(f"\nModel number {self.model_num} already exists in the log path '{self.train_log_path}'.")
+                print(f"\n'edge_estimator_{self.n_edge_types}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
                 user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
                 if user_input.lower() == 'a':
@@ -711,8 +711,7 @@ class SelectTopologyEstimatorModel():
         Build the tree structure from all model_x.txt files under the framework directory.
         """
         base = self.logs_dir / self.application / self.machine / self.scenario / self.framework / self.run_type 
-        if not base.exists():
-            raise FileNotFoundError(f"Path does not exist: {base}")
+        os.makedirs(base, exist_ok=True)
 
         txt_files = list(base.rglob(f"{self.file_name}_*.txt"))
         self.version_txt_files = txt_files
@@ -1074,8 +1073,17 @@ class HelperClass:
         return log_path
     
 if __name__ == "__main__":
-
-    model_selector = SelectTopologyEstimatorModel(framework='directed_graph', run_type='custom_test')
+    user_text = "To view/select trained topology (edge) estimation models, type (a)\nTo view custom tested models, type (b)\nTo view predicted models, type (c)\nEnter input: "
+    user_input = input(user_text).strip("'\"")
+    if user_input.lower() == 'a':
+        run_type = 'train'
+    elif user_input.lower() == 'b':
+        run_type = 'custom_test'
+    elif user_input.lower() == 'c':
+        run_type = 'predict'
+    else:
+        raise ValueError("Invalid input. Please enter 'a', 'b', or 'c'.")
+    model_selector = SelectTopologyEstimatorModel(framework='directed_graph', run_type=run_type)
     model_selector.select_ckpt_and_params()
 
 
