@@ -1,0 +1,108 @@
+class SelectFaultDetectionModel():
+    def __init__(self, application=None, machine=None, scenario=None, logs_dir="logs"):
+        data_config = DataConfig()
+
+        self.logs_dir = Path(logs_dir)
+        if application is None or machine is None or scenario is None:
+            self.application = data_config.application_map[data_config.application]
+            self.machine = data_config.machine_type
+            self.scenario = data_config.scenario
+        else:
+            self.application = application
+            self.machine = machine
+            self.scenario = scenario
+        self.structure = {}
+        self.version_paths = []
+        self._build_structure()
+
+    def _build_structure(self):
+        base = self.logs_dir / self.application / self.machine / self.scenario 
+        if not base.exists():
+            raise FileNotFoundError(f"Path does not exist: {base}")
+        self.structure = self._explore(base, 0)
+
+    def _explore(self, path, level):
+        structure = {}
+        if not path.is_dir():
+            return structure
+        # Sort by name, ascending (case-insensitive)
+        for item in sorted(path.iterdir(), key=lambda x: x.name.lower()):
+            if item.is_dir():
+                key = item.name
+                if key.startswith("v") and key[1:].isdigit():
+                    rel_path = item.relative_to(self.logs_dir)
+                    self.version_paths.append(str(rel_path))
+                structure[key] = self._explore(item, level + 1)
+        return structure
+
+    def print_tree(self):
+        console = Console()
+        version_index_map = {os.path.normpath(v): idx for idx, v in enumerate(self.version_paths)}
+
+        # Green up to and including scenario
+        tree = Tree(f"[green]{self.application}[/green]")
+        machine_node = tree.add(f"[green]{self.machine}[/green]")
+        scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
+        
+        self._build_rich_tree(scenario_node, self.structure, 0, [], version_index_map)
+        console.print(tree)
+        print("\nAvailable version paths:")
+        for idx, vpath in enumerate(self.version_paths):
+            print(f"{idx}: logs/{vpath}")
+
+    def _build_rich_tree(self, parent_node, structure, level, parent_keys, version_index_map):
+        current_path = [self.application, self.machine, self.scenario] + parent_keys
+        is_no_fex = any("_no_fex" in k for k in parent_keys)
+        # Label maps
+        
+        label_map = {
+            0: "<node_name>",
+            1: "<ds_type>",
+            2: "<ds_subtype>",
+            3: "<model>",
+            4: "<ds_stats>",
+            5: "<domain>",
+            6: "<fex_type>",
+            7: "<shape_compatibility>",
+            8: "<version>"
+            }
+        
+        added_labels = set()
+        for key, value in structure.items():
+            # Escape brackets for Rich markup
+            safe_key = key.replace('[', '\\[')
+            # Add blue label if at the correct level and not already added
+            if level in label_map and label_map[level] not in added_labels:
+                parent_node.add(f"[blue]{label_map[level]}[/blue]")
+                added_labels.add(label_map[level])
+            # For directed graph, make the model folder yellow
+            if level == 3:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
+                continue
+
+            # Version folders: bold italic yellow/green name, cyan index, do not recurse inside
+            if key.startswith("v") and key[1:].isdigit():
+                rel_path = os.path.normpath(os.path.join(
+                    self.application, self.machine, self.scenario, *parent_keys, key
+                ))
+                idx = version_index_map[rel_path]
+                if is_no_fex:
+                    parent_node.add(f"[bold][italic][bright_yellow]{safe_key}[/bright_yellow][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                else:
+                    parent_node.add(f"[bold][italic][bright_green]{safe_key}[/bright_green][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                continue
+            # All other folders: white
+            branch = parent_node.add(f"[white]{safe_key}[/white]")
+            self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
+    
+    def select_model_and_params(self):
+        self.print_tree()
+        if not self.version_paths:
+            print("No version paths found.")
+            return None
+        idx = int(input("\nEnter the index number of the version path to select: "))
+        if idx < 0 or idx >= len(self.version_paths):
+            print("Invalid index.")
+            return None
+        selected_log_path = os.path.join("logs", self.version_paths[idx])

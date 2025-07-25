@@ -1,0 +1,1 @@
+c:\AFD\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\(gearbox)_fault_detector_1\train_config.pkl

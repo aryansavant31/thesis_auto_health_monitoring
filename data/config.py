@@ -93,6 +93,9 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.custom_test_ratio = 0.6
         self.healthy_configs   = {
+            '0_N': [get_augment_config('OG'), 
+                    get_augment_config('gau', mean=0.1, std=0.2), 
+                    get_augment_config('gau', mean=0.2, std=0.3)],
         }
         
         self.unhealthy_configs = {

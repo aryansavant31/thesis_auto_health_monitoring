@@ -179,7 +179,7 @@ class PredictNRIConfig:
     def _get_next_version(self, log_path, run_type):
         parent_dir = os.path.dirname(log_path)
 
-        # List all folders in parent_dir that match 'model_<number>'
+        # List all folders in parent_dir that match 'edge_estimator_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
         model_folders = [f for f in folders if re.match(fr'^{run_type}_{self.n_edge_types}\.\d+$', f)]
 
@@ -204,7 +204,7 @@ class PredictNRIConfig:
         """
  
         if os.path.isdir(log_path):
-            print(f"\n{run_type} number {self.version} for already exists for model_{self.selected_model_num} in the log path '{log_path}'.")
+            print(f"\n{run_type} number {self.version} for already exists for edge_estimator_{self.selected_model_num} in the log path '{log_path}'.")
             user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {run_type} (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
@@ -503,7 +503,7 @@ class TrainNRIConfig:
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"model_{self.n_edge_types}.{self.model_num}")
+        self.train_log_path = os.path.join(model_path, f"edge_estimator_{self.n_edge_types}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -537,7 +537,7 @@ class TrainNRIConfig:
         self.model_id = os.path.join(model_path, f'(E) (comps = {n_components}), (D) (dims = {n_dim})')
 
         # # add model version to path
-        # self.model_id = os.path.join(model_path, f'model_{self.model_num}')
+        # self.model_id = os.path.join(model_path, f'edge_estimator_{self.model_num}')
 
         # check if version already exists
         self.check_if_version_exists()
@@ -580,17 +580,17 @@ class TrainNRIConfig:
     def _get_next_version(self):
         parent_dir = os.path.dirname(self.train_log_path)
 
-        # List all folders in parent_dir that match 'model_<number>'
+        # List all folders in parent_dir that match 'edge_estimator_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'^model_{self.n_edge_types}\.\d+$', f)]
+        model_folders = [f for f in folders if re.match(fr'^edge_estimator_{self.n_edge_types}\.\d+$', f)]
 
         if model_folders:
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f'model_{self.n_edge_types}.{self.model_num}'
+            new_model = f'edge_estimator_{self.n_edge_types}.{self.model_num}'
         else:
-            new_model = f'model_{self.n_edge_types}.1'  # If no v folders exist
+            new_model = f'edge_estimator_{self.n_edge_types}.1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
@@ -605,7 +605,7 @@ class TrainNRIConfig:
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
         
-        model_path = os.path.join(self.train_log_path, f'model_{self.n_edge_types}.{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'edge_estimator_{self.n_edge_types}.{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -623,7 +623,7 @@ class TrainNRIConfig:
         """
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
-                print(f"\nContinuing training from version {self.model_num} in the log path '{self.train_log_path}'.")
+                print(f"\nContinuing training from model {self.model_num} in the log path '{self.train_log_path}'.")
                 
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
@@ -695,7 +695,7 @@ class SelectTopologyEstimatorModel():
         self.run_type = run_type  # 'train' or 'predict'
 
         if self.run_type == 'train':
-            self.file_name = 'model'
+            self.file_name = 'edge_estimator'
         elif self.run_type == 'custom_test':
             self.file_name = 'custom_test'
         elif self.run_type == 'predict':
@@ -744,7 +744,7 @@ class SelectTopologyEstimatorModel():
                 node = node.setdefault(part, {})
             if "_versions" not in node:
                 node["_versions"] = []
-            # Sort versions by model number before assigning vnum
+            # Sort versions by edge_estimator number before assigning vnum
             sorted_versions = sorted(
                 versions,
                 key=lambda x: int(re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]) else 0
