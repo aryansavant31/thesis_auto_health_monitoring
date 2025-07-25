@@ -1,1 +1,1 @@
-logs\spring_particles\P005\scenario_1\directed_graph\enc=mlp_1-dec=gru\healthy\H1_[OG]\dp=49-dim=4-etype=2\sparsif=[knn+time]\(sparsif)=[first_n_modes+lucas]\[enc]=freq-[dec]=time\(enc)=[first_n_modes]-(dec)=[first_n_modes]\v28\checkpoints\epoch=59-step=285.ckpt
+c:\AFD\_logs\topology_estimation\bearing\cwru\scene_1\directed_graph\etypes=2\train\model_7\checkpoints\epoch=4-step=25.ckpt

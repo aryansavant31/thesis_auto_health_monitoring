@@ -12,7 +12,8 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import os
 from data.transform import DataTransformer
-from feature_extraction import FeatureExtractor
+from feature_extraction.features import FeatureExtractor
+from data.prep import DataPreprocessor
 
 class PredictNRIMain:
     def __init__(self):
@@ -162,7 +163,7 @@ class PredictNRIMain:
 class TrainNRIMain:
     def __init__(self):
         self.tp_config = TrainNRIConfig()
-        self.data_config = DataConfig()
+        self.data_preprocessor = DataPreprocessor(package='topology_estimation')
 
     def train(self):
         # load data
@@ -203,12 +204,14 @@ class TrainNRIMain:
         # self.test_model()
         
     def load_data(self):
-        # set train data parameters
-        self.data_config.set_train_dataset()
-        # get dataset paths
-        node_ds_paths, edge_ds_paths = self.data_config.get_dataset_paths()
         # load data
-        self.train_loader, self.valid_loader, self.test_loader, self.data_stats = load_spring_particle_data(node_ds_paths, edge_ds_paths, self.tp_config.batch_size)
+        # self.train_loader, self.test_loader, self.valid_loader, self.data_stats = self.data_preprocessor.get_training_dataloaders(
+        #     train_rt=self.tp_config.train_rt, 
+        #     test_rt=self.tp_config.test_rt, 
+        #     val_rt=self.tp_config.val_rt,
+        #     batch_size=self.tp_config.batch_size
+        # )
+        self.train_loader, self.valid_loader, self.test_loader, self.data_stats = load_spring_particle_data()
 
         # for getting data stats
         dataiter = iter(self.train_loader)

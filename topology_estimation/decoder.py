@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from .utils.models import MLP, GRU
 from pytorch_lightning import LightningModule
 from data.transform import DataTransformer
-from feature_extraction import FeatureExtractor
+from feature_extraction.features import FeatureExtractor
 
 class Decoder(LightningModule):
 

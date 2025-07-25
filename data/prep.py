@@ -10,11 +10,10 @@ import os
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader, random_split
-from config import DataConfig
+from .config import DataConfig
 import h5py
-from augment import add_gaussian_noise
+from .augment import add_gaussian_noise
 from collections import defaultdict
-from config import DataConfig
 
 class DataPreprocessor:
     """
@@ -104,7 +103,7 @@ class DataPreprocessor:
 
         return custom_loader
     
-    def get_train_val_test_dataloaders(self, train_rt, test_rt, val_rt=0, batch_size=50):
+    def get_training_dataloaders(self, train_rt, test_rt, val_rt=0, batch_size=50):
         """
         Create train, validation, and test dataloaders.
 
@@ -150,7 +149,7 @@ class DataPreprocessor:
         test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True) if val_set is not None else None
         
-        return train_loader, test_loader ,val_loader
+        return train_loader, test_loader ,val_loader, []
         
 
     def make_dataset(self, x, y):
@@ -353,15 +352,19 @@ def segment_data(data, window_length, stride):
     return np.concatenate(segments, axis=0)
 
 
-def load_spring_particle_data(node_ds_path, edge_ds_path, batch_size=10):
+def load_spring_particle_data(batch_size=10):
     
-    for node_path in node_ds_path['H']:
-        if os.path.basename(node_path) == 'pos':
-            loc_path = node_path
-        elif os.path.basename(node_path) == 'vel':
-            vel_path = node_path
+    # for node_path in node_ds_path['H']:
+    #     if os.path.basename(node_path) == 'pos':
+    #         loc_path = node_path
+    #     elif os.path.basename(node_path) == 'vel':
+    #         vel_path = node_path
 
-    edge_path = edge_ds_path['H'][0]  # Assuming there's only one edge dataset for 'H'
+    # edge_path = edge_ds_path['H'][0]  # Assuming there's only one edge dataset for 'H'
+
+    loc_path = "C:\\AFD\\data\\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\pos"
+    vel_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\\vel"
+    edge_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\edges"
 
     loc_train = np.load(f'{loc_path}\\loc_train_springs' + '5' + '.npy')
     vel_train = np.load(f'{vel_path}\\vel_train_springs' + '5' + '.npy')

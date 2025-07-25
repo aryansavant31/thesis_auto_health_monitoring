@@ -14,6 +14,7 @@ from rich.console import Console
 from feature_extraction.features import get_fex_config
 from data.config import DataConfig
 import pickle
+import glob
 
 
 class PredictNRIConfig:
@@ -181,7 +182,6 @@ class TrainNRIConfig:
         self.domain_sparsif   = 'time'  # options: time, freq-psd, freq-amp
         self.fex_configs_sparsif = [
             get_fex_config('first_n_modes'),
-            get_fex_config('lucas', height=9, age=20)
         ]    
         self.norm_type_sparsif = None  # options: std, minmax, none
 
@@ -196,7 +196,7 @@ class TrainNRIConfig:
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
-        self.domain_decoder = 'time'   # options: time, freq-psd, freq-amp
+        self.domain_decoder = 'freq'   # options: time, freq-psd, freq-amp
         self.norm_type_decoder = None # options: std, minmax, none
 
         self.fex_configs_decoder = [
@@ -401,44 +401,47 @@ class TrainNRIConfig:
                                 f'{self.data_config.scenario}')
 
         # For directed graph path 
-        train_log_path = os.path.join(base_path, 'directed_graph',)  # add framework type
+        model_path = os.path.join(base_path, 'directed_graph',)  # add framework type
 
         # add num of edge types to path
-        train_log_path = os.path.join(train_log_path, f'etypes={self.n_edge_types}')
+        model_path = os.path.join(model_path, f'etypes={self.n_edge_types}')
+
+        # get train log path
+        self.train_log_path = os.path.join(model_path, 'train', f"model_{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
-        train_log_path = self.helper.set_ds_types_in_path(self.data_config, train_log_path)
+        model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        train_log_path = os.path.join(train_log_path, f'E={self.pipeline_type}-D={self.recurrent_emd_type}',)
+        model_path = os.path.join(model_path, f'E = {self.pipeline_type}, D = {self.recurrent_emd_type}',)
 
         # add datastats to path
-        train_log_path = os.path.join(train_log_path, f"T{self.data_config.window_length}_m=[{'+'.join(self.data_config.signal_types)}]")
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length} m=[{', '.join(self.data_config.signal_types)}]")
 
         # add sparsifier type to path
-        train_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, train_log_path)
+        model_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, model_path)
 
         # add domain type of encoder and decoder to path
-        train_log_path = os.path.join(train_log_path, f'[E]={self.domain_encoder}-[D]={self.domain_decoder}')
+        model_path = os.path.join(model_path, f'[E] = {self.domain_encoder}, [D] = {self.domain_decoder}')
 
         # add feature type to path
         fex_types_encoder = [fex['type'] for fex in self.fex_configs_encoder]
         fex_types_decoder = [fex['type'] for fex in self.fex_configs_decoder]
 
         if fex_types_encoder and fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f"(E)=[{'+'.join(fex_types_encoder)}]-(D)=[{'+'.join(fex_types_decoder)}]")
+            model_path = os.path.join(model_path, f"(E) = [{' + '.join(fex_types_encoder)}], (D) = [{' + '.join(fex_types_decoder)}]")
         elif fex_types_encoder and not fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f"(E)=[{'+'.join(fex_types_encoder)}]-(D)=_no_fex")
+            model_path = os.path.join(model_path, f"(E) = [{' + '.join(fex_types_encoder)}], (D) = no_fex")
         elif not fex_types_encoder and fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, f"(E)=_no_fex-(D)=[{'+'.join(fex_types_decoder)}]")
+            model_path = os.path.join(model_path, f"(E) = no_fex, (D) = [{' + '.join(fex_types_decoder)}]")
         elif not fex_types_encoder and not fex_types_decoder:
-            train_log_path = os.path.join(train_log_path, "(E)=_no_fex-(D)=_no_fex")
+            model_path = os.path.join(model_path, "(E) = no_fex, (D) = no_fex")
 
         # add model shape compatibility stats to path
-        train_log_path = os.path.join(train_log_path, f'E(comps)={n_components}-D(dims)={n_dim}')
+        self.model_id = os.path.join(model_path, f'E (comps) = {n_components}, D (dims) = {n_dim}')
 
-        # add model version to path
-        self.train_log_path = os.path.join(train_log_path, f'v{self.version}')
+        # # add model version to path
+        # self.model_id = os.path.join(model_path, f'model_{self.model_num}')
 
         # check if version already exists
         self.check_if_version_exists()
@@ -449,17 +452,17 @@ class TrainNRIConfig:
         
         test_log_path = os.path.join(self.train_log_path, 'test')
 
-        # add healthy or healthy_unhealthy config to path
-        test_log_path = self.helper.set_ds_types_in_path(self.data_config, test_log_path)
+        # # add healthy or healthy_unhealthy config to path
+        # test_log_path = self.helper.set_ds_types_in_path(self.data_config, test_log_path)
 
-        # add timestep id to path
-        test_log_path = os.path.join(test_log_path, f'T{self.data_config.window_length}')
+        # # add timestep id to path
+        # test_log_path = os.path.join(test_log_path, f'T{self.data_config.window_length}')
 
-        # add sparsifier type to path
-        test_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_log_path)
+        # # add sparsifier type to path
+        # test_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_log_path)
 
-        # add test version to path
-        test_log_path = os.path.join(test_log_path, f'test_v0')
+        # # add test version to path
+        # test_log_path = os.path.join(test_log_path, f'test_v0')
 
         return test_log_path
 
@@ -472,27 +475,28 @@ class TrainNRIConfig:
             user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.train_log_path)
-                print(f"Removed version {self.version} from the log path {self.train_log_path}.")
+                print(f"Removed version {self.model_num} from the log path {self.train_log_path}.")
 
             else:
-                print(f"Operation cancelled. Version {self.version} still remains.")
+                print(f"Operation cancelled. Version {self.model_num} still remains.")
 
     
     def _get_next_version(self):
         parent_dir = os.path.dirname(self.train_log_path)
 
-        # List all folders in parent_dir that match 'v<number>'
+        # List all folders in parent_dir that match 'model_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        v_folders = [f for f in folders if re.match(r'^v\d+$', f)]
+        model_folders = [f for f in folders if re.match(r'^model_\d+$', f)]
 
-        if v_folders:
+        if model_folders:
             # Extract numbers and find the max
-            max_v = max(int(f[1:]) for f in v_folders)
-            new_v = f'v{max_v + 1}'
+            max_model = max(int(f.split('_')[1]) for f in model_folders)
+            self.model_num = max_model + 1
+            new_model = f'model_{self.model_num}'
         else:
-            new_v = 'v1'  # If no v folders exist
+            new_model = 'model_1'  # If no v folders exist
 
-        return os.path.join(parent_dir, new_v)
+        return os.path.join(parent_dir, new_model)
     
     def save_params(self):
         """
@@ -501,9 +505,17 @@ class TrainNRIConfig:
         if not os.path.exists(self.train_log_path):
             os.makedirs(self.train_log_path)
 
-        param_path = os.path.join(self.train_log_path, f'train_config.pkl')
-        with open(param_path, 'wb') as f:
+        config_path = os.path.join(self.train_log_path, f'train_config.pkl')
+        with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
+        
+        model_path = os.path.join(self.train_log_path, f'model_{self.model_num}.txt')
+        with open(model_path, 'w') as f:
+            f.write(self.model_id)
+
+        print(f"Model parameters saved to {self.train_log_path}.")
+
+        
 
     def check_if_version_exists(self):
         """
@@ -516,13 +528,13 @@ class TrainNRIConfig:
         """
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
-                print(f"\nContinuing training from version {self.version} in the log path '{self.train_log_path}'.")
+                print(f"\nContinuing training from version {self.model_num} in the log path '{self.train_log_path}'.")
                 
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
         else:
             if os.path.isdir(self.train_log_path):
-                print(f"\nVersion {self.version} already exists in the log path '{self.train_log_path}'.")
+                print(f"\nModel number {self.model_num} already exists in the log path '{self.train_log_path}'.")
                 user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
                 if user_input.lower() == 'a':
@@ -572,7 +584,7 @@ def get_param_pickle_path(log_path):
     return param_path
     
 class SelectTopologyEstimatorModel():
-    def __init__(self, framework, application=None, machine=None, scenario=None, logs_dir="logs"):
+    def __init__(self, framework, application=None, machine=None, scenario=None, logs_dir=LOGS_DIR):
         data_config = DataConfig()
 
         self.logs_dir = Path(logs_dir)
@@ -587,48 +599,77 @@ class SelectTopologyEstimatorModel():
         self.framework = framework
         self.structure = {}
         self.version_paths = []
-        self._build_structure()
+        self.version_txt_files = []
+        self._build_structure_from_txt()
 
-    def _build_structure(self):
+    def _build_structure_from_txt(self):
+        """
+        Build the tree structure from all model_x.txt files under the framework directory.
+        """
         base = self.logs_dir / self.application / self.machine / self.scenario / self.framework
         if not base.exists():
             raise FileNotFoundError(f"Path does not exist: {base}")
-        self.structure = self._explore(base, 0)
 
-    def _explore(self, path, level):
+        txt_files = list(base.rglob("model_*.txt"))
+        self.version_txt_files = txt_files
+
+        path_map = {}
+        for txt_file in txt_files:
+            try:
+                with open(txt_file, "r") as f:
+                    model_path = f.read().strip()
+            except Exception as e:
+                print(f"Could not read {txt_file}: {e}")
+                continue
+            # Remove base logs dir and split by os.sep
+            rel_path = os.path.relpath(model_path, str(self.logs_dir))
+            path_parts = rel_path.split(os.sep)
+            # Only keep the parts after framework (skip first 4: app, machine, scenario, framework)
+            path_parts = path_parts[4:]
+            model_name = txt_file.stem  # e.g., model_3
+            key = tuple(path_parts)
+            if key not in path_map:
+                path_map[key] = []
+            path_map[key].append((str(txt_file), model_name))
+
         structure = {}
-        if not path.is_dir():
-            return structure
-        # Sort by name, ascending (case-insensitive)
-        for item in sorted(path.iterdir(), key=lambda x: x.name.lower()):
-            if item.is_dir():
-                key = item.name
-                if key.startswith("v") and key[1:].isdigit():
-                    rel_path = item.relative_to(self.logs_dir)
-                    self.version_paths.append(str(rel_path))
-                structure[key] = self._explore(item, level + 1)
-        return structure
+        for path_parts, versions in path_map.items():
+            node = structure
+            # Add all parts as nodes, including the last one
+            for part in path_parts:
+                node = node.setdefault(part, {})
+            if "_versions" not in node:
+                node["_versions"] = []
+            # Sort versions by model number before assigning vnum
+            sorted_versions = sorted(
+                versions,
+                key=lambda x: int(re.search(r'model_(\d+)', x[1]).group(1)) if re.search(r'model_(\d+)', x[1]) else 0
+            )
+            for idx, (txt_file, model_name) in enumerate(sorted_versions, 1):
+                node["_versions"].append({
+                    "model_name": model_name,
+                    "txt_file": txt_file,
+                    "vnum": idx,
+                    "full_path": path_parts,
+                })
+                self.version_paths.append(txt_file)
+        self.structure = structure
 
     def print_tree(self):
         console = Console()
-        version_index_map = {os.path.normpath(v): idx for idx, v in enumerate(self.version_paths)}
-
         # Green up to and including framework
         tree = Tree(f"[green]{self.application}[/green]")
         machine_node = tree.add(f"[green]{self.machine}[/green]")
         scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
         framework_node = scenario_node.add(f"[green]{self.framework}[/green]")
-        self._build_rich_tree(framework_node, self.structure, 0, [], version_index_map)
+        self._build_rich_tree(framework_node, self.structure, 0, [])
         console.print(tree)
         print("\nAvailable version paths:")
-        for idx, vpath in enumerate(self.version_paths):
-            print(f"{idx}: logs/{vpath}")
+        for idx, txt_file in enumerate(self.version_paths):
+            print(f"{idx}: {os.path.dirname(txt_file)}")
 
-    def _build_rich_tree(self, parent_node, structure, level, parent_keys, version_index_map):
-        current_path = [self.application, self.machine, self.scenario, self.framework] + parent_keys
-        is_no_sparsif = any("_no_spf" in k for k in parent_keys)
-
-        # Label maps
+    def _build_rich_tree(self, parent_node, structure, level, parent_keys):
+        is_no_sparsif = any("spf = no_spf" in k for k in parent_keys)
         if self.framework == "skeleton_graph":
             label_map = {
                 0: "<ds_type>",
@@ -643,7 +684,7 @@ class SelectTopologyEstimatorModel():
                 0: "<n_edge_types>",
                 1: "<ds_type>",
                 2: "<ds_subtype>",
-                3: "<model>",     
+                3: "<model>",
                 4: "<ds_stats>",
                 5: "<sparsif_type>",
                 6: "<domain>",
@@ -656,7 +697,7 @@ class SelectTopologyEstimatorModel():
                 0: "<n_edge_types>",
                 1: "<ds_type>",
                 2: "<ds_subtype>",
-                3: "<model>", 
+                3: "<model>",
                 4: "<ds_stats>",
                 5: "<sparsif_type>",
                 6: "<sparsif_fex_type>",
@@ -666,8 +707,10 @@ class SelectTopologyEstimatorModel():
                 10: "<versions>"
             }
         added_labels = set()
+        # Add all keys except _versions first
         for key, value in structure.items():
-            # Escape brackets for Rich markup
+            if key == "_versions":
+                continue
             safe_key = key.replace('[', '\\[')
             # Add blue label if at the correct level and not already added
             if level in label_map and label_map[level] not in added_labels:
@@ -676,29 +719,34 @@ class SelectTopologyEstimatorModel():
             # For directed graph, make the model folder under framework yellow
             if self.framework == "directed_graph" and level == 3:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
-                self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
             # For skeleton graph, make the model folder under framework yellow
             if self.framework == "skeleton_graph" and level == 2:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
-                self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
-                continue
-
-            # Version folders: bold italic yellow/green name, cyan index, do not recurse inside
-            if key.startswith("v") and key[1:].isdigit():
-                rel_path = os.path.normpath(os.path.join(
-                    self.application, self.machine, self.scenario, self.framework, *parent_keys, key
-                ))
-                idx = version_index_map[rel_path]
-                if is_no_sparsif:
-                    parent_node.add(f"[bold][italic][bright_yellow]{safe_key}[/bright_yellow][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
-                else:
-                    parent_node.add(f"[bold][italic][bright_green]{safe_key}[/bright_green][/italic][/bold] [bright_cyan][{idx}][/bright_cyan]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
             # All other folders: white
             branch = parent_node.add(f"[white]{safe_key}[/white]")
-            self._build_rich_tree(branch, value, level + 1, parent_keys + [key], version_index_map)
-    
+            self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+        # Now add <versions> label and version nodes if present
+        if "_versions" in structure:
+            if "<versions>" not in added_labels:
+                parent_node.add(f"[blue]<versions>[/blue]")
+                added_labels.add("<versions>")
+            # --- SORT VERSIONS BY MODEL NUMBER ---
+            sorted_versions = sorted(
+                structure["_versions"],
+                key=lambda v: int(re.search(r'model_(\d+)', v['model_name']).group(1)) if re.search(r'model_(\d+)', v['model_name']) else 0
+            )
+            for v in sorted_versions:
+                model_disp = f"{v['model_name']} (v{v['vnum']})"
+                idx = self.version_paths.index(v["txt_file"])
+                if is_no_sparsif:
+                    parent_node.add(f"[bright_yellow]{model_disp}[/bright_yellow] [bright_cyan][{idx}][/bright_cyan]")
+                else:
+                    parent_node.add(f"[bright_green]{model_disp}[/bright_green] [bright_cyan][{idx}][/bright_cyan]")
+
     def select_ckpt_and_params(self):
         self.print_tree()
         if not self.version_paths:
@@ -708,7 +756,9 @@ class SelectTopologyEstimatorModel():
         if idx < 0 or idx >= len(self.version_paths):
             print("Invalid index.")
             return None
-        selected_log_path = os.path.join("logs", self.version_paths[idx])
+        selected_log_path = os.path.dirname(self.version_paths[idx])
+        # Use the directory containing model_x.txt as the log path
+
         ckpt_file_path = get_checkpoint_path(selected_log_path)
         config_file_path = get_param_pickle_path(selected_log_path)
 
@@ -844,11 +894,11 @@ class HelperClass:
 
             for healthy_type, augment_configs  in data_config.healthy_configs.items():
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)                    
-                augment_str_main = '--'.join(augment_str_list) 
+                augment_str_main = ', '.join(augment_str_list) 
 
                 healthy_config_str_list.append(f'{healthy_type}[{augment_str_main}]')
 
-            config_str = '_+_'.join(healthy_config_str_list)
+            config_str = ' + '.join(healthy_config_str_list)
 
         # add unhealthy config to path if exists
         if data_config.unhealthy_configs != {}:
@@ -856,30 +906,30 @@ class HelperClass:
 
             for unhealthy_type, augment_configs in data_config.unhealthy_configs.items():
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)
-                augment_str_main = '--'.join(augment_str_list) 
+                augment_str_main = ', '.join(augment_str_list) 
 
                 unhealthy_config_str_list.append(f'{unhealthy_type}[{augment_str_main}]')
 
             if config_str:
-                config_str += f"_+_{'_+_'.join(unhealthy_config_str_list)}"
+                config_str += f" + {' + '.join(unhealthy_config_str_list)}"
             else:
-                config_str += '_+_'.join(unhealthy_config_str_list)
+                config_str += ' + '.join(unhealthy_config_str_list)
 
         log_path = os.path.join(log_path, config_str)
         return log_path
     
     def set_sparsifier_in_path(self, sparsif_type, domain_sparsif, fex_configs_sparsif, log_path):
         if sparsif_type is not None:
-            log_path = os.path.join(log_path, f'spf=[{sparsif_type}+{domain_sparsif}]') 
+            log_path = os.path.join(log_path, f'spf = [{sparsif_type} + {domain_sparsif}]') 
 
             # sparsifer features
             fex_types_sparsif = [fex['type'] for fex in fex_configs_sparsif]
             if fex_types_sparsif:
-                log_path = os.path.join(log_path, f"(spf)=[{'+'.join(fex_types_sparsif)}]")
+                log_path = os.path.join(log_path, f"(spf) = [{' + '.join(fex_types_sparsif)}]")
             else:
-                log_path = os.path.join(log_path, '(spf)=_no_fex')           
+                log_path = os.path.join(log_path, '(spf) = no_fex')           
         else:
-            log_path = os.path.join(log_path, 'spf=_no_spf')
+            log_path = os.path.join(log_path, 'spf = no_spf')
 
         return log_path
     
