@@ -21,13 +21,18 @@ class PredictNRIConfig:
     def __init__(self):
         self.helper = HelperClass()
         self.data_config = DataConfig()
+        self.load_log_config()
         self.set_predict_params()
         self.set_run_params()
         self.set_ckpt_path()
+
+        self.train_log_path = self.log_config.train_log_path
+        self.n_edge_types = self.log_config.n_edge_types
+
+        self.selected_model_num = f"{self.n_edge_types}.{self.log_config.model_num}"
         
     def set_predict_params(self):
-        self.version = 1
-        self.is_custom_test = True
+        self.version = 2
         self.batch_size = 50
         self.amt_rt = 0.8
 
@@ -35,25 +40,23 @@ class PredictNRIConfig:
         pass
 
     def set_run_params(self):
-        log_config = self.load_log_config()
-
        # input graph paramters
         self.sparsif_type     = 'path'
-        self.domain_sparsif   = log_config.domain_sparsif  # options: time, frequency
-        self.fex_configs_sparsif = log_config.fex_configs_sparsif  # first feature extraction config type
+        self.domain_sparsif   = self.log_config.domain_sparsif  # options: time, frequency
+        self.fex_configs_sparsif = self.log_config.fex_configs_sparsif  # first feature extraction config type
 
-        self.domain_encoder   = log_config.domain_encoder
-        self.norm_type_encoder = log_config.norm_type_encoder
-        self.fex_configs_encoder = log_config.fex_configs_encoder
+        self.domain_encoder   = self.log_config.domain_encoder
+        self.norm_type_encoder = self.log_config.norm_type_encoder
+        self.fex_configs_encoder = self.log_config.fex_configs_encoder
 
         # Gumble Softmax Parameters
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      # if True, use hard Gumble Softmax
 
         # decoder run parameters
-        self.domain_decoder = log_config.domain_decoder   # options: time, frequency
-        self.norm_type_decoder = log_config.norm_type_decoder
-        self.fex_configs_decoder = log_config.fex_configs_decoder
+        self.domain_decoder = self.log_config.domain_decoder   # options: time, frequency
+        self.norm_type_decoder = self.log_config.norm_type_decoder
+        self.fex_configs_decoder = self.log_config.fex_configs_decoder
 
         self.skip_first_edge_type = True 
         # TASK: add rest of the decoder run params
@@ -63,7 +66,7 @@ class PredictNRIConfig:
             self.ckpt_path = f.read() 
 
     def load_log_config(self):
-        log_config = TrainNRIConfig()
+        self.log_config = TrainNRIConfig()
 
         with open(".\\docs\\loaded_config_path.txt", "r") as f:
             log_config_path = f.read()
@@ -72,57 +75,150 @@ class PredictNRIConfig:
             raise ValueError(f"\nThe parameter file does not exists")
         
         with open(log_config_path, 'rb') as f:
-            log_config.__dict__.update(pickle.load(f))
-
-        return log_config
+            self.log_config.__dict__.update(pickle.load(f))
     
-    def get_test_log_path(self):
+    def get_custom_test_log_path(self):
         """
         Sets the log path for the predict run.
         """
-        log_config = self.load_log_config()
-
-        train_log_path = log_config.train_log_path
         self.data_config.set_custom_test_dataset()
-        test_log_path = os.path.join(train_log_path, 'test')
+
+        test_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}custom_test{os.sep}")
+        self.test_log_path = os.path.join(test_num_path, f'custom_test_{self.n_edge_types}.{self.version}')
 
         # add healthy or healthy_unhealthy config to path
-        test_log_path = self.helper.set_ds_types_in_path(self.data_config, test_log_path)
+        test_num_path = self.helper.set_ds_types_in_path(self.data_config, test_num_path)
 
         # add timestep_id to path
-        test_log_path = os.path.join(test_log_path, f'T{self.data_config.window_length}')
+        test_num_path = os.path.join(test_num_path, f'T{self.data_config.window_length}')
 
         # add sparsifier type to path
-        test_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_log_path)
+        self.test_id = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_num_path)
 
-        # add version
-        test_log_path = os.path.join(test_log_path, f'test_v{self.version}')
+        # # add version
+        # self.test_id = os.path.join(test_num_path, f'test_num_{self.version}')
 
-        return test_log_path
+        # check if version already exists
+        self.check_if_version_exists(self.test_log_path, 'custom_test')
+
+        return self.test_log_path
     
     def get_predict_log_path(self):
         """
         Sets the log path for the predict run.
         """
-        log_config = self.load_log_config()
-
-        train_log_path = log_config.train_log_path
         self.data_config.set_predict_dataset()
-        predict_log_path= os.path.join(train_log_path, 'predict')
+
+        predict_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}predict{os.sep}")
+        self.predict_log_path = os.path.join(predict_num_path, f'predict_{self.n_edge_types}.{self.version}')
 
         # add healthy or healthy_unhealthy config to path
-        predict_log_path = self.helper.set_ds_types_in_path(self.data_config, predict_log_path)
+        predict_num_path = self.helper.set_ds_types_in_path(self.data_config, predict_num_path)
 
         # add timestep_id to path
-        predict_log_path = os.path.join(predict_log_path, f'T{self.data_config.window_length}')
+        predict_num_path = os.path.join(predict_num_path, f'T{self.data_config.window_length}')
 
         # add sparsifier type to path
-        predict_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, predict_log_path)
+        self.predict_id = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, predict_num_path)
 
-        # add version
-        predict_log_path = os.path.join(predict_log_path, f'predict_v{self.version}')
+        # # add version
+        # self.predict_id = os.path.join(predict_num_path, f'predict_num_{self.version}')
 
-        return predict_log_path
+        # check if version already exists
+        self.check_if_version_exists(self.predict_log_path, 'predict')
+
+        return self.predict_log_path
+    
+    def save_custom_test_params(self):
+        """
+        Saves the test parameters in the test log path.
+        """
+        if not os.path.exists(self.test_log_path):
+            os.makedirs(self.test_log_path)
+
+        config_path = os.path.join(self.test_log_path, f'custom_test_config.pkl')
+        with open(config_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+
+        test_num_path = os.path.join(self.test_log_path, f'custom_test_{self.n_edge_types}.{self.version}.txt')
+        with open(test_num_path, 'w') as f:
+            f.write(self.test_id)
+
+        print(f"Custom test parameters saved to {self.test_log_path}.")
+
+    def save_predict_params(self):
+        """
+        Saves the predict parameters in the predict log path.
+        """
+        if not os.path.exists(self.predict_log_path):
+            os.makedirs(self.predict_log_path)
+
+        config_path = os.path.join(self.predict_log_path, f'predict_config.pkl')
+        with open(config_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+
+        predict_num_path = os.path.join(self.predict_log_path, f'predict_{self.n_edge_types}.{self.version}.txt')
+        with open(predict_num_path, 'w') as f:
+            f.write(self.predict_id)
+            
+        print(f"Predict parameters saved to {self.predict_log_path}.")
+
+    def _remove_version(self, log_path):
+        """
+        Removes the version from the log path.
+        """
+        if os.path.exists(log_path):
+            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {log_path}? (y/n): ")
+            if user_input.lower() == 'y':
+                shutil.rmtree(log_path)
+                print(f"Removed version {self.version} from the log path {log_path}.")
+
+            else:
+                print(f"Operation cancelled. Version {self.version} still remains.")
+
+    def _get_next_version(self, log_path, run_type):
+        parent_dir = os.path.dirname(log_path)
+
+        # List all folders in parent_dir that match 'model_<number>'
+        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
+        model_folders = [f for f in folders if re.match(fr'^{run_type}_{self.n_edge_types}\.\d+$', f)]
+
+        if model_folders:
+            # Extract numbers and find the max
+            max_model = max(int(f.split('_')[-1].split('.')[1]) for f in model_folders)
+            self.version = max_model + 1
+            new_model = f'{run_type}_{self.n_edge_types}.{self.version}'
+        else:
+            new_model = f'{run_type}_{self.n_edge_types}.1'  # If no v folders exist
+
+        return os.path.join(parent_dir, new_model)
+    
+    def check_if_version_exists(self, log_path, run_type):
+        """
+        Checks if the version already exists in the log path.
+
+        Parameters
+        ----------
+        log_path : str
+            The path where the test and predict logs are stored.
+        """
+ 
+        if os.path.isdir(log_path):
+            print(f"\n{run_type} number {self.version} for already exists for model_{self.selected_model_num} in the log path '{log_path}'.")
+            user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {run_type} (Choose 'a', 'b' or 'c'):  ")
+
+            if user_input.lower() == 'a':
+                self._remove_version(log_path)
+
+            elif user_input.lower() == 'b':
+                if run_type == 'custom_test':
+                    self.test_log_path = self._get_next_version(log_path, run_type)
+                elif run_type == 'predict':
+                    self.predict_log_path = self._get_next_version(log_path, run_type)
+
+            elif user_input.lower() == 'c':
+                print("Stopped training.")
+                sys.exit()  # Exit the program gracefully
 
 
 class TrainNRIConfig:
@@ -404,41 +500,41 @@ class TrainNRIConfig:
         model_path = os.path.join(base_path, 'directed_graph',)  # add framework type
 
         # add num of edge types to path
-        model_path = os.path.join(model_path, f'etypes={self.n_edge_types}')
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, 'train', f"model_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, f"model_{self.n_edge_types}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'E = {self.pipeline_type}, D = {self.recurrent_emd_type}',)
+        model_path = os.path.join(model_path, f'[E] {self.pipeline_type}, [D] {self.recurrent_emd_type}',)
 
         # add datastats to path
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length} m=[{', '.join(self.data_config.signal_types)}]")
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
 
         # add sparsifier type to path
         model_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, model_path)
 
         # add domain type of encoder and decoder to path
-        model_path = os.path.join(model_path, f'[E] = {self.domain_encoder}, [D] = {self.domain_decoder}')
+        model_path = os.path.join(model_path, f'(E) {self.domain_encoder}, (D) {self.domain_decoder}')
 
         # add feature type to path
         fex_types_encoder = [fex['type'] for fex in self.fex_configs_encoder]
         fex_types_decoder = [fex['type'] for fex in self.fex_configs_decoder]
 
         if fex_types_encoder and fex_types_decoder:
-            model_path = os.path.join(model_path, f"(E) = [{' + '.join(fex_types_encoder)}], (D) = [{' + '.join(fex_types_decoder)}]")
+            model_path = os.path.join(model_path, f"(E) [{' + '.join(fex_types_encoder)}], (D) [{' + '.join(fex_types_decoder)}]")
         elif fex_types_encoder and not fex_types_decoder:
-            model_path = os.path.join(model_path, f"(E) = [{' + '.join(fex_types_encoder)}], (D) = no_fex")
+            model_path = os.path.join(model_path, f"(E) [{' + '.join(fex_types_encoder)}], (D) [no_fex]")
         elif not fex_types_encoder and fex_types_decoder:
-            model_path = os.path.join(model_path, f"(E) = no_fex, (D) = [{' + '.join(fex_types_decoder)}]")
+            model_path = os.path.join(model_path, f"(E) [no_fex], (D) [{' + '.join(fex_types_decoder)}]")
         elif not fex_types_encoder and not fex_types_decoder:
-            model_path = os.path.join(model_path, "(E) = no_fex, (D) = no_fex")
+            model_path = os.path.join(model_path, "(E) [no_fex], (D) [no_fex]")
 
         # add model shape compatibility stats to path
-        self.model_id = os.path.join(model_path, f'E (comps) = {n_components}, D (dims) = {n_dim}')
+        self.model_id = os.path.join(model_path, f'(E) (comps = {n_components}), (D) (dims = {n_dim})')
 
         # # add model version to path
         # self.model_id = os.path.join(model_path, f'model_{self.model_num}')
@@ -486,15 +582,15 @@ class TrainNRIConfig:
 
         # List all folders in parent_dir that match 'model_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(r'^model_\d+$', f)]
+        model_folders = [f for f in folders if re.match(fr'^model_{self.n_edge_types}\.\d+$', f)]
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[1]) for f in model_folders)
+            max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f'model_{self.model_num}'
+            new_model = f'model_{self.n_edge_types}.{self.model_num}'
         else:
-            new_model = 'model_1'  # If no v folders exist
+            new_model = f'model_{self.n_edge_types}.1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
@@ -509,13 +605,12 @@ class TrainNRIConfig:
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
         
-        model_path = os.path.join(self.train_log_path, f'model_{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'model_{self.n_edge_types}.{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
         print(f"Model parameters saved to {self.train_log_path}.")
 
-        
 
     def check_if_version_exists(self):
         """
@@ -584,7 +679,7 @@ def get_param_pickle_path(log_path):
     return param_path
     
 class SelectTopologyEstimatorModel():
-    def __init__(self, framework, application=None, machine=None, scenario=None, logs_dir=LOGS_DIR):
+    def __init__(self, framework, application=None, machine=None, scenario=None, run_type='train', logs_dir=LOGS_DIR):
         data_config = DataConfig()
 
         self.logs_dir = Path(logs_dir)
@@ -597,6 +692,15 @@ class SelectTopologyEstimatorModel():
             self.machine = machine
             self.scenario = scenario
         self.framework = framework
+        self.run_type = run_type  # 'train' or 'predict'
+
+        if self.run_type == 'train':
+            self.file_name = 'model'
+        elif self.run_type == 'custom_test':
+            self.file_name = 'custom_test'
+        elif self.run_type == 'predict':
+            self.file_name = 'predict'
+
         self.structure = {}
         self.version_paths = []
         self.version_txt_files = []
@@ -606,11 +710,11 @@ class SelectTopologyEstimatorModel():
         """
         Build the tree structure from all model_x.txt files under the framework directory.
         """
-        base = self.logs_dir / self.application / self.machine / self.scenario / self.framework
+        base = self.logs_dir / self.application / self.machine / self.scenario / self.framework / self.run_type 
         if not base.exists():
             raise FileNotFoundError(f"Path does not exist: {base}")
 
-        txt_files = list(base.rglob("model_*.txt"))
+        txt_files = list(base.rglob(f"{self.file_name}_*.txt"))
         self.version_txt_files = txt_files
 
         path_map = {}
@@ -624,8 +728,8 @@ class SelectTopologyEstimatorModel():
             # Remove base logs dir and split by os.sep
             rel_path = os.path.relpath(model_path, str(self.logs_dir))
             path_parts = rel_path.split(os.sep)
-            # Only keep the parts after framework (skip first 4: app, machine, scenario, framework)
-            path_parts = path_parts[4:]
+            # Only keep the parts after framework (skip first 4: app, machine, scenario, framework, train)
+            path_parts = path_parts[5:]
             model_name = txt_file.stem  # e.g., model_3
             key = tuple(path_parts)
             if key not in path_map:
@@ -643,7 +747,7 @@ class SelectTopologyEstimatorModel():
             # Sort versions by model number before assigning vnum
             sorted_versions = sorted(
                 versions,
-                key=lambda x: int(re.search(r'model_(\d+)', x[1]).group(1)) if re.search(r'model_(\d+)', x[1]) else 0
+                key=lambda x: int(re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]) else 0
             )
             for idx, (txt_file, model_name) in enumerate(sorted_versions, 1):
                 node["_versions"].append({
@@ -661,7 +765,13 @@ class SelectTopologyEstimatorModel():
         tree = Tree(f"[green]{self.application}[/green]")
         machine_node = tree.add(f"[green]{self.machine}[/green]")
         scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
-        framework_node = scenario_node.add(f"[green]{self.framework}[/green]")
+        if self.run_type == 'train':
+            bracket = '(trained models)'
+        elif self.run_type == 'custom_test':
+            bracket = '(custom tested models)'
+        elif self.run_type == 'predict':
+            bracket = '(predicted models)'
+        framework_node = scenario_node.add(f"[green]{self.framework}[/green] [magenta]{bracket}[/magenta]")
         self._build_rich_tree(framework_node, self.structure, 0, [])
         console.print(tree)
         print("\nAvailable version paths:")
@@ -669,7 +779,7 @@ class SelectTopologyEstimatorModel():
             print(f"{idx}: {os.path.dirname(txt_file)}")
 
     def _build_rich_tree(self, parent_node, structure, level, parent_keys):
-        is_no_sparsif = any("spf = no_spf" in k for k in parent_keys)
+        is_no_sparsif = any("(spf) no_spf" in k for k in parent_keys)
         if self.framework == "skeleton_graph":
             label_map = {
                 0: "<ds_type>",
@@ -679,33 +789,57 @@ class SelectTopologyEstimatorModel():
                 4: "<domain>",
                 5: "<sparsif_fex_type>"
             }
-        elif is_no_sparsif:
-            label_map = {
-                0: "<n_edge_types>",
-                1: "<ds_type>",
-                2: "<ds_subtype>",
-                3: "<model>",
-                4: "<ds_stats>",
-                5: "<sparsif_type>",
-                6: "<domain>",
-                7: "<nri_fex_type>",
-                8: "<shape_compatibility>",
-                9: "<versions>"
-            }
-        else:
-            label_map = {
-                0: "<n_edge_types>",
-                1: "<ds_type>",
-                2: "<ds_subtype>",
-                3: "<model>",
-                4: "<ds_stats>",
-                5: "<sparsif_type>",
-                6: "<sparsif_fex_type>",
-                7: "<domain>",
-                8: "<nri_fex_type>",
-                9: "<shape_compatibility>",
-                10: "<versions>"
-            }
+        elif self.run_type == 'train':
+            if is_no_sparsif:
+                label_map = {
+                    0: "<n_edge_types>",
+                    1: "<ds_type>",
+                    2: "<ds_subtype>",
+                    3: "<model>",
+                    4: "<ds_stats>",
+                    5: "<sparsif_type>",
+                    6: "<domain>",
+                    7: "<nri_fex_type>",
+                    8: "<shape_compatibility>",
+                    9: "<versions>"
+                }
+            else:
+                label_map = {
+                    0: "<n_edge_types>",
+                    1: "<ds_type>",
+                    2: "<ds_subtype>",
+                    3: "<model>",
+                    4: "<ds_stats>",
+                    5: "<sparsif_type>",
+                    6: "<sparsif_fex_type>",
+                    7: "<domain>",
+                    8: "<nri_fex_type>",
+                    9: "<shape_compatibility>",
+                    10: "<versions>"
+                }
+        elif self.run_type in ['custom_test', 'predict']:
+            if is_no_sparsif:
+                label_map = {
+                    0: "<n_edge_types>",
+                    1: "<trained_model>",
+                    2: "<ds_type>",
+                    3: "<ds_subtype>",
+                    4: "ds_stats",
+                    5: "<sparsif_type>",
+                    6: "<versions>"
+                }
+            else:
+                label_map = {
+                    0: "<n_edge_types>",
+                    1: "<trained_model>",
+                    2: "<ds_type>",
+                    3: "<ds_subtype>",
+                    4: "<ds_stats>",
+                    5: "<sparsif_type>",
+                    6: "<sparsif_fex_type>",
+                    7: "<versions>"
+                }
+                    
         added_labels = set()
         # Add all keys except _versions first
         for key, value in structure.items():
@@ -717,7 +851,11 @@ class SelectTopologyEstimatorModel():
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For directed graph, make the model folder under framework yellow
-            if self.framework == "directed_graph" and level == 3:
+            if self.run_type == "train" and level == 3:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+                continue
+            if self.run_type in ['custom_test', 'predict'] and level == 1:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
@@ -737,7 +875,7 @@ class SelectTopologyEstimatorModel():
             # --- SORT VERSIONS BY MODEL NUMBER ---
             sorted_versions = sorted(
                 structure["_versions"],
-                key=lambda v: int(re.search(r'model_(\d+)', v['model_name']).group(1)) if re.search(r'model_(\d+)', v['model_name']) else 0
+                key=lambda v: int(re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']) else 0
             )
             for v in sorted_versions:
                 model_disp = f"{v['model_name']} (v{v['vnum']})"
@@ -752,24 +890,26 @@ class SelectTopologyEstimatorModel():
         if not self.version_paths:
             print("No version paths found.")
             return None
-        idx = int(input("\nEnter the index number of the version path to select: "))
-        if idx < 0 or idx >= len(self.version_paths):
-            print("Invalid index.")
-            return None
-        selected_log_path = os.path.dirname(self.version_paths[idx])
-        # Use the directory containing model_x.txt as the log path
+        
+        if self.run_type == 'train':
+            idx = int(input("\nEnter the index number of the version path to select: "))
+            if idx < 0 or idx >= len(self.version_paths):
+                print("Invalid index.")
+                return None
+            selected_log_path = os.path.dirname(self.version_paths[idx])
+            # Use the directory containing model_x.txt as the log path
 
-        ckpt_file_path = get_checkpoint_path(selected_log_path)
-        config_file_path = get_param_pickle_path(selected_log_path)
+            ckpt_file_path = get_checkpoint_path(selected_log_path)
+            config_file_path = get_param_pickle_path(selected_log_path)
 
-        with open(".\\docs\\loaded_ckpt_path.txt", "w") as f:
-            f.write(ckpt_file_path)
+            with open(".\\docs\\loaded_ckpt_path.txt", "w") as f:
+                f.write(ckpt_file_path)
 
-        with open(".\\docs\\loaded_config_path.txt", "w") as f:
-            f.write(config_file_path)
+            with open(".\\docs\\loaded_config_path.txt", "w") as f:
+                f.write(config_file_path)
 
-        print(f"\nSelected .ckpt file path: {ckpt_file_path}")
-        print(f"\nSelected logged config file path: {config_file_path}\n")
+            print(f"\nSelected .ckpt file path: {ckpt_file_path}")
+            print(f"\nSelected logged config file path: {config_file_path}\n")
 
 
 class SparsifierConfig:
@@ -881,10 +1021,10 @@ class HelperClass:
         Takes into account both empty healthy and unhealthy config and sets the path accordingly.
         """
         if data_config.unhealthy_configs == {}:
-            log_path = os.path.join(log_path, 'OK')
+            log_path = os.path.join(log_path, 'healthy')
 
         elif data_config.unhealthy_configs != {}:
-            log_path = os.path.join(log_path, 'OK_NOK')
+            log_path = os.path.join(log_path, 'healthy_unhealthy')
 
         # add ds_subtype to path
         config_str = ''
@@ -920,22 +1060,22 @@ class HelperClass:
     
     def set_sparsifier_in_path(self, sparsif_type, domain_sparsif, fex_configs_sparsif, log_path):
         if sparsif_type is not None:
-            log_path = os.path.join(log_path, f'spf = [{sparsif_type} + {domain_sparsif}]') 
+            log_path = os.path.join(log_path, f'(spf) {sparsif_type} ({domain_sparsif})') 
 
             # sparsifer features
             fex_types_sparsif = [fex['type'] for fex in fex_configs_sparsif]
             if fex_types_sparsif:
-                log_path = os.path.join(log_path, f"(spf) = [{' + '.join(fex_types_sparsif)}]")
+                log_path = os.path.join(log_path, f"(spf) [{' + '.join(fex_types_sparsif)}]")
             else:
-                log_path = os.path.join(log_path, '(spf) = no_fex')           
+                log_path = os.path.join(log_path, '(spf) [no_fex]')           
         else:
-            log_path = os.path.join(log_path, 'spf = no_spf')
+            log_path = os.path.join(log_path, '(spf) no_spf')
 
         return log_path
     
 if __name__ == "__main__":
 
-    model_selector = SelectTopologyEstimatorModel(framework='directed_graph',)
+    model_selector = SelectTopologyEstimatorModel(framework='directed_graph', run_type='custom_test')
     model_selector.select_ckpt_and_params()
 
 

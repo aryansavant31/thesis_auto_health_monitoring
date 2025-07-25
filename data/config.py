@@ -69,7 +69,7 @@ class DataConfig:
 
         self.machine_type   = 'cwru'
         self.scenario       = 'scene_1'
-        self.node_type      = 'gearbox'           # options ALL or the specific node type
+        self.node_type      = ['gearbox']           # options ALL or the specific node type
         self.signal_types   = ['acc'] # in hdf5 format
         self.format         = 'hdf5'  # options: hdf5, csv
         self.custom_test_ds = False
@@ -189,7 +189,7 @@ class DataConfig:
         
         # get actual node types to iterate over
         self.view = DatasetViewer()
-        self.node_options = self.view.node_types  if self.node_type == 'ALL' else [self.node_type]
+        self.node_options = self.view.node_types  if self.node_type == 'ALL' else self.node_type
         
         # Process healthy and unhealthy dataset addresses
         node_ds_path_main['OK'], edge_ds_path_main['OK'] = self._process_ds_addresses(self.healthy_configs, 'healthy')

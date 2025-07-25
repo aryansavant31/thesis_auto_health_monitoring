@@ -1,1 +1,1 @@
-c:\AFD\_logs\topology_estimation\bearing\cwru\scene_1\directed_graph\etypes=2\train\model_7\train_config.pkl
+c:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\train\etypes=2\model_2.2\train_config.pkl
