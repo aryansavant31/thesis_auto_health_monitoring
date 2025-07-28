@@ -7,6 +7,3 @@ data/datasets/bearing/cwru/
 data/datasets/spring_particles/
 
 **/__pycache__/
-
-topology_estimation/logs/
-fault_detection/logs/

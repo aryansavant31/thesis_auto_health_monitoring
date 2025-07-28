@@ -1,7 +1,7 @@
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 from data.transform import DataTransformer
-from feature_extraction import FeatureExtractor
+from feature_extraction.extractor import FeatureExtractor
 import time
 import numpy as np
 import pickle
@@ -103,7 +103,9 @@ class TrainerAnomalyDetector:
             (shape meaning (total number of signals/samples, total number of features))
         """
         data_list = []
-        for data, _ in loader:
+        label_list = []
+
+        for data, label in loader:
             # transform data
             data = anomaly_detector.transformer(data)
 
@@ -113,11 +115,13 @@ class TrainerAnomalyDetector:
 
             # convert data to numpy array for fitting
             data_np = data.view(data.size(0)*data.size(1), -1).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
+            label_np = label.view(-1).numpy()  # shape (batch size,)
             data_list.append(data_np)
+            label_list.append(label_np)
 
-        return np.vstack(data_list)
+        return np.vstack(data_list), np.hstack(label_list)
     
-    def fit(self, anomaly_detector, loader):
+    def fit(self, anomaly_detector, train_loader):
         """
         Fit the anomaly detection model on the provided data.
 
@@ -131,33 +135,41 @@ class TrainerAnomalyDetector:
         start_time = time.time()
 
         # process the input data
-        data = self.process_input_data(anomaly_detector, loader)
+        train_data, labels = self.process_input_data(anomaly_detector, train_loader)
 
         # fit the model
         print("\nFitting anomaly detection model...")
-        anomaly_detector.model.fit(data)
+        anomaly_detector.model.fit(train_data)
 
         # calculate and print the training time
         training_time = time.time() - start_time
         print(f"\nModel fitted successfully in {training_time:.2f} seconds")
 
-        # model stats 
-        model_log = {}
-        model_log['metrics'] = {}
-        model_log['metrics']['training_time'] = training_time
+        # calculate accuracy
+        train_pred = anomaly_detector.model.predict(train_data)
+        train_scores = anomaly_detector.model.decision_function(train_data)
 
-        if isinstance(anomaly_detector.model, IsolationForest):
-            model_log['model_type'] = 'IsolationForest'
-            model_log['metrics']['n_trees'] = anomaly_detector.model.n_estimators
+        accuracy = np.mean(train_pred == labels)
+        print(f"Training accuracy: {accuracy:.2f}")
 
-        elif isinstance(anomaly_detector.model, OneClassSVM):
-            model_log['model_type'] = 'OneClassSVM'
-            model_log['metrics']['n_in_features'] = anomaly_detector.model.n_features_in_
-            model_log['metrics']['n_support_vectors'] = anomaly_detector.model.n_support_  
 
-        self.log_model(anomaly_detector, model_log)
+        # # model stats 
+        # model_log = {}
+        # model_log['metrics'] = {}
+        # model_log['metrics']['training_time'] = training_time
+
+        # if isinstance(anomaly_detector.model, IsolationForest):
+        #     model_log['model_type'] = 'IsolationForest'
+        #     model_log['metrics']['n_trees'] = anomaly_detector.model.n_estimators
+
+        # elif isinstance(anomaly_detector.model, OneClassSVM):
+        #     model_log['model_type'] = 'OneClassSVM'
+        #     model_log['metrics']['n_in_features'] = anomaly_detector.model.n_features_in_
+        #     model_log['metrics']['n_support_vectors'] = anomaly_detector.model.n_support_  
+
+        # self.log_model(anomaly_detector, model_log)
    
-    def predict(self, anomaly_detector, loader):
+    def predict(self, anomaly_detector, predict_loader):
         """
         Predict anomalies in the provided data.
 
@@ -169,7 +181,7 @@ class TrainerAnomalyDetector:
                 Input data tensor containing the trajectory data
         """
         # process the input data
-        data = self.process_input_data(anomaly_detector, loader)
+        data = self.process_input_data(anomaly_detector, predict_loader)
 
         # predict anomalies
         y_pred = anomaly_detector.model.predict(data)
@@ -177,12 +189,12 @@ class TrainerAnomalyDetector:
 
         return y_pred, scores
     
-    def test(self, anomaly_detector, loader):
+    def test(self, anomaly_detector, test_loader):
         """
         Along with prediction, this method calcualtes model accuracy, precision, recall, and F1 score.
         """
         # process the input data
-        data = self.process_input_data(anomaly_detector, loader)
+        data = self.process_input_data(anomaly_detector, test_loader)
 
         # predict anomalies
         y_pred = anomaly_detector.model.predict(data)

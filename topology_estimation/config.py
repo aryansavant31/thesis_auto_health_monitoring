@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
-from feature_extraction.features import get_fex_config
+from feature_extraction.feature_extractor import get_fex_config
 from data.config import DataConfig
 import pickle
 import glob

@@ -12,7 +12,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import os
 from data.transform import DataTransformer
-from feature_extraction.features import FeatureExtractor
+from feature_extraction.feature_extractor import FeatureExtractor
 from data.prep import DataPreprocessor
 
 class PredictNRIMain:

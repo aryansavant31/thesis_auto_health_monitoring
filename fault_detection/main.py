@@ -1,9 +1,9 @@
-from anomaly_detection import AnomalyDetector, TrainerAnomalyDetector
-from config import TrainAnomalyDetectornConfig, PredictAnomalyDetectorConfig, get_model_pickle_path
+from fault_detection.anomaly_detector import AnomalyDetector, TrainerAnomalyDetector
+from config import TrainAnomalyDetectorConfig, PredictAnomalyDetectorConfig, get_model_pickle_path
 from data.config import DataConfig
-from data.prep import load_spring_particle_data
+from data.prep import DataPreprocessor, load_spring_particle_data
 from data.transform import DataTransformer
-from feature_extraction import FeatureExtractor
+from feature_extraction.extractor import FeatureExtractor
 from torch.utils.tensorboard import SummaryWriter
 
 class PredictAnomalyDetectorMain:
@@ -11,19 +11,16 @@ class PredictAnomalyDetectorMain:
 
 class TrainAnomalyDetectorMain:
     def __init__(self):
-        self.data_config = DataConfig()
-        self.fdet_config = TrainAnomalyDetectornConfig()
-
-        # load data
-        self.load_data()
+        self.data_preprocessor = DataPreprocessor(package='fault_detection')
+        self.config = TrainAnomalyDetectorConfig()
 
     def load_data(self):
-        # set train data parameters
-        self.data_config.set_train_dataset()
-        # get dataset paths
-        node_ds_paths, edge_ds_paths = self.data_config.get_dataset_paths()
         # load data
-        self.train_loader, _, self.test_loader, self.data_stats = load_spring_particle_data(node_ds_paths, edge_ds_paths, self.fdet_config.batch_size)
+        self.train_loader, self.test_loader, _, self.data_stats = self.data_preprocessor.get_training_dataloaders(
+            self.config.train_rt,
+            self.config.test_rt,
+            self.config.batch_size,
+        )
 
         # for getting data stats
         dataiter = iter(self.train_loader)
@@ -48,22 +45,22 @@ class TrainAnomalyDetectorMain:
         Feature extraction
         """
         # transform data
-        data = DataTransformer(domain=self.fdet_config.domain, 
-                                        norm_type=self.fdet_config.norm_type, 
+        data = DataTransformer(domain=self.config.domain, 
+                                        norm_type=self.config.norm_type, 
                                         data_stats=self.data_stats)(data)
 
         # extract features from data if fex_configs are provided
-        if self.fdet_config.fex_configs:
-            data = FeatureExtractor(fex_configs=self.fdet_config.fex_configs)(data)
+        if self.config.fex_configs:
+            data = FeatureExtractor(fex_configs=self.config.fex_configs)(data)
 
         return data
     
     def init_model(self):
-        anomaly_detector = AnomalyDetector(anom_config=self.fdet_config.anom_config)
+        anomaly_detector = AnomalyDetector(anom_config=self.config.anom_config)
         anomaly_detector.set_run_params(data_stats=self.data_stats,
-                                        domain=self.fdet_config.domain, 
-                                        norm_type=self.fdet_config.norm_type, 
-                                        fex_configs=self.fdet_config.fex_configs)
+                                        domain=self.config.domain, 
+                                        norm_type=self.config.norm_type, 
+                                        fex_configs=self.config.fex_configs)
         # print model info
         print("Anomaly Detector Model Initialized with the following configurations:")
         anomaly_detector.print_model_info()
@@ -74,25 +71,31 @@ class TrainAnomalyDetectorMain:
         """
         Train the anomaly detection model.
         """
+        # load data
+        self.load_data()
+
         # initialize anomaly detector
         untrained_anomaly_detector = self.init_model()
-        self.train_log_path = self.fdet_config.get_train_log_path()
+        self.train_log_path = self.config.get_train_log_path()
 
         # initialize logger
-        if self.fdet_config.is_log:
-            self.fdet_config.save_params()
+        if self.config.is_log:
+            self.config.save_params()
             logger = SummaryWriter(log_dir=self.train_log_path)
         else:
             logger = None
 
         # initialize trainer
-        trainer = TrainerAnomalyDetector(log_path=self.train_log_path)
+        trainer = TrainerAnomalyDetector(
+            log_path=self.train_log_path,
+            logger=logger,
+            )
         trainer.fit(untrained_anomaly_detector, self.train_loader)
 
     def test(self):
         trained_anomaly_detector = AnomalyDetector.load_from_pickle(get_model_pickle_path(self.train_log_path))
 
-        test_log_path = self.fdet_config.get_test_log_path()
+        test_log_path = self.config.get_test_log_path()
         trainer = TrainerAnomalyDetector(log_path=test_log_path)
         trainer.test(trained_anomaly_detector, self.test_loader)
 

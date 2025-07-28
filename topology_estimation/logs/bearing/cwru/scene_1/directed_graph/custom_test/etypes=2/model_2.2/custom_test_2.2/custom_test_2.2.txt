@@ -1,0 +1,1 @@
+C:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\custom_test\etypes=2\model_2.2\healthy\T500\(spf) path (time)\(spf) [first_n_modes]

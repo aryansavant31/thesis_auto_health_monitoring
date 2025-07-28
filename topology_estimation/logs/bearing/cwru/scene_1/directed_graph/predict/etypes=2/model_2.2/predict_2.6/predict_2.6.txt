@@ -1,0 +1,1 @@
+C:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\predict\etypes=2\model_2.2\healthy\0_N[OG, gau_m=0.1s=0.2, gau_m=0.2s=0.3]\T500\(spf) path (time)\(spf) [first_n_modes]

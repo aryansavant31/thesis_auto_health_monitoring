@@ -6,7 +6,7 @@ import torch.nn as nn
 from .utils.models import MLP
 from pytorch_lightning import LightningModule
 from data.transform import DataTransformer
-from feature_extraction.features import FeatureExtractor
+from feature_extraction.feature_extractor import FeatureExtractor
 
 class MessagePassingLayers():
     def __init__(self):

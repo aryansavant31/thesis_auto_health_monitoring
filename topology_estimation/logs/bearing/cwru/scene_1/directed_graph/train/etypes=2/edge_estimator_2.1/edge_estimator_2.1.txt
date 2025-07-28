@@ -1,0 +1,1 @@
+C:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\train\etypes=2\healthy_unhealthy\0_N[OG, gau_m=0.1s=0.2, gau_m=0.2s=0.3] + 0_B-007[gau_m=0.0s=0.1, gau_m=0.1s=0.2] + 0_B-021[OG]\[E] mlp_1, [D] gru\T500 [acc]\(spf) no_spf\(E) freq, (D) freq\(E) [no_fex], (D) [first_n_modes]\(E) (comps = 49), (D) (dims = 4)

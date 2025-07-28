@@ -5,7 +5,7 @@ LOGS_DIR = os.path.join(FAULT_DETECTION_DIR, "logs")
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
-from feature_extraction.features import get_fex_config
+from feature_extraction.extractor import get_fex_config
 from data.config import DataConfig
 import shutil
 import re
@@ -197,11 +197,11 @@ class TrainAnomalyDetectorConfig:
 
         self.node_type = f"({'+'.join(self.data_config.node_type)})"
 
-        self.anom_config = self.get_anom_config('IF')
+        self.anom_config = self.get_anom_config('IF', n_estimators=1000, contam=0.5)
 
     def set_training_params(self):
-        self.model_num = 1
-        self.is_log = True
+        self.model_num = 2
+        self.is_log = False
 
         # dataset parameters
         self.batch_size = 50
@@ -374,7 +374,6 @@ class TrainAnomalyDetectorConfig:
         log_path : str
             The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
-
         if os.path.isdir(self.train_log_path):
             print(f"'Version {self.model_num}' already exists in the log path '{self.train_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")

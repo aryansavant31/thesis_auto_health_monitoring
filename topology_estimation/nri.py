@@ -7,7 +7,7 @@ from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
 from data.transform import DataTransformer
 from .encoder import Encoder
 from .decoder import Decoder
-from feature_extraction.features import FeatureExtractor
+from feature_extraction.feature_extractor import FeatureExtractor
 import time
 
 class NRI(LightningModule):

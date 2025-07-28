@@ -103,7 +103,7 @@ class DataPreprocessor:
 
         return custom_loader
     
-    def get_training_dataloaders(self, train_rt, test_rt, val_rt=0, batch_size=50):
+    def get_training_dataloaders(self, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
         """
         Create train, validation, and test dataloaders.
 
@@ -244,9 +244,9 @@ class DataPreprocessor:
         final_edge_data_np = np.concatenate(all_ds_subtype_edges, axis=0)        # (n_samples, n_edges)
         
         if ds_type == 'OK':
-            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
-        elif ds_type == 'NOK':
             final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+        elif ds_type == 'NOK':
+            final_node_labels_np = -1 * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors
         final_node_data = torch.tensor(final_node_data_np, dtype=torch.float32)
@@ -362,9 +362,9 @@ def load_spring_particle_data(batch_size=10):
 
     # edge_path = edge_ds_path['H'][0]  # Assuming there's only one edge dataset for 'H'
 
-    loc_path = "C:\\AFD\\data\\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\pos"
-    vel_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\\vel"
-    edge_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\edges"
+    # loc_path = "C:\\AFD\\data\\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\pos"
+    # vel_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\\vel"
+    # edge_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\edges"
 
     loc_train = np.load(f'{loc_path}\\loc_train_springs' + '5' + '.npy')
     vel_train = np.load(f'{vel_path}\\vel_train_springs' + '5' + '.npy')

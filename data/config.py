@@ -80,13 +80,11 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG'), 
-                    get_augment_config('gau', mean=0.1, std=0.2), 
-                    get_augment_config('gau', mean=0.2, std=0.3)],
+            '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-007': [get_augment_config('gau'), get_augment_config('gau', mean=0.1, std=0.2)], 
+            '0_B-007': [get_augment_config('OG')], 
             '0_B-021': [get_augment_config('OG')],    
         }
     
