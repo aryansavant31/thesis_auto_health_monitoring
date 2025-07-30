@@ -5,8 +5,8 @@ LOGS_DIR = os.path.join(FAULT_DETECTION_DIR, "logs")
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
-from feature_extraction.extractor import get_fex_config
-from data.config import DataConfig
+from feature_extraction.extractor import get_fex_config, get_reduc_config
+from data.config import DataConfig, get_domain_config
 import shutil
 import re
 from pathlib import Path
@@ -210,10 +210,11 @@ class TrainAnomalyDetectorConfig:
         self.test_rt    = 0.2
 
     def set_run_params(self):
-        self.domain = 'time'   # freq-psd, freq-amp
-        self.norm_type = None
-        self.fex_configs = [
-        ]  
+        self.domain_config = get_domain_config('time')
+        self.raw_data_norm_type = None
+        self.fex_configs = []  
+        self.reduc_config = get_reduc_config('PCA', n_components=10) # or None
+        self.fex_norm_type = None
 
     def get_anom_config(self, anom_type, **kwargs):
         """
@@ -278,15 +279,20 @@ class TrainAnomalyDetectorConfig:
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
 
         # add domain type to path
-        model_path = os.path.join(model_path, f'{self.domain}')
+        model_path = os.path.join(model_path, f'{self.domain_config['type']}')
 
         # add feature type to path
         fex_types = [fex['type'] for fex in self.fex_configs]
+        reduc_type = self.reduc_config['type'] if self.reduc_config else None
 
-        if fex_types:
-            model_path = os.path.join(model_path, f"(anom) [{'+'.join(fex_types)}]")
-        else:
-            model_path = os.path.join(model_path, '(anom) [no_fex]')
+        if fex_types and reduc_type:
+            model_path = os.path.join(model_path, f"(anom) [{'+'.join(fex_types)}] [{reduc_type}]")
+        elif fex_types and not reduc_type:
+            model_path = os.path.join(model_path, f"(anom) [{'+'.join(fex_types)}] [no_reduc]")
+        elif not fex_types and reduc_type:
+            model_path = os.path.join(model_path, f"(anom) [no_fex] [{reduc_type}]")
+        elif not fex_types and not reduc_type:
+            model_path = os.path.join(model_path, '(anom) [no_fex] [no_reduc]')
 
         # add model shape compatibility stats to path
         self.model_id = os.path.join(model_path, f'anom (comps = {n_components*n_dim})')
@@ -351,11 +357,9 @@ class TrainAnomalyDetectorConfig:
         # List all folders in parent_dir that match 'v<number>'
         model_folders = os.listdir(parent_dir)
 
-        print("model_folders:", model_folders)
         if model_folders:
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
-            print("max_model:", max_model)
             self.model_num = max_model + 1
             new_model = f"{self.node_type}_fault_detector_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")

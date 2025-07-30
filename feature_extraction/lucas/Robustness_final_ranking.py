@@ -5,8 +5,12 @@ Created on Wed May  7 12:08:59 2025
 @author: lfernan4
 """
 
-import scipy.io
+import sys
 import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import scipy.io
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -19,6 +23,7 @@ print(1)
 print(2)
 import ast
 from scipy.stats import pearsonr
+from config import FeatureRankingConfig
 
 
 #Calc_10 = segmenting_healthy(Calc_0, 10)
@@ -27,35 +32,41 @@ from scipy.stats import pearsonr
 # Healthy_Info_10 = time_comparison_info_gain(Calc_10[0], 3)
 #%%
 
+rank_config = FeatureRankingConfig()
 
-Calc_10 = np.load('Calc_10.npy', allow_pickle=True)
+ranking_log_path = rank_config.get_ranking_log_path()
+os.makedirs(ranking_log_path, exist_ok=True)
 
-Freq_values_Chi = np.load('Freq_values_Chi.npy')
-Freq_features_Chi = np.load('Freq_features_Chi.npy')
+# ==============================================
+#  Start: Lucas's Final Ranking Code
+# ==============================================
 
-Freq_values_RelieF = np.load('Freq_values_RelieF.npy')
-Freq_features_RelieF = np.load('Freq_features_RelieF.npy')
+Calc_10 = np.load(os.path.join(ranking_log_path, 'utils', 'Calc_10.npy'), allow_pickle=True)
 
-Freq_values_info = np.load('Freq_values_info.npy')
-Freq_features_info = np.load('Freq_features_info.npy')
+Freq_values_Chi = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_values_Chi.npy'))
+Freq_features_Chi = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_features_Chi.npy'))
 
-Freq_values_Pearson = np.load('Freq_values_Pearson.npy')
-Freq_features_Pearson = np.load('Freq_features_Pearson.npy')
+Freq_values_RelieF = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_values_RelieF.npy'))
+Freq_features_RelieF = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_features_RelieF.npy'))
+
+Freq_values_info = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_values_info.npy'))
+Freq_features_info = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_features_info.npy'))
+
+Freq_values_Pearson = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_values_Pearson.npy'))
+Freq_features_Pearson = np.load(os.path.join(ranking_log_path, 'utils', 'Freq_features_Pearson.npy'))
 
 
+Time_values_Pearson = np.load(os.path.join(ranking_log_path,'Time_values_Pearson.npy'))
+Time_features_Pearson = np.load(os.path.join(ranking_log_path,'Time_features_Pearson.npy'))
 
+Time_values_Chi = np.load(os.path.join(ranking_log_path,'Time_values_Chi.npy'))
+Time_features_Chi = np.load(os.path.join(ranking_log_path,'Time_features_Chi.npy'))
 
-Time_values_Pearson = np.load('Time_values_Pearson.npy')
-Time_features_Pearson = np.load('Time_features_Pearson.npy')
+Time_values_Info_Gain = np.load(os.path.join(ranking_log_path,'Time_values_Info_Gain.npy'))
+Time_features_Info_Gain = np.load(os.path.join(ranking_log_path,'Time_features_Info_Gain.npy'))
 
-Time_values_Chi = np.load('Time_values_Chi.npy')
-Time_features_Chi = np.load('Time_features_Chi.npy')
-
-Time_values_Info_Gain = np.load('Time_values_Info_Gain.npy')
-Time_features_Info_Gain = np.load('Time_features_Info_Gain.npy')
-
-Time_values_RelieF = np.load('Time_values_RelieF.npy')
-Time_features_RelieF = np.load('Time_features_RelieF.npy')
+Time_values_RelieF = np.load(os.path.join(ranking_log_path,'Time_values_RelieF.npy'))
+Time_features_RelieF = np.load(os.path.join(ranking_log_path,'Time_features_RelieF.npy'))
 
 
 
@@ -75,11 +86,11 @@ def load_functions(file_path):
 
 
 # Exemple d'utilisation
-file_path_time = "Time_features.py"
+file_path_time = os.path.join(ranking_log_path, 'utils', "Time_features.py")
 Time_features = extract_function_names(file_path_time)
 load_functions(file_path_time)
 
-file_path_frequency = "Frequency_features.py"
+file_path_frequency = os.path.join(ranking_log_path, 'utils', "Frequency_features.py")
 Freq_features = extract_function_names(file_path_frequency)
 Freq_features.remove('Kp_value')
 load_functions(file_path_frequency)
@@ -404,7 +415,8 @@ Freq_values_RelieF = IQR_normalisation(Freq_values_RelieF, [0,1])
 
 Final_Ranking_feature = {}
 Final_Ranking_Robustness = {}
-Final_Ranking = {}
+Final_Ranking_Time = {}
+Final_Ranking_Freq = {}
 for feature in Time_features:
     Final_Ranking_feature[feature] = 0
     Final_Ranking_Robustness[feature] = 0
@@ -483,14 +495,22 @@ for feature in Freq_features + Time_features:
 
 alpha = 0.7
 
-for feature in Freq_features + Time_features:
-    Final_Ranking[feature] = alpha * Final_Ranking_feature[feature] + (1 - alpha) * Final_Ranking_Robustness[feature]
+for feature in Time_features:
+    Final_Ranking_Time[feature] = alpha * Final_Ranking_feature[feature] + (1 - alpha) * Final_Ranking_Robustness[feature]
 
-Final_Ranking = sorted_result_total = dict(sorted(Final_Ranking.items(), key = lambda item: item[1]))
+for feature in Freq_features:
+    Final_Ranking_Freq[feature] = alpha * Final_Ranking_feature[feature] + (1 - alpha) * Final_Ranking_Robustness[feature]
 
+Final_Ranking_Time = dict(sorted(Final_Ranking_Time.items(), key = lambda item: item[1]))
+Final_Ranking_Freq = dict(sorted(Final_Ranking_Freq.items(), key = lambda item: item[1]))
 
+# =========================================================
+#  End: Lucas's Final Ranking Code
+# =========================================================
 
-
+# save the final rankings to a file
+np.save(os.path.join(ranking_log_path, f'time_feature_ranking_v{rank_config.version}.npy'), Final_Ranking_Time)
+np.save(os.path.join(ranking_log_path, f'freq_feature_ranking_v{rank_config.version}.npy'), Final_Ranking_Freq)
 
 #%%
 

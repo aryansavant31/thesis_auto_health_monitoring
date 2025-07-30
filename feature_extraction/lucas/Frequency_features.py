@@ -220,7 +220,7 @@ def Kp_value(power):
     T = -1*np.mean(power)*np.log(alpha)
 
     
-    Kp = find_peaks(power, height = T)
+    Kp = find_peaks(power, height = T) # num of peaks 
     return(Kp)
 
 

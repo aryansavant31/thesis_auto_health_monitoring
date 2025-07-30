@@ -5,28 +5,6 @@ from rich.tree import Tree
 from rich.console import Console
 import glob
 
-def get_augment_config(augment_type, **kwargs):
-        """
-        Get the configuration for a specific augmentation type.
-
-        Parameters
-        ----------
-        augment_type : str
-            Type of augmentation to get configuration for.
-
-        **kwargs : dict
-            For all `augment_type`, the following parameters are available:
-            - 'OG' (Original data): No additional parameters
-            - 'gau' (Gaussian noise): `mean`, `std`
-        """
-        config = {}
-        config['type'] = augment_type
-
-        if augment_type == 'gau':
-            config['mean'] = kwargs.get('mean', 0.0)
-            config['std'] = kwargs.get('std', 0.1)
-        
-        return config
 
 class DataConfig:
     def __init__(self, ):
@@ -71,8 +49,9 @@ class DataConfig:
         self.scenario       = 'scene_1'
         self.node_type      = ['gearbox']           # options ALL or the specific node type
         self.signal_types   = ['acc'] # in hdf5 format
+        self.fs             = [48000] # sampling frequency
+
         self.format         = 'hdf5'  # options: hdf5, csv
-        self.custom_test_ds = False
 
         # segement data
         self.window_length  = 500
@@ -198,6 +177,58 @@ class DataConfig:
         
         
         return node_ds_path_main, edge_ds_path_main
+    
+def get_augment_config(augment_type, **kwargs):
+        """
+        Get the configuration for a specific augmentation type.
+
+        Parameters
+        ----------
+        augment_type : str
+            Type of augmentation to get configuration for.
+
+        **kwargs : dict
+            For all `augment_type`, the following parameters are available:
+            - 'OG' (Original data): No additional parameters
+            - 'gau' (Gaussian noise): `mean`, `std`
+        """
+        config = {}
+        config['type'] = augment_type
+
+        if augment_type == 'gau':
+            config['mean'] = kwargs.get('mean', 0.0)
+            config['std'] = kwargs.get('std', 0.1)
+        
+        return config
+
+def get_domain_config(domain_type, **kwargs):
+    """
+    Get the domain configuration based on the specified domain.
+
+    Parameters
+    ----------
+    domain_type : str
+        The domain of the data (e.g., 'time', 'freq').
+
+    **kwargs : dict
+        Additional parameters for the domain configuration.
+        - `time`: **cutoff_freq** (for high pass filter)
+        - `freq`: **cutoff_freq** (for high pass filter)
+    """
+    config = {}
+    config['type'] = domain_type
+
+    if domain_type == 'time':
+        config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency for time domain
+
+    elif domain_type == 'freq':
+        config['cutoff_freq'] = kwargs.get('cutoff_freq', 100)  # default cutoff frequency
+
+    return config 
+
+# =====================================================
+# Helper class to view dataset structure
+# =====================================================
 
 class DatasetViewer(DataConfig):
     """

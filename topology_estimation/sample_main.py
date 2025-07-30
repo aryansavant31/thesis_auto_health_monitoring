@@ -58,7 +58,7 @@ send_rel = torch.FloatTensor(send_rel)
 rec_rel = rec_rel.to(device)
 send_rel = send_rel.to(device)
 
-from topology_estimation.config import TopologyEstimatorConfig
+from topology_estimation.config.train_settings import TopologyEstimatorConfig
 from topology_estimation.encoder import Encoder
 from torchinfo import summary
 

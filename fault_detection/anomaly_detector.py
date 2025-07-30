@@ -1,7 +1,7 @@
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
-from data.transform import DataTransformer
-from feature_extraction.extractor import FeatureExtractor
+from data.transform import DomainTransformer, DataNormalizer
+from feature_extraction.extractor import FrequencyFeatureExtractor, FeatureReducer
 import time
 import numpy as np
 import pickle
@@ -23,7 +23,7 @@ class AnomalyDetector:
                                      nu=anom_config['nu'])
             
             
-    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[]):
+    def set_run_params(self, data_stats, domain='time', raw_data_norm_type=None, fex_norm_type=None, fex_configs=[], reduc_config=None):
         """
         Set the run parameters for the anomaly detection model
 
@@ -36,10 +36,11 @@ class AnomalyDetector:
         fex_configs : list
             List of feature extraction configurations.
         """
-        self.fex_configs = fex_configs
-
-        self.transformer = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
-        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs)
+        self.domain_transform = DomainTransformer(domain=domain)
+        self.raw_data_normalizer = DataNormalizer(norm_type=raw_data_norm_type, data_stats=data_stats) if raw_data_norm_type else None
+        self.fex_normalizer = DataNormalizer(norm_type=fex_norm_type) if fex_norm_type else None
+        self.feature_extractor = FrequencyFeatureExtractor(fex_configs=fex_configs) if fex_configs else None
+        self.feature_reducer = FeatureReducer(reduc_config=reduc_config) if reduc_config else None
 
     def print_model_info(self):
         """
@@ -79,7 +80,7 @@ class TrainerAnomalyDetector:
         self.log_path = log_path
         self.logger = logger
 
-    def process_input_data(self, anomaly_detector, loader):
+    def process_input_data(self, anomaly_detector:AnomalyDetector, loader):
         """
         Transform the data
             - domain change
@@ -106,13 +107,22 @@ class TrainerAnomalyDetector:
         label_list = []
 
         for data, label in loader:
-            # transform data
-            data = anomaly_detector.transformer(data)
+            # transform raw data
+            if anomaly_detector.raw_data_normalizer:
+                data = anomaly_detector.raw_data_normalizer(data)
 
             # extract features from data if fex_configs are provided
-            if anomaly_detector.fex_configs:
+            if anomaly_detector.feature_extractor:
                 data = anomaly_detector.feature_extractor(data)
 
+            # normalize features if fex_norm_type is provided
+            if anomaly_detector.fex_normalizer:
+                data = anomaly_detector.fex_normalizer(data)
+
+            # reduce features if reduc_config is provided
+            if anomaly_detector.feature_reducer:
+                data = anomaly_detector.feature_reducer(data)
+ 
             # convert data to numpy array for fitting
             data_np = data.view(data.size(0)*data.size(1), -1).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
             label_np = label.view(-1).numpy()  # shape (batch size,)
