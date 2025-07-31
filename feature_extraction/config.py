@@ -9,13 +9,13 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import shutil
 from data.config import DataConfig
 
-def get_freq_fex_config(fex_type, **kwargs):
+def get_freq_feat_config(feat_type, **kwargs):
     """
     All the frequency feature extraction configurations are defined here.
 
     Parameters
     ----------
-    fex_type : str
+    feat_type : str
         The type of feature extraction to be used (e.g., 'first_n_modes', 'PCA').
 
     **kwargs : dict
@@ -24,27 +24,27 @@ def get_freq_fex_config(fex_type, **kwargs):
         - `full_spectrum` : **parameters** (_list_) (will get 'psd', 'mag', 'amp', 'freq')
     """
     config = {}
-    config['type'] = fex_type
+    config['type'] = feat_type
 
     # 2 or more dimensional features
 
-    if fex_type == 'first_n_modes':
+    if feat_type == 'first_n_modes':
         config['n_modes'] = kwargs.get('n_modes', 5)  # default to 5 modes if not specified
     
-    elif fex_type == 'full_spectrum':
+    elif feat_type == 'full_spectrum':
         config['parameters'] = kwargs.get('parameters', ['psd', 'mag', 'amp', 'freq'])  # default to all parameters if not specified
 
     # 1 dimensional features
 
     return config
 
-def get_time_fex_config(fex_type, **kwargs):
+def get_time_feat_config(feat_type, **kwargs):
      """
      All the time feature extraction configurations are defined here.
 
     Parameters
     ----------
-    fex_type : str
+    feat_type : str
         The type of time feature extraction
     
     **kwargs : dict
@@ -85,7 +85,7 @@ class FeatureRankingConfig:
                                 f'{self.data_config.machine_type}',
                                 f'{self.data_config.scenario}')
         
-        # add fex number
+        # add feat number
         self.ranking_log_path = os.path.join(base_path, f"feature_ranking_{self.version}")
         
         # add data type and subtype to the path

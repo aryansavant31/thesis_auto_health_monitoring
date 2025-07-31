@@ -8,20 +8,20 @@ import torch
 from data.config import DataConfig
 from sklearn.decomposition import PCA
 import time_features as tf
-import frequency_features as ff
+import feature_extraction.frequency_features as ff
 
 
 class TimeFeatureExtractor:
-    def __init__(self, fex_configs):
+    def __init__(self, feat_configs):
         """
         Initialize the time feature extractor model with the specified type.
 
         Parameters
         ----------
-        fex_configs : list
+        feat_configs : list
             List of time feature extraction configurations.
         """
-        self.fex_configs = fex_configs
+        self.feat_configs = feat_configs
 
     def preprocess_input(self, data):
         """
@@ -58,7 +58,7 @@ class TimeFeatureExtractor:
             Reshaped features.
         """
         features = torch.from_numpy(features).to(self.device)
-        return features.view(self.original_shape)
+        return features.view(self.original_shape[0], self.original_shape[1], features.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
 
     def __call__(self, data):
         """
@@ -78,15 +78,15 @@ class TimeFeatureExtractor:
         data_np = self.preprocess_input(data)
 
         # loop through each feature extraction configuration
-        for fex_config in self.fex_configs:
-            fex_type = fex_config['type']
+        for feat_config in self.feat_configs:
+            feat_type = feat_config['type']
 
-            if hasattr(tf, fex_type):
-                fex = getattr(tf, fex_type)
-                features = fex(data_np)  
+            if hasattr(tf, feat_type):
+                get_feat_value = getattr(tf, feat_type)
+                features = get_feat_value(data_np)  
                 features_list.append(features)
             else:
-                raise ValueError(f"Unknown time feature extraction type: {fex_type}")
+                raise ValueError(f"Unknown time feature extraction type: {feat_type}")
             
         # concatenate all features into a single tensor
         features_np = np.concatenate(features_list, axis=1)  # shape: (batch_size * n_nodes, n_components, n_dims)
@@ -97,16 +97,16 @@ class TimeFeatureExtractor:
              
 
 class FrequencyFeatureExtractor:
-    def __init__(self, fex_configs):
+    def __init__(self, feat_configs):
         """
         Initialize the feature extractor model with the specified type.
         
         Parameters
         ----------
-        fex_config : list
-            Type of feature extraction to be used (e.g., 'first_n_modes').
+        feat_config : list
+            Type of features to be used (e.g., 'first_n_modes').
         """
-        self.fex_configs = fex_configs
+        self.feat_configs = feat_configs
         self.fs = DataConfig().fs  # sampling frequency
 
     def preprocess_input(self, data):
@@ -121,7 +121,7 @@ class FrequencyFeatureExtractor:
         self.original_shape = data.shape  # save original shape for later reshaping
         self.device = data.device  # save device for later use
 
-        data_np = data.view(-1, data.shape[-2]/2, 2, data.shape[-1]).detach().cpu().numpy()  # (batch_size * n_nodes, n_freq_bins, 2, n_dims)
+        data_np = data.view(-1, int(data.shape[-2]/2), 2, data.shape[-1]).detach().cpu().numpy()  # (batch_size * n_nodes, n_freq_bins, 2, n_dims)
         
         # seperate frequnecy data and frequency bins
         freq_mag = data_np[:, :, 0, :]
@@ -143,7 +143,7 @@ class FrequencyFeatureExtractor:
         reshaped_features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims) 
         """
         features = torch.from_numpy(features).to(self.device)
-        return features.view(self.original_shape)
+        return features.view(self.original_shape[0], self.original_shape[1], features.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
     
     def infer_freq_mag(self, freq_mag):
         """
@@ -170,7 +170,7 @@ class FrequencyFeatureExtractor:
 
         return freq_amp, freq_psd
 
-    def __call__(self, data):
+    def extract(self, data):
         """
         Apply the frequency feature extraction to the data.
 
@@ -186,7 +186,7 @@ class FrequencyFeatureExtractor:
         Returns
         -------
         features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
-            Extracted features based on the specified configurations (if `fex_configs` is not empty).   
+            Extracted features based on the specified configurations (if `feat_configs` is not empty).   
         """
         # initialize an empty list to hold features
         features_list = []
@@ -198,15 +198,15 @@ class FrequencyFeatureExtractor:
         freq_amp, freq_psd = self.infer_freq_mag(freq_mag)  
     
         # loop through each feature extraction configuration
-        for fex_config in self.fex_configs:
-            fex_type = fex_config['type']
+        for feat_config in self.feat_configs:
+            feat_type = feat_config['type']
             n_dims = freq_mag.shape[-1]  # number of dimensions
 
             # first n modes
-            if fex_type == 'first_n_modes':
+            if feat_type == 'first_n_modes':
                 # assumes each dimension has its own sampling frequency, hence differnt freq_bins
                 top_results = [
-                    ff.first_n_modes(freq_bins[0, :, dim], freq_psd[:, :, dim], fex_config['n_modes']) for dim in range(n_dims)
+                    ff.first_n_modes(freq_bins[0, :, dim], freq_psd[:, :, dim], feat_config['n_modes']) for dim in range(n_dims)
                     ]
                 top_psd_list, top_freq_list = zip(*top_results) 
 
@@ -217,8 +217,8 @@ class FrequencyFeatureExtractor:
                 features_list.append(top_freq)
 
             # full spectrum features
-            elif fex_type == 'full_spectrum':
-                for param in fex_config['parameters']:
+            elif feat_type == 'full_spectrum':
+                for param in feat_config['parameters']:
                     if param == 'psd':
                         features_list.append(freq_psd)
                     elif param == 'mag':
@@ -231,19 +231,19 @@ class FrequencyFeatureExtractor:
                         raise ValueError(f"Unknown frequency feature parameter: {param}")
 
             # 1 dimensional features
-            elif hasattr(ff, fex_type):
-                fex = getattr(ff, fex_type)
-                features_dims = [fex(freq_bins[0, :, dim], freq_amp[:, :, dim]) for dim in range(n_dims)]   
+            elif hasattr(ff, feat_type):
+                get_feat_value = getattr(ff, feat_type)
+                features_dims = [get_feat_value(freq_bins[0, :, dim], freq_amp[:, :, dim]) for dim in range(n_dims)]   
 
                 # stack features for each dimension 
                 features = np.stack(features_dims, axis=-1)  # shape: (batch_size * n_nodes, n_components, n_dims)
                 features_list.append(features)   
 
             else:
-                raise ValueError(f"Unknown frequency feature extraction type: {fex_config['type']}")
+                raise ValueError(f"Unknown frequency feature extraction type: {feat_config['type']}")
 
         # concatenate all features into a single tensor
-        features_np = np.concatenate(features, axis=1)  # shape: (batch_size * n_nodes, n_components, n_dims)
+        features_np = np.concatenate(features_list, axis=1)  # shape: (batch_size * n_nodes, n_components, n_dims)
         # convert to input format
         features = self.postprocess_output(features_np)
 

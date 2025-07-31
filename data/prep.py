@@ -244,9 +244,9 @@ class DataPreprocessor:
         final_edge_data_np = np.concatenate(all_ds_subtype_edges, axis=0)        # (n_samples, n_edges)
         
         if ds_type == 'OK':
-            final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
         elif ds_type == 'NOK':
-            final_node_labels_np = -1 * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+            final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors
         final_node_data = torch.tensor(final_node_data_np, dtype=torch.float32)

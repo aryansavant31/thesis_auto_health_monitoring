@@ -7,7 +7,7 @@ This module contains
 
 from scipy.signal import butter, filtfilt
 import numpy as np
-from config import DataConfig
+from .config import DataConfig
 import torch
 
 class DomainTransformer:
@@ -26,7 +26,7 @@ class DomainTransformer:
         """
         self.fs = DataConfig().fs
         self.domain_config = domain_config
-        self.domain = domain_config['domain'] 
+        self.domain = domain_config['type'] 
 
     def preprocess_input(self, data):
         """
@@ -42,7 +42,9 @@ class DomainTransformer:
         Converts data back to original shape and moves it to the original device.
         """
         data = torch.from_numpy(data).to(self.device)
-        return data.view(self.original_shape)
+        print(f"Postprocessed data shape: {data.shape}, Original shape: {self.original_shape}")
+
+        return data.view(self.original_shape[0], self.original_shape[1], data.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
     
     def postprocess_freq_output(self, freq_data, freq_bins):
         """
@@ -55,9 +57,9 @@ class DomainTransformer:
         # convert to tensor and reshape back to original shape
         return self.postprocess_output(data_np)
     
-    def __call__(self, data):
+    def transform(self, data):
         """
-        Apply the domain transform and normalization to the data.
+        Apply the domain transform to the data.
         
         Parameters
         ----------
@@ -149,7 +151,7 @@ def high_pass_filter(data, cutoff_freq, fs):
 
         Parameters
         ----------
-        data : np.ndarray, shape (batch_size * n_nodes, n_timesteps, n_dims)
+        data : np.ndarray, shape (batch_size * n_nodes, n_timesteps)
         cutoff_freq : float
             Cutoff frequency for the high-pass filter.
         fs : float
@@ -157,7 +159,7 @@ def high_pass_filter(data, cutoff_freq, fs):
 
         Returns
         -------
-        filtered_data : np.ndarray, shape (batch_size * n_nodes, n_timesteps, n_dims)
+        filtered_data : np.ndarray, shape (batch_size * n_nodes, n_timesteps)
             Filtered data.
         """
         b, a = butter(4, cutoff_freq / (0.5 * fs), btype='high')  
@@ -167,8 +169,7 @@ def high_pass_filter(data, cutoff_freq, fs):
 
         # apply filter to each sample and its dimensions
         for i in range(data.shape[0]):
-            for j in range(data.shape[2]):  # iterate over dimensions
-                filtered_data[i, :, j] = filtfilt(b, a, data[i, :, j])
+            filtered_data[i, :] = filtfilt(b, a, data[i, :])
 
         return filtered_data
 
@@ -193,6 +194,11 @@ def to_freq_domain(data, fs):
     
     freq_bins = np.fft.rfftfreq(n_comps, 1/fs)  
     freq_data = np.fft.rfft(data, axis=1)  # FFT along the time dimension
+
+    # remove Nyquist frequency if n_comps is even
+    if n_comps % 2 == 0:
+        freq_bins = freq_bins[:-1]
+        freq_data = freq_data[:, :-1]
 
     return freq_data, freq_bins
 
