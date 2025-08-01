@@ -7,7 +7,7 @@ import glob
 
 
 class DataConfig:
-    def __init__(self, ):
+    def __init__(self, run_type='train'):
         """
         Data structure:
 
@@ -56,6 +56,13 @@ class DataConfig:
         # segement data
         self.window_length  = 500
         self.stride         = 100 
+
+        if run_type == 'train':
+            self.set_train_dataset()
+        elif run_type == 'custom_test':
+            self.set_custom_test_dataset()
+        elif run_type == 'predict':
+            self.set_predict_dataset()
         
     def set_train_dataset(self):
         self.healthy_configs   = {
@@ -82,9 +89,7 @@ class DataConfig:
     def set_predict_dataset(self):
         self.predict_ratio = 0.8
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG'), 
-                    get_augment_config('gau', mean=0.1, std=0.2), 
-                    get_augment_config('gau', mean=0.2, std=0.3)],
+            '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {

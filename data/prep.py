@@ -5,14 +5,22 @@ This moduel contains:
 - trainset dataloader and custom dataloader functions.
 """
 
-import numpy as np
+import sys
 import os
+
+DATA_DIR = os.path.join((os.path.abspath(__file__)))
+
+import numpy as np
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader, random_split
-from .config import DataConfig
 import h5py
-from .augment import add_gaussian_noise
+
+# local imports
+if DATA_DIR not in sys.path:
+    sys.path.insert(0, DATA_DIR)
+from config import DataConfig
+from augment import add_gaussian_noise
 from collections import defaultdict
 
 class DataPreprocessor:
@@ -34,26 +42,10 @@ class DataPreprocessor:
         """
         self.package = package
       
-    def load_dataset(self, data_config:DataConfig, run_type):
+    def _load_dataset(self):
         """
         Load the dataset based on the run type.
-
-        Parameters
-        ----------
-        data_config : DataConfig
-            The data configuration object. (Note: The `set_dataset()` method is done in this class)
-        run_type : str
         """
-        self.data_config = data_config
-
-        if run_type == 'train':
-            self.data_config.set_train_dataset()
-        elif run_type == 'custom_test':
-            self.data_config.set_custom_test_dataset()
-        elif run_type == 'predict':
-            self.data_config.set_predict_dataset()
-        else:
-            raise ValueError(f"Unknown run type: {run_type}")
         
         # load node and edge data paths
         node_path_map, edge_path_map = self.data_config.get_dataset_paths()
@@ -77,28 +69,34 @@ class DataPreprocessor:
 
         return dataset
 
-    def get_custom_dataloader(self, data_config:DataConfig, run_type, batch_size=50):
+    def get_custom_dataloader(self, run_type, batch_size=50):
         """
         Create a custom dataloader for the specified run type.
         Parameters
         ----------
-        data_config : DataConfig
-            The data configuration object. (Note: The `set_dataset()` method is done in this class)
         run_type : str
             The type of run to perform.
             ('custom_test', 'predict').
         batch_size : int
         """
+        # set the data config based on run type
+        if run_type == 'custom_test':
+            self.data_config = DataConfig(run_type='custom_test')
+        elif run_type == 'predict':
+            self.data_config = DataConfig(run_type='predict')
+        else:
+            raise ValueError(f"Unknown run type: {run_type}")
+        
         # load the dataset
-        dataset = self.load_dataset(data_config, run_type)
+        dataset = self._load_dataset()
 
         # retain only the desired number of samples
         total_samples = len(dataset)
 
         if run_type == 'custom_test':
-            desired_samples = int(total_samples * data_config.custom_test_ratio)
+            desired_samples = int(total_samples * self.data_config.custom_test_ratio)
         elif run_type == 'predict':
-            desired_samples = int(total_samples * data_config.predict_ratio)
+            desired_samples = int(total_samples * self.data_config.predict_ratio)
         else:
             raise ValueError(f"Unknown run type: {run_type}")
         
@@ -112,7 +110,7 @@ class DataPreprocessor:
 
         return custom_loader
     
-    def get_training_dataloaders(self, data_config:DataConfig, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
+    def get_training_dataloaders(self, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
         """
         Create train, validation, and test dataloaders.
 
@@ -121,8 +119,11 @@ class DataPreprocessor:
         batch_size : int
             The batch size for the dataloaders.
         """
+        # set the data config for training
+        self.data_config = DataConfig(run_type='train')
+
         # load the dataset
-        dataset = self.load_dataset(data_config, 'train')
+        dataset = self._load_dataset()
 
         # split the dataset into train, validation, and test sets
         total_samples = len(dataset)

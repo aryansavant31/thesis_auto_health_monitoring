@@ -40,7 +40,7 @@ class FeatureRankingConfigMain(FeatureRankingConfig):
         performance_path = os.path.join(base_path, f'{self.node_type}')
         
         # addnfeat number
-        self.performance_log_path = os.path.join(performance_path, f"{self.node_type}_feature_performance_{self.version}")
+        self.performance_log_path = os.path.join(performance_path, f"{self.node_type}_perf_{self.version}")
         
         # add data type and subtype to the path
         performance_path = self.helper.set_ds_types_in_path(data_config, performance_path)

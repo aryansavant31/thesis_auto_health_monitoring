@@ -90,10 +90,10 @@ class FeaturePerformance:
         bin_number_chi_square : int
             Number of bins for the Chi-Square test
         """
-        self.info_gain_freq = freq_comparison_info_gain(self.fftFreq, self.Calc_FFT, bin_number_info)
-        self.chi_square_freq = freq_comparison_Chi_Square(self.fftFreq, self.Calc_FFT, bin_number_chi_square)
+        # self.info_gain_freq = freq_comparison_info_gain(self.fftFreq, self.Calc_FFT, bin_number_info)
+        # self.chi_square_freq = freq_comparison_Chi_Square(self.fftFreq, self.Calc_FFT, bin_number_chi_square)
         self.pearson_freq = freq_comparison_Pearson(self.fftFreq, self.Calc_FFT)
-        self.relieF_freq = freq_comparison_RelieF(self.fftFreq, self.Calc_FFT)
+        # self.relieF_freq = freq_comparison_RelieF(self.fftFreq, self.Calc_FFT)
 
         if self.file_path is not None:
             self._save_frequency_results()

@@ -28,10 +28,10 @@ def evaluate_feature_performance():
             Calc_0, Calc_FFT, fftFreq, 
             performance_log_path)
 
-        feat_perform.rank_time_features(
-            bin_number_info = rank_config.bin_num_info,
-            bin_number_chi_square =rank_config.bin_num_chi
-        )
+        # feat_perform.rank_time_features(
+        #     bin_number_info = rank_config.bin_num_info,
+        #     bin_number_chi_square =rank_config.bin_num_chi
+        # )
 
         feat_perform.rank_frequency_features(
             bin_number_info = rank_config.bin_num_info,

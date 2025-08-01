@@ -4,11 +4,21 @@ This module contains
 - domain transofrm functions and 
 - normalization functions.
 """
+import sys
+import os
+
+DATA_DIR = os.path.join((os.path.abspath(__file__)))
 
 from scipy.signal import butter, filtfilt
 import numpy as np
-from .config import DataConfig
 import torch
+
+# local imports
+if DATA_DIR not in sys.path:
+    sys.path.insert(0, DATA_DIR)
+    
+from config import DataConfig
+
 
 class DomainTransformer:
     """
@@ -28,74 +38,43 @@ class DomainTransformer:
         self.domain_config = domain_config
         self.domain = domain_config['type'] 
 
-    def preprocess_input(self, data):
-        """
-        Converts data to numpy array and reshapes it to (batch_size * n_nodes, n_timesteps, n_dims).
-        """
-        self.original_shape = data.shape
-        self.device = data.device
-
-        return data.view(-1, data.shape[-2], data.shape[-1]).detach().cpu().numpy() 
-    
-    def postprocess_output(self, data):
-        """
-        Converts data back to original shape and moves it to the original device.
-        """
-        data = torch.from_numpy(data).to(self.device)
-        return data.view(self.original_shape[0], self.original_shape[1], data.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
-    
-    def postprocess_freq_output(self, freq_data, freq_bins):
-        """
-        - Flattens frequency data and frequency bins along freq. axis
-        - Converts it back to original shape and moves it to the original device.
-        """
-        freq_bins_expanded = np.tile(freq_bins[None, :, :], (freq_data.shape[0], 1, 1))  # (batch_size * n_nodes, n_freq_bins, n_dims)
-        data_np = np.concatenate([freq_data, freq_bins_expanded], axis=1)  # (batch_size * n_nodes, 2*n_freq_bins, n_dims)
-
-        # convert to tensor and reshape back to original shape
-        return self.postprocess_output(data_np)
-    
-    def transform(self, data):
+    def transform(self, time_data):
         """
         Apply the domain transform to the data.
         
         Parameters
         ----------
-        data : torch.Tensor
-            Input data tensor of shape (batch_size, n_nodes, n_timesteps, n_dims).
+        time_data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            Input data tensor of time signals
 
         Returns
         -------
-        data : torch.Tensor
-            Transformed data tensor of shape (batch_size, n_nodes, n_components, n_dims).
+        time_data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            Filtered time data after applying high-pass filter if specified.
+        freq_mag : torch.Tensor, shape (batch_size, n_nodes, n_bins, n_dims)
+            Frequency magnitude after applying FFT.
+        freq_bins : torch.Tensor, shape (batch_size, n_nodes, n_bins, n_dims)
+            Frequency bins corresponding to the frequency magnitude.
+
+        Notes
+        -----
+        - If `domain` is 'time', only `time_data` is returned.
+        - If `domain` is 'freq', both `freq_mag` and `freq_bins` are returned as a tuple.
+        
         """
-        # reshape data to (batch_size * n_nodes, n_timesteps, n_dims)
-        data_np = self.preprocess_input(data)
 
         if self.domain == 'time':
             if self.domain_config['cutoff_freq'] > 0:
-                data_np_list = [high_pass_filter(data_np[:, :, dim], self.domain_config['cutoff_freq'], self.fs[dim]) for dim in range(len(self.fs))]
-                data_np = np.stack(data_np_list, axis=-1)  # shape: (batch_size * n_nodes, n_timesteps, n_dims)
-
-            data = self.postprocess_output(data_np)
+                time_data = high_pass_filter(time_data, self.domain_config['cutoff_freq'], self.fs)
+            return time_data
 
         elif self.domain == 'freq':
             if self.domain_config['cutoff_freq'] > 0:
-                data_np_list = [high_pass_filter(data_np[:, :, dim], self.domain_config['cutoff_freq'], self.fs[dim]) for dim in range(len(self.fs))] 
-                data_np = np.stack(data_np_list, axis=-1)
-
-            # convert to frequency domain for each dimension (assumes each dimensnion has its own sampling frequency)
-            freq_results = [
-                to_freq_domain(data_np[:, :, dim], self.fs[dim]) for dim in range(len(self.fs))
-                ]
-            freq_data_list, freq_bins_list = zip(*freq_results)
-
-            freq_data = np.stack(freq_data_list, axis=-1)  # (batch_size * n_nodes, n_freq_bins, n_dims)
-            freq_bins = np.stack(freq_bins_list, axis=-1) 
-
-            data = self.postprocess_freq_output(freq_data, freq_bins)
+                data = high_pass_filter(data, self.domain_config['cutoff_freq'], self.fs)
+   
+            freq_mag, freq_bin = to_freq_domain(data, self.fs)
+            return freq_mag, freq_bin
         
-        return data
     
 class DataNormalizer:
     """
@@ -113,7 +92,7 @@ class DataNormalizer:
         self.norm_type = norm_type
         self.data_stats = data_stats
 
-    def __call__(self, data):
+    def normalize(self, data):
         """
         Apply normalization to the data.
         
@@ -144,32 +123,40 @@ class DataNormalizer:
         return data 
     
 def high_pass_filter(data, cutoff_freq, fs):
-        """
-        Apply a high-pass Butterworth filter to the data.
+    """
+    Apply a high-pass Butterworth filter to the data.
 
-        Parameters
-        ----------
-        data : np.ndarray, shape (batch_size * n_nodes, n_timesteps)
-        cutoff_freq : float
-            Cutoff frequency for the high-pass filter.
-        fs : float
-            Sampling frequency of the data.
+    Parameters
+    ----------
+    data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+    cutoff_freq : float
+        Cutoff frequency for the high-pass filter.
+    fs : list
+        Sampling frequency list of the data (length should match number of dimensions).
 
-        Returns
-        -------
-        filtered_data : np.ndarray, shape (batch_size * n_nodes, n_timesteps)
-            Filtered data.
-        """
-        b, a = butter(4, cutoff_freq / (0.5 * fs), btype='high')  
+    Returns
+    -------
+    filtered_data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        Filtered data.
+    """
+    # move to CPU and convert to numpy
+    device = data.device
+    data_np = data.detach().cpu().numpy()
 
-        # initialize output array
-        filtered_data = np.zeros_like(data)
+    batch_size, n_nodes, n_timesteps, n_dims = data_np.shape
 
-        # apply filter to each sample and its dimensions
-        for i in range(data.shape[0]):
-            filtered_data[i, :] = filtfilt(b, a, data[i, :])
+    filtered_data = np.zeros_like(data_np)
 
-        return filtered_data
+    # apply filter for each dimension
+    for dim in range(n_dims):
+        b, a = butter(4, cutoff_freq / (0.5 * fs[dim]), btype='high')
+        # apply filter to each node for every sample
+        for sample in range(batch_size):
+            for node in range(n_nodes):
+                filtered_data[sample, node, :, dim] = filtfilt(b, a, data_np[sample, node, :, dim])
+
+    # convert back to torch and original device
+    return torch.from_numpy(filtered_data).to(device)
 
 def to_freq_domain(data, fs):
     """
@@ -177,30 +164,55 @@ def to_freq_domain(data, fs):
 
     Parameters
     ----------
-    data : np.ndarray, shape (batch_size * n_nodes, n_timesteps, n_dims)
-        Input data array.
-    fs : float
-        Sampling frequency of the data.
+    data : torch.tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        Input time data array.
+    fs : [list]
+        Sampling frequency list of the data (length should match number of dimensions).
 
     Returns
     -------
-    freq_data : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-        Frequency domain representation of the data.
-    freq_bins : np.ndarray, shape (n_freq_bins,)
+    freq_mag : torch.tensor, shape (batch_size, n_nodes, n_bins, n_dims)
+        Real-valued frequency magnitude.
+    freq_bins : torch.tensor, shape (batch_size, n_nodes, n_bins, n_dims)
+        Frequency bins, broadcasted to match freq_mag.
     """
-    n_comps = data.shape[1]  # numper of components/samples
-    
-    freq_bins = np.fft.rfftfreq(n_comps, 1/fs)  
-    freq_data = np.fft.rfft(data, axis=1)  # FFT along the time dimension
+    # move to CPU and convert to numpy
+    device = data.device
+    data_np = data.detach().cpu().numpy()
 
-    # remove Nyquist frequency if n_comps is even
-    if n_comps % 2 == 0:
-        freq_bins = freq_bins[:-1]
-        freq_data = freq_data[:, :-1]
+    batch_size, n_nodes, n_timesteps, n_dims = data_np.shape
 
-    return freq_data, freq_bins
+    freq_mag = []
+    bins = []
 
+    # apply FFT to each dimension of each node for every sample
+    for dim in range(n_dims):
+        bins_dim = np.fft.rfftfreq(n_timesteps, d=1/fs[dim]) # shape (n_bins,)
+        freq_mag_dim = np.abs(np.fft.rfft(data_np[..., dim], axis=2)) # real valued FFT magnitude, shape (batch_size, n_nodes, n_bins)
+
+        # remove Nyquist frequency if n_timesteps is even
+        if n_timesteps % 2 == 0:
+            freq_mag_dim = freq_mag_dim[..., :-1]
+            bins_dim = bins_dim[:-1]
         
+        # broadcast bins to match freq_mag shape
+        bins_dim_exp = np.broadcast_to(bins_dim, freq_mag_dim.shape)
+
+        # store results for each dimension
+        freq_mag.append(freq_mag_dim)
+        bins.append(bins_dim_exp)
+
+    # stack results across dimensions
+    freq_mag = np.stack(freq_mag, axis=-1)
+    bins = np.stack(bins, axis=-1)
+    
+    # convert back to torch and original device
+    freq_mag_tensor = torch.from_numpy(freq_mag).to(device)
+    freq_bins_tensor = torch.from_numpy(bins).to(device)
+
+    return freq_mag_tensor, freq_bins_tensor
+
+  
 def min_max_normalize(data, min, max):
     """
     Normalize the data based on min and max values along the components axis (axis=2)
