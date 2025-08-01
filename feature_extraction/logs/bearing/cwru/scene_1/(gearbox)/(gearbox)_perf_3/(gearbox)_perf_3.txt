@@ -1,0 +1,1 @@
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\feature_extraction\logs\bearing\cwru\scene_1\(gearbox)\healthy_unhealthy\0_N[OG] + 0_B-007[OG] + 0_B-021[OG]\T500 [acc]

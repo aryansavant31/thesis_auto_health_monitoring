@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
-from data.config import DataConfig
+from data.settings import DataConfig
 import pickle
 import glob
 

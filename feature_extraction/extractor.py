@@ -3,12 +3,24 @@ This module contains:
 - Pipeline class
 - Feature extraction Functions
 """
+
+import sys
+import os
+
+FEX_DIR = os.path.join((os.path.abspath(__file__)))
+sys.path.insert(0, FEX_DIR) if FEX_DIR not in sys.path else None
+
+# other imports
 import numpy as np
 import torch
-from data.config import DataConfig
 from sklearn.decomposition import PCA
-import time_features as tf
-import feature_extraction.frequency_features as ff
+
+# global imports
+from data.settings import DataConfig
+
+# local imports
+import tf # time features
+import ff # frequency features
 
 
 class TimeFeatureExtractor:
@@ -23,59 +35,21 @@ class TimeFeatureExtractor:
         """
         self.feat_configs = feat_configs
 
-    def preprocess_input(self, data):
-        """
-        Flatten the input data to 2D and convert to numpy array.
-
-        Parameters
-        ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
-            Input data in time domain.
-
-        Returns
-        -------
-        data_np : np.ndarray, shape (batch_size * n_nodes, n_timesteps, n_dims)
-            Flattened input data.
-        """
-        self.original_shape = data.shape  # save original shape for later reshaping
-        self.device = data.device  # save device for later use
-
-        data_np = data.view(-1, data.shape[-2], data.shape[-1]).detach().cpu().numpy()  # (batch_size * n_nodes, n_timesteps, n_dims)
-        return data_np
-    
-    def postprocess_output(self, features):
-        """
-        Reshape the features to match the original input shape.
-
-        Parameters
-        ----------
-        features : np.ndarray, shape (batch_size * n_nodes, n_components, n_dims)
-            Extracted features.
-
-        Returns
-        -------
-        reshaped_features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
-            Reshaped features.
-        """
-        features = torch.from_numpy(features).to(self.device)
-        return features.view(self.original_shape[0], self.original_shape[1], features.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
-
-    def __call__(self, data):
+    def extract(self, time_data):
         """
         Apply the time feature extraction to the data.
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        time_data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             Input data in time domain.
         
         Returns
         -------
-        features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
-            Extracted features based on the specified configurations.
+        final_tensor : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Tensor with extracted features based on the specified configurations.
         """
         features_list = []
-        data_np = self.preprocess_input(data)
 
         # loop through each feature extraction configuration
         for feat_config in self.feat_configs:
@@ -83,17 +57,15 @@ class TimeFeatureExtractor:
 
             if hasattr(tf, feat_type):
                 get_feat_value = getattr(tf, feat_type)
-                features = get_feat_value(data_np)  
+                features = get_feat_value(time_data)  
                 features_list.append(features)
             else:
                 raise ValueError(f"Unknown time feature extraction type: {feat_type}")
             
         # concatenate all features into a single tensor
-        features_np = np.concatenate(features_list, axis=1)  # shape: (batch_size * n_nodes, n_components, n_dims)
-        # convert to input format
-        features = self.postprocess_output(features_np)
+        final_tensor = torch.cat(features_list, axis=2)  # shape: (batch_size, n_nodes, n_components, n_dims)
 
-        return features 
+        return final_tensor 
              
 
 class FrequencyFeatureExtractor:
@@ -109,110 +81,35 @@ class FrequencyFeatureExtractor:
         self.feat_configs = feat_configs
         self.fs = DataConfig().fs  # sampling frequency
 
-    def preprocess_input(self, data):
-        """
-        Returns
-        -------
-        freq_mag : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-            Frequency magnitude data.
-        freq_bins : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-        
-        """
-        self.original_shape = data.shape  # save original shape for later reshaping
-        self.device = data.device  # save device for later use
-
-        data_np = data.view(-1, int(data.shape[-2]/2), 2, data.shape[-1]).detach().cpu().numpy()  # (batch_size * n_nodes, n_freq_bins, 2, n_dims)
-        
-        # seperate frequnecy data and frequency bins
-        freq_mag = data_np[:, :, 0, :]
-        freq_bins = data_np[:, :, 1, :]
-
-        return freq_mag, freq_bins 
-    
-    def postprocess_output(self, features):
-        """
-        Reshape the features to match the original input shape.
-
-        Parameters
-        ----------
-        features : np.ndarray, shape (batch_size * n_nodes, n_components, n_dims)
-            Extracted features.
-
-        Returns
-        -------
-        reshaped_features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims) 
-        """
-        features = torch.from_numpy(features).to(self.device)
-        return features.view(self.original_shape[0], self.original_shape[1], features.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
-    
-    def infer_freq_mag(self, freq_mag):
-        """
-        Parameters
-        ----------
-        freq_mag : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-            Frequency magnitude data.
-        
-        Returns
-        -------
-        freq_amp : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-            Frequency amplitude data.
-        freq_psd : np.ndarray, shape (batch_size * n_nodes, n_freq_bins, n_dims)
-            Power spectral density data.
-        """
-        # get frequency amplitude
-        freq_amp = ff.get_freq_amp(freq_mag)
-
-        # get psd
-        freq_psd_list = [
-            ff.get_freq_psd(freq_mag[:, :, dim], self.fs[dim]) for dim in range(len(self.fs))
-            ]  
-        freq_psd = np.stack(freq_psd_list, axis=-1)
-
-        return freq_amp, freq_psd
-
-    def extract(self, data):
+    def extract(self, freq_mag, freq_bins):
         """
         Apply the frequency feature extraction to the data.
 
-        Note
-        ----
-        Data should be in frequency domain
-
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_freq_bins*2, n_dims)
-            Input data in frequency domain, where the seond last dimension contains frequency magnitude and frequency bins.
+        freq_mag : torch.Tensor, shape (batch_size, n_nodes, n__bins, n_dims)
+            Frequency magnitude
+        freq_bins : torch.Tensor, shape (batch_size, n_nodes, n_bins, n_dims)
         
         Returns
         -------
-        features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
-            Extracted features based on the specified configurations (if `feat_configs` is not empty).   
+        final_tensor : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Tensor with extracted features based on the specified configurations (if `feat_configs` is not empty).   
         """
         # initialize an empty list to hold features
         features_list = []
 
-        # preprocess input to get frequency magnitude and frequency bins
-        freq_mag, freq_bins = self.preprocess_input(data)
-
         # convert frequency magnitude to frequency amplitude and PSD
-        freq_amp, freq_psd = self.infer_freq_mag(freq_mag)  
+        freq_amp = ff.get_freq_amp(freq_mag) 
+        freq_psd = ff.get_freq_psd(freq_mag, self.fs)
     
         # loop through each feature extraction configuration
         for feat_config in self.feat_configs:
             feat_type = feat_config['type']
-            n_dims = freq_mag.shape[-1]  # number of dimensions
 
             # first n modes
             if feat_type == 'first_n_modes':
-                # assumes each dimension has its own sampling frequency, hence differnt freq_bins
-                top_results = [
-                    ff.first_n_modes(freq_bins[0, :, dim], freq_psd[:, :, dim], feat_config['n_modes']) for dim in range(n_dims)
-                    ]
-                top_psd_list, top_freq_list = zip(*top_results) 
-
-                top_psd = np.stack(top_psd_list, axis=-1)  # shape: (batch_size * n_nodes, n_modes, n_dims)
-                top_freq = np.stack(top_freq_list, axis=-1)  
-
+                top_psd, top_freq = ff.first_n_modes(freq_bins, freq_psd, feat_config['n_modes']) 
                 features_list.append(top_psd)
                 features_list.append(top_freq)
 
@@ -233,21 +130,15 @@ class FrequencyFeatureExtractor:
             # 1 dimensional features
             elif hasattr(ff, feat_type):
                 get_feat_value = getattr(ff, feat_type)
-                features_dims = [get_feat_value(freq_bins[0, :, dim], freq_amp[:, :, dim]) for dim in range(n_dims)]   
-
-                # stack features for each dimension 
-                features = np.stack(features_dims, axis=-1)  # shape: (batch_size * n_nodes, n_components, n_dims)
+                features = get_feat_value(freq_bins, freq_amp)  
                 features_list.append(features)   
-
             else:
                 raise ValueError(f"Unknown frequency feature extraction type: {feat_config['type']}")
 
         # concatenate all features into a single tensor
-        features_np = np.concatenate(features_list, axis=1)  # shape: (batch_size * n_nodes, n_components, n_dims)
-        # convert to input format
-        features = self.postprocess_output(features_np)
+        final_tensor = torch.cat(features_list, axis=2)  # shape: (batch_size, n_nodes, n_components, n_dims)
 
-        return features       
+        return final_tensor       
         
 class FeatureReducer:
     def __init__(self, reduc_config):
@@ -255,44 +146,26 @@ class FeatureReducer:
         if reduc_config['type'] == 'PCA':
             self.model = PCA(n_components=reduc_config['n_components'])
 
-    def preprocess_input(self, data):
-        """
-        Flatten the input data to 2D and convert to numpy array.
-
-        Returns
-        -------
-        data_np : np.ndarray, shape (batch_size * n_nodes, n_components * n_dims)
-        """
-        self.original_shape = data.shape
-        self.device = data.device
-
-        data_np = data.view(-1, data.shape[-2] * data.shape[-1]).detach().cpu().numpy()  
-        return data_np
-    
-    def postprocess_output(self, features):
-        """
-        Reshape the features to match the original input shape.
-
-        Returns
-        -------
-        reshaped_features : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
-        """
-        features = torch.from_numpy(features).to(self.device)
-        return features.view(self.original_shape)
-
-    def __call__(self, data):
+    def reduce(self, data):
         """
         Apply feature reduction to the data.
+
         Parameters
         ----------
         data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
         """
-        data_np = self.preprocess_input(data)
+        # convert data to 2D numpy array
+        batch_size, n_nodes, n_components, n_dims = data.shape
+        device = data.device
+        data_np = data.view(-1, data.shape[-2] * data.shape[-1]).detach().cpu().numpy()  # shape (batch_size * n_nodes, n_components * n_dims)
 
-        features_np = self.model.fit_transform(data_np)  
-        features = self.postprocess_output(features_np)
+        features = self.model.fit_transform(data_np)  
+        
+        # convert features back to torch tensor and reshape
+        features = torch.from_numpy(features).to(device)
+        final_tensor = features.view(batch_size, n_nodes, -1, n_dims)
 
-        return features
+        return final_tensor
         
 
 

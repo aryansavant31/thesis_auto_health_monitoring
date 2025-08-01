@@ -74,7 +74,6 @@ def CentralFreq(freq, amplitudes):
     for i in range(0,n):
         m = m + freq[i]*amplitudes[i]
         denom = denom + amplitudes[i]
-        print(f"freq[{i}]: {type(freq[i])}, amplitudes[{i}]: {type(amplitudes[i])}")
         
 #    print(m)
     # denom = 0
@@ -82,8 +81,9 @@ def CentralFreq(freq, amplitudes):
     #     denom = denom + amplitudes[i]
     
 #   print(denom)
+    return([m/denom])
 
-    return m/denom
+
 
 
 def STDF(freq, amplitudes):
@@ -96,8 +96,8 @@ def STDF(freq, amplitudes):
     for i in range(0,n):
         numerator = numerator + (freq[i] - A)**2 * amplitudes[i]
         denom = denom + amplitudes[i]
-    
-    return np.sqrt(numerator/denom)
+        
+    return(np.sqrt(numerator/denom))
     
     
 def RMSF(freq, amplitudes):

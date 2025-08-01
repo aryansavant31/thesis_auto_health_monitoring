@@ -1,6 +1,6 @@
 from .config.manager import PredictNRIConfigMain
 from .nri import NRI
-from data.config import DataConfig
+from data.settings import DataConfig
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import Trainer
 import os

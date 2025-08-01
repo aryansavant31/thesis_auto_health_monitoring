@@ -1,21 +1,30 @@
 import os
 import sys
 
-FEATURE_EXTRACTION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOGS_DIR = os.path.join(FEATURE_EXTRACTION_DIR, "logs")
+ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-sys.path.append(os.path.dirname(FEATURE_EXTRACTION_DIR))
+CONFIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, CONFIG_DIR) if CONFIG_DIR not in sys.path else None
 
-from .rank_settings import FeatureRankingConfig
-from data.config import DataConfig
+FEX_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(FEX_DIR, "logs")
+
+# other imports
 import shutil
 
-class FeatureRankingConfigMain(FeatureRankingConfig):
+# global imports
+from data.settings import DataConfig
+
+# local imports
+from rank_settings import FeatureRankingSettings
+
+class FeatureRankingManager(FeatureRankingSettings):
     def __init__(self):
         super().__init__()
         self.helper = HelperClass()
 
-    def get_performance_log_path(self, data_config:DataConfig, check_version=True):
+    def get_perf_log_path(self, data_config:DataConfig, check_version=True):
         """
         Returns the path for saving the feature performance logs.
 
@@ -37,96 +46,96 @@ class FeatureRankingConfigMain(FeatureRankingConfig):
                                 f'{data_config.scenario}')
         
         # add node type
-        performance_path = os.path.join(base_path, f'{self.node_type}')
+        perf_path = os.path.join(base_path, f'{self.node_type}')
         
         # addnfeat number
-        self.performance_log_path = os.path.join(performance_path, f"{self.node_type}_perf_{self.version}")
+        self.perf_log_path = os.path.join(perf_path, f"{self.node_type}_perf_{self.version}")
         
         # add data type and subtype to the path
-        performance_path = self.helper.set_ds_types_in_path(data_config, performance_path)
+        perf_path = self.helper.set_ds_types_in_path(data_config, perf_path)
 
         # add timestep id and signal type to path
-        self.performance_id = os.path.join(performance_path, f"T{data_config.window_length} [{', '.join(data_config.signal_types)}]")
+        self.perf_id = os.path.join(perf_path, f"T{data_config.window_length} [{', '.join(data_config.signal_types)}]")
 
         if check_version:
-            self.check_if_performance_version_exists()
+            self.check_if_perf_version_exists()
 
-        return self.performance_log_path
+        return self.perf_log_path
     
     def get_ranking_log_path(self, data_config:DataConfig):
-        performance_log_path = self.get_performance_log_path(data_config, check_version=False)
+        perf_log_path = self.get_perf_log_path(data_config, check_version=False)
 
-        if not os.path.exists(performance_log_path):
-            raise FileNotFoundError(f"Performance log path {performance_log_path} does not exist. Please run the feature performance ranking first or type the correct version.")
+        if not os.path.exists(perf_log_path):
+            raise FileNotFoundError(f"Performance log path {perf_log_path} does not exist. Please run the feature performance ranking first or type the correct version.")
 
-        self.ranking_log_path = os.path.join(performance_log_path, f'rankings')
+        self.ranking_log_path = os.path.join(perf_log_path, f'rankings')
         return self.ranking_log_path
 
-    def save_performance_id(self):
+    def save_perf_id(self):
         """
         Saves the performance id.
         """
-        if not os.path.exists(self.performance_log_path):
-            os.makedirs(self.performance_log_path)
+        if not os.path.exists(self.perf_log_path):
+            os.makedirs(self.perf_log_path)
 
         # config_path = os.path.join(self.train_log_path, f'train_config.pkl')
         # with open(config_path, 'wb') as f:
         #     pickle.dump(self.__dict__, f)
 
-        performance_path = os.path.join(self.performance_log_path, f'{self.node_type}_performance_{self.version}.txt')
-        with open(performance_path, 'w') as f:
-            f.write(self.performance_id)
+        perf_path = os.path.join(self.perf_log_path, f'{self.node_type}_perf_{self.version}.txt')
+        with open(perf_path, 'w') as f:
+            f.write(self.perf_id)
 
-        print(f"Feature performance id saved to {self.performance_log_path}.")
+        print(f"Feature performance id saved to {self.perf_log_path}.")
 
-    def _remove_performance_version(self):
+    def _remove_perf_version(self):
         """
         Removes the performance version from the log path.
         """
-        if os.path.exists(self.performance_log_path):
-            user_input = input(f"Are you sure you want to remove '{self.node_type}_feature_performance_{self.version}' from the log path {self.performance_log_path}? (y/n): ")
+        if os.path.exists(self.perf_log_path):
+            user_input = input(f"Are you sure you want to remove '{self.node_type}_perf_{self.version}' from the log path {self.perf_log_path}? (y/n): ")
             if user_input.lower() == 'y':
-                shutil.rmtree(self.performance_log_path)
-                print(f"Overwrote exsiting '{self.node_type}_feature_performance_{self.version}' from the log path {self.performance_log_path}.")
+                shutil.rmtree(self.perf_log_path)
+                print(f"Overwrote exsiting '{self.node_type}_perf_{self.version}' from the log path {self.perf_log_path}.")
 
             else:
-                print(f"Operation cancelled. {self.node_type}_feature_performance_{self.version} still remains.")
+                print(f"Operation cancelled. {self.node_type}_perf_{self.version} still remains.")
 
-    def _get_next_performance_version(self):
-        parent_dir = os.path.dirname(self.performance_log_path)
+    def _get_next_perf_version(self):
+        parent_dir = os.path.dirname(self.perf_log_path)
 
         # List all folders in parent_dir that match 'v<number>'
-        performance_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'{self.node_type}_feature_performance_')]
+        perf_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'{self.node_type}_perf_')]
 
-        if performance_folders:
+        if perf_folders:
             # Extract numbers and find the max
-            max_performance_version = max(int(f.split('_')[-1]) for f in performance_folders)
-            self.version = max_performance_version + 1
-            new_feature_performance = f"{self.node_type}_feature_performance_{self.version}"
-            print(f"Next feature performance folder will be: {new_feature_performance}")
+            max_perf_version = max(int(f.split('_')[-1]) for f in perf_folders)
+            self.version = max_perf_version + 1
+            new_feature_perf = f"{self.node_type}_perf_{self.version}"
+            print(f"Next feature performance folder will be: {new_feature_perf}")
         else:
-            new_feature_performance = f"{self.node_type}_feature_performance_1"
+            new_feature_perf = f"{self.node_type}_perf_1"
 
-        return os.path.join(parent_dir, new_feature_performance)
+        return os.path.join(parent_dir, new_feature_perf)
     
-    def check_if_performance_version_exists(self):
+    def check_if_perf_version_exists(self):
         """
-        Checks if the model_num already exists in the log path.
+        Checks if the performance version already exists in the log path.
 
         Parameters
         ----------
         log_path : str
             The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
-        if os.path.isdir(self.performance_log_path):
-            print(f"'{self.node_type}_feature_performance_{self.version}' already exists in the log path '{self.performance_log_path}'.")
+        if os.path.isdir(self.perf_log_path):
+            print(f"'{self.node_type}_perf_{self.version}' already exists in the log path '{self.perf_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop operation (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
-                self._remove_performance_version()
+                self._remove_perf_version()
 
             elif user_input.lower() == 'b':
-                self.performance_log_path = self._get_next_performance_version()
+                self.perf_log_path = self._get_next_perf_version()
 
             elif user_input.lower() == 'c':
                 print("Stopped training.")

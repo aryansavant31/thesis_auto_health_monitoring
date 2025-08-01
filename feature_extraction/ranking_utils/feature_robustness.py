@@ -19,6 +19,7 @@ from scipy.stats import pearsonr
 
 import seaborn as sn
 import matplotlib.pyplot as plt
+import concurrent.futures
 
 
 def extract_function_names(file_path):
@@ -32,11 +33,11 @@ def load_functions(file_path):
         exec(file.read(), globals())
 
 
-file_path_time = os.path.join(RANKING_UTILS_DIR, "ranking_utils", "time_features.py")
+file_path_time = os.path.join(RANKING_UTILS_DIR, "time_features.py")
 Time_features = extract_function_names(file_path_time)
 load_functions(file_path_time)
 
-file_path_frequency = os.path.join(RANKING_UTILS_DIR, "ranking_utils", "frequency_features.py")
+file_path_frequency = os.path.join(RANKING_UTILS_DIR, "frequency_features.py")
 Freq_features = extract_function_names(file_path_frequency)
 Freq_features.remove('Kp_value')
 load_functions(file_path_frequency)
@@ -58,6 +59,38 @@ def sigma_finder_SNR(signal, SNR):
     K = 10 ** (SNR/20)
     
     return(RMS_signal/K)
+
+def compute_noise_cv_for_feature(args):
+    feature, Freq_features, Time_features, AAA, AAAfreq, range_SNR = args
+    result_feature_noise_SNR = {}
+    noise_CV_SNR = []
+    for i in range(0, len(range_SNR)):
+        sigma_SNR = sigma_finder_SNR(AAA, range_SNR[i])
+        noised_signals_real = []
+        noised_signals_freq = []
+        for p in range(0, 20):
+            noised_signals_real.append(AAA + np.random.normal(0, sigma_SNR, AAA.shape[0]))
+            noised_signals_freq.append(AAAfreq + np.random.normal(0, sigma_SNR, AAAfreq.shape[0]))
+        result_feature_noise_SNR[feature] = []
+        for p in range(0, 20):
+            if globals()[feature].__code__.co_argcount == 2:
+                val = globals()[feature](AAAfreq, noised_signals_freq[p])
+                if isinstance(val, (list, tuple, np.ndarray)):
+                    result_feature_noise_SNR[feature].append(val[0])
+                elif isinstance(val, (int, float, complex)):
+                    result_feature_noise_SNR[feature].append(val)
+            else:
+                val = globals()[feature](noised_signals_real[p])
+                if isinstance(val, (list, tuple, np.ndarray)):
+                    result_feature_noise_SNR[feature].append(val[0])
+                elif isinstance(val, (int, float, complex)):
+                    result_feature_noise_SNR[feature].append(val)
+        cv = coefficient_variation(result_feature_noise_SNR[feature])
+        if np.isnan(cv):
+            noise_CV_SNR.append(0)
+        else:
+            noise_CV_SNR.append(100 * np.abs(cv))
+    return feature, noise_CV_SNR
 
 
 def test_noise_robustness():
@@ -102,103 +135,65 @@ def test_noise_robustness():
     #of our signal for those different noises (but same SNR)
 
     #drifted_signals = {}
-    sigma_SNR = []
-    CV_values = {}
-    result_feature_noise_SNR = {}
+    features = Freq_features + Time_features
+    args_list = [(feature, Freq_features, Time_features, AAA, AAAfreq, range_SNR) for feature in features]
     noise_CV_SNR = {}
-    #drift_CV_SNR = {}
+
+    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+        results = list(executor.map(compute_noise_cv_for_feature, args_list))
+
+    for feature, cv_list in results:
+        noise_CV_SNR[feature] = cv_list
+        # plt.figure()
+        # plt.plot(range_SNR, noise_CV_SNR[feature])
+        # plt.title('SNR/CV evolution ' + feature)
+        # plt.xlabel('SNR value (dB)')
+        # plt.ylabel('Coefficient of variation (%)')
+
+    #Test to know the top 5 best features at 30 dB ( the most resilient to the noise)
+    #With the current range_SNR, 30 dB is attained at the 102th index
+
+    Thirty_db_index = 103
+    Fourty_db_index = 154
+
+
+    #The ranking dictionnaries contain all the values of the feature that suffice the 
+    #chosen criteria to be able to see the best performing ones
+
+    #The "Resilient" dictionaries contain 0 or 1 if the feature is resilient or not
+    #And are useful in the last global ranking done below
+    Ranking_30dB_5pct = {}
+    Ranking_30dB_1pct = {}
+    Ranking_40dB_1pct = {}
+    Resilient_40dB_1pct = {}
+    Resilient_30dB_1pct = {}
 
     for feature in Freq_features + Time_features:
-        print(feature)
-        noise_CV_SNR[feature] = []
-        for i in range(0, len(range_SNR)):
-            sigma_SNR = sigma_finder_SNR(AAA, range_SNR[i])
-            noised_signals_real = []
-            noised_signals_freq = []
-            #drifted_signals[i] = []
-            
-            for p in range(0, 20):
-                noised_signals_real.append(AAA + np.random.normal(0, sigma_SNR, AAA.shape[0]))
-                noised_signals_freq.append(AAAfreq + np.random.normal(0, sigma_SNR, AAAfreq.shape[0]))
-
-            #print(i)
-            result_feature_noise_SNR[feature] = []
-            #print(globals()[i](range_value))
-            #print(j)
-            for p in range(0, 20):
-                
-                #We take into account the frequency features with 2 qrguments
-                if globals()[feature].__code__.co_argcount == 2:
-                    if isinstance(globals()[feature](AAAfreq, noised_signals_freq[p]), (list, tuple, np.ndarray)) == True:
-                        result_feature_noise_SNR[feature].append(globals()[feature](AAAfreq, noised_signals_freq[p])[0])
-                    elif isinstance(globals()[feature](AAAfreq, noised_signals_freq[p]), (int, float, complex)) == True:
-                        result_feature_noise_SNR[feature].append(globals()[feature](AAAfreq, noised_signals_freq[p]))
-                
-                else:
-                    #We take into account the time features with 1 argument
-                    if isinstance(globals()[feature](noised_signals_real[p]), (list, tuple, np.ndarray)) == True:
-                        result_feature_noise_SNR[feature].append(globals()[feature](noised_signals_real[p])[0])
-                    elif isinstance(globals()[feature](noised_signals_real[p]), (int, float, complex)) == True:
-                        result_feature_noise_SNR[feature].append(globals()[feature](noised_signals_real[p]))
-
-            #print(result_feature_noise_SNR[feature])
-            #print(len(result_feature_noise_SNR[feature]))
-            if np.isnan(coefficient_variation(result_feature_noise_SNR[feature])) == True:
-                #print(2)
-                noise_CV_SNR[feature].append(0)
-            else:
-                noise_CV_SNR[feature].append(100 * np.abs(coefficient_variation(result_feature_noise_SNR[feature])))
-
-        plt.figure()
-        plt.plot(range_SNR, noise_CV_SNR[feature])
-        plt.title('SNR/CV evolution ' + feature)
-        plt.xlabel('SNR value (dB)')
-        plt.ylabel('Coefficient of variation (%)')
-
-        #Test to know the top 5 best features at 30 dB ( the most resilient to the noise)
-        #With the current range_SNR, 30 dB is attained at the 102th index
-
-        Thirty_db_index = 103
-        Fourty_db_index = 154
-
-
-        #The ranking dictionnaries contain all the values of the feature that suffice the 
-        #chosen criteria to be able to see the best performing ones
-
-        #The "Resilient" dictionaries contain 0 or 1 if the feature is resilient or not
-        #And are useful in the last global ranking done below
-        Ranking_30dB_5pct = {}
-        Ranking_30dB_1pct = {}
-        Ranking_40dB_1pct = {}
-        Resilient_40dB_1pct = {}
-        Resilient_30dB_1pct = {}
-
-        for feature in Freq_features + Time_features:
-            Resilient_40dB_1pct[feature] = 0
+        Resilient_40dB_1pct[feature] = 0
+        Resilient_30dB_1pct[feature] = 0
+        
+        
+    for feature in Freq_features + Time_features:
+        if noise_CV_SNR[feature][Thirty_db_index] <=1:
+            Ranking_30dB_1pct[feature] = noise_CV_SNR[feature][Thirty_db_index]
+            Resilient_30dB_1pct[feature] = 1
+        else:
             Resilient_30dB_1pct[feature] = 0
             
+        if noise_CV_SNR[feature][Thirty_db_index] <=5:
+            Ranking_30dB_5pct[feature] = noise_CV_SNR[feature][Thirty_db_index]
             
-        for feature in Freq_features + Time_features:
-            if noise_CV_SNR[feature][Thirty_db_index] <=1:
-                Ranking_30dB_1pct[feature] = noise_CV_SNR[feature][Thirty_db_index]
-                Resilient_30dB_1pct[feature] = 1
-            else:
-                Resilient_30dB_1pct[feature] = 0
-                
-            if noise_CV_SNR[feature][Thirty_db_index] <=5:
-                Ranking_30dB_5pct[feature] = noise_CV_SNR[feature][Thirty_db_index]
-                
-            if noise_CV_SNR[feature][Fourty_db_index] <=1:
-                Ranking_40dB_1pct[feature] = noise_CV_SNR[feature][Fourty_db_index]
-                Resilient_40dB_1pct[feature] = 1
-            else:
-                Resilient_40dB_1pct[feature] = 0
-                
-        Sorted_Ranking_30dB_5pct = dict(sorted(Ranking_30dB_5pct.items(), key=lambda item: item[1]))
+        if noise_CV_SNR[feature][Fourty_db_index] <=1:
+            Ranking_40dB_1pct[feature] = noise_CV_SNR[feature][Fourty_db_index]
+            Resilient_40dB_1pct[feature] = 1
+        else:
+            Resilient_40dB_1pct[feature] = 0
+            
+    Sorted_Ranking_30dB_5pct = dict(sorted(Ranking_30dB_5pct.items(), key=lambda item: item[1]))
 
-        Sorted_Ranking_30dB_1pct = dict(sorted(Ranking_30dB_1pct.items(), key=lambda item: item[1]))
+    Sorted_Ranking_30dB_1pct = dict(sorted(Ranking_30dB_1pct.items(), key=lambda item: item[1]))
 
-        Sorted_Ranking_40dB_1pct = dict(sorted(Ranking_40dB_1pct.items(), key=lambda item: item[1]))
+    Sorted_Ranking_40dB_1pct = dict(sorted(Ranking_40dB_1pct.items(), key=lambda item: item[1]))
 
-    return Ranking_30dB_1pct
+    return Resilient_30dB_1pct
 

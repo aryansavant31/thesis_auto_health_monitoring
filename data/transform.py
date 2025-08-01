@@ -8,16 +8,14 @@ import sys
 import os
 
 DATA_DIR = os.path.join((os.path.abspath(__file__)))
+sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
 
 from scipy.signal import butter, filtfilt
 import numpy as np
 import torch
 
 # local imports
-if DATA_DIR not in sys.path:
-    sys.path.insert(0, DATA_DIR)
-    
-from config import DataConfig
+from data.settings import DataConfig
 
 
 class DomainTransformer:
@@ -70,9 +68,9 @@ class DomainTransformer:
 
         elif self.domain == 'freq':
             if self.domain_config['cutoff_freq'] > 0:
-                data = high_pass_filter(data, self.domain_config['cutoff_freq'], self.fs)
+                time_data = high_pass_filter(time_data, self.domain_config['cutoff_freq'], self.fs)
    
-            freq_mag, freq_bin = to_freq_domain(data, self.fs)
+            freq_mag, freq_bin = to_freq_domain(time_data, self.fs)
             return freq_mag, freq_bin
         
     

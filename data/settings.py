@@ -75,19 +75,18 @@ class DataConfig:
         }
     
     def set_custom_test_dataset(self):
-        self.custom_test_ratio = 0.6
+        self.amt = 0.6
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG'), 
-                    get_augment_config('gau', mean=0.1, std=0.2), 
-                    get_augment_config('gau', mean=0.2, std=0.3)],
+            '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-
+            '0_B-007': [get_augment_config('OG')], 
+            '0_B-021': [get_augment_config('OG')],    
         }
         
     def set_predict_dataset(self):
-        self.predict_ratio = 0.8
+        self.amt = 0.8
         self.healthy_configs   = {
             '0_N': [get_augment_config('OG')],
         }

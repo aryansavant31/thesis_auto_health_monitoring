@@ -16,6 +16,7 @@ import ast
 
 import seaborn as sn
 import matplotlib.pyplot as plt
+import concurrent.futures
 
 
 def extract_function_names(file_path):
@@ -72,50 +73,64 @@ def IQR_normalisation(amplitudes, interval):
 
     return(normalisation(filtered_ampli, interval))
 
+def _time_feature_worker(args):
+            i, Calc_10 = args
+            result = []
+            for key in Calc_10.keys():
+                feature = globals()[i](Calc_10[key])
+                if isinstance(feature, (list, np.ndarray, tuple)):
+                    result.append(feature[0])
+                else:
+                    result.append(feature)
+            return i, result
+
 
 class FinalFeatureRanking:
     def __init__(self, Calc_10, ranking_path):
         self.ranking_path = ranking_path
         self.file_path_util = os.path.dirname(ranking_path)
 
+        if not os.path.exists(self.ranking_path):
+            os.makedirs(self.ranking_path)
+
         self.Calc_10 = Calc_10
 
     def _load_util_files(self):
-        self.Freq_values_Chi = np.load(os.path.join(self.file_path_util, 'Freq_values_Chi.npy'))
-        self.Freq_features_Chi = np.load(os.path.join(self.file_path_util, 'Freq_features_Chi.npy'))
+        self.Freq_values_Chi = np.load(os.path.join(self.file_path_util, 'freq_values_chi.npy'))
+        self.Freq_features_Chi = np.load(os.path.join(self.file_path_util, 'freq_features_chi.npy'))
 
-        self.Freq_values_RelieF = np.load(os.path.join(self.file_path_util, 'Freq_values_RelieF.npy'))
-        self.Freq_features_RelieF = np.load(os.path.join(self.file_path_util, 'Freq_features_RelieF.npy'))
+        self.Freq_values_RelieF = np.load(os.path.join(self.file_path_util, 'freq_values_relief.npy'))
+        self.Freq_features_RelieF = np.load(os.path.join(self.file_path_util, 'freq_features_relief.npy'))
 
-        self.Freq_values_info = np.load(os.path.join(self.file_path_util, 'Freq_values_info.npy'))
-        self.Freq_features_info = np.load(os.path.join(self.file_path_util, 'Freq_features_info.npy'))
+        self.Freq_values_info = np.load(os.path.join(self.file_path_util, 'freq_values_info_gain.npy'))
+        self.Freq_features_info = np.load(os.path.join(self.file_path_util, 'freq_features_info_gain.npy'))
 
-        self.Freq_values_Pearson = np.load(os.path.join(self.file_path_util, 'Freq_values_Pearson.npy'))
-        self.Freq_features_Pearson = np.load(os.path.join(self.file_path_util, 'Freq_features_Pearson.npy'))
+        self.Freq_values_Pearson = np.load(os.path.join(self.file_path_util, 'freq_values_pearson.npy'))
+        self.Freq_features_Pearson = np.load(os.path.join(self.file_path_util, 'freq_features_pearson.npy'))
 
 
-        self.Time_values_Pearson = np.load(os.path.join(self.file_path_util,'Time_values_Pearson.npy'))
-        self.Time_features_Pearson = np.load(os.path.join(self.file_path_util,'Time_features_Pearson.npy'))
+        self.Time_values_Pearson = np.load(os.path.join(self.file_path_util,'time_values_pearson.npy'))
+        self.Time_features_Pearson = np.load(os.path.join(self.file_path_util,'time_features_pearson.npy'))
 
-        self.Time_values_Chi = np.load(os.path.join(self.file_path_util,'Time_values_Chi.npy'))
-        self.Time_features_Chi = np.load(os.path.join(self.file_path_util,'Time_features_Chi.npy'))
+        self.Time_values_Chi = np.load(os.path.join(self.file_path_util,'time_values_chi.npy'))
+        self.Time_features_Chi = np.load(os.path.join(self.file_path_util,'time_features_chi.npy'))
 
-        self.Time_values_Info_Gain = np.load(os.path.join(self.file_path_util,'Time_values_Info_Gain.npy'))
-        self.Time_features_Info_Gain = np.load(os.path.join(self.file_path_util,'Time_features_Info_Gain.npy'))
+        self.Time_values_Info_Gain = np.load(os.path.join(self.file_path_util,'time_values_info_gain.npy'))
+        self.Time_features_Info_Gain = np.load(os.path.join(self.file_path_util,'time_features_info_gain.npy'))
 
-        self.Time_values_RelieF = np.load(os.path.join(self.file_path_util, 'Time_values_RelieF.npy'))
-        self.Time_features_RelieF = np.load(os.path.join(self.file_path_util, 'Time_features_RelieF.npy'))
+        self.Time_values_RelieF = np.load(os.path.join(self.file_path_util, 'time_values_relief.npy'))
+        self.Time_features_RelieF = np.load(os.path.join(self.file_path_util, 'time_features_relief.npy'))
 
     def get_correlation_matrix(self):
+
         result_feature = {}
-        for i in Time_features:
-            result_feature[i] = []
-            for key in self.Calc_10.keys():
-                feature = globals()[i](self.Calc_10[key])
-                if isinstance(feature, (list, np.ndarray, tuple)):
-                    result_feature[i].append(feature[0])
-                else:
-                    result_feature[i].append(feature)
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+            args_list = [(i, self.Calc_10) for i in Time_features]
+            results = executor.map(_time_feature_worker, args_list)
+
+            for i, feature_list in results:
+                result_feature[i] = feature_list
 
         df = pd.DataFrame(result_feature, columns = result_feature.keys())
 
@@ -140,19 +155,19 @@ class FinalFeatureRanking:
         self._load_util_files()
 
         #Healthy_Chi_10
-        Time_values_Chi = normalisation(Time_values_Chi, [0,1])
-        Freq_values_Chi = IQR_normalisation(Freq_values_Chi, [0,1])
+        Time_values_Chi = normalisation(self.Time_values_Chi, [0,1])
+        Freq_values_Chi = IQR_normalisation(self.Freq_values_Chi, [0,1])
 
         #Healthy_Info_10
-        Time_values_Info_Gain = normalisation(Time_values_Info_Gain, [0,1])
-        Freq_values_info = IQR_normalisation(Freq_values_info, [0,1])
+        Time_values_Info_Gain = normalisation(self.Time_values_Info_Gain, [0,1])
+        Freq_values_info = IQR_normalisation(self.Freq_values_info, [0,1])
         #Healthy_Pearson_10
-        Time_values_Pearson = normalisation(Time_values_Pearson, [0,1])
-        Freq_values_Pearson = IQR_normalisation(Freq_values_Pearson, [0,1])
+        Time_values_Pearson = normalisation(self.Time_values_Pearson, [0,1])
+        Freq_values_Pearson = IQR_normalisation(self.Freq_values_Pearson, [0,1])
 
         #Healthy_RelieF_10
-        Time_values_RelieF = normalisation(Time_values_RelieF, [0,1])
-        Freq_values_RelieF = IQR_normalisation(Freq_values_RelieF, [0,1]) 
+        Time_values_RelieF = normalisation(self.Time_values_RelieF, [0,1])
+        Freq_values_RelieF = IQR_normalisation(self.Freq_values_RelieF, [0,1]) 
 
         #To do our final ranking we calculate to weighted means : first the one 
         #comparing the 4 ranking algorithms, and secondly the one comparing
@@ -180,17 +195,17 @@ class FinalFeatureRanking:
         #of the dictionary having its own class/structure in Python code)  
 
 
-        Time_features_Chi = list(Time_features_Chi)    
-        Time_features_Pearson = list(Time_features_Pearson)   
-        Time_features_Info_Gain = list(Time_features_Info_Gain)   
-        Time_features_RelieF = list(Time_features_RelieF)   
+        Time_features_Chi = list(self.Time_features_Chi)    
+        Time_features_Pearson = list(self.Time_features_Pearson)   
+        Time_features_Info_Gain = list(self.Time_features_Info_Gain)   
+        Time_features_RelieF = list(self.Time_features_RelieF)   
             
         #Same thing for the frequency features
         
-        Freq_features_Pearson = list(Freq_features_Pearson)
-        Freq_features_info = list(Freq_features_info)
-        Freq_features_RelieF = list(Freq_features_RelieF)
-        Freq_features_Chi = list(Freq_features_Chi)
+        Freq_features_Pearson = list(self.Freq_features_Pearson)
+        Freq_features_info = list(self.Freq_features_info)
+        Freq_features_RelieF = list(self.Freq_features_RelieF)
+        Freq_features_Chi = list(self.Freq_features_Chi)
 
 
         for i in range(0, len(Time_values_Chi)):
@@ -248,8 +263,19 @@ class FinalFeatureRanking:
 
         Final_Ranking_Time = dict(sorted(Final_Ranking_Time.items(), key = lambda item: item[1]))
         Final_Ranking_Freq = dict(sorted(Final_Ranking_Freq.items(), key = lambda item: item[1]))
-        Final_Ranking_feature = dict(sorted(Final_Ranking_feature.items(), key = lambda item: item[1]))    
-            
+        
         version = os.path.basename(self.file_path_util).split('_')[-1]
+
+        print(f"Final ranking for time features (perf_{version}):")
+        print(40 * "-")
+        for feature, score in Final_Ranking_Time.items():
+            print(f"{feature}: {score:.4f}")
+
+        print(f"\nFinal ranking for frequency features (perf_{version}):")
+        print(40 * "-")
+        for feature, score in Final_Ranking_Freq.items():
+            print(f"{feature}: {score:.4f}")
+
+        
         np.save(os.path.join(self.ranking_path, f'time_feature_ranking_v{version}.npy'), Final_Ranking_Time)
         np.save(os.path.join(self.ranking_path, f'freq_feature_ranking_v{version}.npy'), Final_Ranking_Freq)

@@ -6,7 +6,7 @@ LOGS_DIR = os.path.join(FAULT_DETECTION_DIR, "logs")
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
 
 from feature_extraction.extractor import get_fex_config, get_reduc_config
-from data.config import DataConfig, get_domain_config
+from data.settings import DataConfig, get_domain_config
 import shutil
 import re
 from pathlib import Path

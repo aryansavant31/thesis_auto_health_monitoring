@@ -1,7 +1,7 @@
 
-class FeatureRankingConfig:
+class FeatureRankingSettings:
     def __init__(self):
-        self.version = 1
+        self.version = 2
         self.is_log = True
 
         # feature ranking parameters

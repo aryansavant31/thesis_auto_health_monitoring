@@ -1,6 +1,6 @@
 from fault_detection.anomaly_detector import AnomalyDetector, TrainerAnomalyDetector
 from config import TrainAnomalyDetectorConfig, PredictAnomalyDetectorConfig, get_model_pickle_path
-from data.config import DataConfig
+from data.settings import DataConfig
 from data.prep import DataPreprocessor, load_spring_particle_data
 from data.transform import DataTransformer
 from feature_extraction.extractor import FeatureExtractor
