@@ -343,7 +343,7 @@ def hist_lower_bound(amplitudes):
     if isinstance(amplitudes[0], (list, tuple, np.ndarray)) == True:
         C = (1/2)*(Maxi[0] - Mini[0])/(n-1)
         Output_Min = Mini[0]
-    elif isinstance(amplitudes[0], (int, float, complex)) == True:
+    elif isinstance(amplitudes[0], (int, np.float32, complex)) == True:
         C = (1/2)*(Maxi - Mini)/(n-1)
         Output_Min = Mini
     else:
@@ -362,7 +362,7 @@ def hist_higher_bound(amplitudes):
     if isinstance(amplitudes[0], (list, tuple, np.ndarray)) == True:
         C = (1/2)*(Maxi[0] - Mini[0])/(n-1)
         Output_Max = Maxi[0]
-    elif isinstance(amplitudes[0], (int, float, complex)) == True:
+    elif isinstance(amplitudes[0], (int, np.float32, complex)) == True:
         C = (1/2)*(Maxi - Mini)/(n-1)
         Output_Max = Maxi
     else:
@@ -391,9 +391,10 @@ def NNNL(amplitudes):
     
     if isinstance(amplitudes[0], (list, tuple, np.ndarray)) == True:
         return([Q[0]/P[0]])
-    elif isinstance(amplitudes[0], (int, float, complex)) == True:
+    elif isinstance(amplitudes[0], (int, np.float32, complex)) == True:
         return([Q[0]/P])
     else:
+        print("type", type(amplitudes[0]))
         print('An error has occured in NNL')
 
 
@@ -402,7 +403,7 @@ def Waveform_indicators(amplitudes):
     P = RMS(amplitudes)
     if isinstance(amplitudes[0], (list, tuple, np.ndarray)) == True:
         return([P[0]/Q[0]])
-    elif isinstance(amplitudes[0], (int, float, complex)) == True:
+    elif isinstance(amplitudes[0], (int, np.float32, complex)) == True:
         return([P/Q[0]])
     else:
         print('An error has occured in Waveform_indicators')

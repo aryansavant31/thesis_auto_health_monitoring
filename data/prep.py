@@ -32,13 +32,20 @@ class DataPreprocessor:
             The package to load data for.
             ('fault_detection', 'topology_estimation')
         """
-        self.data_config = DataConfig()
         self.package = package
       
-    def load_dataset(self, run_type):
+    def load_dataset(self, data_config:DataConfig, run_type):
         """
         Load the dataset based on the run type.
+
+        Parameters
+        ----------
+        data_config : DataConfig
+            The data configuration object. (Note: The `set_dataset()` method is done in this class)
+        run_type : str
         """
+        self.data_config = data_config
+
         if run_type == 'train':
             self.data_config.set_train_dataset()
         elif run_type == 'custom_test':
@@ -58,38 +65,40 @@ class DataPreprocessor:
             node_type_map = node_path_map[ds_type]
             ds_subtype_map = edge_path_map[ds_type]
             if node_type_map is not None and ds_subtype_map is not None:
-                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = self.prepare_data_from_path(node_type_map, ds_subtype_map, ds_type)
+                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = self._prepare_data_from_path(node_type_map, ds_subtype_map, ds_type)
             else:
                 x_node[ds_type], y_node[ds_type], y_edge[ds_type] = None, None, None
 
         # create datasets
         if self.package == 'fault_detection':
-            dataset = self.make_dataset(x_node, y_node)
+            dataset = self._make_dataset(x_node, y_node)
         elif self.package == 'topology_estimation':
-            dataset = self.make_dataset(x_node, y_edge)    
+            dataset = self._make_dataset(x_node, y_edge)    
 
         return dataset
 
-    def get_custom_dataloader(self, run_type, batch_size=50):
+    def get_custom_dataloader(self, data_config:DataConfig, run_type, batch_size=50):
         """
         Create a custom dataloader for the specified run type.
         Parameters
         ----------
+        data_config : DataConfig
+            The data configuration object. (Note: The `set_dataset()` method is done in this class)
         run_type : str
             The type of run to perform.
             ('custom_test', 'predict').
         batch_size : int
         """
         # load the dataset
-        dataset = self.load_dataset(run_type)
+        dataset = self.load_dataset(data_config, run_type)
 
         # retain only the desired number of samples
         total_samples = len(dataset)
 
         if run_type == 'custom_test':
-            desired_samples = int(total_samples * self.data_config.custom_test_ratio)
+            desired_samples = int(total_samples * data_config.custom_test_ratio)
         elif run_type == 'predict':
-            desired_samples = int(total_samples * self.data_config.predict_ratio)
+            desired_samples = int(total_samples * data_config.predict_ratio)
         else:
             raise ValueError(f"Unknown run type: {run_type}")
         
@@ -103,7 +112,7 @@ class DataPreprocessor:
 
         return custom_loader
     
-    def get_training_dataloaders(self, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
+    def get_training_dataloaders(self, data_config:DataConfig, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
         """
         Create train, validation, and test dataloaders.
 
@@ -113,7 +122,7 @@ class DataPreprocessor:
             The batch size for the dataloaders.
         """
         # load the dataset
-        dataset = self.load_dataset('train')
+        dataset = self.load_dataset(data_config, 'train')
 
         # split the dataset into train, validation, and test sets
         total_samples = len(dataset)
@@ -152,7 +161,7 @@ class DataPreprocessor:
         return train_loader, test_loader ,val_loader, []
         
 
-    def make_dataset(self, x, y):
+    def _make_dataset(self, x, y):
         """
         Create a TensorDataset from the provided data and labels.
         Parameters
@@ -180,7 +189,7 @@ class DataPreprocessor:
 
         return TensorDataset(x_all, y_all)
 
-    def prepare_data_from_path(self, node_type_map, ds_subtype_map, ds_type):
+    def _prepare_data_from_path(self, node_type_map, ds_subtype_map, ds_type):
         """
         Parameters
         ----------
@@ -202,10 +211,10 @@ class DataPreprocessor:
             The processed edge label data.
         """
         # step 1: process node data
-        node_dim_collect = self.process_node_data(node_type_map, ds_type)
+        node_dim_collect = self._process_node_data(node_type_map, ds_type)
 
         # step 2: flatten edge matrices per ds_subtype
-        ds_subtype_edge_map = self.process_edge_data(ds_subtype_map)
+        ds_subtype_edge_map = self._process_edge_data(ds_subtype_map)
 
         # step 3: prepare node and edge data
         all_ds_subtype_node_blocks = []  # each: (n_samples, n_nodes, t, d)
@@ -255,7 +264,7 @@ class DataPreprocessor:
 
         return final_node_data, final_node_labels, final_edge_data
 
-    def process_node_data(self, node_type_map, ds_type):
+    def _process_node_data(self, node_type_map, ds_type):
         # node_type -> ds_subtype -> dim -> segments
         node_dim_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
@@ -304,7 +313,7 @@ class DataPreprocessor:
 
         return np.concatenate(augmented_data_list, axis=0)
     
-    def process_edge_data(self, ds_subtype_map):
+    def _process_edge_data(self, ds_subtype_map):
         ds_subtype_edge_map = {}
 
         for ds_subtype, edge_hdf5_path in ds_subtype_map.items():

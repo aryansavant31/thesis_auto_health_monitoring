@@ -4,7 +4,8 @@ from data.prep import DataPreprocessor
 from data.transform import DomainTransformer
 from data.config import get_domain_config
 from feature_extraction.extractor import FrequencyFeatureExtractor
-from feature_extraction.config import get_freq_feat_config
+from feature_extraction.config.feature_settings import get_freq_feat_config
+from data.config import DataConfig
 
 class DataAdapter:
     def __init__(self):
@@ -20,7 +21,7 @@ class DataAdapter:
             [get_freq_feat_config('full_spectrum', parameters=['freq'])]
         )
 
-    def load_all_data(self, run_type='train', amt_of_data=1):
+    def load_all_data(self, data_config:DataConfig, run_type='train', amt_of_data=1):
         """
         Load the time data, frequency amplitude, and frequency bins from the dataset.
 
@@ -31,8 +32,8 @@ class DataAdapter:
         freq_bins : np.ndarray, shape (n_samples, n_nodes, n_freq_bins, n_dims)
         labels : np.ndarray, shape (n_samples,)
         """
-        time_dataset = self.data_preprocessor.load_dataset(run_type)
-        time_data, labels = self.process_time_dataset(time_dataset, amt_of_data)
+        time_dataset = self.data_preprocessor.load_dataset(data_config, run_type)
+        time_data, labels = self._process_time_dataset(time_dataset, amt_of_data)
 
         # domain transform
         freq_data = self.domain_transformer.transform(time_data)
@@ -48,11 +49,20 @@ class DataAdapter:
 
         return time_data_np, freq_amp_np, freq_bins_np, labels_np
     
-    def get_dictionaries(self, run_type='train'):
+    def get_dictionaries(self, data_config:DataConfig, run_type='train'):
         """
         Get dictionaries for time data, frequency amplitude, and frequency bins.
+
+        Returns
+        -------
+            Calc_0 : dictionary
+                Contains time data for healthy and unhealthy samples.
+            Calc_FFT : dictionary
+                Contains frequency amplitude data for healthy and unhealthy samples.
+            fftFreq : dictionary
+                Contains frequency bins for healthy and unhealthy samples.
         """
-        time_data, freq_amp, freq_bins, labels = self.load_all_data(run_type)
+        time_data, freq_amp, freq_bins, labels = self.load_all_data(data_config, run_type)
 
         # reshape time, freq_amp, freq_bins to (n_samples * n_nodes, n_components * n_dims)
         time_data = time_data.reshape(-1, time_data.shape[-2] * time_data.shape[-1])
@@ -60,13 +70,13 @@ class DataAdapter:
         freq_bins = freq_bins.reshape(-1, freq_bins.shape[-2] * freq_bins.shape[-1])
 
         # create dictionaries
-        Calc_0, Calc_FFT, fftFreq = self.optimize_data_for_ranking(
+        Calc_0, Calc_FFT, fftFreq = self._optimize_data_for_ranking(
             time_data, freq_amp, freq_bins, labels)
         
         return Calc_0, Calc_FFT, fftFreq
 
 
-    def process_time_dataset(self, time_dataset, amt_of_data=1):
+    def _process_time_dataset(self, time_dataset, amt_of_data=1):
         """
         Converts a TensorDataset to stacked tensors.
         Parameters:
@@ -102,7 +112,7 @@ class DataAdapter:
         return data_tensor, label_tensor
 
 
-    def optimize_data_for_ranking(self, time_data, freq_amp, freq_bins, labels):
+    def _optimize_data_for_ranking(self, time_data, freq_amp, freq_bins, labels):
         """
         Convert the time data, frequency amplitude, and frequency bins into dictionaries for ranking.
         

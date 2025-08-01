@@ -42,8 +42,6 @@ class DomainTransformer:
         Converts data back to original shape and moves it to the original device.
         """
         data = torch.from_numpy(data).to(self.device)
-        print(f"Postprocessed data shape: {data.shape}, Original shape: {self.original_shape}")
-
         return data.view(self.original_shape[0], self.original_shape[1], data.shape[1], self.original_shape[-1])  # (batch_size, n_nodes, n_components, n_dims)
     
     def postprocess_freq_output(self, freq_data, freq_bins):

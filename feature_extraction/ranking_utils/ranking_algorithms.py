@@ -127,15 +127,21 @@ def information_gain(Calc_0, function, bin_number):
     classes = []
     features = []
     for key in healthy_feature.keys():
-        classes.append(1)
-        features.append(healthy_feature[key][0])
+        classes.append(0)
+        if isinstance(healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(healthy_feature[key][0])
+        else:
+            features.append(healthy_feature[key])
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy_feature.keys():
-        classes.append(0)
-        features.append(non_healthy_feature[key][0])
+        classes.append(1)
+        if isinstance(non_healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(non_healthy_feature[key][0])
+        else:
+            features.append(non_healthy_feature[key])
     
     
     
@@ -226,15 +232,21 @@ def information_gain_freq(Calc_FFT, fftFreq, function, bin_number):
     classes = []
     features = []
     for key in healthy.keys():
-        classes.append(1)
-        features.append(function(fftFreq[key], healthy[key])[0])
+        classes.append(0)
+        if isinstance(healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(healthy_feature[key][0])
+        else:
+            features.append(healthy_feature[key])
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy.keys():
-        classes.append(0)
-        features.append(function(fftFreq[key], non_healthy[key])[0])
+        classes.append(1)
+        if isinstance(non_healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(non_healthy_feature[key][0])
+        else:
+            features.append(non_healthy_feature[key])
     
     
     
@@ -308,15 +320,21 @@ def Chi_Square(Calc_0, function, bin_number):
     classes = []
     features = []
     for key in healthy.keys():
-        classes.append(1)
-        features.append(healthy_feature[key][0])
+        classes.append(0)
+        if isinstance(healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(healthy_feature[key][0])
+        else:
+            features.append(healthy_feature[key])
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy.keys():
-        classes.append(0)
-        features.append(non_healthy_feature[key][0])
+        classes.append(1)
+        if isinstance(non_healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(non_healthy_feature[key][0])
+        else:
+            features.append(non_healthy_feature[key])
         
         
     A = feature_binning(features, classes, bin_number)
@@ -417,14 +435,17 @@ def Chi_Square_freq(Calc_FFT, fftFreq, function, bin_number):
     classes = []
     features = []
     for key in healthy.keys():
-        classes.append(1)
-        features.append(healthy_feature[key][0])
+        classes.append(0)
+        if isinstance(healthy_feature[key], (list, np.ndarray, tuple)):
+            features.append(healthy_feature[key][0])
+        else:
+            features.append(healthy_feature[key])
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy.keys():
-        classes.append(0)
+        classes.append(1)
         features.append(non_healthy_feature[key][0])
         
         
@@ -515,15 +536,21 @@ def Pearson_Corr(Calc_0, function):
     classes = []
     features = []
     for key in healthy.keys():
-        classes.append(1)
-        features.append(function(healthy[key])[0])
+        classes.append(0)
+        if isinstance(function(healthy[key]), (list, np.ndarray, tuple)):
+            features.append(function(healthy[key])[0])
+        else:
+            features.append(function(healthy[key]))
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy.keys():
-        classes.append(0)
-        features.append(function(non_healthy[key])[0])
+        classes.append(1)
+        if isinstance(function(non_healthy[key]), (list, np.ndarray, tuple)):
+            features.append(function(non_healthy[key])[0])
+        else:
+            features.append(function(non_healthy[key]))
         
     return([pearsonr(features, classes)[0], pearsonr(features, classes)[1]])
         
@@ -567,15 +594,21 @@ def Pearson_Corr_freq(Calc_FFT, fftFreq, function):
     classes = []
     features = []
     for key in healthy.keys():
-        classes.append(1)
-        features.append(function(fftFreq[key], healthy[key])[0])
+        classes.append(0)
+        if isinstance(function(fftFreq[key], healthy[key]), (list, np.ndarray, tuple)):
+            features.append(function(fftFreq[key], healthy[key])[0])
+        else:
+            features.append(function(fftFreq[key], healthy[key]))
         #We append the first element because the dictionnary is comprised
         #Of lists of lists so the functiun gives us a one-element list
         #As a result, hence the "[0]"
     
     for key in non_healthy.keys():
-        classes.append(0)
-        features.append(function(fftFreq[key], non_healthy[key])[0])
+        classes.append(1)
+        if isinstance(function(fftFreq[key], non_healthy[key]), (list, np.ndarray, tuple)):
+            features.append(function(fftFreq[key], non_healthy[key])[0])
+        else:
+            features.append(function(fftFreq[key], non_healthy[key]))
         
     return([pearsonr(features, classes)[0], pearsonr(features, classes)[1]])
 
@@ -632,8 +665,10 @@ def RelieF(Calc_0, Time_features, function):
         for j in feature_value.keys():
             if i != j:
                 xj = feature_value[j]
-                
-                dist.append([manhattan_distance(xi[0], xj[0]), xj[1]])
+                if isinstance(xi[0], (list, np.ndarray, tuple)) and isinstance(xj[0], (list, np.ndarray, tuple)):
+                    dist.append([manhattan_distance(xi[0][0], xj[0][0]), xj[1]])
+                else:
+                    dist.append([manhattan_distance(xi[0], xj[0]), xj[1]])
         sorted_dist = sorted(dist, key = lambda item: item[0])
 
     #Now we update the weights by substracting the near hit (same class)
@@ -692,7 +727,11 @@ def RelieF_freq(Calc_FFT, fftFreq, Freq_features, function):
             if i != j:
                 xj = feature_value[j]
                 
-                dist.append([manhattan_distance(xi[0], xj[0]), xj[1]])
+                if isinstance(xi[0], (list, np.ndarray, tuple)) and isinstance(xj[0], (list, np.ndarray, tuple)):
+                    dist.append([manhattan_distance(xi[0][0], xj[0][0]), xj[1]])
+                else:
+                    dist.append([manhattan_distance(xi[0], xj[0]), xj[1]])
+                    
         sorted_dist = sorted(dist, key = lambda item: item[0])
     
     #Now we update the weights by substracting the near hit (same class)

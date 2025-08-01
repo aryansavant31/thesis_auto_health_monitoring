@@ -1,15 +1,23 @@
-import scipy.io
+import sys
 import os
+
+FEATURE_EXTRACTION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(FEATURE_EXTRACTION_DIR))
+
+print(os.path.dirname(FEATURE_EXTRACTION_DIR))
+
+import scipy.io
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from scipy.fft import fft, ifft
 from scipy.stats import entropy
-from time_features import *
-from frequency_features import *
-from ranking_algorithms import *
+from feature_extraction.ranking_utils.time_features import *
+from feature_extraction.ranking_utils.frequency_features import *
+from feature_extraction.ranking_utils.ranking_algorithms import *
 import inspect
 import ast
+
 
 
 # list all the features in a dictionary
@@ -25,17 +33,17 @@ def load_functions(file_path):
         exec(file.read(), globals())
 
 
-file_path_time = "time_features.py"
+file_path_time = os.path.join(FEATURE_EXTRACTION_DIR, "ranking_utils", "time_features.py")
 Time_features = extract_function_names(file_path_time)
 load_functions(file_path_time)
 
-file_path_frequency = "frequency_features.py"
+file_path_frequency = os.path.join(FEATURE_EXTRACTION_DIR, "ranking_utils", "frequency_features.py")
 Freq_features = extract_function_names(file_path_frequency)
 Freq_features.remove('Kp_value')
 load_functions(file_path_frequency)
 
 class FeaturePerformance:
-    def __init__(self, Calc_0, Calc_FFT, fftFreq):
+    def __init__(self, Calc_0, Calc_FFT, fftFreq, file_path):
         """
         Parameters
         ----------
@@ -49,6 +57,10 @@ class FeaturePerformance:
         self.Calc_0 = Calc_0
         self.Calc_FFT = Calc_FFT
         self.fftFreq = fftFreq
+        self.file_path = file_path
+
+        if file_path is not None:
+            os.makedirs(self.file_path, exist_ok=True)
     
     def rank_time_features(self, bin_number_info, bin_number_chi_square):
         """
@@ -65,6 +77,9 @@ class FeaturePerformance:
         self.pearson = time_comparison_Pearson(self.Calc_0)
         self.relieF = time_comparison_RelieF(self.Calc_0)
 
+        if self.file_path is not None:
+            self._save_time_results()
+
     def rank_frequency_features(self, bin_number_info, bin_number_chi_square):
         """
         Rank frequency features based on information gain, Chi-Square, Pearson correlation, and RelieF.
@@ -80,7 +95,10 @@ class FeaturePerformance:
         self.pearson_freq = freq_comparison_Pearson(self.fftFreq, self.Calc_FFT)
         self.relieF_freq = freq_comparison_RelieF(self.fftFreq, self.Calc_FFT)
 
-    def save_time_results(self, file_path):
+        if self.file_path is not None:
+            self._save_frequency_results()
+
+    def _save_time_results(self):
 
         # save pearsion features
 
@@ -89,8 +107,10 @@ class FeaturePerformance:
         for i in self.pearson.values():
             Time_values_Pearson.append(i[0])  #wE TAKE THE CORRELATION value
 
-        np.save(os.path.join(file_path, 'utils', 'Time_values_Pearson.npy'), Time_values_Pearson)
-        np.save(os.path.join(file_path, 'utils', 'Time_features_Pearson.npy'), Time_features_Pearson)
+        np.save(os.path.join(self.file_path, 'Time_values_Pearson.npy'), Time_values_Pearson)
+        np.save(os.path.join(self.file_path, 'Time_features_Pearson.npy'), Time_features_Pearson)
+
+        print("Pearson coefficient for time features is saved")
 
         plt.figure(figsize=(10, 6))
         bars = plt.barh(Time_features_Pearson, Time_values_Pearson, color='skyblue')
@@ -103,8 +123,10 @@ class FeaturePerformance:
         Time_values_Chi_Square = []
         for i in self.chi_square.values():
             Time_values_Chi_Square.append(i[0])
-        np.save(os.path.join(file_path, 'utils', 'Time_values_Chi.npy'), Time_values_Chi_Square)
-        np.save(os.path.join(file_path, 'utils', 'Time_features_Chi.npy'), Time_features_Chi_Square)
+        np.save(os.path.join(self.file_path, 'Time_values_Chi.npy'), Time_values_Chi_Square)
+        np.save(os.path.join(self.file_path, 'Time_features_Chi.npy'), Time_features_Chi_Square)
+
+        print("Chi square for time features is saved")
 
         colors = ['red' if i[1]>0.05 else 'skyblue' for i in self.chi_square.values()]
         plt.figure(figsize=(10, 6))
@@ -118,8 +140,10 @@ class FeaturePerformance:
         Time_values_info_gain = []
         for i in self.info_gain.values():
             Time_values_info_gain.append(i)
-        np.save(os.path.join(file_path, 'utils', 'Time_values_Info_Gain.npy'), Time_values_info_gain)
-        np.save(os.path.join(file_path, 'utils', 'Time_features_Info_Gain.npy'), Time_features_info_gain)
+        np.save(os.path.join(self.file_path, 'Time_values_Info_Gain.npy'), Time_values_info_gain)
+        np.save(os.path.join(self.file_path, 'Time_features_Info_Gain.npy'), Time_features_info_gain)
+
+        print("Info gain for time features is saved")
 
         plt.figure(figsize=(10, 6))
         bars = plt.barh(Time_features_info_gain, Time_values_info_gain, color='skyblue')
@@ -137,6 +161,7 @@ class FeaturePerformance:
         np.save('Time_values_RelieF.npy', Time_values_RelieF)
         np.save('Time_features_RelieF.npy', Time_features_RelieF)
 
+        print("Relief for time features is saved")
 
         plt.figure(figsize=(10, 6))
         bars = plt.barh([v for v in self.relieF.keys() if np.abs(self.relieF[v]) < 20], [k for k in self.relieF.values() if np.abs(k)<20], color = 'skyblue')
@@ -144,8 +169,8 @@ class FeaturePerformance:
 
         plt.xlabel('RelieF weights')
 
-    def save_frequency_results(self, file_path):
-        
+    def _save_frequency_results(self):
+
         # save pearsion features
 
         Freq_features_Pearson = list(self.pearson_freq.keys())
@@ -153,8 +178,10 @@ class FeaturePerformance:
         for i in self.pearson_freq.values():
             Freq_values_Pearson.append(i[0])
         
-        np.save(os.path.join(file_path, 'utils', 'Freq_values_Pearson.npy'), Freq_values_Pearson)
-        np.save(os.path.join(file_path, 'utils', 'Freq_features_Pearson.npy'), Freq_features_Pearson)
+        np.save(os.path.join(self.file_path, 'Freq_values_Pearson.npy'), Freq_values_Pearson)
+        np.save(os.path.join(self.file_path, 'Freq_features_Pearson.npy'), Freq_features_Pearson)
+
+        print("Pearson coefficient for frequency features is saved")
 
         plt.figure(figsize=(10, 6))
         colors = ['red' if i[1]>0.05 else 'skyblue' for i in self.pearson_freq.values()]
@@ -169,8 +196,10 @@ class FeaturePerformance:
         for i in self.chi_square_freq.values():
             Freq_values_Chi.append(i[0])
 
-        np.save(os.path.join(file_path, 'utils', 'Freq_values_Chi.npy'), Freq_values_Chi)
-        np.save(os.path.join(file_path, 'utils', 'Freq_features_Chi.npy'), Freq_features_Chi)
+        np.save(os.path.join(self.file_path, 'Freq_values_Chi.npy'), Freq_values_Chi)
+        np.save(os.path.join(self.file_path, 'Freq_features_Chi.npy'), Freq_features_Chi)
+
+        print("Chi square for freq features is saved")
 
         plt.figure(figsize=(10, 6))
         bars = plt.barh(Freq_features_Chi, Freq_values_Chi, color='skyblue')
@@ -184,8 +213,10 @@ class FeaturePerformance:
         for i in self.info_gain_freq.values():
             Freq_values_info_gain.append(i)
 
-        np.save(os.path.join(file_path, 'utils', 'Freq_values_Info_Gain.npy'), Freq_values_info_gain)
-        np.save(os.path.join(file_path, 'utils', 'Freq_features_Info_Gain.npy'), Freq_features_info_gain)
+        np.save(os.path.join(self.file_path, 'Freq_values_Info_Gain.npy'), Freq_values_info_gain)
+        np.save(os.path.join(self.file_path, 'Freq_features_Info_Gain.npy'), Freq_features_info_gain)
+
+        print("Info for freq features is saved")
 
         plt.figure(figsize=(10, 6))
         bars = plt.barh(Freq_features_info_gain, Freq_values_info_gain, color='skyblue')
@@ -199,8 +230,10 @@ class FeaturePerformance:
         for i in self.relieF_freq.values():
             Freq_values_RelieF.append(i)
 
-        np.save(os.path.join(file_path, 'utils', 'Freq_values_RelieF.npy'), Freq_values_RelieF)
-        np.save(os.path.join(file_path, 'utils', 'Freq_features_RelieF.npy'), Freq_features_RelieF)
+        np.save(os.path.join(self.file_path, 'Freq_values_RelieF.npy'), Freq_values_RelieF)
+        np.save(os.path.join(self.file_path, 'Freq_features_RelieF.npy'), Freq_features_RelieF)
+
+        print("Relief for freq features is saved")
 
         plt.figure(figsize=(10, 6)) 
         bars = plt.barh([v for v in self.relieF_freq.keys() if np.abs(self.relieF_freq[v]) < 200000], [k for k in self.relieF_freq.values() if np.abs(k)<200000], color = 'skyblue')
@@ -304,11 +337,9 @@ def freq_comparison_Pearson(fftFreq, Calc_FFT):
         else:
             result_freq[i] = Pearson_Corr(Calc_FFT, globals()[i])
             result_freq[i][0] = np.abs(result_freq[i][0])
-        
-        
+
     #We sort according to the Pearson correlation coeff, the probabilty needs
     #be checked by hand
-    
     
     sorted_result_freq = dict(sorted(result_freq.items(), key = lambda item: item[1][0]))
     
@@ -347,3 +378,16 @@ def freq_comparison_RelieF(fftFreq, Calc_FFT):
     sorted_result_freq = dict(sorted(result_freq.items(), key = lambda item: item[1]))
  
     return(sorted_result_freq)  
+
+
+# =========================================
+# Execution code
+# =========================================
+
+
+
+
+
+
+
+

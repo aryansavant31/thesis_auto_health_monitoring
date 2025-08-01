@@ -266,7 +266,7 @@ for feature in Freq_features + Time_features:
                     result_feature_noise_SNR[feature].append(globals()[feature](AAAfreq, noised_signals_freq[p]))
             
             else:
-                #ici il faut prendre chaque signal = noise dans le voisinnage et le mettre a la place de range_value
+                #We take into account the time features with 1 argument
                 if isinstance(globals()[feature](noised_signals_real[p]), (list, tuple, np.ndarray)) == True:
                     result_feature_noise_SNR[feature].append(globals()[feature](noised_signals_real[p])[0])
                 elif isinstance(globals()[feature](noised_signals_real[p]), (int, float, complex)) == True:
