@@ -28,7 +28,8 @@ class DataAdapter:
             get_domain_config('freq')
         )
         self.amp_extractor = FrequencyFeatureExtractor(
-            [get_freq_feat_config('full_spectrum', parameters=['amp'])]
+            [get_freq_feat_config('full_spectrum', parameters=['amp'])],
+            run_type='custom_test'
         )
 
     def load_all_data(self):

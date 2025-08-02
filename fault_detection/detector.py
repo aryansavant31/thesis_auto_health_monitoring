@@ -1,7 +1,7 @@
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 from data.transform import DomainTransformer, DataNormalizer
-from feature_extraction.extractor import FrequencyFeatureExtractor, FeatureReducer
+from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureExtractor, FeatureReducer
 import time
 import numpy as np
 import pickle
@@ -23,7 +23,7 @@ class AnomalyDetector:
                                      nu=anom_config['nu'])
             
             
-    def set_run_params(self, data_stats, domain='time', raw_data_norm_type=None, fex_norm_type=None, fex_configs=[], reduc_config=None):
+    def set_run_params(self, data_stats, domain='time', raw_data_norm_type=None, feat_norm=None, feat_configs=[], reduc_config=None, run_type='train'):
         """
         Set the run parameters for the anomaly detection model
 
@@ -38,8 +38,10 @@ class AnomalyDetector:
         """
         self.domain_transform = DomainTransformer(domain=domain)
         self.raw_data_normalizer = DataNormalizer(norm_type=raw_data_norm_type, data_stats=data_stats) if raw_data_norm_type else None
-        self.fex_normalizer = DataNormalizer(norm_type=fex_norm_type) if fex_norm_type else None
-        self.feature_extractor = FrequencyFeatureExtractor(fex_configs=fex_configs) if fex_configs else None
+        self.feat_normalizer = DataNormalizer(norm_type=feat_norm) if feat_norm else None
+
+        self.freq_fex = FrequencyFeatureExtractor(feat_configs, run_type) if feat_configs else None
+        self.time_fex = TimeFeatureExtractor(feat_configs, run_type) if feat_configs else None
         self.feature_reducer = FeatureReducer(reduc_config=reduc_config) if reduc_config else None
 
     def print_model_info(self):

@@ -52,10 +52,10 @@ class NRI(LightningModule):
         self.decoder.set_input_graph(rec_rel, send_rel)
 
     def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder=None, fex_configs_encoder=[],
-                        domain_decoder='time', norm_type_decoder=None, fex_configs_decoder=[], 
+                        domain_decoder='time', norm_type_decoder=None, dec_feat_configs=[], 
                         skip_first_edge_type=False,pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-                        encoder=None, temp=0.5, is_hard=False):
+                        encoder=None, temp=0.5, is_hard=False, run_type='train'):
         """
         Parameters
         ----------
@@ -71,17 +71,17 @@ class NRI(LightningModule):
         """
         self.temp = temp
         self.is_hard = is_hard
-        self.fex_configs_decoder = fex_configs_decoder
+        self.fex_configs_decoder = dec_feat_configs
 
         self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_configs=fex_configs_encoder)
 
-        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_configs=fex_configs_decoder, 
+        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_configs=dec_feat_configs, 
                                     skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
                                     is_dynamic_graph=is_dynamic_graph, encoder=encoder,
                                     temp=temp, is_hard=is_hard)
         
         self.transform_decoder = DataTransformer(domain=domain_decoder, norm_type=norm_type_decoder, data_stats=data_stats)
-        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs_decoder)
+        self.feature_extractor = FeatureExtractor(dec_feat_configs, run_type)
 
     def process_decoder_input_data(self, data):
         """

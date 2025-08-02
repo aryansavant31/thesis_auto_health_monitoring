@@ -5,26 +5,84 @@ from manager import SelectTopologyEstimatorModel, load_selected_config
 TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
 
-from feature_extraction.config import get_freq_fex_config
+from feature_extraction.config import get_freq_feat_config
 
-class TrainNRIConfig:
+class NRITrainSettings:
     def __init__(self):
-        self.set_training_params()
-        self.set_run_params()
+        """
+        1: Training Attributes
+        -----------------------
+        model_num : int
+            Model number for training.
+        continue_training : bool
+            Whether to continue training from a previous checkpoint.
+        is_log : bool
+            Whether to log training progress.
+        n_edge_types : int
+            Number of edge types to consider in the nri model.
 
-    def set_training_params(self):        
+        - **_Dataset parameters_**
+
+        batch_size : int
+            Batch size for training.
+        train_rt : float
+            Ratio of training data.
+        test_rt : float
+            Ratio of testing data.
+        val_rt : float
+            Ratio of validation data.
+        
+        - **_Optimization parameters_**
+        max_epochs : int
+            Maximum number of epochs for training.
+        lr : float
+            Learning rate for the optimizer.
+        optimizer : str
+            Type of optimizer to use (`adam`)
+        loss_type_enc : str
+            Type of loss function for the encoder (`kld`)
+
+        2: Encoder Attributes
+        -----------------------
+        - **_Pipeline parameters_**
+        pipeline_type : str
+            Type of pipeline to use for the encoder (`mlp_1`)
+        is_residual_connection : bool
+            if True, then use residual connection in the last layer
+
+        - **_Embedding function parameters_**
+        do_prob_enc : dict
+            Dropout (do) probabilities for encoder layers.
+        bn_enc : dict
+            Whether to use batch normalization (bn) in encoder layers.
+
+        - **_Run parameters_**
+        enc_domain_config : str
+            Domain configuration for the encoder (`time`, `freq`)
+        enc_norm : str
+            Normalization type for the encoder (`std`, `minmax`, `None`)
+
+        3: Decoder Attributes
+        -----------------------
+        recur_emd_type : str
+            Type of recurrent embedding to use in the decoder (`gru`, `mlp`) 
+            ( if `mlp`, then only output mlp)
+        """
+        ext = ExtraSettings()
+
+    # 1: Training parameters   
+
         self.model_num = 1
         self.continue_training = False
-
         self.is_log = True
         
         self.n_edge_types = 2
 
         # dataset parameters
         self.batch_size = 50
-        self.train_rt   = 0.8
-        self.test_rt    = 0.1
-        self.val_rt     = 0.1
+        self.train_rt = 0.8
+        self.test_rt = 0.1
+        self.val_rt = 0.1
 
         # optimization parameters
         self.max_epochs = 5
@@ -37,115 +95,92 @@ class TrainNRIConfig:
 
         self.loss_type_dec = 'nnl'
 
-    def set_run_params(self):
-        """
-        Attributes
-        ----------
-        sparsif_type : str
-            The type of sparsifier to use. 
-            ('knn', 'none')
+    # 2: Encoder parameters
 
-        norm_type_sparsif : str
-        norm_type_encoder : str
-        norm_type_decoder : str
-            The normalization type to use for the sparsifier, encoder, and decoder.
-            ('std', 'minmax', 'none')
+        # pipeline parameters
+        self.pipeline_type = 'mlp_1' 
+        self.is_residual_connection = True 
 
-        [TODO] Add all the attributes of this method in docstring
+        # embedding function parameters
+        edge_emd_config = {
+            'mlp': 'default',
+            'cnn': 'default'
+            }
+        node_emb_config = {
+            'mlp': 'default',
+            'cnn': 'default'
+            }
 
-        """
-        # input graph paramters
-        self.sparsif_type = None  # [TODO]: Get sparsif type from get_sparsif_config() method
-        self.domain_sparsif_config   = 'time'  # options: time, freq-psd, freq-amp
-        self.fex_configs_sparsif = [
-            get_freq_fex_config('first_n_modes'),
-        ]    
-        self.norm_type_sparsif = None  # options: std, minmax, none
+        self.do_prob_enc = {
+            'mlp': 0.0,
+            'cnn': 0.0
+            }
+        self.bn_enc = {
+            'mlp': False,
+            'cnn': False
+            }
+        # attention parameters
+        self.attention_output_size = 5   
 
-        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+        # Run parameters
+        self.enc_domain_config = 'freq' 
+        self.enc_norm = None  
+        self.enc_feat_configs = []
 
-        # encoder run parameters
-        self.domain_encoder_config   = 'freq'  # options: time, freq-psd, freq-amp
-        self.norm_type_encoder = None  # options: std, minmax, none
-
-        self.fex_configs_encoder = [
-        ]
         # gumble softmax parameters
-        self.temp = 1.0       # temperature for Gumble Softmax
-        self.is_hard = True      # if True, use hard Gumble Softmax
+        self.temp = 1.0       
+        self.is_hard = True   
 
-        # decoder run parameters
-        self.domain_decoder_config = 'freq'   # options: time, freq-psd, freq-amp
-        self.norm_type_decoder = None # options: std, minmax, none
+        self.encoder_pipeline = ext.get_enc_pipeline(self.pipeline_type)  
+        self.edge_emb_configs_enc = ext.get_enc_emb_config(config_type=edge_emd_config)  
+        self.node_emb_configs_enc = ext.get_enc_emb_config(config_type=node_emb_config)
 
-        self.fex_configs_decoder = [
-            get_freq_fex_config('first_n_modes', n_modes=10),
+    # 3: Decoder parameters
+
+        self.msg_out_size = 64
+    
+        # embedding function parameters 
+        edge_mlp_config = {'mlp': 'default'}
+        out_mlp_config = {'mlp': 'default'}
+
+        self.do_prob_dec = 0
+        self.is_bn_dec = True
+
+        # recurrent embedding parameters
+        self.recur_emd_type = 'gru'
+        
+        # Run parameters
+        self.dec_domain_config = 'freq'  
+        self.dec_norm = None 
+        self.dec_fex_configs = [
+            get_freq_feat_config('first_n_modes', n_modes=10),
         ]
 
         self.skip_first_edge_type = True 
-        # TASK: add rest of the decoder run params
 
-    def set_encoder_params(self):
-        """
-        Sets encoder parameters for the model.
+        # [TODO]: add rest of the decoder run params
 
-        """
-        # ------ Pipeline Parameters ------
-        self.pipeline_type          = 'mlp_1'   # default pipeline type
-        self.encoder_pipeline       = self._get_encoder_pipeline(self.pipeline_type)
-         
-        self.is_residual_connection = True      # if True, then use residual connection in the last layer
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config)['mlp']
 
-        # ------ Embedding Function Parameters ------
-        # embedding config
-        edge_emd_config             = {'mlp': 'default',
-                                       'cnn': 'default'}
+    # 4: Sparsifier parameters
+
+        self.spf_type = None 
         
-        node_emb_config             = {'mlp': 'default',
-                                       'cnn': 'default'}
-
-        self.edge_emb_configs_enc   = self._get_encoder_emb_config(config_type=edge_emd_config)  
-        self.node_emb_configs_enc   = self._get_encoder_emb_config(config_type=node_emb_config)
-        
-        # other embedding parameters
-        self.dropout_prob_enc       = {'mlp': 0.0,
-                                       'cnn': 0.0}
-        
-        self.batch_norm_enc         = {'mlp': False,
-                                       'cnn': False}
-
-
-        # ------ Attention Parameters ------
-        self.attention_output_size  = 5        # output size for attention layer
-
-    def set_decoder_params(self):
-
-        self.msg_out_size           = 64
-        self.n_edge_types_dec       = self.n_edge_types
-    
-        # ---------- Embedding function parameters ----------
-        # embedding config
-        edge_mlp_config             = {'mlp': 'default'}
-        self.edge_mlp_config_dec    = self._get_decoder_emb_config(config_type=edge_mlp_config)['mlp']
-
-        output_mlp_config           = {'mlp': 'default'}
-        self.out_mlp_config_dec     = self._get_decoder_emb_config(config_type=output_mlp_config)['mlp']
-
-        # other embedding parameters
-        self.dropout_prob_dec       = 0
-        self.is_batch_norm_dec      = True
-
-        # ------ Recurrent Embedding Parameters ------
-        self.recurrent_emd_type     = 'gru' # options: gru, 'mlp', if mlp, then only output mlp
-
-    def get_sparsif_config(self, sparsif_type, **kwargs):
-        config = {}
-        config['type'] = sparsif_type
+        self.spf_domain_config   = 'time' 
+        self.spf_fex_configs = [
+            get_freq_feat_config('first_n_modes'),
+        ]    
+        self.spf_norm = None 
 
         # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
+        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
         
+class DecoderTrainSettings:
+    pass 
 
-    def _get_encoder_pipeline(self, pipeline_type, custom_pipeline=None):
+class ExtraSettings:
+    def get_enc_pipeline(self, pipeline_type, custom_pipeline=None):
         """
         pipeline_type : str
         custom_pipeline : list or None
@@ -179,7 +214,7 @@ class TrainNRIConfig:
             return custom_pipeline
         
         
-    def _get_encoder_emb_config(self, config_type, custom_config=None): 
+    def get_enc_emb_config(self, config_type, custom_config=None): 
         """
         config_type : dict
         custom_config : dict
@@ -224,7 +259,7 @@ class TrainNRIConfig:
 
         return configs
     
-    def _get_decoder_emb_config(self, config_type, custom_config=None):
+    def get_dec_emb_config(self, config_type, custom_config=None):
         """
         config_type : dict
         custom_config : dict

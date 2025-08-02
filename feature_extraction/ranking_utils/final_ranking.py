@@ -74,10 +74,10 @@ def IQR_normalisation(amplitudes, interval):
     return(normalisation(filtered_ampli, interval))
 
 def _time_feature_worker(args):
-            i, Calc_10 = args
+            i, Calc_0 = args
             result = []
-            for key in Calc_10.keys():
-                feature = globals()[i](Calc_10[key])
+            for key in Calc_0.keys():
+                feature = globals()[i](Calc_0[key])
                 if isinstance(feature, (list, np.ndarray, tuple)):
                     result.append(feature[0])
                 else:
@@ -86,14 +86,12 @@ def _time_feature_worker(args):
 
 
 class FinalFeatureRanking:
-    def __init__(self, Calc_10, ranking_path):
+    def __init__(self, ranking_path):
         self.ranking_path = ranking_path
         self.file_path_util = os.path.dirname(ranking_path)
 
         if not os.path.exists(self.ranking_path):
             os.makedirs(self.ranking_path)
-
-        self.Calc_10 = Calc_10
 
     def _load_util_files(self):
         self.Freq_values_Chi = np.load(os.path.join(self.file_path_util, 'freq_values_chi.npy'))
@@ -121,12 +119,12 @@ class FinalFeatureRanking:
         self.Time_values_RelieF = np.load(os.path.join(self.file_path_util, 'time_values_relief.npy'))
         self.Time_features_RelieF = np.load(os.path.join(self.file_path_util, 'time_features_relief.npy'))
 
-    def get_correlation_matrix(self):
+    def get_correlation_matrix(self, Calc_0):
 
         result_feature = {}
 
         with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
-            args_list = [(i, self.Calc_10) for i in Time_features]
+            args_list = [(i, Calc_0) for i in Time_features]
             results = executor.map(_time_feature_worker, args_list)
 
             for i, feature_list in results:
@@ -149,7 +147,15 @@ class FinalFeatureRanking:
         sn.heatmap(corrMatrix, vmin= 0.9, vmax = 1)
         plt.plot()
 
-    def get_final_ranking(self):
+    def get_final_ranking(self, alpha):
+        """
+        Get the final ranking of features based on performance and robustness.
+
+        Parameters
+        ----------
+        alpha : float
+            Weight for performance in the final ranking.
+        """
 
         # load utility files
         self._load_util_files()
@@ -253,8 +259,6 @@ class FinalFeatureRanking:
         #Now we just need to choose the weight between performance and robustness
         #Here we chose a weight of 0.7, favoring performance slightly better
 
-        alpha = 0.7
-
         for feature in Time_features:
             Final_Ranking_Time[feature] = alpha * Final_Ranking_feature[feature] + (1 - alpha) * Final_Ranking_Robustness[feature]
 
@@ -264,18 +268,19 @@ class FinalFeatureRanking:
         Final_Ranking_Time = dict(sorted(Final_Ranking_Time.items(), key = lambda item: item[1]))
         Final_Ranking_Freq = dict(sorted(Final_Ranking_Freq.items(), key = lambda item: item[1]))
         
-        version = os.path.basename(self.file_path_util).split('_')[-1]
+        perf_name = os.path.basename(self.file_path_util)
+        ranks_name = os.path.basename(self.ranking_path)
 
-        print(f"Final ranking for time features (perf_{version}):")
-        print(40 * "-")
+        print(f"Final ranking for time features ({ranks_name}, {perf_name}):")
+        print(65 * "-")
         for feature, score in Final_Ranking_Time.items():
-            print(f"{feature}: {score:.4f}")
+            print(f"{feature.lower()}: {score:.4f}")
 
-        print(f"\nFinal ranking for frequency features (perf_{version}):")
-        print(40 * "-")
+        print(f"\nFinal ranking for frequency features ({ranks_name}, {perf_name}):")
+        print(65 * "-")
         for feature, score in Final_Ranking_Freq.items():
-            print(f"{feature}: {score:.4f}")
+            print(f"{feature.lower()}: {score:.4f}")
 
         
-        np.save(os.path.join(self.ranking_path, f'time_feature_ranking_v{version}.npy'), Final_Ranking_Time)
-        np.save(os.path.join(self.ranking_path, f'freq_feature_ranking_v{version}.npy'), Final_Ranking_Freq)
+        np.save(os.path.join(self.ranking_path, f'time_feature_ranking.npy'), Final_Ranking_Time)
+        np.save(os.path.join(self.ranking_path, f'freq_feature_ranking.npy'), Final_Ranking_Freq)

@@ -8,6 +8,9 @@ def get_freq_feat_config(feat_type, **kwargs):
         The type of feature extraction to be used (e.g., 'first_n_modes', 'PCA').
 
     **kwargs : dict
+        - `from_ranks`: **n** (_int_) (number of top features to extract),
+            **perf_v** (_int_) (performance version), **rank_v** (_str_) (rank version, e.g., '[a=0.5]')
+
         2 or more dimensional features
         - `first_n_modes` : **n_modes** (_int_) (will get 'mode values' and its 'frequency')
         - `full_spectrum` : **parameters** (_list_) (will get 'psd', 'mag', 'amp', 'freq')
@@ -15,9 +18,14 @@ def get_freq_feat_config(feat_type, **kwargs):
     config = {}
     config['type'] = feat_type
 
-    # 2 or more dimensional features
+    # rank based features
+    if feat_type == 'from_ranks':
+        config['n'] = kwargs.get('n', 5)  
+        config['perf_v'] = kwargs.get('perf_v', 1)
+        config['rank_v'] = kwargs.get('rank_v', '[a=0.5]')
 
-    if feat_type == 'first_n_modes':
+    # 2 or more dimensional features
+    elif feat_type == 'first_n_modes':
         config['n_modes'] = kwargs.get('n_modes', 5)  # default to 5 modes if not specified
     
     elif feat_type == 'full_spectrum':
@@ -28,8 +36,8 @@ def get_freq_feat_config(feat_type, **kwargs):
     return config
 
 def get_time_feat_config(feat_type, **kwargs):
-     """
-     All the time feature extraction configurations are defined here.
+    """
+    All the time feature extraction configurations are defined here.
 
     Parameters
     ----------
@@ -37,8 +45,20 @@ def get_time_feat_config(feat_type, **kwargs):
         The type of time feature extraction
     
     **kwargs : dict
+        - `from_ranks`: **n** (_int_) (number of top features to extract), 
+            **perf_v** (_int_) (performance version), **rank_v** (_str_) (rank version, e.g., '[a=0.5]')
+        
      """
-     pass
+    config = {}
+    config['type'] = feat_type
+
+    # rank based features
+    if feat_type == 'from_ranks':
+        config['n'] = kwargs.get('n', 5)  
+        config['perf_v'] = kwargs.get('perf_v', 1)
+        config['rank_v'] = kwargs.get('rank_v', '[a=0.5]')
+
+    return config
 
 def get_reduc_config(reduc_type, **kwargs):
     """

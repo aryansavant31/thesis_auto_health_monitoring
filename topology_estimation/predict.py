@@ -15,10 +15,10 @@ class PredictNRIMain:
 
     def test_model(self):
         # load data
-        test_loader = self.load_data('test')
+        test_loader = self.load_data('custom_test')
 
         # load model
-        trained_model = self.load_model()
+        trained_model = self.load_model('custom_test')
 
         test_log_path = self.tp_config.get_custom_test_log_path()
 
@@ -32,7 +32,7 @@ class PredictNRIMain:
         predict_loader = self.load_data('predict')
         
         # load model
-        trained_model = self.load_model()
+        trained_model = self.load_model('predict')
 
         predict_log_path = self.tp_config.get_predict_log_path()
 
@@ -43,7 +43,7 @@ class PredictNRIMain:
 
     def load_data(self, run_type):
         # set parameters
-        if run_type == 'test':
+        if run_type == 'custom_test':
             self.data_config.set_custom_test_dataset()
         else:
             self.data_config.set_predict_dataset()
@@ -88,11 +88,11 @@ class PredictNRIMain:
 
         return data
     
-    def load_model(self):
+    def load_model(self, run_type):
         trained_model = NRI.load_from_checkpoint(self.tp_config.ckpt_path)
         run_params = {} # [TODO]: pass params from tp_pred_config for set_run_params()
         
-        trained_model.set_run_params()  # [TODO]: pass params from tp.config for set_run_params() 
+        trained_model.set_run_params(run_type=run_type)  # [TODO]: pass params from tp.config for set_run_params() 
 
         # set relation matrices
         rec_rel, send_rel = self.set_relation_matrices()

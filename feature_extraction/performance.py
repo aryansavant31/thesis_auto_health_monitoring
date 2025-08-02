@@ -27,7 +27,6 @@ class PerformanceMain:
             # get rank log path
             if rank_config.is_log:
                 perf_log_path = rank_config.get_perf_log_path(data_config)
-                rank_config.save_perf_id()
             else:
                 perf_log_path = None
 

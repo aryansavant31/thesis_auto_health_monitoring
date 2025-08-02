@@ -12,6 +12,10 @@ LOGS_DIR = os.path.join(FEX_DIR, "logs")
 
 # other imports
 import shutil
+from pathlib import Path
+from rich.console import Console
+from rich.tree import Tree
+import re
 
 # global imports
 from data.settings import DataConfig
@@ -19,18 +23,17 @@ from data.settings import DataConfig
 # local imports
 from rank_settings import FeatureRankingSettings
 
+
 class FeatureRankingManager(FeatureRankingSettings):
     def __init__(self):
         super().__init__()
         self.helper = HelperClass()
 
+        self.rank_version = f"[a={self.alpha}]" # [a=0.8,r=0.5,t=7]
+
     def get_perf_log_path(self, data_config:DataConfig, check_version=True):
         """
         Returns the path for saving the feature performance logs.
-
-        Note
-        -----
-        It is assumed that the `set_train_dataset` method is called before this method.
 
         Parameters
         ----------
@@ -46,61 +49,65 @@ class FeatureRankingManager(FeatureRankingSettings):
                                 f'{data_config.scenario}')
         
         # add node type
-        perf_path = os.path.join(base_path, f'{self.node_type}')
+        self.perf_path = os.path.join(base_path, f'{self.node_type}')
         
-        # addnfeat number
-        self.perf_log_path = os.path.join(perf_path, f"{self.node_type}_perf_{self.version}")
-        
-        # add data type and subtype to the path
-        perf_path = self.helper.set_ds_types_in_path(data_config, perf_path)
-
-        # add timestep id and signal type to path
-        self.perf_id = os.path.join(perf_path, f"T{data_config.window_length} [{', '.join(data_config.signal_types)}]")
+        # add perf number
+        self.perf_log_path = os.path.join(self.perf_path, f"{self.node_type}_perf_{self.perf_version}")
 
         if check_version:
             self.check_if_perf_version_exists()
 
         return self.perf_log_path
     
-    def get_ranking_log_path(self, data_config:DataConfig):
+    def get_ranking_log_path(self, data_config:DataConfig, is_avail=False):
         perf_log_path = self.get_perf_log_path(data_config, check_version=False)
 
         if not os.path.exists(perf_log_path):
             raise FileNotFoundError(f"Performance log path {perf_log_path} does not exist. Please run the feature performance ranking first or type the correct version.")
 
-        self.ranking_log_path = os.path.join(perf_log_path, f'rankings')
+        self.ranking_log_path = os.path.join(perf_log_path, f'ranks_{self.rank_version}')
+
+        # make ranking id
+        # add data type and subtype to the path
+        ranking_path = self.helper.set_ds_types_in_path(data_config, self.perf_path)
+
+        # add timestep id and signal type to path
+        ranking_path = os.path.join(ranking_path, f"T{data_config.window_length} [{', '.join(data_config.signal_types)}]")
+
+        self.ranking_id = os.path.join(ranking_path, f"{self.node_type}_perf_{self.perf_version}")
+
+        if is_avail:
+            if not os.path.exists(self.ranking_log_path):
+                raise FileNotFoundError(f"Ranking log path {self.ranking_log_path} does not exist. Please run the feature ranking first or type the correct version.")
+        else:    
+            self.check_if_ranking_version_exists()
+
         return self.ranking_log_path
 
-    def save_perf_id(self):
-        """
-        Saves the performance id.
-        """
-        if not os.path.exists(self.perf_log_path):
-            os.makedirs(self.perf_log_path)
+    def save_ranking_id(self):
+        if not os.path.exists(self.ranking_log_path):
+            os.makedirs(self.ranking_log_path)
 
-        # config_path = os.path.join(self.train_log_path, f'train_config.pkl')
-        # with open(config_path, 'wb') as f:
-        #     pickle.dump(self.__dict__, f)
+        rank_path = os.path.join(self.ranking_log_path, f'ranks_{self.rank_version}.txt')
+        with open(rank_path, 'w') as f:
+            f.write(self.ranking_id)
 
-        perf_path = os.path.join(self.perf_log_path, f'{self.node_type}_perf_{self.version}.txt')
-        with open(perf_path, 'w') as f:
-            f.write(self.perf_id)
+        print(f"Ranking id saved to {self.ranking_log_path}.")
 
-        print(f"Feature performance id saved to {self.perf_log_path}.")
 
     def _remove_perf_version(self):
         """
         Removes the performance version from the log path.
         """
         if os.path.exists(self.perf_log_path):
-            user_input = input(f"Are you sure you want to remove '{self.node_type}_perf_{self.version}' from the log path {self.perf_log_path}? (y/n): ")
+            user_input = input(f"Are you sure you want to remove '{self.node_type}_perf_{self.perf_version}' from the log path {self.perf_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.perf_log_path)
-                print(f"Overwrote exsiting '{self.node_type}_perf_{self.version}' from the log path {self.perf_log_path}.")
+                print(f"Overwrote exsiting '{self.node_type}_perf_{self.perf_version}' from the log path {self.perf_log_path}.")
 
             else:
-                print(f"Operation cancelled. {self.node_type}_perf_{self.version} still remains.")
-
+                print(f"Operation cancelled. {self.node_type}_perf_{self.perf_version} still remains.")
+    
     def _get_next_perf_version(self):
         parent_dir = os.path.dirname(self.perf_log_path)
 
@@ -111,24 +118,27 @@ class FeatureRankingManager(FeatureRankingSettings):
             # Extract numbers and find the max
             max_perf_version = max(int(f.split('_')[-1]) for f in perf_folders)
             self.version = max_perf_version + 1
-            new_feature_perf = f"{self.node_type}_perf_{self.version}"
+            new_feature_perf = f"{self.node_type}_perf_{self.perf_version}"
             print(f"Next feature performance folder will be: {new_feature_perf}")
         else:
             new_feature_perf = f"{self.node_type}_perf_1"
 
         return os.path.join(parent_dir, new_feature_perf)
     
-    def check_if_perf_version_exists(self):
-        """
-        Checks if the performance version already exists in the log path.
+    def check_if_ranking_version_exists(self):
+        if os.path.isdir(self.ranking_log_path):
+            print(f"'ranks_{self.rank_version}' already exists in the log path '{self.ranking_log_path}'.")
+            user_input = input("\nOverwrite exsiting version? (y/n):  ")
+            if user_input.lower() == 'y':
+                shutil.rmtree(self.ranking_log_path)
+                print(f"Overwrote exsiting 'ranks_{self.rank_version}' from the log path {self.ranking_log_path}.")
 
-        Parameters
-        ----------
-        log_path : str
-            The path where the logs are stored. It can be for nri model or skeleton graph model.
-        """
+            else:
+                print(f"Operation cancelled. ranks_{self.rank_version} still remains.")
+    
+    def check_if_perf_version_exists(self):
         if os.path.isdir(self.perf_log_path):
-            print(f"'{self.node_type}_perf_{self.version}' already exists in the log path '{self.perf_log_path}'.")
+            print(f"'{self.node_type}_perf_{self.perf_version}' already exists in the log path '{self.perf_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop operation (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
@@ -163,7 +173,7 @@ class HelperClass:
 
         return augment_str_list
     
-    def set_ds_types_in_path(self, data_config, log_path):
+    def set_ds_types_in_path(self, data_config:DataConfig, log_path):
         """
         Takes into account both empty healthy and unhealthy config and sets the path accordingly.
         """
@@ -204,3 +214,158 @@ class HelperClass:
 
         log_path = os.path.join(log_path, config_str)
         return log_path
+    
+    
+class ViewRankings():
+    def __init__(self, application=None, machine=None, scenario=None, logs_dir=LOGS_DIR):
+        data_config = DataConfig()
+
+        self.logs_dir = Path(logs_dir)
+        if application is None or machine is None or scenario is None:
+            self.application = data_config.application_map[data_config.application]
+            self.machine = data_config.machine_type
+            self.scenario = data_config.scenario
+        else:
+            self.application = application
+            self.machine = machine
+            self.scenario = scenario
+
+        self.file_name = 'ranks'
+   
+
+        self.structure = {}
+        self.version_paths = []
+        self.version_txt_files = []
+        self._build_structure_from_txt()
+
+    def _build_structure_from_txt(self):
+        """
+        Build the tree structure from all model_x.txt files under the framework directory.
+        """
+        base = self.logs_dir / self.application / self.machine / self.scenario
+        os.makedirs(base, exist_ok=True)  # Ensure the base directory exists
+
+        txt_files = list(base.rglob(f"*{self.file_name}_*.txt"))
+        self.version_txt_files = txt_files
+
+        path_map = {}
+        for txt_file in txt_files:
+            try:
+                with open(txt_file, "r") as f:
+                    model_path = f.read().strip()
+            except Exception as e:
+                print(f"Could not read {txt_file}: {e}")
+                continue
+            # Remove base logs dir and split by os.sep
+            rel_path = os.path.relpath(model_path, str(self.logs_dir))
+            path_parts = rel_path.split(os.sep)
+            # Only keep the parts after framework (skip first 4: app, machine, scenario)
+            path_parts = path_parts[3:]
+            model_name = txt_file.stem  # e.g., model_3
+            key = tuple(path_parts)
+            if key not in path_map:
+                path_map[key] = []
+            path_map[key].append((str(txt_file), model_name))
+
+        structure = {}
+        for path_parts, versions in path_map.items():
+            node = structure
+            # Add all parts as nodes, including the last one
+            for part in path_parts:
+                node = node.setdefault(part, {})
+            if "_versions" not in node:
+                node["_versions"] = []
+    
+            for idx, (txt_file, model_name) in enumerate(versions, 1):
+                node["_versions"].append({
+                    "model_name": model_name,
+                    "txt_file": txt_file,
+                    "vnum": idx,
+                    "full_path": path_parts,
+                })
+                self.version_paths.append(txt_file)
+        self.structure = structure
+
+    def print_tree(self):
+        console = Console()
+        # Green up to and including framework
+        tree = Tree(f"[green]{self.application}[/green]")
+        machine_node = tree.add(f"[green]{self.machine}[/green]")
+
+        scenario_node = machine_node.add(f"[green]{self.scenario}[/green]")
+  
+        self._build_rich_tree(scenario_node, self.structure, 0, [])
+        console.print(tree)
+        print("\nAvailable version paths:")
+        for idx, txt_file in enumerate(self.version_paths):
+            print(f"{idx}: {os.path.dirname(txt_file)}")
+
+    def _build_rich_tree(self, parent_node, structure, level, parent_keys):
+       
+        label_map = {
+            0: "<node_name>",
+            1: "<ds_type>",
+            2: "<ds_subtype>",
+            3: "<ds_stats>",
+            4: "<perf_version>",
+            5: "<rank_version>"
+        }
+                    
+        added_labels = set()
+        # Add all keys except _versions first
+        for key, value in structure.items():
+            if key == "_versions":
+                continue
+            safe_key = key.replace('[', '\\[')
+            # Add blue label if at the correct level and not already added
+            if level in label_map and label_map[level] not in added_labels:
+                parent_node.add(f"[blue]{label_map[level]}[/blue]")
+                added_labels.add(label_map[level])
+            
+            if level == 3:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+                continue
+            
+            # All other folders: white
+            branch = parent_node.add(f"[white]{safe_key}[/white]")
+            self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+
+        # Now add <versions> label and version nodes if present
+        if "_versions" in structure:
+            if "<versions>" not in added_labels:
+                parent_node.add(f"[blue]<rank_versions>[/blue]")
+                added_labels.add("<rank_versions>")
+            
+            for v in structure["_versions"]:
+                model_disp = f"{v['model_name']} (v{v['vnum']})"
+                safe_model_disp = model_disp.replace('[', '\\[')
+                idx = self.version_paths.index(v["txt_file"])
+      
+                parent_node.add(f"[bright_yellow]{safe_model_disp}[/bright_yellow] [bright_cyan][{idx}][/bright_cyan]")
+
+    def view_ranking_tree(self):
+        self.print_tree()
+        if not self.version_paths:
+            print("No version paths found.")
+            return None
+        
+        # if self.run_type == 'train':
+        #     idx = int(input("\nEnter the index number of the version path to select: "))
+        #     if idx < 0 or idx >= len(self.version_paths):
+        #         print("Invalid index.")
+        #         return None
+        #     selected_log_path = os.path.dirname(self.version_paths[idx])
+        #     # Use the directory containing model_x.txt as the log path
+        
+        #     model_file_path = get_model_pickle_path(selected_log_path)
+        #     config_file_path = get_param_pickle_path(selected_log_path)
+
+        #     with open(".\\docs\\loaded_model_path.txt", "w") as f:
+        #         f.write(model_file_path)
+
+        #     with open(".\\docs\\loaded_config_path.txt", "w") as f:
+        #         f.write(config_file_path)
+
+        #     print(f"\nSelected model file path: {model_file_path}")
+        #     print(f"\nSelected logged config file path: {config_file_path}\n")

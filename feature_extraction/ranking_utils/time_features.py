@@ -129,7 +129,7 @@ def Mean_abs(list):
 
 
 
-def SRAV(list):
+def sq_root_abs(list):
     n = len(list)
     m = 0
     
@@ -143,23 +143,23 @@ def SRAV(list):
 
 
 
-def SF(amplitudes):
+def shape_factor(amplitudes):
     return(RMS(amplitudes)/Mean_abs(amplitudes))
 
 
 
 
-def IF(amplitudes):
+def impulse_factor(amplitudes):
     return(Max(amplitudes)/Mean_abs(amplitudes))
 
 
 
-def Crest(amplitudes):
+def crest_factor(amplitudes):
     return(Max(amplitudes)/RMS(amplitudes))
 
 
 
-def Clearance(amplitudes):
+def clearance_factor(amplitudes):
     num = Max(amplitudes)
     
     denom = 0
@@ -250,7 +250,7 @@ def Log_Log_Ratio(amplitudes):
     return(m/S)
     
     
-def SDIF(amplitudes):#verified
+def std_deviation_index(amplitudes):#verified
     A = STD(amplitudes)
     B = Mean_abs(amplitudes)
     
@@ -258,7 +258,7 @@ def SDIF(amplitudes):#verified
 
 
 
-def FIFTHM(amplitudes):
+def fifth_moment(amplitudes):
     n = len(amplitudes)
     m = 0
     Q = Mean(amplitudes)
@@ -271,8 +271,8 @@ def FIFTHM(amplitudes):
 
 
 
-def FIFTHNM(amplitudes):
-    A = FIFTHM(amplitudes)
+def fifth_moment_normalized(amplitudes):
+    A = fifth_moment(amplitudes)
     B = STD(amplitudes) ** 5  
     return(A/B)
 
@@ -281,7 +281,7 @@ def FIFTHNM(amplitudes):
 
 
 
-def SIXTHM(amplitudes):
+def sixth_moment(amplitudes):
     n = len(amplitudes)
     m = 0
     Q = Mean(amplitudes)
@@ -302,16 +302,16 @@ def Pulse_Index(amplitudes):
 
 def Margin_Index(amplitudes):
     A = Max(amplitudes)
-    B = SRAV(amplitudes)
+    B = sq_root_abs(amplitudes)
     
     return(A/B)
 
-def MDR(amplitudes):
+def mean_deviation_ratio(amplitudes):
     return(Mean(amplitudes)/STD(amplitudes))
 
 
 
-def DVARV(amplitudes):
+def difference_variance(amplitudes):
     n = len(amplitudes)
     m = 0
     
@@ -328,7 +328,7 @@ def Min(amplitudes):
     return(min(amplitudes))
 
 
-def Peak_Val(amplitudes):
+def peak_value(amplitudes):
     return((Max(amplitudes) - Min(amplitudes))/2)
 
 def Peak_to_peak(amplitudes):
@@ -353,7 +353,7 @@ def hist_lower_bound(amplitudes):
 
 
 
-def hist_higher_bound(amplitudes):
+def hist_upper_bound(amplitudes):
     n = len(amplitudes)
     Mini = Min(amplitudes)
     Maxi = Max(amplitudes)
@@ -385,7 +385,7 @@ def latitude_factor(amplitudes):
 
 
 
-def NNNL(amplitudes):
+def normalized_std(amplitudes):
     Q = STD(amplitudes)
     P = RMS(amplitudes)
     
@@ -398,7 +398,7 @@ def NNNL(amplitudes):
         print('An error has occured in NNL')
 
 
-def Waveform_indicators(amplitudes):
+def waveform_indicator(amplitudes):
     Q = Mean(amplitudes)
     P = RMS(amplitudes)
     if isinstance(amplitudes[0], (list, tuple, np.ndarray)) == True:
@@ -455,7 +455,7 @@ def Energy(amplitudes):
     return(m)
 
 
-def Mean_abs_modif1(amplitudes):
+def mean_abs_modif1(amplitudes):
     n = len(amplitudes)
     m = 0
     
@@ -473,7 +473,7 @@ def Mean_abs_modif1(amplitudes):
     return(m/n)
         
    
-def Mean_abs_modif2(amplitudes):
+def mean_abs_modif2(amplitudes):
     n = len(amplitudes)
     m = 0
     

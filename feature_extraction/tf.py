@@ -1,209 +1,219 @@
-import numpy as np
-
+import torch
 
 def mean(amplitudes):
     """
-    Compute mean along the time axis for each sample and dimension.
+    Compute mean along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Mean values computed along the time axis.
     """
-    return np.mean(amplitudes, axis=1, keepdims=True)
+    return torch.mean(amplitudes, dim=2, keepdim=True)
+
 
 def variance(amplitudes):
     """
-    Compute variance along the time axis for each sample and dimension.
+    Compute variance along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Variance values computed along the time axis.
     """
-    return np.var(amplitudes, axis=1, keepdims=True, ddof=0)
+    return torch.var(amplitudes, dim=2, keepdim=True, unbiased=False)
+
 
 def std(amplitudes):
     """
-    Compute standard deviation along the time axis for each sample and dimension.
+    Compute standard deviation along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Standard deviation values computed along the time axis.
     """
-    return np.std(amplitudes, axis=1, keepdims=True, ddof=0)
+    return torch.std(amplitudes, dim=2, keepdim=True, unbiased=False)
+
 
 def rms(amplitudes):
     """
-    Compute root mean square along the time axis for each sample and dimension.
+    Compute root mean square along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         RMS values computed along the time axis.
     """
-    return np.sqrt(np.mean(np.square(amplitudes), axis=1, keepdims=True))
+    return torch.sqrt(torch.mean(torch.square(amplitudes), dim=2, keepdim=True))
+
 
 def max(amplitudes):
     """
-    Compute maximum value along the time axis for each sample and dimension.
+    Compute maximum value along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Maximum values computed along the time axis.
     """
-    return np.max(amplitudes, axis=1, keepdims=True)
+    return torch.max(amplitudes, dim=2, keepdim=True)[0]
+
 
 def kurtosis(amplitudes):
     """
-    Compute kurtosis along the time axis for each sample and dimension.
+    Compute kurtosis along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Kurtosis values computed along the time axis.
     """
-    n_samples, n_timesteps, n_dims = amplitudes.shape
-    mean_vals = np.mean(amplitudes, axis=1, keepdims=True)
+    n_timesteps = amplitudes.shape[2]
+    mean_vals = torch.mean(amplitudes, dim=2, keepdim=True)
     
-    fourth_moment = np.mean((amplitudes - mean_vals) ** 4, axis=1, keepdims=True)
-    second_moment = np.mean((amplitudes - mean_vals) ** 2, axis=1, keepdims=True)
+    fourth_moment = torch.mean((amplitudes - mean_vals) ** 4, dim=2, keepdim=True)
+    second_moment = torch.mean((amplitudes - mean_vals) ** 2, dim=2, keepdim=True)
     
     return n_timesteps * fourth_moment / (second_moment ** 2)
 
+
 def skewness(amplitudes):
     """
-    Compute skewness along the time axis for each sample and dimension.
+    Compute skewness along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Skewness values computed along the time axis.
     """
-    n_samples, n_timesteps, n_dims = amplitudes.shape
-    mean_vals = np.mean(amplitudes, axis=1, keepdims=True)
-    std_vals = np.std(amplitudes, axis=1, keepdims=True, ddof=0)
+    n_timesteps = amplitudes.shape[2]
+    mean_vals = torch.mean(amplitudes, dim=2, keepdim=True)
+    std_vals = torch.std(amplitudes, dim=2, keepdim=True, unbiased=False)
     
-    third_moment = np.mean((amplitudes - mean_vals) ** 3, axis=1, keepdims=True)
+    third_moment = torch.mean((amplitudes - mean_vals) ** 3, dim=2, keepdim=True)
     
     return third_moment / (n_timesteps * std_vals ** 3)
 
+
 def eo(amplitudes):
     """
-    Compute EO feature along the time axis for each sample and dimension.
+    Compute EO feature along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         EO feature values computed along the time axis.
     """
-    n_samples, n_timesteps, n_dims = amplitudes.shape
-    result = np.zeros((n_samples, 1, n_dims))
+    batch_size, n_nodes, n_timesteps, n_dims = amplitudes.shape
     
-    for s in range(n_samples):
-        for d in range(n_dims):
-            amp = amplitudes[s, :, d]
-            diff_square = np.diff(amp ** 2)
-            b = np.mean(diff_square)
-            
-            numerator = np.sum((diff_square - b) ** 4)
-            denominator = np.sum((diff_square - b) ** 2) ** 2
-            
-            result[s, 0, d] = (n_timesteps ** 2 * numerator) / denominator
+    # Compute squared amplitudes and their differences
+    amp_squared = amplitudes ** 2
+    diff_square = torch.diff(amp_squared, dim=2)
+    
+    # Compute mean of differences
+    b = torch.mean(diff_square, dim=2, keepdim=True)
+    
+    # Compute centered differences
+    centered_diff = diff_square - b
+    
+    # Compute numerator and denominator
+    numerator = torch.sum(centered_diff ** 4, dim=2, keepdim=True)
+    denominator = torch.sum(centered_diff ** 2, dim=2, keepdim=True) ** 2
+    
+    result = (n_timesteps ** 2 * numerator) / denominator
     
     return result
 
 
 def mean_abs(amplitudes):
     """
-    Compute mean of absolute values along the time axis for each sample and dimension.
+    Compute mean of absolute values along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Mean absolute values computed along the time axis.
     """
-    return np.mean(np.abs(amplitudes), axis=1, keepdims=True)
+    return torch.mean(torch.abs(amplitudes), dim=2, keepdim=True)
 
 
-def srav(amplitudes):
+def sq_root_abs(amplitudes):
     """
     Compute SRAV (Square Root of Absolute Value) feature along the time axis.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         SRAV values computed along the time axis.
     """
-    sqrt_abs = np.sqrt(np.abs(amplitudes))
-    mean_sqrt_abs = np.mean(sqrt_abs, axis=1, keepdims=True)
+    sqrt_abs = torch.sqrt(torch.abs(amplitudes))
+    mean_sqrt_abs = torch.mean(sqrt_abs, dim=2, keepdim=True)
     return mean_sqrt_abs ** 2
 
 
 def shape_factor(amplitudes):
     """
-    Compute shape factor (RMS/Mean_abs) for each sample and dimension.
+    Compute shape factor (RMS/Mean_abs) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Shape factor values computed along the time axis.
     """
     rms_vals = rms(amplitudes)
@@ -213,16 +223,16 @@ def shape_factor(amplitudes):
 
 def impulse_factor(amplitudes):
     """
-    Compute impulse factor (Max/Mean_abs) for each sample and dimension.
+    Compute impulse factor (Max/Mean_abs) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Impulse factor values computed along the time axis.
     """
     max_vals = max(amplitudes)
@@ -232,16 +242,16 @@ def impulse_factor(amplitudes):
 
 def crest_factor(amplitudes):
     """
-    Compute crest factor (Max/RMS) for each sample and dimension.
+    Compute crest factor (Max/RMS) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Crest factor values computed along the time axis.
     """
     max_vals = max(amplitudes)
@@ -251,54 +261,54 @@ def crest_factor(amplitudes):
 
 def clearance_factor(amplitudes):
     """
-    Compute clearance factor for each sample and dimension.
+    Compute clearance factor for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Clearance factor values computed along the time axis.
     """
     max_vals = max(amplitudes)
-    srav_vals = srav(amplitudes)
+    srav_vals = sq_root_abs(amplitudes)
     return max_vals / srav_vals
 
 
 def log_log_ratio(amplitudes):
     """
-    Compute log-log ratio feature for each sample and dimension.
+    Compute log-log ratio feature for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Log-log ratio values computed along the time axis.
     """
     std_vals = std(amplitudes)
-    log_sum = np.sum(np.log(np.abs(amplitudes) + 1), axis=1, keepdims=True)
-    return log_sum / np.log(std_vals)
+    log_sum = torch.sum(torch.log(torch.abs(amplitudes) + 1), dim=2, keepdim=True)
+    return log_sum / torch.log(std_vals)
 
 
 def std_deviation_index(amplitudes):
     """
-    Compute standard deviation index (STD/Mean_abs) for each sample and dimension.
+    Compute standard deviation index (STD/Mean_abs) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Standard deviation index values computed along the time axis.
     """
     std_vals = std(amplitudes)
@@ -308,71 +318,71 @@ def std_deviation_index(amplitudes):
 
 def fifth_moment(amplitudes):
     """
-    Compute fifth moment for each sample and dimension.
+    Compute fifth moment for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Fifth moment values computed along the time axis.
     """
-    mean_vals = np.mean(amplitudes, axis=1, keepdims=True)
-    return np.mean((amplitudes - mean_vals) ** 5, axis=1, keepdims=True)
+    mean_vals = torch.mean(amplitudes, dim=2, keepdim=True)
+    return torch.mean((amplitudes - mean_vals) ** 5, dim=2, keepdim=True)
 
 
 def fifth_moment_normalized(amplitudes):
     """
-    Compute normalized fifth moment for each sample and dimension.
+    Compute normalized fifth moment for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Normalized fifth moment values computed along the time axis.
     """
-    fifth_moment = fifth_moment(amplitudes)
+    fifth_moment_vals = fifth_moment(amplitudes)
     std_vals = std(amplitudes)
-    return fifth_moment / (std_vals ** 5)
+    return fifth_moment_vals / (std_vals ** 5)
 
 
 def sixth_moment(amplitudes):
     """
-    Compute sixth moment for each sample and dimension.
+    Compute sixth moment for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Sixth moment values computed along the time axis.
     """
-    mean_vals = np.mean(amplitudes, axis=1, keepdims=True)
-    return np.mean((amplitudes - mean_vals) ** 6, axis=1, keepdims=True)
+    mean_vals = torch.mean(amplitudes, dim=2, keepdim=True)
+    return torch.mean((amplitudes - mean_vals) ** 6, dim=2, keepdim=True)
 
 
 def pulse_index(amplitudes):
     """
-    Compute pulse index (Max/Mean) for each sample and dimension.
+    Compute pulse index (Max/Mean) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Pulse index values computed along the time axis.
     """
     max_vals = max(amplitudes)
@@ -382,35 +392,35 @@ def pulse_index(amplitudes):
 
 def margin_index(amplitudes):
     """
-    Compute margin index (Max/SRAV) for each sample and dimension.
+    Compute margin index (Max/SRAV) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Margin index values computed along the time axis.
     """
     max_vals = max(amplitudes)
-    srav_vals = srav(amplitudes)
+    srav_vals = sq_root_abs(amplitudes)
     return max_vals / srav_vals
 
 
 def mean_deviation_ratio(amplitudes):
     """
-    Compute mean deviation ratio (Mean/STD) for each sample and dimension.
+    Compute mean deviation ratio (Mean/STD) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Mean deviation ratio values computed along the time axis.
     """
     mean_vals = mean(amplitudes)
@@ -420,51 +430,51 @@ def mean_deviation_ratio(amplitudes):
 
 def difference_variance(amplitudes):
     """
-    Compute difference variance feature for each sample and dimension.
+    Compute difference variance feature for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Difference variance values computed along the time axis.
     """
-    diff = np.diff(amplitudes, axis=1)
-    return np.sum(diff ** 2, axis=1, keepdims=True) / (amplitudes.shape[1] - 2)
+    diff = torch.diff(amplitudes, dim=2)
+    return torch.sum(diff ** 2, dim=2, keepdim=True) / (amplitudes.shape[2] - 2)
 
 
 def min(amplitudes):
     """
-    Compute minimum value along the time axis for each sample and dimension.
+    Compute minimum value along the time axis for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Minimum values computed along the time axis.
     """
-    return np.min(amplitudes, axis=1, keepdims=True)
+    return torch.min(amplitudes, dim=2, keepdim=True)[0]
 
 
 def peak_value(amplitudes):
     """
-    Compute peak value ((Max - Min)/2) for each sample and dimension.
+    Compute peak value ((Max - Min)/2) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Peak values computed along the time axis.
     """
     max_vals = max(amplitudes)
@@ -474,16 +484,16 @@ def peak_value(amplitudes):
 
 def peak_to_peak(amplitudes):
     """
-    Compute peak-to-peak value (Max - Min) for each sample and dimension.
+    Compute peak-to-peak value (Max - Min) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Peak-to-peak values computed along the time axis.
     """
     max_vals = max(amplitudes)
@@ -493,19 +503,19 @@ def peak_to_peak(amplitudes):
 
 def hist_lower_bound(amplitudes):
     """
-    Compute histogram lower bound for each sample and dimension.
+    Compute histogram lower bound for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Histogram lower bound values computed along the time axis.
     """
-    n_timesteps = amplitudes.shape[1]
+    n_timesteps = amplitudes.shape[2]
     min_vals = min(amplitudes)
     max_vals = max(amplitudes)
     
@@ -515,19 +525,19 @@ def hist_lower_bound(amplitudes):
 
 def hist_upper_bound(amplitudes):
     """
-    Compute histogram upper bound for each sample and dimension.
+    Compute histogram upper bound for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Histogram upper bound values computed along the time axis.
     """
-    n_timesteps = amplitudes.shape[1]
+    n_timesteps = amplitudes.shape[2]
     min_vals = min(amplitudes)
     max_vals = max(amplitudes)
     
@@ -537,35 +547,35 @@ def hist_upper_bound(amplitudes):
 
 def latitude_factor(amplitudes):
     """
-    Compute latitude factor for each sample and dimension.
+    Compute latitude factor for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Latitude factor values computed along the time axis.
     """
     max_vals = max(amplitudes)
-    sqrt_mean = np.mean(np.sqrt(np.abs(amplitudes)), axis=1, keepdims=True) ** 2
+    sqrt_mean = torch.mean(torch.sqrt(torch.abs(amplitudes)), dim=2, keepdim=True) ** 2
     return max_vals / sqrt_mean
 
 
 def normalized_std(amplitudes):
     """
-    Compute normalized standard deviation (STD/RMS) for each sample and dimension.
+    Compute normalized standard deviation (STD/RMS) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Normalized standard deviation values computed along the time axis.
     """
     std_vals = std(amplitudes)
@@ -575,16 +585,16 @@ def normalized_std(amplitudes):
 
 def waveform_indicator(amplitudes):
     """
-    Compute waveform indicator (RMS/Mean) for each sample and dimension.
+    Compute waveform indicator (RMS/Mean) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Waveform indicator values computed along the time axis.
     """
     rms_vals = rms(amplitudes)
@@ -594,147 +604,136 @@ def waveform_indicator(amplitudes):
 
 def wilson_amplitude(amplitudes, threshold=0.02):
     """
-    Compute Wilson amplitude feature for each sample and dimension.
+    Compute Wilson amplitude feature for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     threshold : float, optional
         Threshold value for the feature, by default 0.02.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Wilson amplitude values computed along the time axis.
     """
-    diff = np.abs(np.diff(amplitudes, axis=1))
-    return np.sum(np.heaviside(diff - threshold, 1), axis=1, keepdims=True)
+    diff = torch.abs(torch.diff(amplitudes, dim=2))
+    return torch.sum((diff > threshold).float(), dim=2, keepdim=True)
 
 
 def zero_crossing_rate(amplitudes):
     """
-    Compute zero crossing rate for each sample and dimension.
+    Compute zero crossing rate for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Zero crossing rate values computed along the time axis.
     """
-    signs = np.sign(amplitudes)
-    sign_changes = np.abs(np.diff(signs, axis=1))
-    return np.mean(sign_changes, axis=1, keepdims=True)
+    signs = torch.sign(amplitudes)
+    sign_changes = torch.abs(torch.diff(signs, dim=2))
+    return torch.mean(sign_changes, dim=2, keepdim=True)
 
 
 def waveform_length(amplitudes):
     """
-    Compute waveform length for each sample and dimension.
+    Compute waveform length for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Waveform length values computed along the time axis.
     """
-    return np.sum(np.abs(np.diff(amplitudes, axis=1)), axis=1, keepdims=True)
+    return torch.sum(torch.abs(torch.diff(amplitudes, dim=2)), dim=2, keepdim=True)
 
 
 def energy(amplitudes):
     """
-    Compute energy (sum of squared absolute values) for each sample and dimension.
+    Compute energy (sum of squared absolute values) for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Energy values computed along the time axis.
     """
-    return np.sum(np.abs(amplitudes) ** 2, axis=1, keepdims=True)
+    return torch.sum(torch.abs(amplitudes) ** 2, dim=2, keepdim=True)
 
 
 def mean_abs_modif1(amplitudes):
     """
-    Compute modified mean absolute value 1 for each sample and dimension.
+    Compute modified mean absolute value 1 for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Modified mean absolute value 1 computed along the time axis.
     """
-    n_samples, n_timesteps, n_dims = amplitudes.shape
-    result = np.zeros((n_samples, 1, n_dims))
+    batch_size, n_nodes, n_timesteps, n_dims = amplitudes.shape
+    n = n_timesteps
     
-    for s in range(n_samples):
-        for d in range(n_dims):
-            amp = amplitudes[s, :, d]
-            n = n_timesteps
-            
-            # First quarter with 0.5 weight
-            m = np.sum(0.5 * np.abs(amp[:n//4]))
-            
-            # Last quarter with 0.5 weight
-            m += np.sum(0.5 * np.abs(amp[3*n//4 + 1:]))
-            
-            # Middle half with full weight
-            m += np.sum(np.abs(amp[n//4:3*n//4 + 1]))
-            
-            result[s, 0, d] = m / n
+    # Create weight tensor
+    weights = torch.ones_like(amplitudes)
     
-    return result
+    # First quarter with 0.5 weight
+    weights[:, :, :n//4, :] = 0.5
+    
+    # Last quarter with 0.5 weight  
+    weights[:, :, 3*n//4 + 1:, :] = 0.5
+    
+    # Compute weighted mean
+    weighted_sum = torch.sum(weights * torch.abs(amplitudes), dim=2, keepdim=True)
+    return weighted_sum / n
 
 
 def mean_abs_modif2(amplitudes):
     """
-    Compute modified mean absolute value 2 for each sample and dimension.
+    Compute modified mean absolute value 2 for each batch, node, and dimension.
     
     Parameters
     ----------
-    amplitudes : np.ndarray, shape (n_samples, n_timesteps, n_dims)
+    amplitudes : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input signal amplitudes.
     
     Returns
     -------
-    np.ndarray, shape (n_samples, 1, n_dims)
+    torch.Tensor, shape (batch_size, n_nodes, 1, n_dims)
         Modified mean absolute value 2 computed along the time axis.
     """
-    n_samples, n_timesteps, n_dims = amplitudes.shape
-    result = np.zeros((n_samples, 1, n_dims))
+    batch_size, n_nodes, n_timesteps, n_dims = amplitudes.shape
+    n = n_timesteps
     
-    for s in range(n_samples):
-        for d in range(n_dims):
-            amp = amplitudes[s, :, d]
-            n = n_timesteps
-            
-            # First quarter with linear weight
-            indices = np.arange(0, n//4)
-            m = np.sum((4 * indices / n) * np.abs(amp[:n//4]))
-            
-            # Last quarter with linear weight
-            indices = np.arange(3*n//4 + 1, n)
-            m += np.sum((4 * (indices - n) / n) * np.abs(amp[3*n//4 + 1:]))
-            
-            # Middle half with full weight
-            m += np.sum(np.abs(amp[n//4:3*n//4 + 1]))
-            
-            result[s, 0, d] = m / n
+    # Create weight tensor
+    weights = torch.ones_like(amplitudes)
     
-    return result
-
+    # First quarter with linear weight
+    indices = torch.arange(0, n//4, device=amplitudes.device, dtype=amplitudes.dtype)
+    weights[:, :, :n//4, :] = (4 * indices / n).view(1, 1, -1, 1)
+    
+    # Last quarter with linear weight
+    indices = torch.arange(3*n//4 + 1, n, device=amplitudes.device, dtype=amplitudes.dtype)
+    weights[:, :, 3*n//4 + 1:, :] = (4 * (indices - n) / n).view(1, 1, -1, 1)
+    
+    # Compute weighted mean
+    weighted_sum = torch.sum(weights * torch.abs(amplitudes), dim=2, keepdim=True)
+    return weighted_sum / n
