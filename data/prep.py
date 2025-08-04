@@ -5,21 +5,20 @@ This moduel contains:
 - trainset dataloader and custom dataloader functions.
 """
 
-import sys
-import os
+import sys, os
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
 
 import numpy as np
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader, random_split
 import h5py
+from torch.utils.data import Subset
 
 # local imports
-if DATA_DIR not in sys.path:
-    sys.path.insert(0, DATA_DIR)
-from settings import DataConfig
+from data.config import DataConfig
 from augment import add_gaussian_noise
 from collections import defaultdict
 
@@ -68,15 +67,70 @@ class DataPreprocessor:
             dataset = self._make_dataset(x_node, y_edge)    
 
         return dataset
-
-    def get_custom_dataloader(self, data_config:DataConfig, batch_size=50):
+    
+    def _get_dataset_stats(self, subset:Subset):
         """
-        Create a custom dataloader for the specified run type.
+        Compute statistic metrics for the subset.
+
+        Note
+        ----
+        - Statistic metrics like `mean`, `std`, `min` and `max` are computed across all the samples and timesteps. 
+
+            - For example, if data is of shape (samples=5, n_nodes=2, n_timesteps=10, n_dims=3), the statistical metrics is computed for (samples x n_timesteps) = 50 components.
+            So mean of 50 components, std of 50 components etc.
+
+        - Each node and dimension will have is own `mean`, `std`, `min` and `max`. 
+            - This is becasue the data distribution can be different for each node and dimension and by doing per-node and per-dimension normalization, the data distribution after normalziation can be preserved. 
+            - This will help in better training of the model.
+        
+        Parameters
+        ----------
+        subset : torch.utils.data.Subset
+            The dataset to compute statistics for.
+
+        Returns
+        -------
+        data_stats : dict
+            Dictionary containing statistics of the dataset
+        """
+        original_dataset = subset.dataset
+        indices = subset.indices
+        data = torch.stack([original_dataset[i][0] for i in indices]) # shape (total_samples, n_nodes, n_timesteps, n_dims)
+
+        min_val = data.min(dim=2, keepdim=True).values  
+        max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
+        
+        data_stats = {
+            'mean': torch.mean(data, dim=(0, 2), keepdim=True),
+            'std': torch.std(data, dim=(0, 2), keepdim=True),
+            'min': torch.min(min_val, dim=0, keepdim=True).values,
+            'max': torch.max(max_val, dim=0, keepdim=True).values
+        }
+        for k in data_stats:
+            data_stats[k] = data_stats[k].squeeze(0)
+
+        return data_stats
+
+    def get_custom_data(self, data_config:DataConfig, batch_size=50):
+        """
+        Create a custom dataloader and the data stats for the specified run type.
+
         Parameters
         ----------
         data_config : DataConfig
             The data configuration object.
         batch_size : int
+
+        Returns
+        -------
+        (custom_loader, data_stats) : tuple
+
+        **_Note_**
+            **data_stats** is dictionary containing statistics of the dataset.
+            - `mean`: Mean of the dataset.
+            - `std`: Standard deviation of the dataset.
+            - `min`: Minimum value in the dataset.
+            - `max`: Maximum value in the dataset.
         """
         # set the data config based on run type
         self.data_config = data_config
@@ -91,17 +145,22 @@ class DataPreprocessor:
 
         remainder_samples = total_samples - desired_samples
 
+        print(f"Total samples: {total_samples}, Desired samples: {desired_samples}, Remainder samples: {remainder_samples}")
+
         if desired_samples < total_samples:
             dataset, _ = random_split(dataset, [desired_samples, remainder_samples])
         
+        # get dataset statistics
+        data_stats = self._get_dataset_stats(dataset)
+
         # create custom dataloader
         custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
 
-        return custom_loader
+        return (custom_loader, data_stats)
     
-    def get_training_dataloaders(self, data_config:DataConfig, train_rt=0.8, test_rt=0.1, val_rt=0, batch_size=50):
+    def get_training_data(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50):
         """
-        Create train, validation, and test dataloaders.
+        Create train, validation, and test dataloaders and compute their statistical metrics.
 
         Parameters
         ----------
@@ -109,6 +168,19 @@ class DataPreprocessor:
             The data configuration object.
         batch_size : int
             The batch size for the dataloaders.
+
+        Returns
+        -------
+        (train_loader, train_data_stats) : tuple       
+        (test_loader, test_data_stats) : tuple
+        (val_loader, val_data_stats) : tuple
+        
+        **_Note_**
+            **data_stats** of train, test and val is dictionary containing following statistics:
+                - `mean`: Mean of the dataset.
+                - `std`: Standard deviation of the dataset.
+                - `min`: Minimum value in the dataset.
+                - `max`: Maximum value in the dataset.
         """
         # set the data config for training
         self.data_config = data_config
@@ -131,6 +203,8 @@ class DataPreprocessor:
         n_val = int(val_rt * total_samples)
         remainder_samples = total_samples - n_train - n_test - n_val
 
+        print(f"Total samples: {total_samples}, Train: {n_train}, Test: {n_test}, Val: {n_val}, Remainder: {remainder_samples}")
+
         if self.package == 'topology_estimation':
             if n_train + n_test + n_val < total_samples:
                 train_set, test_set, val_set, _ = random_split(dataset, [n_train, n_test, n_val, remainder_samples])
@@ -145,12 +219,17 @@ class DataPreprocessor:
 
             val_set = None  # No validation set for fault detection
         
+        # get dataset statistics
+        train_data_stats = self._get_dataset_stats(train_set)
+        test_data_stats = self._get_dataset_stats(test_set)
+        val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
+
         # create dataloaders
         train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, drop_last=True)
         test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True, drop_last=True)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, drop_last=True) if val_set is not None else None
         
-        return train_loader, test_loader ,val_loader, []
+        return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
         
 
     def _make_dataset(self, x, y):

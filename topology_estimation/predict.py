@@ -1,12 +1,12 @@
 from .config.manager import PredictNRIConfigMain
 from .nri import NRI
-from data.settings import DataConfig
+from data.config import DataConfig
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning import Trainer
 import os
 from .graph_structures import FullyConnectedGraph, SparisifiedGraph
 from data.transform import DataTransformer
-from feature_extraction.config import FeatureExtractor
+from feature_extraction.settings import FeatureExtractor
 
 class PredictNRIMain:
     def __init__(self):

@@ -14,11 +14,11 @@ import torch
 # global imports
 from data.prep import DataPreprocessor
 from data.transform import DomainTransformer
-from data.settings import DataConfig, get_domain_config
+from data.config import DataConfig, get_domain_config
 
 # sub-local imports 
 from extractor import FrequencyFeatureExtractor
-from config.feature_settings import get_freq_feat_config
+from feature_extraction.settings.feature_config import get_freq_feat_config
 
 
 class DataAdapter:

@@ -1,1 +1,0 @@
-c:\AFD\fault_detection\logs\bearing\cwru\scene_1\custom_test\(gearbox)\(gearbox)_fault_detector_1\healthy\0_N[OG, gau_m=0.1s=0.2, gau_m=0.2s=0.3]\T500

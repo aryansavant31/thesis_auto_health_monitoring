@@ -23,7 +23,7 @@ print(1)
 print(2)
 import ast
 from scipy.stats import pearsonr
-from config import FeatureRankingConfig
+from settings import FeatureRankingConfig
 
 
 #Calc_10 = segmenting_healthy(Calc_0, 10)

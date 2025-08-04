@@ -15,7 +15,7 @@ import numpy as np
 import torch
 
 # local imports
-from data.settings import DataConfig
+from data.config import DataConfig
 
 
 class DomainTransformer:
@@ -30,11 +30,14 @@ class DomainTransformer:
         Parameters
         ----------
         domain_config : str
+            The type of domain transformation to be applied (e.g., 'time', 'freq').
+        data_config : DataConfig
+            Data configuration object containing sampling frequency.
         
         """
-        self.fs = DataConfig().fs
         self.domain_config = domain_config
         self.domain = domain_config['type'] 
+        self.fs = domain_config['fs']
 
     def transform(self, time_data):
         """
@@ -100,12 +103,13 @@ class DataNormalizer:
             Input data tensor of shape (batch_size, n_nodes, n_components, n_dims).
         """
         if self.data_stats is None:
+            # metrics computed for global normalization
             data_stats = {
                 'mean': torch.mean(data, dim=(0, 2), keepdim=True),
                 'std': torch.std(data, dim=(0, 2), keepdim=True),
                 'min': torch.min(data, dim=(0, 2), keepdim=True).values,
                 'max': torch.max(data, dim=(0, 2), keepdim=True).values
-            }
+            } 
             for k in data_stats:
                 data_stats[k] = data_stats[k].squeeze(0)
 
@@ -186,7 +190,7 @@ def to_freq_domain(data, fs):
     # apply FFT to each dimension of each node for every sample
     for dim in range(n_dims):
         bins_dim = np.fft.rfftfreq(n_timesteps, d=1/fs[dim]) # shape (n_bins,)
-        freq_mag_dim = np.abs(np.fft.rfft(data_np[..., dim], axis=2)) # real valued FFT magnitude, shape (batch_size, n_nodes, n_bins)
+        freq_mag_dim = np.abs(np.fft.rfft(data_np[..., dim], axis=2, norm='forward')) # real valued FFT magnitude, shape (batch_size, n_nodes, n_bins)
 
         # remove Nyquist frequency if n_timesteps is even
         if n_timesteps % 2 == 0:

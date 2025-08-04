@@ -8,10 +8,10 @@ FEX_DIR = os.path.join((os.path.abspath(__file__)))
 sys.path.insert(0, FEX_DIR) if FEX_DIR not in sys.path else None
 
 # global imports
-from data.settings import DataConfig
+from data.config import DataConfig
 
 # local imports
-from config.manager import FeatureRankingManager
+from settings.manager import FeatureRankingManager
 from ranking_utils.data_adapter import DataAdapter
 from ranking_utils.feature_performance import FeaturePerformance
 
@@ -26,7 +26,7 @@ class PerformanceMain:
 
             # get rank log path
             if rank_config.is_log:
-                perf_log_path = rank_config.get_perf_log_path(data_config)
+                perf_log_path = rank_config.get_perf_log_path()
             else:
                 perf_log_path = None
 
@@ -48,9 +48,9 @@ class PerformanceMain:
 
 if __name__ == "__main__":
     data_config = DataConfig(run_type='custom_test')
-    rank_config = FeatureRankingManager()
+    rank_config = FeatureRankingManager(data_config)
     perf_main = PerformanceMain()
 
-    perf_main.evaluate_feature_performance(data_config, rank_config)
+    perf_main.evaluate_feature_performance(rank_config)
 
     print("\nFeature performance evaluation completed.")

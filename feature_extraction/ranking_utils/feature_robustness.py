@@ -103,7 +103,7 @@ def test_noise_robustness():
     #FFT calculation for this sinus to be able to calculate the ranking with frequency features too
     spacing = 1/48000
 
-    AAAfft = fft(AAA)
+    AAAfft = fft(AAA, norm='forward')
 
     AAAfreq = np.fft.rfftfreq(len(AAAfft), spacing)
     AAAfft = AAAfft[:len(AAAfft)//2 +1]

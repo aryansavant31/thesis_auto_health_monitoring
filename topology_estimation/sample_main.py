@@ -11,7 +11,7 @@ connsol_log = StdoutToTensorBoard(log_dir=f"logs/trials/nri/version_{version}")
 
 print("Starting run from main script...")
 
-from data.settings import DataConfig
+from data.config import DataConfig
 from data.prep import load_spring_particle_data
 
 data_config = DataConfig()
