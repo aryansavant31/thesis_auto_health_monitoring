@@ -379,5 +379,9 @@ def get_feature_list(n, perf_v, rank_v, domain, data_config:DataConfig):
     sorted_features = sorted(rank_dict.items(), key=lambda x: x[1], reverse=True)
 
     # get the top 'n' features
-    top_features = [feature_name.lower() for feature_name, _ in sorted_features[:n]]
+    if domain == 'time':
+        top_features = [feature_name.lower() for feature_name, _ in sorted_features[:n]]
+    elif domain == 'freq':
+        top_features = [feature_name for feature_name, _ in sorted_features[:n]]
+        
     return top_features

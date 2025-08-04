@@ -7,18 +7,19 @@ Created on Thu Apr  3 10:20:33 2025
 import numpy as np
 from scipy.stats import kurtosis
 from scipy.signal import find_peaks
+from scipy.special import erfinv
 
 #Frequency features
 
 
-def MeanF(list):
+def meanF(list):
     return([np.mean(list)])
 
 
-def VarianceF(list):
+def varianceF(list):
     n = len(list)
     m = 0
-    Q = MeanF(list)
+    Q = meanF(list)
     
     
     for i in range(0,n):
@@ -28,16 +29,16 @@ def VarianceF(list):
     
 
 
-def SkewnessF(list):
+def skewnessF(list):
     n = len(list)
     m = 0
-    Q = MeanF(list)
+    Q = meanF(list)
     
     
     for i in range(0,n):
         m = m + (list[i] - Q)**3
         
-    A = np.sqrt(VarianceF(list))**3
+    A = np.sqrt(varianceF(list))**3
     denom = n*A
     return(m/denom)
 
@@ -45,18 +46,18 @@ def SkewnessF(list):
 
 
 
-def KurtosisF(list):
+def kurtosisF(list):
     n = len(list)
     m = 0
     denom = 0
-    Q = MeanF(list)
+    Q = meanF(list)
     
     
     for i in range(0,n):
         m = m + (list[i] - Q)**4
         
 
-    denom = n*VarianceF(list)**2
+    denom = n*varianceF(list)**2
     return(m/denom - 3)
 
 
@@ -65,7 +66,7 @@ def KurtosisF(list):
 
 
 
-def CentralFreq(freq, amplitudes):
+def central_freq(freq, amplitudes):
     n = len(amplitudes)
     m = 0
     denom = 0
@@ -86,10 +87,10 @@ def CentralFreq(freq, amplitudes):
 
 
 
-def STDF(freq, amplitudes):
+def stdF(freq, amplitudes):
     numerator = 0
     denom = 0
-    A = CentralFreq(freq, amplitudes)
+    A = central_freq(freq, amplitudes)
     
     n = len(amplitudes)
     
@@ -100,7 +101,7 @@ def STDF(freq, amplitudes):
     return(np.sqrt(numerator/denom))
     
     
-def RMSF(freq, amplitudes):
+def rmsF(freq, amplitudes):
     numerator = 0
     denom = 0
     
@@ -175,8 +176,8 @@ def CP5(freq, amplitudes):
     
     
     
-def Spectral_Spread(freq, amplitudes):
-    S = CentralFreq(freq, amplitudes)
+def spectral_spread(freq, amplitudes):
+    S = central_freq(freq, amplitudes)
     n = len(amplitudes)
     
     m = 0 
@@ -196,7 +197,7 @@ def Spectral_Spread(freq, amplitudes):
     return([np.sqrt(m/denom)])
     
     
-def Spectral_Entropy(amplitudes):
+def spectral_entropy(amplitudes):
     Q = sum(amplitudes)
     m = 0
     n = len(amplitudes)
@@ -217,16 +218,16 @@ def Kp_value(power):
     
     alpha = 0.01
     #alpha is the level of error 
-    T = -1*np.mean(power)*np.log(alpha)
+    T = 2 * (erfinv(1 - alpha)) ** 2
 
     
-    Kp = find_peaks(power, height = T) # num of peaks 
+    Kp = find_peaks(power, height = T)
     return(Kp)
 
 
-def Total_power(amplitudes):
+def total_power(amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
 
     m = 0
@@ -236,9 +237,9 @@ def Total_power(amplitudes):
     
 
 def median_freq(freq, amplitudes):
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
-    Q = Total_power(amplitudes)[0]
+    Q = total_power(amplitudes)[0]
     
     m = 0
     flag = 0
@@ -253,7 +254,7 @@ def median_freq(freq, amplitudes):
 
     
     
-def PKF(amplitudes):
+def pkF(amplitudes):
     return([max(amplitudes ** 2)])
     
 
@@ -275,10 +276,10 @@ def PKF(amplitudes):
 
 
 def first_spectral_moment(freq, amplitudes):
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     m = 0
-    Q = Total_power(amplitudes)[0]
+    Q = total_power(amplitudes)[0]
     #print(Kp)
     
     for i in Kp[0]:
@@ -295,10 +296,10 @@ def first_spectral_moment(freq, amplitudes):
 
 
 def second_spectral_moment(freq, amplitudes):
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     m = 0
-    Q = Total_power(amplitudes)[0]
+    Q = total_power(amplitudes)[0]
     
     for i in Kp[0]:
         m = m + (freq[i] ** 2) * power[i]
@@ -314,10 +315,10 @@ def second_spectral_moment(freq, amplitudes):
 
 
 def third_spectral_moment(freq, amplitudes):
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     m = 0
-    Q = Total_power(amplitudes)[0]
+    Q = total_power(amplitudes)[0]
     
     for i in Kp[0]:
         m = m + (freq[i] ** 3) * power[i]
@@ -332,10 +333,10 @@ def third_spectral_moment(freq, amplitudes):
 
 
 def fourth_spectral_moment(freq, amplitudes):
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     m = 0
-    Q = Total_power(amplitudes)[0]
+    Q = total_power(amplitudes)[0]
     
     
     for i in Kp[0]:
@@ -351,8 +352,8 @@ def fourth_spectral_moment(freq, amplitudes):
 
 
 
-def VCF(freq, amplitudes):
-    Q = Total_power(amplitudes)[0]
+def vcf(freq, amplitudes):
+    Q = total_power(amplitudes)[0]
     if Q ==0:
         return([0])
     
@@ -370,7 +371,7 @@ def frequency_ratio(amplitudes):
     n = len(amplitudes)
     numerator = 0
     denom = 0
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     
     for i in range(0, n//2):
         numerator = numerator + power[i]
@@ -392,9 +393,9 @@ def frequency_ratio(amplitudes):
         return([numerator/denom])
     
     
-def HSC(freq, amplitudes):
+def hsc(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     
     m = 0
@@ -410,8 +411,8 @@ def HSC(freq, amplitudes):
     return([m/denom])
 
 
-def Spectral_Flux(amplitudes):
-    power = amplitudes ** 2
+def spectral_flux(amplitudes):
+    power = 2*(amplitudes ** 2)
     
     m = 0
     n = len(amplitudes)
@@ -422,12 +423,12 @@ def Spectral_Flux(amplitudes):
     return([np.sqrt(m)])
 
 
-def Rolloff_frequency_90(freq, amplitudes):
+def rolloff_frequency_90(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     
     
-    Q = Total_power(amplitudes)[0]*0.9
+    Q = total_power(amplitudes)[0]*0.9
     m = 0
     n = len(amplitudes)
     for i in range(0, n):
@@ -440,12 +441,12 @@ def Rolloff_frequency_90(freq, amplitudes):
 
 
 
-def Rolloff_frequency_85(freq, amplitudes):
+def rolloff_frequency_85(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     
     
-    Q = Total_power(amplitudes)[0]*0.85
+    Q = total_power(amplitudes)[0]*0.85
     m = 0
     n = len(amplitudes)
     for i in range(0, n):
@@ -458,12 +459,12 @@ def Rolloff_frequency_85(freq, amplitudes):
         
 
 
-def Rolloff_frequency_75(freq, amplitudes):
+def rolloff_frequency_75(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     
     
-    Q = Total_power(amplitudes)[0]*0.75
+    Q = total_power(amplitudes)[0]*0.75
     m = 0
     n = len(amplitudes)
     for i in range(0, n):
@@ -475,12 +476,12 @@ def Rolloff_frequency_75(freq, amplitudes):
     return([freq[flag]])
 
 
-def Rolloff_frequency_95(freq, amplitudes):
+def rolloff_frequency_95(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     
     
-    Q = Total_power(amplitudes)[0]*0.95
+    Q = total_power(amplitudes)[0]*0.95
     m = 0
     n = len(amplitudes)
     for i in range(0, n):
@@ -491,9 +492,9 @@ def Rolloff_frequency_95(freq, amplitudes):
         
     return([freq[flag]])
 
-def Upper_limit_harmonicity(freq, amplitudes):
+def upper_limit_harmonicity(freq, amplitudes):
     
-    power = amplitudes ** 2
+    power = 2*(amplitudes ** 2)
     Kp = Kp_value(power)
     
     n = len(Kp[0])
