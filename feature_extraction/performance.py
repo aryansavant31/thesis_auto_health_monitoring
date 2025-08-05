@@ -1,8 +1,5 @@
 import sys
 import os
-import warnings
-# force warnings to always be displayed and go to stderr
-warnings.filterwarnings('always')
 
 ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
