@@ -54,8 +54,8 @@ class DataConfig:
         self.format         = 'hdf5'  # options: hdf5, csv
 
         # segement data
-        self.window_length  = 500
-        self.stride         = 100 
+        self.window_length  = 30000
+        self.stride         = 30000 
 
         if run_type == 'train':
             self.set_train_dataset()
@@ -77,9 +77,9 @@ class DataConfig:
         }
     
     def set_custom_test_dataset(self):
-        self.amt = 0.6
+        self.amt = 0.4
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {

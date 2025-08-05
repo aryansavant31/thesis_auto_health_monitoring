@@ -1,0 +1,294 @@
+=== SCRIPT EXECUTION LOG ===
+Script: performance.py
+Base Name: (gearbox)_perf_1
+Start Time: 2025-08-05 14:47:23
+End Time: 2025-08-05 14:49:30
+==================================================
+
+
+Starting feature performance evaluation...
+Total samples: 12168, Desired samples: 608, Remainder samples: 11560
+Data shape: torch.Size([600, 1, 500, 1])
+Labels shape: torch.Size([600])
+'(gearbox)_perf_1' already exists in the log path 'c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\feature_extraction\logs\bearing\cwru\scene_1\(gearbox)\(gearbox)_perf_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop operation (Choose 'a', 'b' or 'c'):  Are you sure you want to remove '(gearbox)_perf_1' from the log path c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\feature_extraction\logs\bearing\cwru\scene_1\(gearbox)\(gearbox)_perf_1? (y/n): Overwrote exsiting '(gearbox)_perf_1' from the log path c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\feature_extraction\logs\bearing\cwru\scene_1\(gearbox)\(gearbox)_perf_1.
+Mean
+Variance
+STD
+RMS
+Max
+Kurtosis
+Skewness
+EO
+Mean_abs
+sq_root_abs
+shape_factor
+impulse_factor
+crest_factor
+clearance_factor
+Log_Log_Ratio
+std_deviation_index
+fifth_moment
+fifth_moment_normalized
+sixth_moment
+Pulse_Index
+Margin_Index
+mean_deviation_ratio
+difference_variance
+Min
+peak_value
+Peak_to_peak
+hist_lower_bound
+hist_upper_bound
+latitude_factor
+normalized_std
+waveform_indicator
+Wilson_amplitude
+Zero_crossing_rate
+waveform_length
+Energy
+mean_abs_modif1
+mean_abs_modif2
+
+Time features sorted by information gain
+Mean
+Variance
+STD
+RMS
+Max
+Kurtosis
+Skewness
+EO
+Mean_abs
+sq_root_abs
+shape_factor
+impulse_factor
+crest_factor
+clearance_factor
+Log_Log_Ratio
+std_deviation_index
+fifth_moment
+fifth_moment_normalized
+sixth_moment
+Pulse_Index
+Margin_Index
+mean_deviation_ratio
+difference_variance
+Min
+peak_value
+Peak_to_peak
+hist_lower_bound
+hist_upper_bound
+latitude_factor
+normalized_std
+waveform_indicator
+Wilson_amplitude
+Zero_crossing_rate
+waveform_length
+Energy
+mean_abs_modif1
+mean_abs_modif2
+
+Time features sorted by Chi-Square
+Mean
+Variance
+STD
+RMS
+Max
+Kurtosis
+Skewness
+EO
+Mean_abs
+sq_root_abs
+shape_factor
+impulse_factor
+crest_factor
+clearance_factor
+Log_Log_Ratio
+std_deviation_index
+fifth_moment
+fifth_moment_normalized
+sixth_moment
+Pulse_Index
+Margin_Index
+mean_deviation_ratio
+difference_variance
+Min
+peak_value
+Peak_to_peak
+hist_lower_bound
+hist_upper_bound
+latitude_factor
+normalized_std
+waveform_indicator
+Wilson_amplitude
+Zero_crossing_rate
+waveform_length
+Energy
+mean_abs_modif1
+mean_abs_modif2
+
+Time features sorted by Pearson correlation
+Mean
+Variance
+STD
+RMS
+Max
+Kurtosis
+Skewness
+EO
+Mean_abs
+sq_root_abs
+shape_factor
+impulse_factor
+crest_factor
+clearance_factor
+Log_Log_Ratio
+std_deviation_index
+fifth_moment
+fifth_moment_normalized
+sixth_moment
+Pulse_Index
+Margin_Index
+mean_deviation_ratio
+difference_variance
+Min
+peak_value
+Peak_to_peak
+hist_lower_bound
+hist_upper_bound
+latitude_factor
+normalized_std
+waveform_indicator
+Wilson_amplitude
+Zero_crossing_rate
+waveform_length
+Energy
+mean_abs_modif1
+mean_abs_modif2
+
+Time features sorted by RelieF
+
+Pearson coefficient for time features is saved
+Chi square for time features is saved
+Info gain for time features is saved
+Relief for time features is saved
+meanF
+varianceF
+skewnessF
+kurtosisF
+central_freq
+stdF
+rmsF
+spectral_spread
+spectral_entropy
+total_power
+median_freq
+pkF
+first_spectral_moment
+second_spectral_moment
+third_spectral_moment
+fourth_spectral_moment
+vcf
+frequency_ratio
+hsc
+spectral_flux
+rolloff_frequency_90
+rolloff_frequency_85
+rolloff_frequency_75
+rolloff_frequency_95
+upper_limit_harmonicity
+
+Frequency features sorted by information gain
+meanF
+varianceF
+skewnessF
+kurtosisF
+central_freq
+stdF
+rmsF
+spectral_spread
+spectral_entropy
+total_power
+median_freq
+pkF
+first_spectral_moment
+second_spectral_moment
+third_spectral_moment
+fourth_spectral_moment
+vcf
+frequency_ratio
+hsc
+spectral_flux
+rolloff_frequency_90
+rolloff_frequency_85
+rolloff_frequency_75
+rolloff_frequency_95
+upper_limit_harmonicity
+
+Frequency features sorted by Chi-Square
+meanF
+varianceF
+skewnessF
+kurtosisF
+central_freq
+stdF
+rmsF
+spectral_spread
+spectral_entropy
+total_power
+median_freq
+pkF
+first_spectral_moment
+second_spectral_moment
+third_spectral_moment
+fourth_spectral_moment
+vcf
+frequency_ratio
+hsc
+spectral_flux
+rolloff_frequency_90
+rolloff_frequency_85
+rolloff_frequency_75
+rolloff_frequency_95
+upper_limit_harmonicity
+
+Frequency features sorted by Pearson correlation
+meanF
+varianceF
+skewnessF
+kurtosisF
+central_freq
+stdF
+rmsF
+spectral_spread
+spectral_entropy
+total_power
+median_freq
+pkF
+first_spectral_moment
+second_spectral_moment
+third_spectral_moment
+fourth_spectral_moment
+vcf
+frequency_ratio
+hsc
+spectral_flux
+rolloff_frequency_90
+rolloff_frequency_85
+rolloff_frequency_75
+rolloff_frequency_95
+upper_limit_harmonicity
+
+Frequency features sorted by RelieF
+
+Pearson coefficient for frequency features is saved
+Chi square for freq features is saved
+Info for freq features is saved
+Relief for freq features is saved
+
+Feature performance evaluation completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-05 14:49:30

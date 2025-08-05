@@ -118,7 +118,7 @@ class FrequencyFeatureExtractor:
             if feat_type == 'from_ranks':
                 
                 for feature_name in feat_config['feat_list']:
-                    if hasattr(tf, feature_name):
+                    if hasattr(ff, feature_name):
                         feat_fn = getattr(ff, feature_name)
 
                         if feat_fn.__code__.co_argcount == 1:

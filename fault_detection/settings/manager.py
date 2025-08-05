@@ -64,6 +64,9 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         # add datastats to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
 
+        # add model hparams to path
+        model_path = os.path.join(model_path, f"[{self.anom_config['type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
+
         # add domain type to path
         model_path = os.path.join(model_path, f'{self.domain_config['type']}')
 
@@ -135,6 +138,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
 
             else:
                 print(f"Operation cancelled. Version 'v{self.model_num}' still remains.")
+                sys.exit()  # Exit the program gracefully   
 
     def _get_next_version(self):
         parent_dir = os.path.dirname(self.train_log_path)
@@ -273,6 +277,7 @@ class AnomalyDetectorPredictManager(AnomalyDetectorPredictConfig):
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
+                sys.exit()  # Exit the program gracefully
 
     def _get_next_version(self, log_path, run_type):
         parent_dir = os.path.dirname(log_path)
@@ -532,10 +537,11 @@ class SelectFaultDetectionModel:
                 2: "<ds_subtype>",
                 3: "<model>",
                 4: "<ds_stats>",
-                5: "<domain>",
-                6: "<fex_type>",
-                7: "<shape_compatibility>",
-                8: "<version>"
+                5: "<model_hparams>",
+                6: "<domain>",
+                7: "<fex_type>",
+                8: "<shape_compatibility>",
+                9: "<version>"
             }
         elif self.run_type in ['custom_test', 'predict']:
             label_map = {

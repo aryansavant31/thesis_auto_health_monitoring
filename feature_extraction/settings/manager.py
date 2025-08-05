@@ -107,6 +107,7 @@ class FeatureRankingManager(FeatureRankingConfig):
 
             else:
                 print(f"Operation cancelled. {self.node_type}_perf_{self.perf_version} still remains.")
+                sys.exit()  # Exit the program gracefully    
     
     def _get_next_perf_version(self):
         parent_dir = os.path.dirname(self.perf_log_path)
@@ -117,7 +118,7 @@ class FeatureRankingManager(FeatureRankingConfig):
         if perf_folders:
             # Extract numbers and find the max
             max_perf_version = max(int(f.split('_')[-1]) for f in perf_folders)
-            self.version = max_perf_version + 1
+            self.perf_version = max_perf_version + 1
             new_feature_perf = f"{self.node_type}_perf_{self.perf_version}"
             print(f"Next feature performance folder will be: {new_feature_perf}")
         else:

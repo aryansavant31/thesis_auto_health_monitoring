@@ -15,6 +15,10 @@ class FeatureRankingConfig:
         ------------------------------
         perf_version : int
             Version of the feature performance.
+        is_log : bool
+            Whether to log the performance.
+        n_workers : int
+            Number of workers for parallel processing.
         bin_num_info : int
             Number of bins for information gain.
         bin_num_chi : int
@@ -29,6 +33,7 @@ class FeatureRankingConfig:
     # 1: Feature performance parameters
         self.perf_version   = 1
         self.is_log = True
+        self.n_workers = 12
 
         self.bin_num_info   = 3
         self.bin_num_chi    = 3

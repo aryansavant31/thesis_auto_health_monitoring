@@ -39,8 +39,8 @@ def get_freq_feat_config(feat_type, data_config:DataConfig, **kwargs):
             n = kwargs.get('n', 5),
             perf_v = kwargs.get('perf_v', 1),
             rank_v = kwargs.get('rank_v', '[a=0.5]'),
-            domain='time',
-            data_config=kwargs.get('data_config', None)
+            domain='freq',
+            data_config=data_config
         )
 
     # 2 or more dimensional features

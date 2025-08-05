@@ -43,7 +43,7 @@ Freq_features.remove('Kp_value')
 load_functions(file_path_frequency)
 
 class FeaturePerformance:
-    def __init__(self, Calc_0, Calc_FFT, fftFreq, file_path):
+    def __init__(self, Calc_0, Calc_FFT, fftFreq, file_path, n_workers=12):
         """
         Parameters
         ----------
@@ -58,6 +58,7 @@ class FeaturePerformance:
         self.Calc_FFT = Calc_FFT
         self.fftFreq = fftFreq
         self.file_path = file_path
+        self.n_workers = n_workers
 
         if file_path is not None:
             os.makedirs(self.file_path, exist_ok=True)
@@ -72,10 +73,10 @@ class FeaturePerformance:
         bin_number_chi_square : int
             Number of bins for the Chi-Square test
         """
-        self.info_gain = time_comparison_info_gain(self.Calc_0, bin_number_info)
-        self.chi_square = time_comparison_Chi_Square(self.Calc_0, bin_number_chi_square)
-        self.pearson = time_comparison_Pearson(self.Calc_0)
-        self.relieF = time_comparison_RelieF(self.Calc_0)
+        self.info_gain = time_comparison_info_gain(self.Calc_0, bin_number_info, num_workers=self.n_workers)
+        self.chi_square = time_comparison_Chi_Square(self.Calc_0, bin_number_chi_square, num_workers=self.n_workers)
+        self.pearson = time_comparison_Pearson(self.Calc_0, num_workers=self.n_workers)
+        self.relieF = time_comparison_RelieF(self.Calc_0, num_workers=self.n_workers)
 
         if self.file_path is not None:
             self._save_time_results()
@@ -90,10 +91,10 @@ class FeaturePerformance:
         bin_number_chi_square : int
             Number of bins for the Chi-Square test
         """
-        self.info_gain_freq = freq_comparison_info_gain(self.fftFreq, self.Calc_FFT, bin_number_info)
-        self.chi_square_freq = freq_comparison_Chi_Square(self.fftFreq, self.Calc_FFT, bin_number_chi_square)
-        self.pearson_freq = freq_comparison_Pearson(self.fftFreq, self.Calc_FFT)
-        self.relieF_freq = freq_comparison_RelieF(self.fftFreq, self.Calc_FFT)
+        self.info_gain_freq = freq_comparison_info_gain(self.fftFreq, self.Calc_FFT, bin_number_info, num_workers=self.n_workers)
+        self.chi_square_freq = freq_comparison_Chi_Square(self.fftFreq, self.Calc_FFT, bin_number_chi_square, num_workers=self.n_workers)
+        self.pearson_freq = freq_comparison_Pearson(self.fftFreq, self.Calc_FFT, num_workers=self.n_workers)
+        self.relieF_freq = freq_comparison_RelieF(self.fftFreq, self.Calc_FFT, num_workers=self.n_workers)
 
         if self.file_path is not None:
             self._save_frequency_results()
@@ -244,10 +245,10 @@ def _info_gain_worker(args):
     return feature_name, information_gain(Calc_0, globals()[feature_name], bin_number)
         
 
-def time_comparison_info_gain(Calc_0, bin_number):
+def time_comparison_info_gain(Calc_0, bin_number, num_workers=12):
     result_time = {}
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         results = executor.map(_info_gain_worker, [(Calc_0, i, bin_number) for i in Time_features])
         for feature_name, value in results:
             result_time[feature_name] = value
@@ -271,10 +272,10 @@ def _freq_info_gain_worker(args):
     return feature_name, value
 
     
-def freq_comparison_info_gain(fftFreq, Calc_FFT, bin_number):
+def freq_comparison_info_gain(fftFreq, Calc_FFT, bin_number, num_workers=12):
     result_freq = {}
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         args_list = [(fftFreq, Calc_FFT, i, bin_number) for i in Freq_features]
         results = executor.map(_freq_info_gain_worker, args_list)
         for feature_name, value in results:
@@ -304,10 +305,10 @@ def _chi_worker(args):
     Calc_0, feature_name, bin_number = args
     return feature_name, Chi_Square(Calc_0, globals()[feature_name], bin_number)
     
-def time_comparison_Chi_Square(Calc_0, bin_number):
+def time_comparison_Chi_Square(Calc_0, bin_number, num_workers=12):
     result_time = {}
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         results = executor.map(_chi_worker, [(Calc_0, i, bin_number) for i in Time_features])
         for feature_name, value in results:
             result_time[feature_name] = value
@@ -327,10 +328,10 @@ def _freq_chi_worker(args):
         value = Chi_Square(Calc_FFT, globals()[feature_name], bin_number)
     return feature_name, value
 
-def freq_comparison_Chi_Square(fftFreq, Calc_FFT, bin_number):
+def freq_comparison_Chi_Square(fftFreq, Calc_FFT, bin_number, num_workers=12):
     result_freq = {}
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         args_list = [(fftFreq, Calc_FFT, i, bin_number) for i in Freq_features]
         results = executor.map(_freq_chi_worker, args_list)
         for feature_name, value in results:
@@ -346,10 +347,10 @@ def _pearson_worker(args):
     Calc_0, feature_name = args
     return feature_name, Pearson_Corr(Calc_0, globals()[feature_name])
 
-def time_comparison_Pearson(Calc_0):
+def time_comparison_Pearson(Calc_0, num_workers=12):
     result_time = {}
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         results = executor.map(_pearson_worker, [(Calc_0, i) for i in Time_features])
         for feature_name, value in results:
             result_time[feature_name] = value
@@ -371,10 +372,10 @@ def _freq_pearson_worker(args):
     return feature_name, value
     
     
-def freq_comparison_Pearson(fftFreq, Calc_FFT):
+def freq_comparison_Pearson(fftFreq, Calc_FFT, num_workers=12):
     result_freq = {}
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         args_list = [(fftFreq, Calc_FFT, i) for i in Freq_features]
         results = executor.map(_freq_pearson_worker, args_list)
         for feature_name, value in results:
@@ -393,10 +394,10 @@ def _relief_worker(args):
     Calc_0, feature_name = args
     return feature_name, RelieF(Calc_0, Time_features, globals()[feature_name])
 
-def time_comparison_RelieF(Calc_0):
+def time_comparison_RelieF(Calc_0, num_workers=12):
     result_time = {}
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         results = executor.map(_relief_worker, [(Calc_0, i) for i in Time_features])
         for feature_name, value in results:
             result_time[feature_name] = value
@@ -416,10 +417,10 @@ def _freq_relief_worker(args):
     return feature_name, value
 
 
-def freq_comparison_RelieF(fftFreq, Calc_FFT):
+def freq_comparison_RelieF(fftFreq, Calc_FFT, num_workers=12):
     result_freq = {}
     
-    with concurrent.futures.ProcessPoolExecutor(max_workers=12) as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
         args_list = [(fftFreq, Calc_FFT, i) for i in Freq_features]
         results = executor.map(_freq_relief_worker, args_list)
         for feature_name, value in results:

@@ -127,6 +127,7 @@ class NRITrainManager(NRITrainConfig):
 
             else:
                 print(f"Operation cancelled. edge_estimator_{self.n_edge_types}.{self.model_num} still remains.")
+                sys.exit()  # Exit the program gracefully
 
     
     def _get_next_version(self):
@@ -307,6 +308,7 @@ class PredictNRIConfigMain(PredictNRIConfig):
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
+                sys.exit()  # Exit the program gracefully
 
     def _get_next_version(self, log_path, run_type):
         parent_dir = os.path.dirname(log_path)

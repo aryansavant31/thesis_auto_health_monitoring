@@ -22,14 +22,14 @@ from feature_extraction.settings.feature_config import get_freq_feat_config
 
 
 class DataAdapter:
-    def __init__(self):
+    def __init__(self, data_config:DataConfig):
+        self.data_config = data_config
         self.data_preprocessor = DataPreprocessor(package='fault_detection')
         self.domain_transformer = DomainTransformer(
-            get_domain_config('freq')
+            get_domain_config('freq', data_config=self.data_config)
         )
         self.amp_extractor = FrequencyFeatureExtractor(
-            [get_freq_feat_config('full_spectrum', parameters=['amp'])],
-            run_type='custom_test'
+            [get_freq_feat_config('full_spectrum', data_config=self.data_config, parameters=['amp'])]
         )
 
     def load_all_data(self):
@@ -43,7 +43,7 @@ class DataAdapter:
         freq_bins : np.ndarray, shape (n_samples, n_nodes, n_freq_bins, n_dims)
         labels : np.ndarray, shape (n_samples,)
         """
-        data_loader = self.data_preprocessor.get_custom_dataloader(self.data_config)
+        data_loader, _ = self.data_preprocessor.get_custom_data_package(self.data_config)
         time_data, labels = self._process_dataloader(data_loader)
 
         # domain transform
@@ -58,7 +58,7 @@ class DataAdapter:
 
         return time_data_np, freq_amp_np, freq_bins_np, labels_np
     
-    def get_dictionaries(self, data_config:DataConfig):
+    def get_dictionaries(self):
         """
         Get dictionaries for time data, frequency amplitude, and frequency bins.
 
@@ -71,7 +71,6 @@ class DataAdapter:
             fftFreq : dictionary
                 Contains frequency bins for healthy and unhealthy samples.
         """
-        self.data_config = data_config
 
         # load all data
         time_data, freq_amp, freq_bins, labels = self.load_all_data()

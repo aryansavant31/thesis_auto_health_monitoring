@@ -18,7 +18,7 @@ import h5py
 from torch.utils.data import Subset
 
 # local imports
-from data.config import DataConfig
+from config import DataConfig
 from augment import add_gaussian_noise
 from collections import defaultdict
 
@@ -93,9 +93,12 @@ class DataPreprocessor:
         data_stats : dict
             Dictionary containing statistics of the dataset
         """
-        original_dataset = subset.dataset
-        indices = subset.indices
-        data = torch.stack([original_dataset[i][0] for i in indices]) # shape (total_samples, n_nodes, n_timesteps, n_dims)
+        if isinstance(subset, Subset):
+            original_dataset = subset.dataset
+            indices = subset.indices
+            data = torch.stack([original_dataset[i][0] for i in indices]) # shape (total_samples, n_nodes, n_timesteps, n_dims)
+        else:
+            data = subset.tensors[0]  # For TensorDataset
 
         min_val = data.min(dim=2, keepdim=True).values  
         max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
@@ -111,7 +114,7 @@ class DataPreprocessor:
 
         return data_stats
 
-    def get_custom_data(self, data_config:DataConfig, batch_size=50):
+    def get_custom_data_package(self, data_config:DataConfig, batch_size=10):
         """
         Create a custom dataloader and the data stats for the specified run type.
 
@@ -145,7 +148,7 @@ class DataPreprocessor:
 
         remainder_samples = total_samples - desired_samples
 
-        print(f"Total samples: {total_samples}, Desired samples: {desired_samples}, Remainder samples: {remainder_samples}")
+        print(f"\nTotal samples: {total_samples}, Desired samples: {desired_samples}, Remainder samples: {remainder_samples}")
 
         if desired_samples < total_samples:
             dataset, _ = random_split(dataset, [desired_samples, remainder_samples])
@@ -158,7 +161,7 @@ class DataPreprocessor:
 
         return (custom_loader, data_stats)
     
-    def get_training_data(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50):
+    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50):
         """
         Create train, validation, and test dataloaders and compute their statistical metrics.
 
@@ -203,7 +206,7 @@ class DataPreprocessor:
         n_val = int(val_rt * total_samples)
         remainder_samples = total_samples - n_train - n_test - n_val
 
-        print(f"Total samples: {total_samples}, Train: {n_train}, Test: {n_test}, Val: {n_val}, Remainder: {remainder_samples}")
+        print(f"\nTotal samples: {total_samples}, Train: {n_train}, Test: {n_test}, Val: {n_val}, Remainder: {remainder_samples}")
 
         if self.package == 'topology_estimation':
             if n_train + n_test + n_val < total_samples:

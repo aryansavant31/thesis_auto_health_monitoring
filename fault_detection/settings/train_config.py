@@ -67,7 +67,7 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time', data_config=self.data_config)
         self.raw_data_norm = None
         self.feat_configs = [
-            get_time_feat_config('from_ranks', n=25, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
+            # get_time_feat_config('from_ranks', n=25, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
         ]  
         self.reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.feat_norm = None

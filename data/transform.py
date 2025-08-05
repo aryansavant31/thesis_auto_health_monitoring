@@ -103,12 +103,13 @@ class DataNormalizer:
             Input data tensor of shape (batch_size, n_nodes, n_components, n_dims).
         """
         if self.data_stats is None:
-            # metrics computed for global normalization
+            min_val = data.min(dim=2, keepdim=True).values  
+            max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
             data_stats = {
                 'mean': torch.mean(data, dim=(0, 2), keepdim=True),
                 'std': torch.std(data, dim=(0, 2), keepdim=True),
-                'min': torch.min(data, dim=(0, 2), keepdim=True).values,
-                'max': torch.max(data, dim=(0, 2), keepdim=True).values
+                'min': torch.min(min_val, dim=0, keepdim=True).values,
+                'max': torch.max(max_val, dim=0, keepdim=True).values
             } 
             for k in data_stats:
                 data_stats[k] = data_stats[k].squeeze(0)
