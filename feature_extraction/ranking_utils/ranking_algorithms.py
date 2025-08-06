@@ -610,6 +610,9 @@ def Pearson_Corr_freq(Calc_FFT, fftFreq, function):
         else:
             features.append(function(fftFreq[key], non_healthy[key]))
         
+
+    if function == 'varianceF' or function == 'meanF': # [TODO] Make this return 0 if the person coreela has constant feature values (beacsue that what it is)
+            print("AAAAAAAAAAAAAAAA", [features, classes])
     return([pearsonr(features, classes)[0], pearsonr(features, classes)[1]])
 
 

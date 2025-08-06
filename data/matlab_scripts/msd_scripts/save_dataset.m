@@ -1,0 +1,8 @@
+% collect the conn.pairs to form the adjency matrix
+
+% collect pos, vel and acc from run_dynamics
+
+% each mass is node. 
+
+% inputs: ds_type, ds_subtype
+

@@ -1,14 +1,94 @@
-import os
-import sys
-from manager import SelectTopologyEstimatorModel, load_selected_config
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
+SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
-from feature_extraction.settings import get_freq_feat_config
+# global imports
+from data.config import DataConfig, get_domain_config
+from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
+
+
+class DecoderTrainConfig:
+    def __init__(self, data_config:DataConfig):
+        ext = ExtraSettings()
+        self.data_config = data_config
+
+    # 1: Training parameters   
+
+        self.model_num = 1
+        self.continue_training = False
+        self.is_log = True
+        
+        self.n_edge_types = 2
+
+        # dataset parameters
+        self.batch_size = 50
+        self.train_rt = 0.8
+        self.test_rt = 0.1
+        self.val_rt = 0.1
+
+        # optimization parameters
+        self.max_epochs = 5
+        self.lr = 0.001
+        self.optimizer = 'adam'
+        self.loss_type_dec = 'nnl'
+
+    # 2: Decoder parameters
+
+        self.msg_out_size = 64
+    
+        # embedding function parameters 
+        edge_mlp_config = {'mlp': 'default'}
+        out_mlp_config = {'mlp': 'default'}
+
+        self.do_prob_dec = 0
+        self.is_bn_dec = True
+
+        # recurrent embedding parameters
+        self.recur_emd_type = 'gru'
+        
+        # Run parameters
+        self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.dec_raw_data_norm = None
+        self.dec_feat_configs = [
+            get_freq_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
+        ]
+        self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.dec_feat_norm = None
+
+        self.skip_first_edge_type = True 
+
+        # [TODO]: add rest of the decoder run params
+
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config)['mlp']
+
+    # 3: Sparsifier parameters
+
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
+
+        self.spf_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.spf_raw_data_norm = None 
+        self.spf_feat_configs = [
+            get_freq_feat_config('first_n_modes', data_config=self.data_config),
+        ]    
+        self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.spf_feat_norm = None
+
+        # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
+        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+
+    # 4: Hyperparameters to log
+        self.hyperparams = {
+            'model_num': self.model_num,
+        }
+
+        
 
 class NRITrainConfig:
-    def __init__(self):
+    def __init__(self, data_config:DataConfig):
         """
         1: Training Attributes
         -----------------------
@@ -69,6 +149,7 @@ class NRITrainConfig:
             ( if `mlp`, then only output mlp)
         """
         ext = ExtraSettings()
+        self.data_config = data_config
 
     # 1: Training parameters   
 
@@ -123,9 +204,11 @@ class NRITrainConfig:
         self.attention_output_size = 5   
 
         # Run parameters
-        self.enc_domain_config = 'freq' 
-        self.enc_norm = None  
+        self.enc_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.enc_raw_norm = None  
         self.enc_feat_configs = []
+        self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.enc_feat_norm = None
 
         # gumble softmax parameters
         self.temp = 1.0       
@@ -150,11 +233,13 @@ class NRITrainConfig:
         self.recur_emd_type = 'gru'
         
         # Run parameters
-        self.dec_domain_config = 'freq'  
-        self.dec_norm = None 
-        self.dec_fex_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=10),
+        self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.dec_raw_data_norm = None 
+        self.dec_feat_configs = [
+            get_freq_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
+        self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.dec_feat_norm = None
 
         self.skip_first_edge_type = True 
 
@@ -165,16 +250,22 @@ class NRITrainConfig:
 
     # 4: Sparsifier parameters
 
-        self.spf_type = None 
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
         
-        self.spf_domain_config   = 'time' 
-        self.spf_fex_configs = [
-            get_freq_feat_config('first_n_modes'),
+        self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        self.spf_feat_configs = [
+            get_freq_feat_config('first_n_modes', data_config=self.data_config),
         ]    
         self.spf_norm = None 
+        self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
 
         # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
         # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+
+    # 5: Hyperparameters to log
+        self.hyperparams = {
+            'model_num': self.model_num,
+        }
         
 class DecoderTrainSettings:
     pass 
@@ -292,7 +383,26 @@ class ExtraSettings:
                 raise ValueError(f"Unsupported config type: {key}. Supported types are 'mlp'.")
 
         return configs
+    
+def get_spf_config(spf_type, **kwargs):
+    """
+    spf_type : str
+        Type of sparsifier to use.
+    **kwargs : dict
+        For all options of `spf_type`:
+        - `no_spf`: **is_expert** (_bool_) (whether to use expert topology)
 
+    
+    Returns
+    -------
+    config : dict
+        Configuration dictionary for the specified sparsifier type.
+    """
+    config = {}
+    config['type'] = spf_type
+    config['is_expert'] = kwargs.get('is_expert', False)
+    
+    return config
     
 if __name__ == "__main__":
     user_text = "To view/select trained topology (edge) estimation models, type (a)\nTo view custom tested models, type (b)\nTo view predicted models, type (c)\nEnter input: "

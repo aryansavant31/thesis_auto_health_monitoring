@@ -1,16 +1,22 @@
 function [h_dynamics, conn, M] = generate_healthy_machine()
-    M = 8;
+    M = 4;
 
-    %% Define connections / topology
+    %% Define connections / topology 
+    % order: source of input u -> target
+    % conn.pairs = [
+    %     8 7;
+    %     7 6;
+    %     6 5;
+    %     5 4; 5 1;
+    %     4 3;
+    %     3 2;
+    %     2 1
+    %     ];  
     conn.pairs = [
-        8 7;
-        7 6;
-        6 5;
-        5 4; 5 1;
         4 3;
         3 2;
-        2 1
-        ];  % order: source of input u -> target
+        2 1;
+    ];
 
     %% Parameters
 
@@ -39,8 +45,9 @@ function [h_dynamics, conn, M] = generate_healthy_machine()
     conn.k_wall_lin(1) = 0.5;
     conn.d_wall_lin(1) = 0.5;
     
-    % Non linear
-    nl_index.springs = [2]; % 2nd spring nonlinear
+    % Non linear 
+    % E.g. nl_index.springs = [2, 3] means 2nd and 3rd springs nonlinear
+    nl_index.springs = [];
     nl_index.dampers = [];
     nl_index.springs_wall = [];
     nl_index.dampers_wall = [];

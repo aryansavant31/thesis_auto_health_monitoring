@@ -48,7 +48,10 @@ class ProcessRawBearingData:
 
     def convert_mat_to_hdf5(self, mat_file_path, processed_path, label):
         mat_data = scipy.io.loadmat(mat_file_path)
-        single_data = next((v for k, v in mat_data.items() if not k.startswith('__')), None)
+        key_name = next((signal for signal in list(mat_data.keys()) if 'DE_time' in signal), None)
+        if key_name is None:
+            raise ValueError(f"No signal containing 'DE_time' found in {mat_file_path}")
+        single_data = mat_data.get(key_name)
 
         # Reshape to (1, signal_length)
         data_to_save = single_data.reshape(1, -1)

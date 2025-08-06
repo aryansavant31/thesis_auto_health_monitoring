@@ -79,7 +79,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 else:
                     feat_types.append(feat_config['type'])
         else:
-            feat_types = ['no_fex']
+            feat_types = ['no_feat']
             
         reduc_type = self.reduc_config['type'] if self.reduc_config else 'no_reduc'
 
@@ -528,7 +528,7 @@ class SelectFaultDetectionModel:
             print(f"{idx}: {os.path.dirname(txt_file)}")
 
     def _build_rich_tree(self, parent_node, structure, level, parent_keys):
-        is_no_fex = any("(anom) [no_fex]" in k for k in parent_keys)
+        is_no_feat = any("(anom) [no_feat]" in k for k in parent_keys)
        
         if self.run_type == 'train':
             label_map = {
@@ -539,7 +539,7 @@ class SelectFaultDetectionModel:
                 4: "<ds_stats>",
                 5: "<model_hparams>",
                 6: "<domain>",
-                7: "<fex_type>",
+                7: "<feat_type>",
                 8: "<shape_compatibility>",
                 9: "<version>"
             }
@@ -591,7 +591,7 @@ class SelectFaultDetectionModel:
                 model_disp = f"{v['model_name']} (v{v['vnum']})"
                 safe_model_disp = model_disp.replace('[', '\\[')
                 idx = self.version_paths.index(v["txt_file"])
-                if is_no_fex:
+                if is_no_feat:
                     parent_node.add(f"[bright_yellow]{safe_model_disp}[/bright_yellow] [bright_cyan][{idx}][/bright_cyan]")
                 else:
                     parent_node.add(f"[bright_green]{safe_model_disp}[/bright_green] [bright_cyan][{idx}][/bright_cyan]")

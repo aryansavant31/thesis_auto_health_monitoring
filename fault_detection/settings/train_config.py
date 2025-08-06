@@ -79,12 +79,12 @@ def get_anom_config(anom_type, **kwargs):
     ----------
     anom_type : str
         The type of fault detection algorithm to be used. 
-        - 'SVM': Support Vector Machine
-        - 'IF': Isolation Forest)
+        - `SVM`: Support Vector Machine
+        - `IF`: Isolation Forest)
     **kwargs : dict
         For all options of `anom_type`:
-        - 'SVM': `kernel`, `nu`, `gamma`
-        - 'IF': `n_estimators`, `seed`, `contam`, `n_jobs`
+        - `SVM`: **kernel**, **nu**, **gamma**
+        - `IF`: **n_estimators**, **seed**, **contam**, **n_jobs**
 
     """
     anom_config = {}

@@ -113,6 +113,27 @@ class DataPreprocessor:
             data_stats[k] = data_stats[k].squeeze(0)
 
         return data_stats
+    
+    def _get_label_counts(self, dataset):
+        """
+        Get the counts of each label in the dataset.
+
+        Parameters
+        ----------
+        dataset : torch.utils.data.Dataset
+            The dataset to count labels from.
+
+        Returns
+        -------
+        label_counts : dict
+            Dictionary containing counts of each label.
+        """
+        label_counts = {0: 0, 1: 0}
+
+        for _, label in dataset:
+            label_value = int(label.item())
+            label_counts[label_value] += 1
+        return label_counts
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10):
         """
@@ -148,11 +169,15 @@ class DataPreprocessor:
 
         remainder_samples = total_samples - desired_samples
 
-        print(f"\nTotal samples: {total_samples}, Desired samples: {desired_samples}, Remainder samples: {remainder_samples}")
-
         if desired_samples < total_samples:
-            dataset, _ = random_split(dataset, [desired_samples, remainder_samples])
+            dataset, remain_dataset = random_split(dataset, [desired_samples, remainder_samples])
         
+        # get number of OK and NOK samples
+        des_label_counts = self._get_label_counts(dataset)
+        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0}
+
+        print(f"\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}]")
+
         # get dataset statistics
         data_stats = self._get_dataset_stats(dataset)
 
@@ -206,22 +231,28 @@ class DataPreprocessor:
         n_val = int(val_rt * total_samples)
         remainder_samples = total_samples - n_train - n_test - n_val
 
-        print(f"\nTotal samples: {total_samples}, Train: {n_train}, Test: {n_test}, Val: {n_val}, Remainder: {remainder_samples}")
-
         if self.package == 'topology_estimation':
             if n_train + n_test + n_val < total_samples:
-                train_set, test_set, val_set, _ = random_split(dataset, [n_train, n_test, n_val, remainder_samples])
+                train_set, test_set, val_set, remain_dataset = random_split(dataset, [n_train, n_test, n_val, remainder_samples])
             else:
                 train_set, test_set, val_set = random_split(dataset, [n_train, n_test, n_val])
 
         elif self.package == 'fault_detection':
             if n_train + n_test < total_samples:
-                train_set, test_set, _ = random_split(dataset, [n_train, n_test, remainder_samples])
+                train_set, test_set, remain_dataset = random_split(dataset, [n_train, n_test, remainder_samples])
             else:
                 train_set, test_set = random_split(dataset, [n_train, n_test])
 
             val_set = None  # No validation set for fault detection
         
+        # get number of OK and NOK samples in each set
+        train_label_counts = self._get_label_counts(train_set)
+        test_label_counts = self._get_label_counts(test_set)
+        val_label_counts = self._get_label_counts(val_set) if val_set is not None else {0: 0, 1: 0}
+        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0}
+
+        print(f"\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}], Test: {n_test} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}], Val: {n_val} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}]")
+
         # get dataset statistics
         train_data_stats = self._get_dataset_stats(train_set)
         test_data_stats = self._get_dataset_stats(test_set)

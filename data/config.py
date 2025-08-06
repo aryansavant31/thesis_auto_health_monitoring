@@ -54,8 +54,8 @@ class DataConfig:
         self.format         = 'hdf5'  # options: hdf5, csv
 
         # segement data
-        self.window_length  = 30000
-        self.stride         = 30000 
+        self.window_length  = 500
+        self.stride         = 100
 
         if run_type == 'train':
             self.set_train_dataset()
@@ -77,14 +77,14 @@ class DataConfig:
         }
     
     def set_custom_test_dataset(self):
-        self.amt = 0.4
+        self.amt = 0.01
         self.healthy_configs   = {
-            '1_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('gau', mean=0.0, std=0.1)],
         }
         
         self.unhealthy_configs = {
-            '1_B-007': [get_augment_config('OG')], 
-            '1_B-021': [get_augment_config('OG')],    
+            '1_B-007': [get_augment_config('gau', mean=0.0, std=0.1)], 
+            '1_B-021': [get_augment_config('gau', mean=0.0, std=0.1)],    
         }
         
     def set_predict_dataset(self):
@@ -94,6 +94,8 @@ class DataConfig:
         }
         
         self.unhealthy_configs = {
+            '1_B-007': [get_augment_config('OG')], 
+            '1_B-021': [get_augment_config('OG')],  
         }
     
     def _process_ds_addresses(self, config:dict, ds_type):

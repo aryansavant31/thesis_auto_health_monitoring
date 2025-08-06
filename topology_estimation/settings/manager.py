@@ -1,16 +1,15 @@
-import os
-import sys
-from topology_estimation.settings.train_config import NRITrainConfig
-from topology_estimation.settings.predict_config import PredictNRIConfig
+import os, sys
 
-TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOGS_DIR = os.path.join(TOPOLOGY_ESTIMATION_DIR, "logs")
+ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
-
-SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
+TP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(TP_DIR, "logs")
+
+# other imports
 import shutil
 import re
 from pathlib import Path
@@ -20,13 +19,16 @@ from data.config import DataConfig
 import pickle
 import glob
 
+# global imports
+from data.config import DataConfig
+
+# local imports
+from train_config import NRITrainConfig, DecoderTrainConfig
+from predict_config import NRIPredictConfig
+
 class NRITrainManager(NRITrainConfig):
-    def __init__(self):
-        super().__init__()
-
-        self.data_config = DataConfig()
-        self.data_config.set_train_dataset()
-
+    def __init__(self, data_config:DataConfig):
+        super().__init__(data_config)
         self.helper = HelperClass()
 
     def get_train_log_path(self, n_components, n_dim):
@@ -35,10 +37,10 @@ class NRITrainManager(NRITrainConfig):
 
         Parameters
         ----------
-        data_config : Object
-            The data configuration object of class DataConfig
         n_components : int
-            The number of components in each datapoint/sample in the dataset
+            The number of components in each sample in the dataset
+        n_dim : int
+            The number of dimensions in each sample in the dataset
         """
         
         base_path = os.path.join(LOGS_DIR, 
@@ -47,7 +49,7 @@ class NRITrainManager(NRITrainConfig):
                                 f'{self.data_config.scenario}')
 
         # For directed graph path 
-        model_path = os.path.join(base_path, 'directed_graph',)  # add framework type
+        model_path = os.path.join(base_path, 'nri',)  # add framework type
 
         # add num of edge types to path
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
@@ -59,32 +61,26 @@ class NRITrainManager(NRITrainConfig):
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[E] {self.pipeline_type}, [D] {self.recurrent_emd_type}',)
+        model_path = os.path.join(model_path, f'[E] {self.pipeline_type}, [D] {self.recur_emd_type}',)
 
         # add datastats to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
 
         # add sparsifier type to path
-        model_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, model_path)
+        model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
 
         # add domain type of encoder and decoder to path
-        model_path = os.path.join(model_path, f'(E) {self.domain_encoder_config['type']}, (D) {self.domain_decoder_config['type']}')
+        model_path = os.path.join(model_path, f'(E) {self.enc_domain_config['type']}, (D) {self.dec_domain_config['type']}')
 
-        # add feature type to path
-        fex_types_encoder = [fex['type'] for fex in self.fex_configs_encoder] if self.fex_configs_encoder else ["no_fex"]
-        fex_types_decoder = [fex['type'] for fex in self.fex_configs_decoder] if self.fex_configs_decoder else ["no_fex"]
-        reduc_type_encoder = None  # [TODO]: Add reduc type for encoder
-        reduc_type_decoder = None  # [TODO]: Add reduc type for decoder
+        # add feature types for encoder and decoder:
+        enc_feat_types = self.helper.get_feat_type_str_list(self.enc_feat_configs)
+        dec_feat_types = self.helper.get_feat_type_str_list(self.dec_feat_configs)
 
-        # if fex_types_encoder and fex_types_decoder:
-        model_path = os.path.join(model_path, f"(E) [{' + '.join(fex_types_encoder)}], (D) [{' + '.join(fex_types_decoder)}]")
-        # elif fex_types_encoder and not fex_types_decoder:
-        #     model_path = os.path.join(model_path, f"(E) [{' + '.join(fex_types_encoder)}], (D) [no_fex]")
-        # elif not fex_types_encoder and fex_types_decoder:
-        #     model_path = os.path.join(model_path, f"(E) [no_fex], (D) [{' + '.join(fex_types_decoder)}]")
-        # elif not fex_types_encoder and not fex_types_decoder:
-        #     model_path = os.path.join(model_path, "(E) [no_fex], (D) [no_fex]")
+        enc_reduc_type = self.enc_reduc_config['type'] if self.enc_reduc_config else 'no_reduc'
+        dec_reduc_type = self.dec_reduc_config['type'] if self.dec_reduc_config else 'no_reduc'
 
+        model_path = os.path.join(model_path, f"(E) [{' + '.join(enc_feat_types)}] [{enc_reduc_type}], (D) [{' + '.join(dec_feat_types)}] [{dec_reduc_type}]")
+  
         # add model shape compatibility stats to path
         self.model_id = os.path.join(model_path, f'(E) (comps = {n_components}), (D) (dims = {n_dim})')
 
@@ -195,8 +191,168 @@ class NRITrainManager(NRITrainConfig):
                     print("Stopped training.")
                     sys.exit()  # Exit the program gracefully
 
+class DecoderTrainManager(DecoderTrainConfig):
+    def __init__(self, data_config:DataConfig):
+        super().__init__(data_config)
+        self.helper = HelperClass()
 
-class PredictNRIConfigMain(PredictNRIConfig):
+    def get_train_log_path(self, n_dim):
+        """
+        Returns the path to store the logs based on data and topology config
+
+        Parameters
+        ----------
+        n_dim : int
+            The number of dimensions in each sample in the dataset
+        """
+        
+        base_path = os.path.join(LOGS_DIR, 
+                                f'{self.data_config.application_map[self.data_config.application]}', 
+                                f'{self.data_config.machine_type}',
+                                f'{self.data_config.scenario}')
+
+        # For directed graph path 
+        model_path = os.path.join(base_path, 'decoder',)  # add framework type
+
+        # add num of edge types to path
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
+
+        # get train log path
+        self.train_log_path = os.path.join(model_path, f"decoder_{self.n_edge_types}.{self.model_num}")
+                       
+        # add healthy or healthy_unhealthy config to path
+        model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
+
+        # add model type to path
+        model_path = os.path.join(model_path, f'[D] {self.recur_emd_type}',)
+
+        # add datastats to path
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
+
+        # add sparsifier type to path
+        model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
+
+        # add domain type of encoder and decoder to path
+        model_path = os.path.join(model_path, f'(D) {self.dec_domain_config['type']}')
+
+        # add feature types for decoder:
+        dec_feat_types = self.helper.get_feat_type_str_list(self.dec_feat_configs)
+        dec_reduc_type = self.dec_reduc_config['type'] if self.dec_reduc_config else 'no_reduc'
+
+        model_path = os.path.join(model_path, f"(D) [{' + '.join(dec_feat_types)}] [{dec_reduc_type}]")
+  
+        # add model shape compatibility stats to path
+        self.model_id = os.path.join(model_path, f'(D) (dims = {n_dim})')
+
+        # # add model version to path
+        # self.model_id = os.path.join(model_path, f'edge_estimator_{self.model_num}')
+
+        # check if version already exists
+        self.check_if_version_exists()
+
+        return self.train_log_path
+
+    def get_test_log_path(self):
+        
+        test_log_path = os.path.join(self.train_log_path, 'test')
+
+        # # add healthy or healthy_unhealthy config to path
+        # test_log_path = self.helper.set_ds_types_in_path(self.data_config, test_log_path)
+
+        # # add timestep id to path
+        # test_log_path = os.path.join(test_log_path, f'T{self.data_config.window_length}')
+
+        # # add sparsifier type to path
+        # test_log_path = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_log_path)
+
+        # # add test version to path
+        # test_log_path = os.path.join(test_log_path, f'test_v0')
+
+        return test_log_path
+
+    
+    def _remove_version(self):
+        """
+        Removes the model from the log path.
+        """
+        if os.path.exists(self.train_log_path):
+            user_input = input(f"Are you sure you want to remove the 'decoder_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
+            if user_input.lower() == 'y':
+                shutil.rmtree(self.train_log_path)
+                print(f"Overwrote 'decoder_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}.")
+
+            else:
+                print(f"Operation cancelled. decoder_{self.n_edge_types}.{self.model_num} still remains.")
+                sys.exit()  # Exit the program gracefully
+
+    
+    def _get_next_version(self):
+        parent_dir = os.path.dirname(self.train_log_path)
+
+        # List all folders in parent_dir that match 'decoder_<number>'
+        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
+        model_folders = [f for f in folders if re.match(fr'^decoder_{self.n_edge_types}\.\d+$', f)]
+
+        if model_folders:
+            # Extract numbers and find the max
+            max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
+            self.model_num = max_model + 1
+            new_model = f'decoder_{self.n_edge_types}.{self.model_num}'
+        else:
+            new_model = f'decoder_{self.n_edge_types}.1'  # If no v folders exist
+
+        return os.path.join(parent_dir, new_model)
+    
+    def save_params(self):
+        """
+        Saves the training parameters to a pickle file in the log path.
+        """
+        if not os.path.exists(self.train_log_path):
+            os.makedirs(self.train_log_path)
+
+        config_path = os.path.join(self.train_log_path, f'train_config.pkl')
+        with open(config_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+        
+        model_path = os.path.join(self.train_log_path, f'decoder_{self.n_edge_types}.{self.model_num}.txt')
+        with open(model_path, 'w') as f:
+            f.write(self.model_id)
+
+        print(f"Model parameters saved to {self.train_log_path}.")
+
+
+    def check_if_version_exists(self):
+        """
+        Checks if the version already exists in the log path.
+
+        Parameters
+        ----------
+        log_path : str
+            The path where the logs are stored. It can be for nri model or skeleton graph model.
+        """
+        if self.continue_training:
+            if os.path.isdir(self.train_log_path):
+                print(f"\nContinuing training from 'decoder_{self.n_edge_types}.{self.model_num}' in the log path '{self.train_log_path}'.")
+                
+            else:
+                print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
+        else:
+            if os.path.isdir(self.train_log_path):
+                print(f"\n'decoder_{self.n_edge_types}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
+                user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
+
+                if user_input.lower() == 'a':
+                    self._remove_version()
+
+                elif user_input.lower() == 'b':
+                    self.train_log_path = self._get_next_version()
+
+                elif user_input.lower() == 'c':
+                    print("Stopped training.")
+                    sys.exit()  # Exit the program gracefully
+
+
+class PredictNRIConfigMain(NRIPredictConfig):
     def __init__(self):
         super().__init__()
 
@@ -372,7 +528,10 @@ class SelectTopologyEstimatorModel():
         self.run_type = run_type  # 'train' or 'predict'
 
         if self.run_type == 'train':
-            self.file_name = 'edge_estimator'
+            if self.framework == 'nri':
+                self.file_name = 'edge_estimator'
+            elif self.framework == 'decoder':
+                self.file_name = 'decoder'
         elif self.run_type == 'custom_test':
             self.file_name = 'custom_test'
         elif self.run_type == 'predict':
@@ -672,6 +831,19 @@ class SparsifierConfig:
         return infer_log_path_sk
 
 class HelperClass:
+    def get_feat_type_str_list(self, feat_configs):
+        if feat_configs:
+            feat_types = []
+            for feat_config in feat_configs:
+                if feat_config['type'] == 'from_ranks':
+                    feat_types.append(f"from_ranks, ({' + '.join(feat_config['feat_list'])})")
+                else:
+                    feat_types.append(feat_config['type'])
+        else:
+            feat_types = ['no_feat']
+
+        return feat_types
+
     def get_augmment_config_str_list(self, augment_configs):
         """
         Returns a list of strings representing the augment configurations.
@@ -692,7 +864,7 @@ class HelperClass:
 
         return augment_str_list
     
-    def set_ds_types_in_path(self, data_config, log_path):
+    def set_ds_types_in_path(self, data_config:DataConfig, log_path):
         """
         Takes into account both empty healthy and unhealthy config and sets the path accordingly.
         """
@@ -734,18 +906,18 @@ class HelperClass:
         log_path = os.path.join(log_path, config_str)
         return log_path
     
-    def set_sparsifier_in_path(self, sparsif_type, domain_sparsif, fex_configs_sparsif, log_path):
-        if sparsif_type is not None:
-            log_path = os.path.join(log_path, f'(spf) {sparsif_type} ({domain_sparsif})') 
+    def set_sparsifier_in_path(self, spf_config, spf_domain_config, spf_feat_configs, spf_reduc_config, log_path):
+        expert_str = "True" if spf_config['expert'] else "False"
+        if spf_config['type'] != 'no_spf':
+            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top={expert_str}) ({spf_domain_config['type']})") 
 
             # sparsifer features
-            fex_types_sparsif = [fex['type'] for fex in fex_configs_sparsif]
-            if fex_types_sparsif:
-                log_path = os.path.join(log_path, f"(spf) [{' + '.join(fex_types_sparsif)}]")
-            else:
-                log_path = os.path.join(log_path, '(spf) [no_fex]')           
+            feat_types = self.get_feat_type_str_list(spf_feat_configs)
+            reduc_type = spf_reduc_config['type'] if spf_reduc_config else 'no_reduc'
+
+            log_path = os.path.join(log_path, f"(spf) [{' + '.join(feat_types)}] [{reduc_type}]")           
         else:
-            log_path = os.path.join(log_path, '(spf) no_spf')
+            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top={expert_str})")
 
         return log_path
     
