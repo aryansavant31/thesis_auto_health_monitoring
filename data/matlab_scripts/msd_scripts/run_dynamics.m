@@ -1,7 +1,18 @@
-function [pos, acc, vel, ds_type] = run_dynamics()
-    clear;
-    [f, conn, M] = generate_healthy_machine();
-    
+function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
+
+    % Get root directory where run_dynamics.m is located
+    root_dir_path = mfilename('fullpath');
+    root_dir = fileparts(root_dir_path);
+
+    % Target folder where generate_machine() lives
+    target_dir = fullfile(root_dir, "machines", machine_type, scenario, ds_type, ds_subtype);
+
+    % Add necessary paths
+    addpath( root_dir);        % for generate machine to find generalized_msd 
+    addpath(target_dir);   % to find generate_machine itself
+
+    [f, conn, M] = generate_machine();
+
     % INPUT FORCE
     u_cells = cell(M, 1);
     for i = 1:M
@@ -44,18 +55,55 @@ function [pos, acc, vel, ds_type] = run_dynamics()
     x0 = [q0; qd0];      % Initial state vector
     
     [time, X] = ode45(odefun, tspan, x0);
+
+    %% Extract outputs
     
+    % get connection pairs
+    conn_pairs = conn.pairs;
     
-    % Plot positions
+    % Get pos, vel and acc from X
+
+    pos = X(:, 1:M);         % size: [length(tspan) x M]
+    vel = X(:, M+1:end);     % size: [length(tspan) x M]
+    
+    % compute acceleration 
+    acc = zeros(size(pos));  % size: [length(tspan) x M]
+    for i = 1:length(tspan)
+        x_i = X(i, :)';                     % current state vector (pos, vel)
+        t_i = tspan(i);                     
+        dxdt = f(x_i, u(t_i), param);       % evaluate derivative
+        acc(i, :) = dxdt(M+1:end)';         % second half of dxdt is acceleration
+    end
+
+
+    % === position plot ===
     figure;
-    plot(time, X(:,1:M), 'LineWidth', 1.5);
+    plot(tspan, pos, 'LineWidth', 1.5);
     xlabel('Time (s)');
     ylabel('Position (m)');
     legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
-    title('Mass Displacements Over Time');
+    title('Mass Positions Over Time');
     grid on;
     
-    % plot inputs
+    % === velocity plot ===
+    figure;
+    plot(tspan, vel, 'LineWidth', 1.5);
+    xlabel('Time (s)');
+    ylabel('Velocity (m/s)');
+    legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
+    title('Mass Velocities Over Time');
+    grid on;
+    
+    % === acceleration plot ===
+    figure;
+    plot(tspan, acc, 'LineWidth', 1.5);
+    xlabel('Time (s)');
+    ylabel('Acceleration (m/s^2)');
+    legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
+    title('Mass Accelerations Over Time');
+    grid on;
+    
+    % === plot inputs ===
     u_signal = zeros(length(time), M);
     for i = 1:length(time)
         u_signal(i, :) = u(time(i))';  % transpose to make it 1 × M

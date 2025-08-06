@@ -39,23 +39,23 @@ class DataConfig:
         To view rest of the attribute options, run this file directly.
         """
         self.application_map = {'BER':'bearing',
-                                'MSD':'mass_spring_damper',
+                                'MSD':'mass_sp_dm',
                                 'SPP':'spring_particles',
                                 'ASM':'ASML'}
         
-        self.application    = 'BER'
+        self.application    = 'MSD'
 
-        self.machine_type   = 'cwru'
+        self.machine_type   = 'M004'
         self.scenario       = 'scene_1'
-        self.node_type      = ['gearbox']           # options ALL or the specific node type
-        self.signal_types   = ['acc'] # in hdf5 format
-        self.fs             = [48000] # sampling frequency
+        self.node_type      = ['ALL']           # options ['ALL'] or the specific node type
+        self.signal_types   = ['acc', 'pos', 'vel'] # in hdf5 format
+        self.fs             = [1000] # sampling frequency
 
-        self.format         = 'hdf5'  # options: hdf5, csv
+        self.format         = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 500
-        self.stride         = 100
+        self.window_length  = 100000
+        self.stride         = 20000
 
         if run_type == 'train':
             self.set_train_dataset()
@@ -66,36 +66,28 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            'series_tp': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-007': [get_augment_config('OG')], 
-            '0_B-021': [get_augment_config('OG')], 
-            '0_OR-007': [get_augment_config('OG')],   
         }
     
     def set_custom_test_dataset(self):
-        self.amt = 0.01
+        self.amt = 1
         self.healthy_configs   = {
-            '1_N': [get_augment_config('gau', mean=0.0, std=0.1)],
+            'series_tp': [get_augment_config('OG')],
         }
         
-        self.unhealthy_configs = {
-            '1_B-007': [get_augment_config('gau', mean=0.0, std=0.1)], 
-            '1_B-021': [get_augment_config('gau', mean=0.0, std=0.1)],    
+        self.unhealthy_configs = { 
         }
         
     def set_predict_dataset(self):
         self.amt = 0.8
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
+            'series_tp': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '1_B-007': [get_augment_config('OG')], 
-            '1_B-021': [get_augment_config('OG')],  
         }
     
     def _process_ds_addresses(self, config:dict, ds_type):
@@ -177,7 +169,7 @@ class DataConfig:
         
         # get actual node types to iterate over
         self.view = DatasetViewer()
-        self.node_options = self.view.node_types  if self.node_type == 'ALL' else self.node_type
+        self.node_options = self.view.node_types  if self.node_type == ['ALL'] else self.node_type
         
         # Process healthy and unhealthy dataset addresses
         node_ds_path_main['OK'], edge_ds_path_main['OK'] = self._process_ds_addresses(self.healthy_configs, 'healthy')

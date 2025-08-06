@@ -1,4 +1,4 @@
-function conn = config_healthy_machine_param(conn)
+function conn = config_machine_param(conn)
 
     % Configure the [individual mass values], 
     % [individiual spring/damper constants] of the healthy machine   
@@ -24,10 +24,14 @@ function conn = config_healthy_machine_param(conn)
     % configure linear wall spring
     conn.k_wall_lin(1) = 0.5;
     conn.k_wall_lin(2) = 0;
+    conn.k_wall_lin(3) = 0;
+    conn.k_wall_lin(4) = 0;
 
     % configure linear wall damper
     conn.d_wall_lin(1) = 0;
     conn.d_wall_lin(2) = 0;
+    conn.d_wall_lin(3) = 0;
+    conn.d_wall_lin(4) = 0;
 
 
 

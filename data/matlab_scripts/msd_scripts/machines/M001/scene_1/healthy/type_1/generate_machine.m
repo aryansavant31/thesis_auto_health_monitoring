@@ -1,5 +1,5 @@
-function [h_dynamics, conn, M] = generate_healthy_machine()
-    M = 4;
+function [h_dynamics, conn, M] = generate_machine()
+    M = 1;
 
     %% Define connections / topology 
     % order: source of input u -> target
@@ -13,9 +13,7 @@ function [h_dynamics, conn, M] = generate_healthy_machine()
     %     2 1
     %     ];  
     conn.pairs = [
-        4 3;
-        3 2;
-        2 1;
+
     ];
 
     %% Parameters
@@ -26,14 +24,14 @@ function [h_dynamics, conn, M] = generate_healthy_machine()
     % If you want default values, set
     % config_param = false
     
-    config_param = true;
+    config_param = false;
 
     % Default paramter values
     conn.mass = ones(M,1);
 
     if size(conn.pairs, 1) > 0
         conn.spring_k = 0.5 * ones(size(conn.pairs, 1), 1);
-        conn.damper_d = 0.5 * ones(size(conn.pairs, 1), 1);
+        conn.damper_d = 0 * ones(size(conn.pairs, 1), 1);
     else
         conn.spring_k = 0;
         conn.damper_d = 0;
@@ -43,7 +41,7 @@ function [h_dynamics, conn, M] = generate_healthy_machine()
     conn.d_wall_lin = 0 * ones(M, 1);
 
     conn.k_wall_lin(1) = 0.5;
-    conn.d_wall_lin(1) = 0.5;
+    conn.d_wall_lin(1) = 0;
     
     % Non linear 
     % E.g. nl_index.springs = [2, 3] means 2nd and 3rd springs nonlinear
@@ -63,7 +61,7 @@ function [h_dynamics, conn, M] = generate_healthy_machine()
     if config_param == true
         % to configure the mass values, linear spring/damper constants of the healthy machine, go to
         % config_healthy_machine_param function
-        conn = config_healthy_machine_param(conn);
+        conn = config_machine_param(conn);
     end
     
     [h_dynamics, ~, ~, ~] = generalized_msd_2(M, conn, nl_index, k_nl, d_nl, k_wall_nl, d_wall_nl);

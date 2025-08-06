@@ -4,6 +4,10 @@ fault_isolation/logs/asml/
 topology_estimation/logs/asml/
 
 data/datasets/bearing/cwru/
+
+data/datasets/mass_sp_dm/*
+!data/datasets/mass_sp_dm/**/*.py
+
 data/datasets/spring_particles/
 
 **/__pycache__/

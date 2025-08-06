@@ -62,9 +62,9 @@ class DataPreprocessor:
 
         # create datasets
         if self.package == 'fault_detection':
-            dataset = self._make_dataset(x_node, y_node)
+            dataset = self._make_fdet_dataset(x_node, y_node)
         elif self.package == 'topology_estimation':
-            dataset = self._make_dataset(x_node, y_edge)    
+            dataset = self._make_tp_dataset(x_node, y_edge, y_node)    
 
         return dataset
     
@@ -130,8 +130,8 @@ class DataPreprocessor:
         """
         label_counts = {0: 0, 1: 0}
 
-        for _, label in dataset:
-            label_value = int(label.item())
+        for data in dataset:
+            label_value = int(data[-1].item())
             label_counts[label_value] += 1
         return label_counts
 
@@ -266,21 +266,59 @@ class DataPreprocessor:
         return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
         
 
-    def _make_dataset(self, x, y):
+    def _make_tp_dataset(self, x, y, z):
         """
-        Create a TensorDataset from the provided data and labels.
+        Create a TensorDataset for topology estimation (tp) from the provided data and labels.
+
         Parameters
         ----------
         x : dict
-            Dictionary containing tensor data for each dataset type.
+            Dictionary containing tensor node data for each dataset type.
         y : dict
-            Dictionary containing tensor labels for each dataset type.
+            Dictionary containing tensor edge labels for each dataset type.
+        z : dict
+            Dictionary containing tensor node labels for each dataset type (to count number of OK and NOK samples).
+
+        Returns
+        -------
+        TensorDataset
+            A dataset containing the (concatenated) data and labels.
+        """
+        x_list, y_list, z_list = [], [], []
+
+        for ds_type in x.keys():
+            if x[ds_type] is not None and y[ds_type] is not None and z[ds_type] is not None:
+                x_list.append(x[ds_type])
+                y_list.append(y[ds_type])
+                z_list.append(z[ds_type])
+
+        if not x_list or not y_list or not z_list:
+            raise ValueError("No data available to create datasets.")
+        
+        x_all = torch.cat(x_list, dim=0)
+        y_all = torch.cat(y_list, dim=0)
+        z_all = torch.cat(z_list, dim=0)
+
+        return TensorDataset(x_all, y_all, z_all)
+    
+    def _make_fdet_dataset(self, x, y):
+        """
+        Create a TensorDataset for topology estimation (tp) from the provided data and labels.
+
+        Parameters
+        ----------
+        x : dict
+            Dictionary containing tensor node data for each dataset type.
+        y : dict
+            Dictionary containing tensor node labels for each dataset type.
+
         Returns
         -------
         TensorDataset
             A dataset containing the (concatenated) data and labels.
         """
         x_list, y_list = [], []
+
         for ds_type in x.keys():
             if x[ds_type] is not None and y[ds_type] is not None:
                 x_list.append(x[ds_type])
@@ -423,7 +461,7 @@ class DataPreprocessor:
 
         for ds_subtype, edge_hdf5_path in ds_subtype_map.items():
             with h5py.File(edge_hdf5_path, 'r') as f:
-                adj_mat = f['adj_mat'][:]  # shape: (n_nodes, n_nodes)
+                adj_mat = f['adj_matrix'][:]  # shape: (n_nodes, n_nodes)
 
             flat_edge = []
             for r in range(adj_mat.shape[0]):

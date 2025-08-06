@@ -1,4 +1,4 @@
-function conn = config_healthy_machine_param(conn)
+function conn = config_machine_param(conn)
 
     % Configure the [individual mass values], 
     % [individiual spring/damper constants] of the healthy machine   
@@ -7,7 +7,6 @@ function conn = config_healthy_machine_param(conn)
     %% configure mass (kg)
 
     conn.mass(1) = 1;
-    conn.mass(2) = 1;
     
     %% Spring/dampers between masses
 
