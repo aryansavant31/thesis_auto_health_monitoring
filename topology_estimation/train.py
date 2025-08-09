@@ -3,7 +3,7 @@ main class for topology estimation with both training and inference code
 
 will contain train loop, test loop and run/prediction loop
 """
-from .config.manager import TrainNRIConfigMain, get_checkpoint_path
+from settings.manager import TrainNRIConfigMain, get_checkpoint_path
 
 from .nri import NRI
 from .graph_structures import FullyConnectedGraph, SparisifiedGraph

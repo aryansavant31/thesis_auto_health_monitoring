@@ -31,7 +31,7 @@ class NRITrainManager(NRITrainConfig):
         super().__init__(data_config)
         self.helper = HelperClass()
 
-    def get_train_log_path(self, n_components, n_dim):
+    def get_train_log_path(self, n_comps, n_dim):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -61,7 +61,7 @@ class NRITrainManager(NRITrainConfig):
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[E] {self.pipeline_type}, [D] {self.recur_emd_type}',)
+        model_path = os.path.join(model_path, f'[E] {self.pipeline_type}, [D] {self.recur_emb_type}',)
 
         # add datastats to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
@@ -82,7 +82,7 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(model_path, f"(E) [{' + '.join(enc_feat_types)}] [{enc_reduc_type}], (D) [{' + '.join(dec_feat_types)}] [{dec_reduc_type}]")
   
         # add model shape compatibility stats to path
-        self.model_id = os.path.join(model_path, f'(E) (comps = {n_components}), (D) (dims = {n_dim})')
+        self.model_id = os.path.join(model_path, f'(E) (comps = {n_comps}), (D) (dims = {n_dim})')
 
         # # add model version to path
         # self.model_id = os.path.join(model_path, f'edge_estimator_{self.model_num}')
@@ -224,7 +224,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[D] {self.recur_emd_type}',)
+        model_path = os.path.join(model_path, f'[D] {self.recur_emb_type}',)
 
         # add datastats to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
@@ -511,7 +511,7 @@ class PredictNRIConfigMain(NRIPredictConfig):
                 sys.exit()  # Exit the program gracefully
 
     
-class SelectTopologyEstimatorModel():
+class SelectTopologyEstimatorModel:
     def __init__(self, framework, application=None, machine=None, scenario=None, run_type='train', logs_dir=LOGS_DIR):
         data_config = DataConfig()
 
@@ -907,9 +907,9 @@ class HelperClass:
         return log_path
     
     def set_sparsifier_in_path(self, spf_config, spf_domain_config, spf_feat_configs, spf_reduc_config, log_path):
-        expert_str = "True" if spf_config['expert'] else "False"
+        expert_str = "True" if spf_config['is_expert'] else "False"
         if spf_config['type'] != 'no_spf':
-            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top={expert_str}) ({spf_domain_config['type']})") 
+            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str}) ({spf_domain_config['type']})") 
 
             # sparsifer features
             feat_types = self.get_feat_type_str_list(spf_feat_configs)
@@ -917,7 +917,7 @@ class HelperClass:
 
             log_path = os.path.join(log_path, f"(spf) [{' + '.join(feat_types)}] [{reduc_type}]")           
         else:
-            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top={expert_str})")
+            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str})")
 
         return log_path
     

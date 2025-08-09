@@ -1,0 +1,1 @@
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\healthy\series_tp[OG]\[E] mlp_1, [D] gru\T600 [acc, pos, vel]\(spf) no_spf (is_exp_top=False)\(E) time, (D) time\(E) [no_feat] [no_reduc], (D) [no_feat] [no_reduc]\(E) (comps = 600), (D) (dims = 3)

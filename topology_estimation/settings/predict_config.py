@@ -1,11 +1,11 @@
 import os
 import sys
-from manager import SelectTopologyEstimatorModel, load_selected_config, get_selected_ckpt_path
+# from manager import SelectTopologyEstimatorModel, load_selected_config, get_selected_ckpt_path
 
 TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
 
-from feature_extraction.settings import get_freq_fex_config
+# from feature_extraction.settings import get_freq_fex_config
 
 
 class NRIPredictConfig:
@@ -49,15 +49,27 @@ class NRIPredictConfig:
         # TASK: add rest of the decoder run params
 
 if __name__ == "__main__":
-    user_text = "To view/select trained topology (edge) estimation models, type (a)\nTo view custom tested models, type (b)\nTo view predicted models, type (c)\nEnter input: "
-    user_input = input(user_text).strip("'\"")
-    if user_input.lower() == 'a':
+    from manager import SelectTopologyEstimatorModel
+
+    user_text_1 = "To view/select nri models, type (a)\nTo view/select decoder models, type (b)\nEnter input: "
+    user_input_1 = input(user_text_1).strip("'\"")
+    if user_input_1.lower() == 'a':
+        framework = 'nri'
+    elif user_input_1.lower() == 'b':
+        framework = 'decoder'
+    else:
+        raise ValueError("Invalid input. Please enter 'a' or 'b'.")
+    
+
+    user_text_2 = f"To view/select trained {framework} models, type (a)\nTo view custom tested {framework} models, type (b)\nTo view predicted {framework} models, type (c)\nEnter input: "
+    user_input_2 = input(user_text_2).strip("'\"")
+    if user_input_2.lower() == 'a':
         run_type = 'train'
-    elif user_input.lower() == 'b':
+    elif user_input_2.lower() == 'b':
         run_type = 'custom_test'
-    elif user_input.lower() == 'c':
+    elif user_input_2.lower() == 'c':
         run_type = 'predict'
     else:
         raise ValueError("Invalid input. Please enter 'a', 'b', or 'c'.")
-    model_selector = SelectTopologyEstimatorModel(framework='directed_graph', run_type=run_type)
+    model_selector = SelectTopologyEstimatorModel(framework=framework, run_type=run_type)
     model_selector.select_ckpt_and_params()

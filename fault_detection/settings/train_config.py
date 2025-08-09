@@ -41,7 +41,7 @@ class AnomalyDetectorTrainConfig:
         domain_config : dict
             Configuration for the data domain.
         raw_data_norm : None
-            Normalization type for raw data.
+            Normalization type for raw data ('min_max', 'std' or None).
         feat_configs : list
             List of feature configurations.
         reduc_config : dict
@@ -52,24 +52,25 @@ class AnomalyDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 7
+        self.model_num = 3
         self.is_log = True
 
         # dataset parameters
-        self.batch_size = 50
-        self.train_rt   = 0.8
-        self.test_rt    = 0.2
+        self.batch_size  = 50
+        self.train_rt    = 0.8
+        self.test_rt     = 0.2
+        self.num_workers = 10
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.5)
+        self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.3)
 
         # run parameters
         self.domain_config = get_domain_config('time', data_config=self.data_config)
-        self.raw_data_norm = None
+        self.raw_data_norm = 'min_max' 
         self.feat_configs = [
-            # get_time_feat_config('from_ranks', n=25, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
+            get_time_feat_config('from_ranks', n=5, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
         ]  
-        self.reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.reduc_config = None # or None
         self.feat_norm = None
 
 

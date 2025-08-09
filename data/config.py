@@ -32,7 +32,7 @@ class DataConfig:
         application : str
             Dataset applications available:
             - BER: Bearing dataset
-            - MSD: Mass-Spring-Damper dataset
+            - MSD: Mass-Spring-Damper dataset (fs=1000)
             - SPP: Spring-Particles dataset
             - ASM: ASML dataset
 
@@ -54,8 +54,8 @@ class DataConfig:
         self.format         = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 100000
-        self.stride         = 20000
+        self.window_length  = 600
+        self.stride         = 300
 
         if run_type == 'train':
             self.set_train_dataset()

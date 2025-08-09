@@ -33,6 +33,8 @@ class AnomalyDetectorPredictConfig:
         self.ckpt_path = get_selected_model_path()
         
         self.version = 1
+        self.num_workers = 10
+        self.batch_size = 50
 
         
 if __name__ == "__main__":

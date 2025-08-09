@@ -1,21 +1,36 @@
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+
+TP_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, TP_DIR) if TP_DIR not in sys.path else None
+
+# other imports
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-from .utils.models import MLP, GRU
+from torch.optim import Adam, SGD
 from pytorch_lightning import LightningModule
-from data.transform import DataTransformer
-from feature_extraction.feature_extractor import FeatureExtractor
+import time
+
+# global imports
+from data.transform import DomainTransformer, DataNormalizer
+from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureExtractor, FeatureReducer
+
+# local imports
+from utils.models import MLP, GRU
+from utils.loss import nll_gaussian
 
 class Decoder(LightningModule):
 
-    def __init__(self, n_dim, 
+    def __init__(self, n_dims, 
                  msg_out_size, n_edge_types,
-                 edge_mlp_config, recurrent_emd_type, out_mlp_config, do_prob, is_batch_norm 
+                 edge_mlp_config, recur_emb_type, out_mlp_config, do_prob, is_batch_norm 
                  ):
         super(Decoder, self).__init__()
         # input parameters
-        self.n_dim = n_dim
+        self.n_dims = n_dims
 
         # pipeline parameters
         self.msg_out_size = msg_out_size
@@ -23,7 +38,7 @@ class Decoder(LightningModule):
 
         # embedding parameters
         self.edge_mlp_config = edge_mlp_config
-        self.recurremt_emb_type = recurrent_emd_type
+        self.recurremt_emb_type = recur_emb_type
         self.out_mlp_config = out_mlp_config
         self.do_prob = do_prob
         self.is_batch_norm = is_batch_norm
@@ -36,7 +51,7 @@ class Decoder(LightningModule):
         
         # Make recurrent embedding function
         if self.recurremt_emb_type == 'gru':
-            self.recurrent_emb_fn = GRU(self.n_dim,
+            self.recurrent_emb_fn = GRU(self.n_dims,
                                         self.msg_out_size)
         
         # Make MLP to predict mean of prediction
@@ -52,8 +67,8 @@ class Decoder(LightningModule):
                            self.is_batch_norm)
         
         self.output_layer_size = out_mlp_config[-1][0]  
-        self.mean_output_layer = nn.Linear(self.output_layer_size, n_dim) 
-        self.var_output_layer = nn.Linear(self.output_layer_size, n_dim) 
+        self.mean_output_layer = nn.Linear(self.output_layer_size, n_dims) 
+        self.var_output_layer = nn.Linear(self.output_layer_size, n_dims) 
     
     def set_input_graph(self, rec_rel, send_rel):
         """
@@ -82,7 +97,7 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[], 
+    def set_run_params(self, data_stats, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None, 
                         skip_first_edge_type=False, pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=None, is_hard=False):
@@ -99,6 +114,14 @@ class Decoder(LightningModule):
                 the graph will be estimated from encoder. 
                 So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
         """
+        self._domain_config = domain_config
+        self._raw_data_norm = raw_data_norm
+        self._feat_norm = feat_norm
+        self._feat_configs = feat_configs
+        self._reduc_config = reduc_config
+        self._is_hard = is_hard
+
+        self.data_stats = data_stats
         self.skip_first_edge_type = skip_first_edge_type  # skip edge type = 0
         self.pred_steps = pred_steps
         self.is_burn_in = is_burn_in
@@ -106,12 +129,38 @@ class Decoder(LightningModule):
         self.is_dynamic_graph = is_dynamic_graph
         self.encoder = encoder
         self.temp = temp
-        self.is_hard = is_hard
-        self.fex_configs = fex_configs
+   
+        self._domain = domain_config['type']
+        self._feat_names = self._get_feature_names() if self._feat_configs else None
+
+    def set_training_params(self, lr=0.001, optimizer='adam', loss_type='nll'):
+        self.lr = lr
+        self.optimizer = optimizer
+        self.loss_type = loss_type
+
+        self.train_losses_per_epoch = []
         
-        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
-        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs)
+    def _get_feature_names(self):
+        """
+        Get the names of the features that will be used in the anomaly detection model.
+        """
+        non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
+        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
+
+        return non_rank_feats + rank_feats
+    
+    def init_input_processors(self):
+        self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
+        self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats) if self._raw_data_norm else None
+        self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm) if self._feat_norm else None
+
+        # define feature objects
+        if self._domain == 'time':
+            self.time_fex = TimeFeatureExtractor(self._feat_configs) if self._feat_configs else None
+        elif self._domain == 'freq':
+            self.freq_fex = FrequencyFeatureExtractor(self._feat_configs) if self._feat_configs else None
         
+        self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config) if self._reduc_config else None
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
         receivers = torch.bmm(rec_rel, node_emb)
@@ -133,15 +182,15 @@ class Decoder(LightningModule):
         """
         Parameters
         ----------
-        inputs : torch.Tensor, shape (batch_size, n_nodes, n_dim)
+        inputs : torch.Tensor, shape (batch_size, n_nodes, n_dims)
 
         hidden : torch.Tensor, shape (batch_size, n_nodes, msg_out_size)
         Returns
         -------
-        pred : torch.Tensor, shape (batch_size, n_nodes, n_dim)
+        pred : torch.Tensor, shape (batch_size, n_nodes, n_dims)
             Predicted next step for each node.
 
-        var : torch.Tensor, shape (batch_size, n_nodes, n_dim)
+        var : torch.Tensor, shape (batch_size, n_nodes, n_dims)
             Predicted variance of the next step for each node.
             
         hidden : torch.Tensor, shape (batch_size, n_nodes, msg_out_size)
@@ -187,19 +236,53 @@ class Decoder(LightningModule):
 
         return edge_matrix
     
-    def process_input_data(self, data):
+    def process_input_data(self, time_data):
         """
-        Transform the data
-            - domain change
-            - normalization
-        Feature extraction
-        """
-        # transform data
-        data = self.transform(data)
+        Parameters
+        ----------
+        time_data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            Input node data
 
-        # extract features from data if fex_configs are provided
-        if self.fex_configs:
-            data = self.feature_extractor(data)
+        Returns
+        -------
+        data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+        """
+        self.init_input_processors()
+
+        # domain transform data (mandatory)
+        if self._domain == 'time':
+            data = self.domain_transformer.transform(time_data)
+        elif self._domain == 'freq':
+            data, freq_bins = self.domain_transformer.transform(time_data)
+
+        # normalize raw data (optional)
+        if self.raw_data_normalizer:
+            if self._domain == 'time':
+                data = self.raw_data_normalizer.normalize(data)
+            elif self._domain == 'freq':
+                print("\nFrequency data cannot be normalzied before feature extraction.")
+
+        # extract features from data (optional)
+        is_fex = False
+        if self._domain == 'time':
+            if self.time_fex:
+                data = self.time_fex.extract(data)
+                is_fex = True
+        elif self._domain == 'freq':
+            if self.freq_fex:
+                data = self.freq_fex.extract(data, freq_bins)
+                is_fex = True
+
+        # normalize features (optional : if feat_norm is provided)
+        if self.feat_normalizer:
+            if is_fex:
+                data = self.feat_normalizer.normalize(data)
+            else:
+                print("\nNo features extracted, so feature normalization is skipped.")
+
+        # reduce features (optional : if reduc_config is provided)
+        if self.feat_reducer:
+            data = self.feat_reducer.reduce(data)
 
         return data
     
@@ -213,18 +296,18 @@ class Decoder(LightningModule):
 
         Parameters
         ----------
-        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dim)
+        data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             Input data tensor containing the entire trajectory data of all nodes.
         
         Returns
         -------
-        preds : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
-        vars : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
+        preds : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dims)
+        vars : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dims)
         """
         # process data
         data = self.process_input_data(data)
 
-        # data has shape [batch_size, n_nodes, n_components, n_dim]
+        # data has shape [batch_size, n_nodes, n_components, n_dims]
         inputs = data.transpose(1, 2).contiguous()
         # inputs has shape [batch_size, n_components, n_nodes, n_dims]
 
@@ -269,3 +352,47 @@ class Decoder(LightningModule):
         vars = vars.transpose(1, 2).contiguous()
 
         return preds, vars
+    
+    def training_step(self, batch, batch_idx):
+        """
+        Training step for the topology estimator.
+
+        Parameters
+        ----------
+        batch : tuple
+            A tuple containing the node data and the edge matrix label
+            - data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+            - relations : torch.Tensor, shape (batch_size, n_edges)
+        """
+        if self.current_epoch == 0 and batch_idx == 0:
+            self.start_time = time.time()
+            print(f"train start time: {self.start_time}")
+
+        data, _, _ = batch
+        
+        target = self.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
+
+        # Forward pass
+        x_pred, x_var = self.forward(data)
+
+        # Loss calculation
+        if self.loss_type == 'nll':
+            loss = nll_gaussian(x_pred, target, x_var)
+
+        self.log_dict(
+            {
+                'train_loss': loss,
+            },
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True
+        )
+            
+        return loss
+
+    def configure_optimizers(self):
+        if self.optimizer == 'adam':
+            return Adam(self.parameters(), lr=self.lr)
+        elif self.optimizer == 'sgd':
+            return SGD(self.parameters(), lr=self.lr)

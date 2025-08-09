@@ -1,14 +1,23 @@
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+
+TP_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, TP_DIR) if TP_DIR not in sys.path else None
+
+# import other imports
 from pytorch_lightning import LightningModule
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam, SGD
 import matplotlib.pyplot as plt
-from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
-from data.transform import DataTransformer
-from .encoder import Encoder
-from .decoder import Decoder
-from feature_extraction.settings import FeatureExtractor
 import time
+
+# local imports
+from utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+from encoder import Encoder
+from decoder import Decoder
+
 
 class NRI(LightningModule):
     def __init__(self, encoder_params, decoder_params):
@@ -51,53 +60,25 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, data_stats, domain_encoder='time', norm_type_encoder=None, fex_configs_encoder=[],
-                        domain_decoder='time', norm_type_decoder=None, dec_feat_configs=[], 
-                        skip_first_edge_type=False,pred_steps=1,
-                        is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-                        encoder=None, temp=0.5, is_hard=False, run_type='train'):
+    def set_run_params(self, enc_run_params, dec_run_params, temp, is_hard):
         """
         Parameters
         ----------
-        dynamic_graph : bool
-            If True, the edge types are estimated dynamically at each step.
-            - Example:
-                when step number (eg 42) is beyond the burn in step (40 in my eg), 
-                if dynamics graph is true,  new latent graph will be estimated for data from 
-                42 - 40 = 2nd timestep till 42th timestep. 
-                So basically, for burn-in step sized trajectory (in my case, trajectory size = 40), 
-                the graph will be estimated from encoder. 
-                So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
+        enc_run_params : dict
+            Parameters for the encoder run. For details, see the docstring of `Encoder.set_run_params()`.
+        dec_run_params : dict
+            Parameters for the decoder run. For details, see the docstring of `Decoder.set_run_params()`.
+        temp : float
+            Temperature for Gumble Softmax.
+        is_hard : bool
+            If True, use hard Gumble Softmax.
         """
         self.temp = temp
         self.is_hard = is_hard
-        self.fex_configs_decoder = dec_feat_configs
 
-        self.encoder.set_run_params(data_stats=data_stats, domain=domain_encoder, norm_type=norm_type_encoder, fex_configs=fex_configs_encoder)
-
-        self.decoder.set_run_params(data_stats=data_stats, domain=domain_decoder, norm_type=norm_type_decoder, fex_configs=dec_feat_configs, 
-                                    skip_first_edge_type=skip_first_edge_type, pred_steps=pred_steps, is_burn_in=is_burn_in, burn_in_steps=burn_in_steps, 
-                                    is_dynamic_graph=is_dynamic_graph, encoder=encoder,
-                                    temp=temp, is_hard=is_hard)
+        self.encoder.set_run_params(**enc_run_params)
+        self.decoder.set_run_params(**dec_run_params)
         
-        self.transform_decoder = DataTransformer(domain=domain_decoder, norm_type=norm_type_decoder, data_stats=data_stats)
-        self.feature_extractor = FeatureExtractor(dec_feat_configs, run_type)
-
-    def process_decoder_input_data(self, data):
-        """
-        Transform the data
-            - domain change
-            - normalization
-        Feature extraction
-        """
-        # transform data
-        data = self.transform_decoder(data)
-
-        # extract features from data if fex_configs for decoder are provided
-        if self.fex_configs_decoder:
-            data = self.feature_extractor(data)
-
-        return data
 
     def forward(self, data):
         """
@@ -154,13 +135,14 @@ class NRI(LightningModule):
             - data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
-        if batch_idx == 0:
+        if self.current_epoch == 0 and batch_idx == 0:
             self.start_time = time.time()
+            print(f"train start time: {self.start_time}")
 
-        data, relations = batch
+        data, relations, _ = batch
         
         num_nodes = data.size(1)
-        target = self.process_decoder_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
+        target = self.decoder.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
         edge_pred, x_pred, x_var = self.forward(data)
@@ -206,7 +188,7 @@ class NRI(LightningModule):
 
     def on_train_end(self):
         training_time = time.time() - self.start_time
-        print(f"\nTraining completed in {training_time:.2f} seconds")
+        print(f"\nTraining completed in {training_time:.2f} seconds or {training_time / 60:.2f} minutes or {training_time / 60 / 60} hours.")
 
         if self.logger:
             fig, ax = plt.subplots()

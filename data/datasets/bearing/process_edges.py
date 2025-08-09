@@ -42,7 +42,7 @@ class AdjacencyMatrixGenerator:
     def save_matrix(self, folder, ds_subtype, matrix):
         file_path = os.path.join(folder, f"{ds_subtype}.hdf5")
         with h5py.File(file_path, "w") as f:
-            f.create_dataset("adj_mat", data=matrix)
+            f.create_dataset("adj_matrix", data=matrix)
 
 if __name__ == "__main__":
     generator = AdjacencyMatrixGenerator()

@@ -21,13 +21,14 @@ class DecoderTrainConfig:
         self.continue_training = False
         self.is_log = True
         
-        self.n_edge_types = 2
+        self.n_edge_types = 1
 
         # dataset parameters
         self.batch_size = 50
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1
+        self.num_workers = 10
 
         # optimization parameters
         self.max_epochs = 5
@@ -44,26 +45,30 @@ class DecoderTrainConfig:
         out_mlp_config = {'mlp': 'default'}
 
         self.do_prob_dec = 0
-        self.is_bn_dec = True
+        self.is_batch_norm_dec = True
 
         # recurrent embedding parameters
-        self.recur_emd_type = 'gru'
+        self.recur_emb_type = 'gru'
         
         # Run parameters
         self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
         self.dec_raw_data_norm = None
         self.dec_feat_configs = [
-            get_freq_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
+            # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
         self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.dec_feat_norm = None
 
-        self.skip_first_edge_type = True 
+        self.skip_first_edge_type = False
+        self.pred_steps = 1
+        self.is_burn_in = False
+        self.burn_in_steps = 1
+        self.is_dynamic_graph = False
+        self.temp = 1.0       # temperature for Gumble Softmax
+        self.is_hard = True      
 
-        # [TODO]: add rest of the decoder run params
-
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config)['mlp']
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
 
     # 3: Sparsifier parameters
 
@@ -72,7 +77,7 @@ class DecoderTrainConfig:
         self.spf_domain_config = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 
         self.spf_feat_configs = [
-            get_freq_feat_config('first_n_modes', data_config=self.data_config),
+           # get_time_feat_config('first_n_modes', data_config=self.data_config),
         ]    
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.spf_feat_norm = None
@@ -164,6 +169,7 @@ class NRITrainConfig:
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1
+        self.num_workers = 10
 
         # optimization parameters
         self.max_epochs = 5
@@ -196,8 +202,8 @@ class NRITrainConfig:
             'mlp': 0.0,
             'cnn': 0.0
             }
-        self.bn_enc = {
-            'mlp': False,
+        self.is_batch_norm_enc = {
+            'mlp': True,
             'cnn': False
             }
         # attention parameters
@@ -205,7 +211,7 @@ class NRITrainConfig:
 
         # Run parameters
         self.enc_domain_config = get_domain_config('time', data_config=self.data_config)
-        self.enc_raw_norm = None  
+        self.enc_raw_data_norm = None  
         self.enc_feat_configs = []
         self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.enc_feat_norm = None
@@ -214,7 +220,7 @@ class NRITrainConfig:
         self.temp = 1.0       
         self.is_hard = True   
 
-        self.encoder_pipeline = ext.get_enc_pipeline(self.pipeline_type)  
+        self.pipeline = ext.get_enc_pipeline(self.pipeline_type)  
         self.edge_emb_configs_enc = ext.get_enc_emb_config(config_type=edge_emd_config)  
         self.node_emb_configs_enc = ext.get_enc_emb_config(config_type=node_emb_config)
 
@@ -227,36 +233,39 @@ class NRITrainConfig:
         out_mlp_config = {'mlp': 'default'}
 
         self.do_prob_dec = 0
-        self.is_bn_dec = True
+        self.is_batch_norm_dec = True
 
         # recurrent embedding parameters
-        self.recur_emd_type = 'gru'
+        self.recur_emb_type = 'gru'
         
         # Run parameters
         self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
         self.dec_raw_data_norm = None 
         self.dec_feat_configs = [
-            get_freq_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
+            # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
-        self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.dec_feat_norm = None
-
+        self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        
         self.skip_first_edge_type = True 
+        self.pred_steps = 1
+        self.is_burn_in = False
+        self.burn_in_steps = 1
+        self.is_dynamic_graph = False
 
-        # [TODO]: add rest of the decoder run params
-
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config)['mlp']
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(edge_mlp_config, self.msg_out_size)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(out_mlp_config, self.msg_out_size)['mlp']
 
     # 4: Sparsifier parameters
 
         self.spf_config = get_spf_config('no_spf', is_expert=False)
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        self.spf_raw_data_norm = None 
         self.spf_feat_configs = [
-            get_freq_feat_config('first_n_modes', data_config=self.data_config),
+            # get_time_feat_config('first_n_modes', data_config=self.data_config),
         ]    
-        self.spf_norm = None 
+        self.spf_feat_norm = None
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
 
         # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
@@ -267,8 +276,6 @@ class NRITrainConfig:
             'model_num': self.model_num,
         }
         
-class DecoderTrainSettings:
-    pass 
 
 class ExtraSettings:
     def get_enc_pipeline(self, pipeline_type, custom_pipeline=None):
@@ -350,7 +357,7 @@ class ExtraSettings:
 
         return configs
     
-    def get_dec_emb_config(self, config_type, custom_config=None):
+    def get_dec_emb_config(self, config_type, msg_out_size, custom_config=None):
         """
         config_type : dict
         custom_config : dict
@@ -365,7 +372,7 @@ class ExtraSettings:
             'default': [[64, 'tanh'],
                         [32, 'tanh'],
                         [16, 'tanh'],
-                        [self.msg_out_size, None]], # the last layer should look like this for any configs for decoder
+                        [msg_out_size, None]], # the last layer should look like this for any configs for decoder
         }
 
         # ------ Validate config_type -------
@@ -405,17 +412,16 @@ def get_spf_config(spf_type, **kwargs):
     return config
     
 if __name__ == "__main__":
-    user_text = "To view/select trained topology (edge) estimation models, type (a)\nTo view custom tested models, type (b)\nTo view predicted models, type (c)\nEnter input: "
+    from topology_estimation.settings.manager import SelectTopologyEstimatorModel
+    user_text = "To view/select trained nri models, type (a)\nTo view/select trained decoder models, type (b)\nEnter input: "
     user_input = input(user_text).strip("'\"")
     if user_input.lower() == 'a':
-        run_type = 'train'
+        framework = 'nri'
     elif user_input.lower() == 'b':
-        run_type = 'custom_test'
-    elif user_input.lower() == 'c':
-        run_type = 'predict'
+        framework = 'decoder'
     else:
         raise ValueError("Invalid input. Please enter 'a', 'b', or 'c'.")
-    model_selector = SelectTopologyEstimatorModel(framework='directed_graph', run_type=run_type)
+    model_selector = SelectTopologyEstimatorModel(framework=framework, run_type='train')
     model_selector.select_ckpt_and_params()
 
 

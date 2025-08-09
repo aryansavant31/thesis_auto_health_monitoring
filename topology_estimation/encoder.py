@@ -1,12 +1,21 @@
-"""
-Will contain the encoder and decoder models 
-"""
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+
+TP_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, TP_DIR) if TP_DIR not in sys.path else None
+
+# other imports
 import torch
 import torch.nn as nn
-from .utils.models import MLP
 from pytorch_lightning import LightningModule
-from data.transform import DataTransformer
-from feature_extraction.feature_extractor import FeatureExtractor
+
+# global imports
+from data.transform import DomainTransformer, DataNormalizer
+from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureExtractor, FeatureReducer
+
+# local imports
+from utils.models import MLP
 
 class MessagePassingLayers():
     def __init__(self):
@@ -268,38 +277,39 @@ class MessagePassingLayers():
 
 
 class Encoder(LightningModule, MessagePassingLayers):
-    def __init__(self, n_components, n_dims, 
+    def __init__(self, n_comps, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
-                 edge_emd_configs, node_emd_configs, drop_out_prob, batch_norm, attention_output_size):
+                 edge_emb_configs, node_emb_configs, do_prob, is_batch_norm, attention_output_size):
         
-        super(Encoder, self).__init__()
-        MessagePassingLayers.__init__(self)
+        if n_comps and n_dims is not None:
+            super(Encoder, self).__init__()
+            MessagePassingLayers.__init__(self)
 
-        # input parameters
-        self.n_components = n_components
-        self.n_dims = n_dims
+            # input parameters
+            self.n_components = n_comps
+            self.n_dims = n_dims
 
-        # pipeline parameters
-        self.pipeline = pipeline
-        self.n_edge_types = n_edge_types
-        self.is_residual_connection = is_residual_connection
+            # pipeline parameters
+            self.pipeline = pipeline
+            self.n_edge_types = n_edge_types
+            self.is_residual_connection = is_residual_connection
 
-        # embedding configurations
-        self.edge_emb_configs = edge_emd_configs
-        self.node_emb_configs = node_emd_configs
-        self.dropout_prob = drop_out_prob
-        self.batch_norm = batch_norm
+            # embedding configurations
+            self.edge_emb_configs = edge_emb_configs
+            self.node_emb_configs = node_emb_configs
+            self.dropout_prob = do_prob
+            self.is_batch_norm = is_batch_norm
 
-        # attention parameters
-        self.attention_output_size = attention_output_size
+            # attention parameters
+            self.attention_output_size = attention_output_size
 
-        self.init_embedding_functions()
-        self.init_attention_layers()
+            self.init_embedding_functions()
+            self.init_attention_layers()
 
-        # define output layer
-        final_emd_type = self.pipeline[-1][1]
-        final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
-        self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
+            # define output layer
+            final_emd_type = self.pipeline[-1][1]
+            final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
+            self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
 
 
     def init_attention_layers(self):
@@ -383,7 +393,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                     self.emb_fn_dict[layer[0].replace(".", "")] = MLP(edge_emd_input_size, 
                                                     self.edge_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
-                                                    is_batch_norm=self.batch_norm['mlp'],
+                                                    is_batch_norm=self.is_batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN' # placeholder
@@ -429,7 +439,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                     self.emb_fn_dict[layer[0].replace(".", "")] = MLP(node_emd_input_size, 
                                                     self.node_emb_configs['mlp'],
                                                     do_prob=self.dropout_prob['mlp'],
-                                                    is_batch_norm=self.batch_norm['mlp'],
+                                                    is_batch_norm=self.is_batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN'
@@ -449,37 +459,101 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.rec_rel = rec_rel
         self.send_rel = send_rel
 
-    def set_run_params(self, data_stats, domain='time', norm_type=None, fex_configs=[]):
+ 
+    def set_run_params(self, data_stats, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
-        Set the run parameters for the encoder.
-        """
-        self.fex_configs = fex_configs
-
-        self.transform = DataTransformer(domain=domain, norm_type=norm_type, data_stats=data_stats)
-        self.feature_extractor = FeatureExtractor(fex_configs=fex_configs)
-
-    def process_input_data(self, data):
-        """
-        Transform the data
-            - domain change
-            - normalization
-        Feature extraction
+        Set the run parameters for the encoder model
 
         Parameters
         ----------
-        data: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+        domain_config : str
+            Domain configuration of the data (e.g., 'time', 'frequency')
+        """
+        self._domain_config = domain_config
+        self._raw_data_norm = raw_data_norm
+        self._feat_norm = feat_norm
+        self._feat_configs = feat_configs
+        self._reduc_config = reduc_config
+
+        self._domain = domain_config['type']
+        self._feat_names = self._get_feature_names() if self._feat_configs else None
+
+        self.data_stats = data_stats
+
+    def _get_feature_names(self):
+        """
+        Get the names of the features that will be used in the enocder model.
+        """
+        non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
+        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
+
+        return non_rank_feats + rank_feats
+    
+    def init_input_processors(self):
+        self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
+        self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats) if self._raw_data_norm else None
+        self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm) if self._feat_norm else None
+
+        # define feature objects
+        if self._domain == 'time':
+            self.time_fex = TimeFeatureExtractor(self._feat_configs) if self._feat_configs else None
+        elif self._domain == 'freq':
+            self.freq_fex = FrequencyFeatureExtractor(self._feat_configs) if self._feat_configs else None
+        
+        self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config) if self._reduc_config else None
+
+    def process_input_data(self, time_data, get_data_shape=False):
+        """
+        Parameters
+        ----------
+        time_data: torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             Input node data
 
         Returns
         -------
         data: torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
         """
-        # transform data
-        data = self.transform(data)
+        self.init_input_processors()
 
-        # extract features from data if fex_configs are provided
-        if self.fex_configs:
-            data = self.feature_extractor(data)
+        # domain transform data (mandatory)
+        if self._domain == 'time':
+            data = self.domain_transformer.transform(time_data)
+        elif self._domain == 'freq':
+            data, freq_bins = self.domain_transformer.transform(time_data)
+
+        # normalize raw data (optional)
+        if self.raw_data_normalizer:
+            if self._domain == 'time':
+                data = self.raw_data_normalizer.normalize(data)
+            elif self._domain == 'freq':
+                print("\nFrequency data cannot be normalzied before feature extraction.")
+
+        # extract features from data (optional)
+        is_fex = False
+        if self._domain == 'time':
+            if self.time_fex:
+                data = self.time_fex.extract(data)
+                is_fex = True
+        elif self._domain == 'freq':
+            if self.freq_fex:
+                data = self.freq_fex.extract(data, freq_bins)
+                is_fex = True
+
+        # normalize features (optional : if feat_norm is provided)
+        if self.feat_normalizer:
+            if is_fex:
+                data = self.feat_normalizer.normalize(data)
+            else:
+                print("\nNo features extracted, so feature normalization is skipped.")
+
+        # reduce features (optional : if reduc_config is provided)
+        if self.feat_reducer:
+            data = self.feat_reducer.reduce(data)
+
+        if get_data_shape:
+            n_comps = data.size(-2) 
+            n_dims = data.size(-1)
+            return n_comps, n_dims
 
         return data
 
@@ -508,9 +582,6 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         # process the input data
         x = self.process_input_data(data)
-
-        # extract features from data
-        # [TODO] Add the feature extraction logic here if needed
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]
