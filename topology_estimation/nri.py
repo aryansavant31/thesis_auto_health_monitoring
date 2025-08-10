@@ -139,12 +139,16 @@ class NRI(LightningModule):
             self.start_time = time.time()
             print(f"train start time: {self.start_time}")
 
-        data, relations, _ = batch
+        data_batch, rel_batch = batch
+
+        data, relations, _ = data_batch
+        rec_rel, send_rel = rel_batch
         
         num_nodes = data.size(1)
         target = self.decoder.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
+        self.set_input_graph(rec_rel, send_rel)
         edge_pred, x_pred, x_var = self.forward(data)
 
         # Loss calculation

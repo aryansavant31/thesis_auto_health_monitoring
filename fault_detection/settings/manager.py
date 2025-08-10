@@ -291,6 +291,7 @@ class AnomalyDetectorPredictManager(AnomalyDetectorPredictConfig):
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.version = max_model + 1
             new_model = f'{self.node_type}_{run_type}_{self.version}'
+            print(f"Next fault detection folder will be: {new_model}")
         else:
             new_model = f'{self.node_type}_{run_type}_1'  # If no v folders exist
 

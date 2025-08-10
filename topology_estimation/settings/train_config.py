@@ -258,7 +258,7 @@ class NRITrainConfig:
 
     # 4: Sparsifier parameters
 
-        self.spf_config = get_spf_config('no_spf', is_expert=False)
+        self.spf_config = get_spf_config('no_spf', is_expert=True)
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 

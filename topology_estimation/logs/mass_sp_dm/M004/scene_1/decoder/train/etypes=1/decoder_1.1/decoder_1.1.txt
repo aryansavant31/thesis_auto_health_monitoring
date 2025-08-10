@@ -1,1 +1,1 @@
-c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\healthy\series_tp[OG]\[D] gru\T600 [acc, pos, vel]\(spf) no_spf (is_exp_top=False)\(D) time\(D) [no_feat] [no_reduc]\(D) (dims = 3)
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\healthy\series_tp[OG]\[D] gru\T600 [acc, pos, vel]\(spf) no_spf (is_exp_top = False)\(D) time\(D) [no_feat] [no_reduc]\(D) (dims = 3)

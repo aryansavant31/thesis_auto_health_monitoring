@@ -368,11 +368,18 @@ class Decoder(LightningModule):
             self.start_time = time.time()
             print(f"train start time: {self.start_time}")
 
-        data, _, _ = batch
+        data_batch, rel_batch = batch
+
+        data, relations, _ = data_batch
+        rec_rel, send_rel = rel_batch
+
+        edge_matrix = 0.5*(rec_rel + send_rel).sum(dim=2, keepdim=True) 
         
         target = self.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
+        self.set_input_graph(rec_rel, send_rel)
+        self.set_edge_matrix(edge_matrix)
         x_pred, x_var = self.forward(data)
 
         # Loss calculation

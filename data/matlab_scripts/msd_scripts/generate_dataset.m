@@ -22,7 +22,7 @@ function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
             S = struct();
             % node_data = signal_data(:, m);  % Time series for mass m
 
-            save_path = fullfile(base_path, 'nodes', sprintf('mass_%d', m), signal_type);
+            save_path = fullfile(base_path, 'nodes', sprintf('%d_mass_%d', m, m), signal_type);
             if ~exist(save_path, 'dir')
                 mkdir(save_path);
             end

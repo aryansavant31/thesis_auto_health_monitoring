@@ -135,9 +135,10 @@ class NRITrainManager(NRITrainConfig):
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
+            max_model = max(int(f.split('_')[-1].split('.')[-1]) for f in model_folders)
             self.model_num = max_model + 1
             new_model = f'edge_estimator_{self.n_edge_types}.{self.model_num}'
+            print(f"Next edge estimator folder will be: {new_model}")
         else:
             new_model = f'edge_estimator_{self.n_edge_types}.1'  # If no v folders exist
 

@@ -294,6 +294,9 @@ class DatasetViewer(DataConfig):
         self.unhealthy_types = list(set(self.unhealthy_types))
         self.node_types = list(set(self.node_types))
         self.signal_types = list(set(self.signal_types))
+
+        # sort node types by their numeric prefix
+        self.node_types = sorted(set(self.node_types), key=lambda x: int(x.split('_')[0]) if x.split('_')[0].isdigit() else (_ for _ in ()).throw(ValueError(f"Invalid node type format: {x}. Node types should start with a number.")))
     
     def _explore_scenario(self, scenario_path: Path) -> Dict:
         """

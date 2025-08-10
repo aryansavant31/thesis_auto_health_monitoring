@@ -53,7 +53,7 @@ class ProcessRawMSDEdgeData:
             hdf5_filename = os.path.splitext(os.path.basename(mat_file_path))[0] + '.hdf5'
         else:
             # Create a default 2x2 adjacency matrix with all elements 0
-            adj_matrix = np.zeros((2, 2))
+            adj_matrix = -1 * np.ones((2, 2))
             hdf5_filename = 'null_adj.hdf5'
 
         hdf5_path = os.path.join(processed_path, hdf5_filename)
