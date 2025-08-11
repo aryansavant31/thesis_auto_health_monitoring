@@ -120,8 +120,9 @@ class AnomalyDetector:
 
     
 class TrainerAnomalyDetector:
-    def __init__(self, logger:SummaryWriter=None):
+    def __init__(self, logger:SummaryWriter=None, hparams=None):
         self.logger = logger
+        self.hparams = hparams
 
     def process_input_data(self, anomaly_detector:AnomalyDetector, data_loader, get_data_shape=False):
         """
@@ -245,10 +246,11 @@ class TrainerAnomalyDetector:
         accuracy = np.mean(self.df['pred_label'] == self.df['given_label'])
         print(f"Training accuracy: {accuracy:.2f}")
 
+        anomaly_detector.anom_config['train_accuracy'] = accuracy
         # save model
         if self.logger:
             self.logger.add_scalar("train/accuracy", accuracy)
-            
+            self.logger.add_hparams({**anomaly_detector.anom_config, **self.hparams}, {})
             model_path = os.path.join(self.logger.log_dir, 'anomaly_detector.pkl')
             with open(model_path, 'wb') as f:
                 pickle.dump(anomaly_detector, f)

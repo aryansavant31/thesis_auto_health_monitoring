@@ -43,13 +43,13 @@ class DataConfig:
                                 'SPP':'spring_particles',
                                 'ASM':'ASML'}
         
-        self.application    = 'MSD'
+        self.application    = 'BER'
 
-        self.machine_type   = 'M004'
+        self.machine_type   = 'cwru'
         self.scenario       = 'scene_1'
-        self.node_type      = ['ALL']           # options ['ALL'] or the specific node type
-        self.signal_types   = ['acc', 'pos', 'vel'] # in hdf5 format
-        self.fs             = [1000] # sampling frequency
+        self.node_type      = ['1_gearbox']           # options ['ALL'] or the specific node type
+        self.signal_types   = ['acc'] # in hdf5 format
+        self.fs             = [48000] # sampling frequency
 
         self.format         = 'hdf5'  # options: hdf5
 
@@ -66,19 +66,23 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
+            '0_B-007': [get_augment_config('OG')],
         }
     
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
         }
         
-        self.unhealthy_configs = { 
+        self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
+            '0_B-007': [get_augment_config('OG')],
         }
         
     def set_predict_dataset(self):

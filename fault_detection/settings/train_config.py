@@ -5,6 +5,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
+
 # global imports
 from data.config import DataConfig, get_domain_config
 from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
@@ -52,7 +53,7 @@ class AnomalyDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 3
+        self.model_num = 1
         self.is_log = True
 
         # dataset parameters
@@ -68,7 +69,7 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time', data_config=self.data_config)
         self.raw_data_norm = 'min_max' 
         self.feat_configs = [
-            get_time_feat_config('from_ranks', n=5, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
+            # get_time_feat_config('from_ranks', n=5, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
         ]  
         self.reduc_config = None # or None
         self.feat_norm = None
@@ -101,6 +102,13 @@ def get_anom_config(anom_type, **kwargs):
         anom_config['seed'] = kwargs.get('seed', 42)
         anom_config['contam'] = kwargs.get('contam', 'auto')
         anom_config['n_jobs'] = kwargs.get('n_jobs', -1)
+
+        # hyperparameters for isolation forest
+
+        # anom_config['hparams'] = {
+        #     HP_NUM_TREES.name: anom_config['n_estimators'],
+        #     HP_CONTAM.name: anom_config['contam'],
+        # }
 
     return anom_config  
 
