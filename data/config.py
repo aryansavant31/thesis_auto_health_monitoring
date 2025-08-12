@@ -48,7 +48,11 @@ class DataConfig:
         self.machine_type   = 'cwru'
         self.scenario       = 'scene_1'
         self.node_type      = ['1_gearbox']           # options ['ALL'] or the specific node type
-        self.signal_types   = ['acc'] # in hdf5 format
+        self.signal_types   = {'1_gearbox': ['acc', 'pos', 'vel']} 
+                            #    '2_mass_2': ['acc', 'pos', 'vel'],
+                            #    '3_mass_3': ['acc', 'pos', 'vel'],
+                            #    '4_mass_4': ['acc', 'pos', 'vel'],} # in hdf5 format
+        
         self.fs             = [48000] # sampling frequency
 
         self.format         = 'hdf5'  # options: hdf5
@@ -66,23 +70,31 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
+            'O_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
-            '0_B-007': [get_augment_config('OG')],
+            # '0_B-021': [get_augment_config('OG')],
+            # '0_B-007': [get_augment_config('OG')],
+        }
+
+        self.unknown_configs = {
         }
     
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
+            # '0_N': [get_augment_config('OG')],
+            # '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
-            '0_B-007': [get_augment_config('OG')],
+            # '0_B-007': [get_augment_config('OG')],
+            # '0_B-007': [get_augment_config('OG')],
+        }
+
+        self.unknown_configs = {
+            '1_N': [get_augment_config('OG')],
         }
         
     def set_predict_dataset(self):
@@ -92,6 +104,9 @@ class DataConfig:
         }
         
         self.unhealthy_configs = {
+        }
+
+        self.unknown_configs = {
         }
     
     def _process_ds_addresses(self, config:dict, ds_type):
@@ -125,13 +140,13 @@ class DataConfig:
                 edge_ds_paths[ds_subtype] = edge_hdf5_files
                 
             # Build node paths
-            for node_type in self.node_options:
+            for node_type, signal_types in self.signal_types.items():
                 node_ds_paths[node_type] = {}
 
                 for ds_subtype, _ in config.items():
                     node_ds_paths[node_type][ds_subtype] = []
 
-                    for signal_type in self.signal_types:
+                    for signal_type in signal_types:
                         node_path = os.path.join(
                             self.main_ds_path, ds_type, ds_subtype, 'processed', 
                             'nodes', node_type, signal_type
@@ -173,12 +188,13 @@ class DataConfig:
         
         # get actual node types to iterate over
         self.view = DatasetViewer()
-        self.node_options = self.view.node_types  if self.node_type == ['ALL'] else self.node_type
+        # self.node_options = self.view.node_types  if self.node_type == ['ALL'] else self.node_type
+
         
         # Process healthy and unhealthy dataset addresses
         node_ds_path_main['OK'], edge_ds_path_main['OK'] = self._process_ds_addresses(self.healthy_configs, 'healthy')
         node_ds_path_main['NOK'], edge_ds_path_main['NOK'] = self._process_ds_addresses(self.unhealthy_configs, 'unhealthy')                                                                 
-        
+        node_ds_path_main['UK'], edge_ds_path_main['UK'] = self._process_ds_addresses(self.unknown_configs, 'unknown')
         
         return node_ds_path_main, edge_ds_path_main
     
@@ -252,6 +268,7 @@ class DatasetViewer(DataConfig):
         self.scenarios: List[str] = []
         self.healthy_types: List[str] = []
         self.unhealthy_types: List[str] = []
+        self.unknown_types: List[str] = []
         self.node_types: List[str] = []
         self.signal_types: List[str] = []
 
@@ -296,6 +313,7 @@ class DatasetViewer(DataConfig):
         self.scenarios = list(set(self.scenarios))
         self.healthy_types = list(set(self.healthy_types))
         self.unhealthy_types = list(set(self.unhealthy_types))
+        self.unknown_types = list(set(self.unknown_types))
         self.node_types = list(set(self.node_types))
         self.signal_types = list(set(self.signal_types))
 
@@ -331,6 +349,15 @@ class DatasetViewer(DataConfig):
                 if health_type.is_dir():
                     self.unhealthy_types.append(health_type.name)
                     structure["unhealthy"][health_type.name] = self._explore_processed_data(health_type)
+
+        # Explore unknown folder
+        unknown_path = scenario_path / "unknown"
+        if unknown_path.exists():
+            structure["unknown"] = {}
+            for health_type in unknown_path.iterdir():
+                if health_type.is_dir():
+                    self.unhealthy_types.append(health_type.name)
+                    structure["unknown"][health_type.name] = self._explore_processed_data(health_type)
         
         return structure
 
@@ -421,7 +448,7 @@ class DatasetViewer(DataConfig):
     def _build_rich_tree(self, parent_node, structure, level=0):
         """Helper method to build rich tree structure."""
         # Define folder names that should be white
-        white_folders = {'healthy', 'unhealthy', 'nodes', 'edges', 'processed'}
+        white_folders = {'healthy', 'unhealthy', 'unknown', 'nodes', 'edges', 'processed'}
         
         # Track which type labels have been added at this level
         added_labels = set()
@@ -441,6 +468,9 @@ class DatasetViewer(DataConfig):
                 if key in self.unhealthy_types and 'unhealthy_type' not in added_labels:
                     parent_node.add(f"[blue]<unhealthy_type>[/blue]")
                     added_labels.add('unhealthy_type')
+                if key in self.unknown_types and 'unknown_type' not in added_labels:
+                    parent_node.add(f"[blue]<unknown_type>[/blue]")
+                    added_labels.add('unknown_type')
                 if key in self.node_types and 'node_type' not in added_labels:
                     parent_node.add(f"[blue]<node_type>[/blue]")
                     added_labels.add('node_type')

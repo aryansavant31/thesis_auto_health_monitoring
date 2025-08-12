@@ -62,7 +62,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(model_path, f'[anom] {self.anom_config['type']}')
 
         # add datastats to path
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{', '.join(self.data_config.signal_types)}]")
+        signal_types_str = ', '.join(
+            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types.items()
+        )
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
         # add model hparams to path
         model_path = os.path.join(model_path, f"[{self.anom_config['type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
@@ -346,15 +349,21 @@ class HelperClass:
 
         return augment_str_list
     
-    def set_ds_types_in_path(self, data_config, log_path):
+    def set_ds_types_in_path(self, data_config:DataConfig, log_path):
         """
-        Takes into account both empty healthy and unhealthy config and sets the path accordingly.
+        Takes into account both empty healthy, unhealthy and unknown data config and sets the path accordingly.
         """
-        if data_config.unhealthy_configs == {}:
+        if data_config.healthy_configs != {} and data_config.unhealthy_configs == {} and data_config.unknown_configs == {}:
             log_path = os.path.join(log_path, 'healthy')
 
-        elif data_config.unhealthy_configs != {}:
+        elif data_config.healthy_configs != {} and data_config.unhealthy_configs != {} and data_config.unknown_configs == {}:
             log_path = os.path.join(log_path, 'healthy_unhealthy')
+
+        elif data_config.unknown_configs != {} and data_config.unhealthy_configs != {} and data_config.healthy_configs != {}:
+            log_path = os.path.join(log_path, 'healthy_unhealthy_unknown')
+
+        elif data_config.healthy_configs == {} and data_config.unhealthy_configs == {} and data_config.unknown_configs != {}:
+            log_path = os.path.join(log_path, 'unknown')
 
         # add ds_subtype to path
         config_str = ''
@@ -366,7 +375,7 @@ class HelperClass:
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)                    
                 augment_str_main = ', '.join(augment_str_list) 
 
-                healthy_config_str_list.append(f'{healthy_type}[{augment_str_main}]')
+                healthy_config_str_list.append(f'(OK):{healthy_type}[{augment_str_main}]')
 
             config_str = ' + '.join(healthy_config_str_list)
 
@@ -378,12 +387,27 @@ class HelperClass:
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)
                 augment_str_main = ', '.join(augment_str_list) 
 
-                unhealthy_config_str_list.append(f'{unhealthy_type}[{augment_str_main}]')
+                unhealthy_config_str_list.append(f'(NOK):{unhealthy_type}[{augment_str_main}]')
 
             if config_str:
                 config_str += f" + {' + '.join(unhealthy_config_str_list)}"
             else:
                 config_str += ' + '.join(unhealthy_config_str_list)
+
+        # add unknown config to path if exists
+        if data_config.unknown_configs != {}:
+            unknown_config_str_list = []
+
+            for unknown_type, augment_configs in data_config.unknown_configs.items():
+                augment_str_list = self.get_augmment_config_str_list(augment_configs)
+                augment_str_main = ', '.join(augment_str_list) 
+
+                unknown_config_str_list.append(f'(UK):{unknown_type}[{augment_str_main}]')
+
+            if config_str:
+                config_str += f" + {' + '.join(unknown_config_str_list)}"
+            else:
+                config_str += ' + '.join(unknown_config_str_list)
 
         log_path = os.path.join(log_path, config_str)
         return log_path

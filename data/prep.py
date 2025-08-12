@@ -128,7 +128,7 @@ class DataPreprocessor:
         label_counts : dict
             Dictionary containing counts of each label.
         """
-        label_counts = {1: 0, -1: 0, 0: 0}  # Assuming labels are 1 for healthy, -1 for unhealthy, and 0 for unknown
+        label_counts = {0: 0, 1: 0, -1: 0}  # Assuming labels are 0 for healthy, 1 for unhealthy, and -1 for unknown
 
         for data in dataset:
             label_value = int(data[-1].item())
@@ -174,9 +174,9 @@ class DataPreprocessor:
         
         # get number of OK and NOK samples
         des_label_counts = self._get_label_counts(dataset)
-        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {1: 0, -1: 0, 0: 0}
+        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
-        print(f"\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[1]}, NOK={des_label_counts[-1]}, UK={des_label_counts[0]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
+        print(f"\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # get dataset statistics
         data_stats = self._get_dataset_stats(dataset)
@@ -248,10 +248,10 @@ class DataPreprocessor:
         # get number of OK and NOK samples in each set
         train_label_counts = self._get_label_counts(train_set)
         test_label_counts = self._get_label_counts(test_set)
-        val_label_counts = self._get_label_counts(val_set) if val_set is not None else {1: 0, -1: 0, 0: 0}
-        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {1: 0, -1: 0, 0: 0}
+        val_label_counts = self._get_label_counts(val_set) if val_set is not None else {0: 0, 1: 0, -1: 0}
+        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
-        print(f"\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[1]}, NOK={train_label_counts[-1]}, UK={train_label_counts[0]}], Test: {n_test} [OK={test_label_counts[1]}, NOK={test_label_counts[-1]}, UK={test_label_counts[0]}], Val: {n_val} [OK={val_label_counts[1]}, NOK={val_label_counts[-1]}, UK={val_label_counts[0]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
+        print(f"\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # get dataset statistics
         train_data_stats = self._get_dataset_stats(train_set)
@@ -396,8 +396,10 @@ class DataPreprocessor:
         final_edge_data_np = np.concatenate(all_ds_subtype_edges, axis=0)        # (n_samples, n_edges)
         
         if ds_type == 'OK':
-            final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
         elif ds_type == 'NOK':
+            final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+        elif ds_type == 'UK':
             final_node_labels_np = (-1) * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors

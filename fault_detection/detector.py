@@ -192,7 +192,7 @@ class TrainerAnomalyDetector:
 
             # convert data to numpy array for fitting
             data_np = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
-            label_np = label.view(-1).numpy()  # shape (batch size,) (1 for OK, -1 for NOK)
+            label_np = label.view(-1).numpy()  # shape (batch size,) (0 for OK, 1 for NOK, -1 for UK)
 
             # # make labels optimized for sklearn models (convert label to 1 for normal data and -1 for anomalies)
             # label_skl = np.where(label_np == 0, 1, -1)  # assuming 0 is normal and 1 is anomaly
@@ -240,10 +240,17 @@ class TrainerAnomalyDetector:
         print(f"\nModel fitted successfully in {training_time:.2f} seconds")
 
         # training accuracy and scores
-        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
         self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
+        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
 
-        accuracy = np.mean(self.df['pred_label'] == self.df['given_label'])
+        # preprocess pred label to match the given label notations
+        self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+        valid_rows = self.df['given_label'] != -1
+
+        # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
+        filtered_df = self.df[valid_rows]
+
+        accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
         print(f"Training accuracy: {accuracy:.2f}")
 
         anomaly_detector.anom_config['train_accuracy'] = accuracy

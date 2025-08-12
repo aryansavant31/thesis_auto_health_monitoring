@@ -1,140 +1,117 @@
-import sys
-import os
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
-
-from utils.tensorboard_logger import StdoutToTensorBoard
-
-# This will resolve log_dir relative to main.py
-version = 'v28'
-connsol_log = StdoutToTensorBoard(log_dir=f"logs/trials/nri/version_{version}")
-
-print("Starting run from main script...")
-
-from data.config import DataConfig
-from data.prep import load_spring_particle_data
-
-data_config = DataConfig()
-data_config.set_train_valid_dataset()
-
-# get node and edge dataset path from which data will be loaded
-node_ds_paths, edge_ds_paths = data_config.get_dataset_paths()
-
-# load datalaoders
-train_loader, valid_loader, test_loader = load_spring_particle_data(node_ds_paths, edge_ds_paths)
-
-dataiter = iter(train_loader)
-data = next(dataiter)
-
-n_nodes = data[0].shape[1]
-n_timesteps = data[0].shape[2]
-n_dims = data[0].shape[3]
-
-print(f"Number of nodes: {n_nodes}")
-print(f"Number of timesteps: {n_timesteps}")  
-print(f"Number of dimensions: {n_dims}")
-
-import numpy as np
 import torch
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def encode_onehot(labels):
-    classes = set(labels)
-    classes_dict = {c: np.identity(len(classes))[i, :] for i, c in
-                    enumerate(classes)}
-    labels_onehot = np.array(list(map(classes_dict.get, labels)),
-                             dtype=np.int32)
-    return labels_onehot
+from data.prep import DataPreprocessor
+from data.config import DataConfig
+from pytorch_lightning.utilities import rank_zero_only
 
-# Generate off-diagonal fully connected graph
-off_diag = np.ones([5, 5]) - np.eye(5)
+def load_stuff():
+    data_config = DataConfig(run_type='train')
+    data_preprocessor = DataPreprocessor(package='topology_estimation')
 
-rec_rel = np.array(encode_onehot(np.where(off_diag)[0]), dtype=np.float32)
-send_rel = np.array(encode_onehot(np.where(off_diag)[1]), dtype=np.float32)
-rec_rel = torch.FloatTensor(rec_rel)
-send_rel = torch.FloatTensor(send_rel)
+    # load dataloaders (runs in all ranks)
+    train_package, test_package, val_package = data_preprocessor.get_training_data_package(
+        data_config, train_rt=0.8, test_rt=0.1, val_rt=0.1, num_workers=0
+    )
 
-rec_rel = rec_rel.to(device)
-send_rel = send_rel.to(device)
+    train_loader, train_data_stats = train_package
+    test_loader, test_data_stats = test_package
+    val_loader, val_data_stats = val_package
 
-from topology_estimation.config.train_settings import TopologyEstimatorConfig
-from topology_estimation.encoder import Encoder
-from torchinfo import summary
+    dataiter = iter(train_loader)
+    data = next(dataiter)
 
-tp_config = TopologyEstimatorConfig()
-tp_config.set_encoder_params()
+    n_nodes = data[0].shape[1]
+    n_timesteps = data[0].shape[2]
+    n_dims = data[0].shape[3]
 
-encoder = Encoder(n_timesteps=n_timesteps, 
-                  n_dims=n_dims,
-                  pipeline=tp_config.encoder_pipeline, 
-                  n_edge_types=tp_config.n_edge_types, 
-                  is_residual_connection=tp_config.is_residual_connection,
-                  edge_emd_configs=tp_config.edge_emb_configs_enc, 
-                  node_emd_configs=tp_config.node_emb_configs_enc, 
-                  drop_out_prob=tp_config.dropout_prob_enc,
-                  batch_norm=tp_config.batch_norm_enc, 
-                  attention_output_size=tp_config.attention_output_size)
+    from settings.manager import NRITrainManager
+    nri_config = NRITrainManager(data_config)
 
-encoder.set_input_graph(rec_rel, send_rel)
-enocder = encoder.to(device)
+    from graph_structures import RelationMatrixMaker
+    rm = RelationMatrixMaker(nri_config.spf_config, n_nodes)
+    rel_loader = rm.get_relation_matrix_loader(train_loader)
 
-# print(summary(encoder, (64, 5, n_timesteps, n_dims)))
-print(encoder)
+    from encoder import Encoder
+    from decoder import Decoder
+    import inspect
 
-from topology_estimation.decoder import Decoder
+    # Encoder setup
+    req_enc_model_params = inspect.signature(Encoder.__init__).parameters.keys()
+    req_enc_run_params = inspect.signature(Encoder.set_run_params).parameters.keys()
+    enc_model_params = {key.removesuffix('_enc'): value for key, value in nri_config.__dict__.items() if key.removesuffix('_enc') in req_enc_model_params}
+    enc_run_params = {key.removeprefix('enc_'): value for key, value in nri_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params}
+    enc_run_params['data_stats'] = train_data_stats
 
-tp_config.set_decoder_params()
+    # Decoder setup
+    req_dec_model_params = inspect.signature(Decoder.__init__).parameters.keys()
+    req_dec_run_params = inspect.signature(Decoder.set_run_params).parameters.keys()
+    dec_model_params = {key.removesuffix('_dec'): value for key, value in nri_config.__dict__.items() if key.removesuffix('_dec') in req_dec_model_params}
+    dec_run_params = {key.removeprefix('dec_'): value for key, value in nri_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params}
+    dec_run_params['data_stats'] = train_data_stats
 
-decoder = Decoder(n_dim=n_dims,
-                  msg_out_size=tp_config.msg_out_size,
-                  n_edge_types=tp_config.n_edge_types,
-                  skip_first=tp_config.skip_first_edge_type,
-                  edge_mlp_config=tp_config.edge_mlp_config_dec,
-                  recurrent_emd_type=tp_config.recurrent_emd_type,
-                  out_mlp_config=tp_config.out_mlp_config_dec,
-                  do_prob=tp_config.dropout_prob_dec,
-                  is_batch_norm=tp_config.is_batch_norm_dec)
+    # Get n_comps and n_dims
+    none_dict = {param: None for param in inspect.signature(Encoder).parameters.keys()}
+    pre_enc = Encoder(**none_dict)
+    pre_enc.set_run_params(**enc_run_params)
+    n_comps, n_dims = pre_enc.process_input_data(data[0], get_data_shape=True)
+    enc_model_params['n_comps'] = n_comps
+    enc_model_params['n_dims'] = n_dims
+    dec_model_params['n_dims'] = n_dims
 
+    from nri import NRI
+    nri_model = NRI(enc_model_params, dec_model_params)
+    nri_model.set_run_params(enc_run_params, dec_run_params, nri_config.temp, nri_config.is_hard)
+    nri_model.set_training_params()
 
-# generate random edge matrix
-edge_matrix = torch.rand((64, 20, 2))
-edge_matrix = edge_matrix.to(device)
-
-decoder.set_input_graph(rec_rel, send_rel)
-decoder.set_edge_matrix(edge_matrix)
-decoder.set_run_params()
-
-decoder = decoder.to(device)
-
-# print(summary(decoder, (64, 5, n_timesteps, n_dims)))
-print(decoder)
-
-from topology_estimation.nri import NRI
-
-
-nri_model = NRI(encoder, decoder)
-nri_model.set_run_params()
-nri_model.set_input_graph(rec_rel, send_rel)
-
-print(nri_model)
-
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import RichProgressBar
-
-tp_config.set_training_params()
-nri_model.set_training_params()
-
-if tp_config.is_log:
-    logger = TensorBoardLogger('logs/trials', name=None, version=version)
-else:
+    # Logging (only in rank 0)
     logger = None
+    @rank_zero_only
+    def create_logger():
+        train_log_path = nri_config.get_train_log_path(
+            n_comps=enc_model_params['n_comps'],
+            n_dim=dec_model_params['n_dims']
+        )
+        if nri_config.is_log:
+            nri_config.save_params()
+            from pytorch_lightning.loggers import TensorBoardLogger
+            return TensorBoardLogger(
+                os.path.dirname(train_log_path),
+                name="",
+                version=os.path.basename(train_log_path)
+            )
+        return None
 
-trainer = Trainer(
-    max_epochs=tp_config.max_epochs,
-    logger=logger,
-    enable_progress_bar=True,
-    log_every_n_steps=1,)
+    logger = create_logger()
 
-trainer.fit(model=nri_model, train_dataloaders=train_loader)
+    return nri_model, train_loader, rel_loader, logger, nri_config
+
+def main():
+    nri_model, train_loader, rel_loader, logger, nri_config = load_stuff()
+
+    from utils.custom_loader import CombinedDataLoader
+    from pytorch_lightning import Trainer
+
+    trainer = Trainer(
+        max_epochs=nri_config.max_epochs,
+        logger=logger,
+        enable_progress_bar=True,
+        log_every_n_steps=1,
+        accelerator='cpu',
+        devices=4,
+        strategy='ddp'
+    )
+
+    trainer.fit(
+        model=nri_model,
+        train_dataloaders=CombinedDataLoader(train_loader, rel_loader)
+    )
+
+if __name__ == "__main__":
+    import torch.multiprocessing as mp
+    mp.set_start_method("spawn", force=True)  # safer for DDP on CPU
+    main()
