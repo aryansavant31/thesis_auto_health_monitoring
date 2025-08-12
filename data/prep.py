@@ -135,7 +135,7 @@ class DataPreprocessor:
             label_counts[label_value] += 1
         return label_counts
 
-    def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=10):
+    def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
         Create a custom dataloader and the data stats for the specified run type.
 
@@ -186,7 +186,7 @@ class DataPreprocessor:
 
         return (custom_loader, data_stats)
     
-    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50, num_workers=10):
+    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50, num_workers=1):
         """
         Create train, validation, and test dataloaders and compute their statistical metrics.
 
@@ -420,7 +420,9 @@ class DataPreprocessor:
 
                     # load node data
                     with h5py.File(hdf5_path, 'r') as f:
-                        data = f['data'][:]
+                        data_list = [f[rep_num][:] for rep_num in f.keys()]
+                        data = np.concatenate(data_list, axis=0)  # shape: (n_samples, n_timesteps)
+                        # data = f['data'][:]
 
                     # Apply augmentations
                     if ds_type == 'OK':

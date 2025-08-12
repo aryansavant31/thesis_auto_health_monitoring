@@ -84,7 +84,7 @@ class ConsoleLogger:
             if self.temp_file:
                 self.temp_file.close()
     
-    def save_to_file(self, log_file_path, script_name, base_name):
+    def save_to_file(self, log_file_path, script_name, base_name=None):
         """
         Save the captured output to a file
         """
@@ -104,7 +104,8 @@ class ConsoleLogger:
             # Write header
             log_file.write(f"=== SCRIPT EXECUTION LOG ===\n")
             log_file.write(f"Script: {script_name}\n")
-            log_file.write(f"Base Name: {base_name}\n")
+            if base_name:
+                log_file.write(f"Base Name: {base_name}\n")
             log_file.write(f"Start Time: {start_time_str}\n")
             log_file.write(f"End Time: {end_time_str}\n")
             log_file.write("=" * 50 + "\n\n")

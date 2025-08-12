@@ -41,14 +41,16 @@ class DataConfig:
         self.application_map = {'BER':'bearing',
                                 'MSD':'mass_sp_dm',
                                 'SPP':'spring_particles',
-                                'ASM':'ASML'}
+                                'ASM':'ASML',
+                                'ASMT':'asml_trial'}
         
-        self.application    = 'BER'
+        self.application    = 'ASMT'
 
-        self.machine_type   = 'cwru'
+        self.machine_type   = 'machine'
         self.scenario       = 'scene_1'
-        self.node_type      = ['1_gearbox']           # options ['ALL'] or the specific node type
-        self.signal_types   = {'1_gearbox': ['acc', 'pos', 'vel']} 
+        self.node_type      = ['1_ARYAN', '4_SHREYA']           # options ['ALL'] or the specific node type
+        self.signal_types   = {'1_ARYAN': ['measure_1', 'measure_2'],
+                               '4_SHREYA': ['temp_3', 'temp_4']} 
                             #    '2_mass_2': ['acc', 'pos', 'vel'],
                             #    '3_mass_3': ['acc', 'pos', 'vel'],
                             #    '4_mass_4': ['acc', 'pos', 'vel'],} # in hdf5 format
@@ -58,7 +60,7 @@ class DataConfig:
         self.format         = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 600
+        self.window_length  = 100
         self.stride         = 300
 
         if run_type == 'train':
@@ -84,8 +86,8 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            # '0_N': [get_augment_config('OG')],
-            # '0_N': [get_augment_config('OG')],
+            'M=mu1_E1_set01': [get_augment_config('OG')],
+            'M=mu1_E2_set02': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
@@ -94,7 +96,7 @@ class DataConfig:
         }
 
         self.unknown_configs = {
-            '1_N': [get_augment_config('OG')],
+            # '1_N': [get_augment_config('OG')],
         }
         
     def set_predict_dataset(self):

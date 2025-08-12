@@ -9,12 +9,13 @@ sys.path.insert(0, FEX_DIR) if FEX_DIR not in sys.path else None
 
 # global imports
 from data.config import DataConfig
+from console_logger import ConsoleLogger
 
 # local imports
 from settings.manager import FeatureRankingManager
 from ranking_utils.data_adapter import DataAdapter
 from ranking_utils.feature_performance import FeaturePerformance
-from ranking_utils.console_logger import ConsoleLogger
+
 
 class PerformanceMain:
     def __init__(self, data_config:DataConfig):

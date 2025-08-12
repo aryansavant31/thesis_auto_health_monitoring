@@ -15,7 +15,7 @@ import numpy as np
 import torch
 
 # local imports
-from data.config import DataConfig
+from config import DataConfig
 
 
 class DomainTransformer:

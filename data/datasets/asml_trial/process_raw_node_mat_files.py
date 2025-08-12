@@ -1,6 +1,14 @@
-import os
+import os, sys
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+
+# other imports
 import scipy.io
 import h5py
+
+# global imports
+from console_logger import ConsoleLogger
 
 class MatToHDF5Processor:
     """
@@ -11,35 +19,44 @@ class MatToHDF5Processor:
     def __init__(self, machine, scenario, ds_type):
         """
         Initialize the processor with input parameters.
-        :param base_path: Base directory containing the .mat files.
-        :param machine: Machine type (e.g., 'machine').
-        :param scenario: Scenario type (e.g., 'scene_1').
-        :param ds_type: Dataset type (e.g., 'healthy', 'unhealthy', 'unknown').
+
+        Parameters
+        ----------
+        machine: str
+            Machine type (e.g., 'machine').
+        scenario: str
+            Scenario type (e.g., 'scene_1').
+        ds_type: str
+            Dataset type (e.g., 'healthy', 'unhealthy', 'unknown').
         """
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.machine = machine
         self.scenario = scenario
         self.ds_type = ds_type
 
-        self.dummy_dict = {  
-            'a1':   {'m_1': ['measure_1', 'ARYAN'], 
-                    'm_2': ['measure_2', 'ARYAN']},
-            'a2':   {'n_1': ['noise_1', 'RAHUL'],
-                    'n_2': ['noise_2', 'RAHUL']},
-            'b1':   {'t_1': ['temp_1', 'HIMANI'],
-                     't_2': ['temp_2', 'HIMANI'],
-                     't_3': ['temp_3', 'SHREYA'],
-                     't_4': ['temp_4', 'SHREYA']},
-            'b2':   {'r_1': ['resist_1', 'NIKITA'],
-                    'r_2': ['resist_2', 'NIKITA'],
-                     'r_3': ['resist_3', 'ANUJA'],
-                     'r_4': ['resist_4', 'SHYAM']}
+        self.signal_dict = {  
+            'a1':   {'m_1': ['measure_1', '1_ARYAN'], 
+                    'm_2': ['measure_2', '1_ARYAN']},
+            'a2':   {'n_11': ['noise_1', '2_RAHUL'],
+                    'n_2': ['noise_2', '2_RAHUL']},
+            'b1':   {'t_1': ['temp_1', '3_HIMANI'],
+                     't_2': ['temp_2', '3_HIMANI'],
+                     't_3': ['temp_3', '4_SHREYA'],
+                     't_4': ['temp_4', '4_SHREYA']},
+            'b2':   {'r_1': ['resist_1', '5_NIKITA'],
+                    'r_2': ['resist_2', '5_NIKITA'],
+                     'r_3': ['resist_3', '6_ANUJA'],
+                     'r_4': ['resist_4', '7_SHYAM']}
         }
 
     def find_mat_files(self):
         """
         Step 1: Find all .mat files in the specified directory structure.
-        :return: List of paths to .mat files.
+
+        Return 
+        -------
+        List[str]
+            A list of paths to .mat files.
         """
         search_path = os.path.join(
             self.base_path, self.machine, self.scenario, self.ds_type
@@ -49,18 +66,34 @@ class MatToHDF5Processor:
             for file in files:
                 if file.endswith('.mat'):
                     mat_files.append(os.path.join(root, file))
+
+        # sort the list of .mat files alphabetic order
+        mat_files.sort() 
+
+        print("All the .mat files found:")
+        for idx, mat_file in enumerate(mat_files):
+            print(f"{idx+1}: {os.path.basename(mat_file)}")
+
         return mat_files
 
     def create_ds_subtype_folders(self, mat_files):
         """
         Step 2: Create ds_subtype folders based on .mat file names.
-        :param mat_files: List of paths to .mat files.
-        :return: Dictionary mapping ds_subtype folder paths to their .mat files.
+
+        Parameters
+        ----------
+        mat_files: List[str]
+            A list of paths to .mat files.
+
+        Returns
+        -------
+        dict
+            A dictionary mapping ds_subtype folder paths to lists of .mat files.
         """
         ds_subtype_folders = {}
         for mat_file in mat_files:
             file_name = os.path.basename(mat_file)
-            machine_id = mat_file.split(os.sep)[-2]  # Extract machine_id from path
+            machine_id = mat_file.split(os.sep)[-3]  # Extract machine_id from path
             e_set = "_".join(file_name.split('_')[:2])  # Extract E<e>_set<set_num>
             ds_subtype_folder = f"M={machine_id}_{e_set}"
             folder_path = os.path.join(
@@ -73,7 +106,11 @@ class MatToHDF5Processor:
     def process_mat_files(self, ds_subtype_folders):
         """
         Step 3: Process .mat files and organize data into the folder structure.
-        :param ds_subtype_folders: Dictionary mapping ds_subtype folders to .mat files.
+        
+        Parameters
+        ----------
+        ds_subtype_folders: dict
+            A dictionary mapping ds_subtype folder paths to lists of .mat files.
         """
         for ds_subtype_folder, mat_files in ds_subtype_folders.items():
             processed_path = os.path.join(ds_subtype_folder, 'processed', 'nodes')
@@ -81,15 +118,30 @@ class MatToHDF5Processor:
 
             for mat_file in mat_files:
                 file_name = os.path.basename(mat_file)
-                m_name = file_name.split('_')[-1].split('.')[0]  # Extract m_name
-                mat_data = scipy.io.loadmat(mat_file)  # Load .mat file
-                structure_data = mat_data.get('structure_data', {})  # Replace with actual key
+                
+                mat_mdl_name = file_name.split('.')[0].split('_')[-1]  # extract module name from file name
+                rep_num = file_name.split('_')[2]  
 
-                for field in structure_data:
-                    trace_id = field['name'][0]  # Extract trace_id
-                    time_data = field['time']  # Extract time column
-                    if m_name in self.dummy_dict and trace_id in self.dummy_dict[m_name]:
-                        short_form, module_name = self.dummy_dict[m_name][trace_id]
+                mat_data = scipy.io.loadmat(mat_file)  # Load .mat file
+                structure_data = mat_data.get('my_struct', {})  # Replace with actual key
+
+                for fields in structure_data:
+                    # iterate through each field in the structure
+                    for trace_id, time_data in zip(fields['name'], fields['time']):
+                        trace_id = trace_id[0].item()
+                        
+                        # check if mat_mdl_name exists in signal_dict
+                        if mat_mdl_name not in self.signal_dict:
+                            print(f"Warning: mat_module_name '{mat_mdl_name}' not found in signal_dict for '{rep_num}' in ds_subtype {os.path.basename(ds_subtype_folder)}. Skipping...")
+                            continue  # Skip this iteration and move to the next trace_id
+
+                        # check if trace_id exists in signal_dict[mat_module_name]
+                        if trace_id not in self.signal_dict[mat_mdl_name]:
+                            print(f"Warning: trace_id '{trace_id}' not found in signal_dict['{mat_mdl_name}'] for '{rep_num}' in ds_subtype {os.path.basename(ds_subtype_folder)}. Skipping...")
+                            continue  # Skip this iteration and move to the next trace_id
+                        
+                        # if both checks pass, proceed with saving hdf5 file
+                        short_form, module_name = self.signal_dict[mat_mdl_name][trace_id]
 
                         # Create module_name folder
                         module_path = os.path.join(processed_path, module_name)
@@ -101,8 +153,12 @@ class MatToHDF5Processor:
 
                         # Save time data to .hdf5 file
                         hdf5_file = os.path.join(signal_path, f"{trace_id}.hdf5")
-                        with h5py.File(hdf5_file, 'w') as hdf:
-                            hdf.create_dataset('time', data=time_data)
+                        with h5py.File(hdf5_file, 'a') as hdf:
+                            dataset_name = f"{rep_num}"  # Use rep_num to create unique dataset names
+                            if dataset_name in hdf:
+                                print(f"Warning: Dataset '{dataset_name}' already exists in '{hdf5_file}'. Overwriting...")
+                                del hdf[dataset_name]  # Remove the existing dataset if it already exists
+                            hdf.create_dataset(dataset_name, data=time_data)
 
     def run(self):
         """
@@ -120,9 +176,18 @@ class MatToHDF5Processor:
         print("Processing complete.")
 
 
-# Example usage
 if __name__ == "__main__":
-    processor = MatToHDF5Processor(machine="machine", 
-                                   scenario="scene_1", 
-                                   ds_type="healthy")
-    processor.run()
+    console_logger = ConsoleLogger()
+
+    with console_logger.capture_output():
+        print("Starting processing of .mat files...")
+
+        processor = MatToHDF5Processor(machine="machine", 
+                                    scenario="scene_1", 
+                                    ds_type="healthy")
+        processor.run()
+        print("All .mat files processed and organized into .hdf5 format.")
+
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    log_file_path = os.path.join(base_path, 'mat_processing_log.txt')
+    console_logger.save_to_file(log_file_path, "process_raw_node_mat_files.py")
