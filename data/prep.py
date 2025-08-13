@@ -182,7 +182,7 @@ class DataPreprocessor:
         data_stats = self._get_dataset_stats(dataset)
 
         # create custom dataloader
-        custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
+        custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
 
         return (custom_loader, data_stats)
     
@@ -365,6 +365,7 @@ class DataPreprocessor:
 
         for ds_subtype in ds_subtype_map.keys():
             per_node_tensors = []
+            min_samples_per_node = np.inf
 
             for node_type in sorted(node_type_map.keys()):
                 dim_segment_arrays = []
@@ -379,7 +380,11 @@ class DataPreprocessor:
 
                 # concatenate dims → (min_segments, t, n_dims)
                 node_tensor = np.concatenate(trimmed_segments, axis=-1)
-                per_node_tensors.append(node_tensor)
+
+                min_samples_per_node = min(min_samples_per_node, node_tensor.shape[0])
+                trimmed_node_tensor = node_tensor[:min_samples_per_node] # so that each sample has access to all nodes
+
+                per_node_tensors.append(trimmed_node_tensor)
 
             # Now we have list of (min_segments, t, n_dims) for each node
             # stack nodes → (min_segments, n_nodes, t, n_dims)
@@ -423,13 +428,16 @@ class DataPreprocessor:
                         data_list = [f[rep_num][:] for rep_num in f.keys()]
                         data = np.concatenate(data_list, axis=0)  # shape: (n_samples, n_timesteps)
                         # data = f['data'][:]
-
+      
                     # Apply augmentations
                     if ds_type == 'OK':
                        data = self.add_augmentations(data, self.data_config.healthy_configs[ds_subtype], ds_subtype)   
 
                     elif ds_type == 'NOK':
-                       data = self.add_augmentations(data, self.data_config.unhealthy_configs[ds_subtype], ds_subtype) 
+                       data = self.add_augmentations(data, self.data_config.unhealthy_configs[ds_subtype], ds_subtype)
+
+                    elif ds_type == 'UK':
+                       data = self.add_augmentations(data, self.data_config.unknown_configs[ds_subtype], ds_subtype)
                                                      
                     data_segments = segment_data(data, self.data_config.window_length, self.data_config.stride)
                     data_segments = np.expand_dims(data_segments, axis=-1)  # (n_segments, n_timesteps, 1)

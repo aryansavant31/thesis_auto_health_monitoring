@@ -41,27 +41,25 @@ class DataConfig:
         self.application_map = {'BER':'bearing',
                                 'MSD':'mass_sp_dm',
                                 'SPP':'spring_particles',
-                                'ASM':'ASML',
+                                'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application    = 'ASMT'
+        self.application    = 'ASM'
 
-        self.machine_type   = 'machine'
-        self.scenario       = 'scene_1'
-        self.node_type      = ['1_ARYAN', '4_SHREYA']           # options ['ALL'] or the specific node type
-        self.signal_types   = {'1_ARYAN': ['measure_1', 'measure_2'],
-                               '4_SHREYA': ['temp_3', 'temp_4']} 
-                            #    '2_mass_2': ['acc', 'pos', 'vel'],
-                            #    '3_mass_3': ['acc', 'pos', 'vel'],
-                            #    '4_mass_4': ['acc', 'pos', 'vel'],} # in hdf5 format
+        self.machine_type   = 'NXE'
+        self.scenario       = 'full_wafer'
+        self.signal_types   = {'2_ammf': ['acc_x', 'acc_y', 'acc_z'],
+                               '3_lra': ['pos_x', 'pos_y', 'pos_z']} 
+                 
+        self.node_type      = self.signal_types.keys()           # options ['ALL'] or the specific node type
         
-        self.fs             = [48000] # sampling frequency
+        self.t_end          = 1.63      # sec
 
         self.format         = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 100
-        self.stride         = 300
+        self.window_length  = 4000
+        self.stride         = 4000
 
         if run_type == 'train':
             self.set_train_dataset()
@@ -86,8 +84,8 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'M=mu1_E1_set01': [get_augment_config('OG')],
-            'M=mu1_E2_set02': [get_augment_config('OG')],
+            'M=mlC14_E1_set01': [get_augment_config('OG')],
+            #'M=mlC14_E2_set02': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {

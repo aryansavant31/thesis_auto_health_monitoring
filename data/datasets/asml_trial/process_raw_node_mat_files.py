@@ -129,6 +129,9 @@ class MatToHDF5Processor:
                     # iterate through each field in the structure
                     for trace_id, time_data in zip(fields['name'], fields['time']):
                         trace_id = trace_id[0].item()
+
+                        print(time_data, time_data.shape, type(time_data))
+                        break
                         
                         # check if mat_mdl_name exists in signal_dict
                         if mat_mdl_name not in self.signal_dict:

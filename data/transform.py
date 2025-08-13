@@ -161,7 +161,7 @@ def high_pass_filter(data, cutoff_freq, fs):
     # convert back to torch and original device
     return torch.from_numpy(filtered_data).to(device)
 
-def to_freq_domain(data, fs):
+def to_freq_domain(data, t_end):
     """
     Convert data to frequency domain using FFT.
 
@@ -169,8 +169,6 @@ def to_freq_domain(data, fs):
     ----------
     data : torch.tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input time data array.
-    fs : [list]
-        Sampling frequency list of the data (length should match number of dimensions).
 
     Returns
     -------
