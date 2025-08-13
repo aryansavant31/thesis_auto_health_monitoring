@@ -134,8 +134,8 @@ def high_pass_filter(data, cutoff_freq, fs):
     data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
     cutoff_freq : float
         Cutoff frequency for the high-pass filter.
-    fs : list
-        Sampling frequency list of the data (length should match number of dimensions).
+    fs : np.array, shape (n_nodes, n_dims)
+        Sampling frequency for each node and dimension
 
     Returns
     -------
@@ -150,18 +150,19 @@ def high_pass_filter(data, cutoff_freq, fs):
 
     filtered_data = np.zeros_like(data_np)
 
-    # apply filter for each dimension
-    for dim in range(n_dims):
-        b, a = butter(4, cutoff_freq / (0.5 * fs[dim]), btype='high')
-        # apply filter to each node for every sample
-        for sample in range(batch_size):
-            for node in range(n_nodes):
+    # apply filter to each node and dim
+    for node in range(n_nodes):
+        for dim in range(n_dims):
+            b, a = butter(4, cutoff_freq / (0.5 * fs[node, dim]), btype='high')
+            
+            # apply filter to each node for every sample
+            for sample in range(batch_size):
                 filtered_data[sample, node, :, dim] = filtfilt(b, a, data_np[sample, node, :, dim])
 
     # convert back to torch and original device
     return torch.from_numpy(filtered_data).to(device)
 
-def to_freq_domain(data, t_end):
+def to_freq_domain(data, fs):
     """
     Convert data to frequency domain using FFT.
 
@@ -169,6 +170,9 @@ def to_freq_domain(data, t_end):
     ----------
     data : torch.tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
         Input time data array.
+
+    fs : np.array, shape (n_nodes, n_dims)
+        Sampling frequency for each node and dimension
 
     Returns
     -------
@@ -187,25 +191,37 @@ def to_freq_domain(data, t_end):
     bins = []
 
     # apply FFT to each dimension of each node for every sample
-    for dim in range(n_dims):
-        bins_dim = np.fft.rfftfreq(n_timesteps, d=1/fs[dim]) # shape (n_bins,)
-        freq_mag_dim = np.abs(np.fft.rfft(data_np[..., dim], axis=2, norm='forward')) # real valued FFT magnitude, shape (batch_size, n_nodes, n_bins)
+    for node in range(n_nodes):
+        freq_mag_node = []
+        bins_node = []
 
-        # remove Nyquist frequency if n_timesteps is even
-        if n_timesteps % 2 == 0:
-            freq_mag_dim = freq_mag_dim[..., :-1]
-            bins_dim = bins_dim[:-1]
-        
-        # broadcast bins to match freq_mag shape
-        bins_dim_exp = np.broadcast_to(bins_dim, freq_mag_dim.shape)
+        for dim in range(n_dims):
+            bins_dim = np.fft.rfftfreq(n_timesteps, d=1/fs[node, dim]) # shape (n_bins,)
+            freq_mag_dim = np.abs(np.fft.rfft(data_np[:, node, :, dim], axis=1, norm='forward')) # real valued FFT magnitude, shape (batch_size, n_bins)
 
-        # store results for each dimension
-        freq_mag.append(freq_mag_dim)
-        bins.append(bins_dim_exp)
+            # remove Nyquist frequency if n_timesteps is even
+            if n_timesteps % 2 == 0:
+                freq_mag_dim = freq_mag_dim[:, :-1]
+                bins_dim = bins_dim[:-1]
 
-    # stack results across dimensions
-    freq_mag = np.stack(freq_mag, axis=-1)
-    bins = np.stack(bins, axis=-1)
+            # store results for each dimension
+            freq_mag_node.append(freq_mag_dim)
+            bins_node.append(bins_dim)
+
+        # stack results across dimensions
+        freq_mag_node = np.stack(freq_mag_node, axis=-1) # shape (batch_size, n_bins, n_dims)
+        bins_node = np.stack(bins_node, axis=-1) # shape (n_bins, n_dims)
+
+        # broadcast bins to match freq_mag_node shape
+        bins_node_exp = np.broadcast_to(bins_node, freq_mag_node.shape)
+
+        # store results for current node
+        freq_mag.append(freq_mag_node)
+        bins.append(bins_node_exp)
+
+    # stack results across nodes
+    freq_mag = np.stack(freq_mag, axis=1) # shape (batch_size, n_nodes, n_bins, n_dims)
+    bins = np.stack(bins, axis=1)
     
     # convert back to torch and original device
     freq_mag_tensor = torch.from_numpy(freq_mag).to(device)

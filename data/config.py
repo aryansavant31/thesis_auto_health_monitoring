@@ -318,7 +318,7 @@ class DatasetViewer(DataConfig):
         self.signal_types = list(set(self.signal_types))
 
         # sort node types by their numeric prefix
-        self.node_types = sorted(set(self.node_types), key=lambda x: int(x.split('_')[0]) if x.split('_')[0].isdigit() else (_ for _ in ()).throw(ValueError(f"Invalid node type format: {x}. Node types should start with a number.")))
+        # self.node_types = sorted(set(self.node_types), key=lambda x: int(x.split('_')[0]) if x.split('_')[0].isdigit() else (_ for _ in ()).throw(ValueError(f"Invalid node type format: {x}. Node types should start with a number.")))
     
     def _explore_scenario(self, scenario_path: Path) -> Dict:
         """
@@ -400,7 +400,7 @@ class DatasetViewer(DataConfig):
             #                 structure["nodes"][timestep.name][augment.name] = {}
                             
             # Get node types
-            for node_type in sorted(nodes_path.iterdir(), key=lambda x: int(x.name.split('_')[0])):
+            for node_type in sorted(nodes_path.iterdir(), key=lambda x: int(x.name.split('_')[0]) if x.name.split('_')[0].isdigit() else x.name):
                 if node_type.is_dir():
                     self.node_types.append(node_type.name)
                     structure["nodes"][node_type.name] = []

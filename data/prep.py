@@ -162,6 +162,12 @@ class DataPreprocessor:
         # load the dataset
         dataset = self._load_dataset()
 
+        print("\n\nNode and signal types are set as follows:\n")
+        print("(<node_num>) <node_type> : [<signal_types>]")
+        print(45*'-')
+        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
+            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+
         # retain only the desired number of samples
         total_samples = len(dataset)
 
@@ -176,8 +182,8 @@ class DataPreprocessor:
         des_label_counts = self._get_label_counts(dataset)
         rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
-        print(f"\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
-
+        print(f"\n\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        
         # get dataset statistics
         data_stats = self._get_dataset_stats(dataset)
 
@@ -216,6 +222,12 @@ class DataPreprocessor:
         # load the dataset
         dataset = self._load_dataset()
 
+        print("\n\nNode and signal types are set as follows:\n")
+        print("(<node_num>) <node_type> : [<signal_types>]")
+        print(45*'-')
+        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
+            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+
         # split the dataset into train, validation, and test sets
         total_samples = len(dataset)
 
@@ -251,7 +263,7 @@ class DataPreprocessor:
         val_label_counts = self._get_label_counts(val_set) if val_set is not None else {0: 0, 1: 0, -1: 0}
         rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
-        print(f"\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # get dataset statistics
         train_data_stats = self._get_dataset_stats(train_set)
@@ -461,8 +473,13 @@ class DataPreprocessor:
         fs_matrix = np.array(fs_matrix, dtype=np.float32)
 
         # save fs values to data_config for only OK type data
-        if ds_type == 'OK':
-            self.data_config.fs = fs_matrix
+        if ds_type == 'OK' or ds_type == 'UK':
+            if fs_matrix.size != 0:
+                self.data_config.fs = fs_matrix
+                print(f"'fs' is updated in data_config as given in loaded healthy (or unknown) data.\nNew fs:")
+                print(np.array2string(fs_matrix, separator=', '))
+            else:
+                print("No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config.")
 
         return node_dim_collect
     

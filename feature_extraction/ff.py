@@ -37,8 +37,8 @@ def get_freq_psd(freq_mag, fs):
     ----------
     freq_mag : torch.tensor, shape (batch_size, n_nodes, n_bins, n_dims)
         Frequency magnitude data.
-    fs : list
-        Sampling frequency list of the data (length should match number of dimensions).
+    fs : np.array, shape (n_nodes, n_dims)
+        Sampling frequency for each node and dimension
     
     Returns
     -------
@@ -46,7 +46,7 @@ def get_freq_psd(freq_mag, fs):
         Power spectral density data
     """
     n_bins = freq_mag.shape[2]
-    fs_tensor = torch.tensor(fs, dtype=freq_mag.dtype, device=freq_mag.device).view(1, 1, 1, -1)
+    fs_tensor = torch.tensor(fs, dtype=freq_mag.dtype, device=freq_mag.device).view(1, fs.shape[0], 1, fs.shape[1])
 
     psd = (torch.abs(freq_mag) ** 2) / (n_bins * fs_tensor)  # normalize by number of frequency bins and sampling frequency
     return psd
