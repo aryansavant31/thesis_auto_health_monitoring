@@ -53,7 +53,7 @@ class DataConfig:
                  
         self.node_type      = self.signal_types.keys()           # options ['ALL'] or the specific node type
         
-        self.t_end          = 1.63      # sec
+        self.fs             = None     # sampling frequency matrix, set in the data.prep.py
 
         self.format         = 'hdf5'  # options: hdf5
 

@@ -417,17 +417,26 @@ class DataPreprocessor:
     def _process_node_data(self, node_type_map, ds_type):
         # node_type -> ds_subtype -> dim -> segments
         node_dim_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        fs_matrix = [] # to store fs values for each node
 
         # process node data
         for node_type, ds_subtype_map in node_type_map.items():
+            node_fs_list = []  # to store fs values for all dimensions of the current node
+
             for ds_subtype, signal_type_paths in ds_subtype_map.items():
                 for dim_idx, hdf5_path in enumerate(signal_type_paths):
 
                     # load node data
                     with h5py.File(hdf5_path, 'r') as f:
-                        data_list = [f[rep_num][:] for rep_num in f.keys()]
-                        data = np.concatenate(data_list, axis=0)  # shape: (n_samples, n_timesteps)
-                        # data = f['data'][:]
+                        data_list = [f[key][:] for key in f.keys() if key.startswith('time_data')]
+                        fs_list = [f[key][:] for key in f.keys() if key.startswith('fs')]
+
+                        data = np.concatenate(data_list, axis=0)  # shape: (n_reps, n_timesteps)
+                        fs = np.concatenate(fs_list, axis=0) # shape: (n_reps,)
+
+                    # store the fs value for the current dimension
+                    if len(fs) > 0:
+                        node_fs_list.append(fs[0])  # assumes fs is consistent across reps for a dimension
       
                     # Apply augmentations
                     if ds_type == 'OK':
@@ -444,6 +453,16 @@ class DataPreprocessor:
 
                     # store segments
                     node_dim_collect[node_type][ds_subtype][dim_idx].append(data_segments)
+
+            # append the fs values for the current node to the fs_matrix
+            fs_matrix.append(node_fs_list)
+
+        # convert fs_matrix to numpy array of shape (n_nodes, n_dims)
+        fs_matrix = np.array(fs_matrix, dtype=np.float32)
+
+        # save fs values to data_config for only OK type data
+        if ds_type == 'OK':
+            self.data_config.fs = fs_matrix
 
         return node_dim_collect
     

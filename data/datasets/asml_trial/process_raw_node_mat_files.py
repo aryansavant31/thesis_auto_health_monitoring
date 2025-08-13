@@ -127,11 +127,11 @@ class MatToHDF5Processor:
 
                 for fields in structure_data:
                     # iterate through each field in the structure
-                    for trace_id, time_data in zip(fields['name'], fields['time']):
+                    for trace_id, time_data, time in zip(fields['name'], fields['data'], fields['time']):
                         trace_id = trace_id[0].item()
 
-                        print(time_data, time_data.shape, type(time_data))
-                        break
+                        # For asml DATA only
+                        fs = 1 / time[1] - time[0]  # Calculate sampling frequency
                         
                         # check if mat_mdl_name exists in signal_dict
                         if mat_mdl_name not in self.signal_dict:
@@ -157,11 +157,18 @@ class MatToHDF5Processor:
                         # Save time data to .hdf5 file
                         hdf5_file = os.path.join(signal_path, f"{trace_id}.hdf5")
                         with h5py.File(hdf5_file, 'a') as hdf:
-                            dataset_name = f"{rep_num}"  # Use rep_num to create unique dataset names
+                            dataset_name = f"time_data_{rep_num}"  # Use rep_num to create unique dataset names
+                            fs_name = f"fs_{rep_num}"
+
                             if dataset_name in hdf:
                                 print(f"Warning: Dataset '{dataset_name}' already exists in '{hdf5_file}'. Overwriting...")
                                 del hdf[dataset_name]  # Remove the existing dataset if it already exists
+
+                            if fs_name in hdf:
+                                print(f"Warning: fs '{fs_name}' already exists in '{hdf5_file}'. Overwriting...")
+                                del hdf[fs_name]  # Remove the existing dataset if it already exists
                             hdf.create_dataset(dataset_name, data=time_data)
+                            hdf.create_dataset(fs_name, data=fs)
 
     def run(self):
         """
