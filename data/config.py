@@ -295,13 +295,13 @@ class DatasetViewer(DataConfig):
         self.structure = {}
         
         # Explore machine types within the configured application
-        for machine_folder in app_path.iterdir():
+        for machine_folder in sorted(app_path.iterdir(), key=lambda x: x.name):
             if machine_folder.is_dir():
                 self.machine_types.append(machine_folder.name)
                 self.structure[machine_folder.name] = {}
                 
                 # Explore scenarios within each machine type
-                for scenario_folder in machine_folder.iterdir():
+                for scenario_folder in sorted(machine_folder.iterdir(), key=lambda x: x.name):
                     if scenario_folder.is_dir():
                         self.scenarios.append(scenario_folder.name)
                         self.structure[machine_folder.name][scenario_folder.name] = {}
@@ -338,7 +338,7 @@ class DatasetViewer(DataConfig):
         healthy_path = scenario_path / "healthy"
         if healthy_path.exists():
             structure["healthy"] = {}
-            for health_type in healthy_path.iterdir():
+            for health_type in sorted(healthy_path.iterdir(), key=lambda x: x.name):
                 if health_type.is_dir():
                     self.healthy_types.append(health_type.name)
                     structure["healthy"][health_type.name] = self._explore_processed_data(health_type)
@@ -347,7 +347,7 @@ class DatasetViewer(DataConfig):
         unhealthy_path = scenario_path / "unhealthy"
         if unhealthy_path.exists():
             structure["unhealthy"] = {}
-            for health_type in unhealthy_path.iterdir():
+            for health_type in sorted(unhealthy_path.iterdir(), key=lambda x: x.name):
                 if health_type.is_dir():
                     self.unhealthy_types.append(health_type.name)
                     structure["unhealthy"][health_type.name] = self._explore_processed_data(health_type)
@@ -356,7 +356,7 @@ class DatasetViewer(DataConfig):
         unknown_path = scenario_path / "unknown"
         if unknown_path.exists():
             structure["unknown"] = {}
-            for health_type in unknown_path.iterdir():
+            for health_type in sorted(unknown_path.iterdir(), key=lambda x: x.name):
                 if health_type.is_dir():
                     self.unhealthy_types.append(health_type.name)
                     structure["unknown"][health_type.name] = self._explore_processed_data(health_type)
@@ -402,13 +402,13 @@ class DatasetViewer(DataConfig):
             #                 structure["nodes"][timestep.name][augment.name] = {}
                             
             # Get node types
-            for node_type in nodes_path.iterdir():
+            for node_type in sorted(nodes_path.iterdir(), key=lambda x: int(x.name.split('_')[0])):
                 if node_type.is_dir():
                     self.node_types.append(node_type.name)
                     structure["nodes"][node_type.name] = []
                     
                     # Get signal types
-                    for signal_type in node_type.iterdir():
+                    for signal_type in sorted(node_type.iterdir(), key=lambda x: x.name):
                         if signal_type.is_dir():
                             self.signal_types.append(signal_type.name)
                             structure["nodes"][node_type.name].append(signal_type.name)
