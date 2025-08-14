@@ -190,6 +190,9 @@ class DataPreprocessor:
         # create custom dataloader
         custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
 
+        # print loader statistics
+        self.print_loader_stats(custom_loader, "custom")
+        
         return (custom_loader, data_stats)
     
     def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50, num_workers=1):
@@ -275,8 +278,21 @@ class DataPreprocessor:
         test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers) if val_set is not None else None
         
+        # print loader statistics
+        self.print_loader_stats(train_loader, "train")
+        self.print_loader_stats(test_loader, "test")
+        if val_loader is not None:
+            self.print_loader_stats(val_loader, "val")
+        
         return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
         
+    def print_loader_stats(self, loader, type):
+        dataiter = iter(loader)
+        data = next(dataiter)
+
+        print(f"\n{type}_data_loader statistics:")
+        print(f"Number of batches: {len(loader)}")
+        print(data.shape)
 
     def _make_tp_dataset(self, x, y, z):
         """

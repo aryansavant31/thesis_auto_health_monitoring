@@ -74,6 +74,20 @@ class AnomalyDetectorTrainConfig:
         self.reduc_config = None # or None
         self.feat_norm = None
 
+    # 3: Hyperparameters dictionary
+        self.hparams_1 = {
+            'batch_size': self.batch_size,
+            'train_rt': self.train_rt,
+            'test_rt': self.test_rt,
+
+            'domain': self.domain_config['type'],
+            'raw_data_norm': self.raw_data_norm if self.raw_data_norm else 'None',
+            'feats': f"[{', '.join([feat_config['type'] for feat_config in self.feat_configs])}]",
+            'reduc': self.reduc_config['type'] if self.reduc_config else 'None',
+            'feat_norm': self.feat_norm if self.feat_norm else 'None',
+        }
+        self.hparams = {**self.hparams_1, **self.anom_config}
+
 
 def get_anom_config(anom_type, **kwargs):
     """
@@ -90,7 +104,7 @@ def get_anom_config(anom_type, **kwargs):
 
     """
     anom_config = {}
-    anom_config['type'] = anom_type
+    anom_config['anom_type'] = anom_type
 
     if anom_type == 'SVM':
         anom_config['kernel'] = kwargs.get('kernel', 'rbf')

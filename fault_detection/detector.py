@@ -25,20 +25,20 @@ from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureE
 from settings.manager import AnomalyDetectorTrainManager
 
 class AnomalyDetector:
-    def __init__(self, anom_config):
+    def __init__(self, anom_config, hparams):
         self.anom_config = anom_config
+        self.hparams = hparams
 
-        if anom_config['type'] == 'IF':
+        if anom_config['anom_type'] == 'IF':
             self.model = IsolationForest(contamination=anom_config['contam'], 
                                          random_state=anom_config['seed'],
                                          n_jobs=anom_config['n_jobs'], 
                                          n_estimators=anom_config['n_estimators'],)
             
-        elif anom_config['type'] == 'SVM':
+        elif anom_config['anom_type'] == 'SVM':
             self.model = OneClassSVM(kernel=anom_config['kernel'],  
                                      gamma=anom_config['gamma'],
                                      nu=anom_config['nu'])
-            
             
     def set_run_params(self, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
@@ -120,9 +120,8 @@ class AnomalyDetector:
 
     
 class TrainerAnomalyDetector:
-    def __init__(self, logger:SummaryWriter=None, hparams=None):
+    def __init__(self, logger:SummaryWriter=None):
         self.logger = logger
-        self.hparams = hparams
 
     def process_input_data(self, anomaly_detector:AnomalyDetector, data_loader, get_data_shape=False):
         """
@@ -228,8 +227,10 @@ class TrainerAnomalyDetector:
         """
         start_time = time.time()
 
-        # process the input data
+    # 1. Process the input data
         self.df = self.process_input_data(anomaly_detector, train_loader)
+
+    # 2. Train model
 
         # fit the model
         print("\nFitting anomaly detection model...")
@@ -253,33 +254,83 @@ class TrainerAnomalyDetector:
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
         print(f"Training accuracy: {accuracy:.2f}")
 
-        anomaly_detector.anom_config['train_accuracy'] = accuracy
-        # save model
+    # 3. Log model information
+        self.model_type = type(anomaly_detector.model).__name__
+
+        # update hparams with training accuracy
+        anomaly_detector.hparams['train_accuracy'] = accuracy
+
         if self.logger:
-            self.logger.add_scalar("train/accuracy", accuracy)
-            self.logger.add_hparams({**anomaly_detector.anom_config, **self.hparams}, {})
+            self.logger.add_scalar(f"{self.model_type}/train_accuracy", accuracy)
+            self.logger.add_hparams(anomaly_detector.hparams, {})
+
+            print(f"\nTraining hyperparameters logged for tensorboard at {self.logger.log_dir}")
+
+            # save model
             model_path = os.path.join(self.logger.log_dir, 'anomaly_detector.pkl')
             with open(model_path, 'wb') as f:
                 pickle.dump(anomaly_detector, f)
         
             print(f"\nModel saved at {model_path}")
+        
+        
+    def predict(self, anomaly_detector:AnomalyDetector, predict_loader):
+        """
+        Predict anomalies in the provided data.
 
+        Parameters
+        ----------
+        loader : DataLoader
+            DataLoader containing the data to predict anomalies on.
+            data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+                Input data tensor containing the trajectory data
+        """
+        # process the input data
+        data = self.process_input_data(anomaly_detector, predict_loader)
+
+        # predict anomalies
+        y_pred = anomaly_detector.model.predict(data)
+        scores = anomaly_detector.model.decision_function(data)
+
+        return y_pred, scores
+    
+    def test(self, anomaly_detector:AnomalyDetector, test_loader):
+        """
+        Test the anomaly detection model on the provided data.
+        """
+    # 1. Process the input data
+        self.df = self.process_input_data(anomaly_detector, test_loader)
+
+    # 2. Predict anomalies
+
+        # test accuracy and scores
+        self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
+        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+
+        # preprocess pred label to match the given label notations
+        self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+        valid_rows = self.df['given_label'] != -1
+
+        # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
+        filtered_df = self.df[valid_rows]
+
+        accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
+        print(f"Test accuracy: {accuracy:.2f}")
+
+    # 3. Log model information
         self.model_type = type(anomaly_detector.model).__name__
-        # # model stats 
-        # model_log = {}
-        # model_log['metrics'] = {}
-        # model_log['metrics']['training_time'] = training_time
 
-        # if isinstance(anomaly_detector.model, IsolationForest):
-        #     model_log['model_type'] = 'IsolationForest'
-        #     model_log['metrics']['n_trees'] = anomaly_detector.model.n_estimators
+        # update hparams with training accuracy
+        anomaly_detector.hparams['test_accuracy'] = accuracy
 
-        # elif isinstance(anomaly_detector.model, OneClassSVM):
-        #     model_log['model_type'] = 'OneClassSVM'
-        #     model_log['metrics']['n_in_features'] = anomaly_detector.model.n_features_in_
-        #     model_log['metrics']['n_support_vectors'] = anomaly_detector.model.n_support_  
+        if self.logger:
+            self.logger.add_scalar(f"{self.model_type}/test_accuracy", accuracy)
+            self.logger.add_hparams(anomaly_detector.hparams, {})
 
-        # self.log_model(anomaly_detector, model_log)
+            print(f"\nTesting hyperparameters logged for tensorboard at {self.logger.log_dir}")
+   
+                
+# ================== Visualization Methods =======================
 
     def pair_plot(self, feat_cols=None):
         """
@@ -355,66 +406,6 @@ class TrainerAnomalyDetector:
         plt.title('ROC Curve')
         plt.legend()
         plt.show()
-        
-        
-        
-    def predict(self, anomaly_detector:AnomalyDetector, predict_loader):
-        """
-        Predict anomalies in the provided data.
-
-        Parameters
-        ----------
-        loader : DataLoader
-            DataLoader containing the data to predict anomalies on.
-            data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
-                Input data tensor containing the trajectory data
-        """
-        # process the input data
-        data = self.process_input_data(anomaly_detector, predict_loader)
-
-        # predict anomalies
-        y_pred = anomaly_detector.model.predict(data)
-        scores = anomaly_detector.model.decision_function(data)
-
-        return y_pred, scores
-    
-    def test(self, anomaly_detector:AnomalyDetector, test_loader):
-        """
-        Along with prediction, this method calcualtes model accuracy, precision, recall, and F1 score.
-        """
-        # process the input data
-        data, labels = self.process_input_data(anomaly_detector, test_loader)
-
-        # predict anomalies
-        test_pred = anomaly_detector.model.predict(data)
-        scores = anomaly_detector.model.decision_function(data)
-
-        # calculate accuracy
-        accuracy = np.mean(test_pred == labels)
-        print(f"Test accuracy: {accuracy:.2f}")
-
-        if self.logger:
-            self.logger.add_scalar("test/accuracy", accuracy)
-                
-    
-    def log_model(self, anomaly_detector, model_log):
-        """
-        Log the model information such as number of input features, support vectors, kernel type, etc.
-        """
-        if self.logger:
-            # for key, value in model_log['metrics'].items():
-            #     self.logger.add_scalar(f"{model_log['model_type']}/{key}", value)
-
-            # # save model
-            # if not os.path.exists(self.log_path):
-            #     os.makedirs(self.log_path)
-
-            model_path = os.path.join(self.log_path, 'anomaly_detector.pkl')
-            with open(model_path, 'wb') as f:
-                pickle.dump(anomaly_detector, f)
-        
-            print(f"\nModel saved at {model_path}")
-
         
 
         
