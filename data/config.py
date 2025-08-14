@@ -48,8 +48,8 @@ class DataConfig:
 
         self.machine_type   = 'NXE'
         self.scenario       = 'full_wafer'
-        self.signal_types   = {'2_ammf': ['acc_x', 'acc_y', 'acc_z'],
-                               '3_lra': ['pos_x', 'pos_y', 'pos_z']} 
+        self.signal_types   = {'ammf': ['acc_x', 'acc_y', 'acc_z'],
+                               'lra': ['pos_x', 'pos_y', 'pos_z']} 
                  
         self.node_type      = self.signal_types.keys()           # options ['ALL'] or the specific node type
         
@@ -84,7 +84,7 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'M=mlC14_E1_set01': [get_augment_config('OG')],
+            'M=mIC14_E1_set01': [get_augment_config('OG')],
             #'M=mlC14_E2_set02': [get_augment_config('OG')],
         }
         
