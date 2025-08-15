@@ -1,23 +1,26 @@
 import os, sys
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+# ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-FDET_DIR = os.path.dirname((os.path.abspath(__file__)))
-sys.path.insert(0, FDET_DIR) if FDET_DIR not in sys.path else None
+# FDET_DIR = os.path.dirname((os.path.abspath(__file__)))
+# sys.path.insert(0, FDET_DIR) if FDET_DIR not in sys.path else None
+
+# print(f"Root directory set to: {ROOT_DIR}")
+# print(f"Fault detection directory set to: {FDET_DIR}")
 
 # other imports
 import inspect 
+from torch.utils.tensorboard import SummaryWriter
 
 # global imports
 from data.config import DataConfig
 from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
-from torch.utils.tensorboard import SummaryWriter
 
 # local imports
-from settings.manager import AnomalyDetectorTrainManager, get_model_pickle_path
-from detector import AnomalyDetector, TrainerAnomalyDetector
+from .settings.manager import AnomalyDetectorTrainManager, get_model_pickle_path
+from .detector import AnomalyDetector, TrainerAnomalyDetector
 
 
 class AnomalyDetectorTrainMain:
@@ -41,7 +44,12 @@ class AnomalyDetectorTrainMain:
         Main method to train the anomaly detector.
         """
     # 1. Load data
-        train_data, test_data, _, = self.data_preprocessor.get_training_data_package(self.data_config)
+        train_data, test_data, _, = self.data_preprocessor.get_training_data_package(
+            self.data_config, 
+            batch_size=self.fdet_config.batch_size,
+            train_rt=self.fdet_config.train_rt,
+            test_rt=self.fdet_config.test_rt
+            )
 
         # unpack data_loaders and data_stats
         train_loader, train_data_stats = train_data
@@ -60,7 +68,6 @@ class AnomalyDetectorTrainMain:
         if self.fdet_config.is_log:
             pass # [TODO] add ploting code here
 
-
     # 4. Test the trained anomaly detector model
         trained_anomaly_detector = self._load_model(self.train_log_path, test_data_stats)
         
@@ -72,7 +79,7 @@ class AnomalyDetectorTrainMain:
 
         # plot testing results if required
         if self.fdet_config.is_log:
-            pass # [TODO] add ploting code here
+            tester.confusion_matrix()
 
 
     def _prep_for_training(self, anomaly_detector, train_loader):
@@ -91,8 +98,12 @@ class AnomalyDetectorTrainMain:
             # log all the attributes of train_config
             formatted_params = "\n".join([f"{key}: {value}" for key, value in self.fdet_config.__dict__.items()])
             train_logger.add_text(os.path.basename(self.train_log_path), formatted_params)
+            print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
         else:
             train_logger = None
+            print("\nTraining environment set. Logging is disabled.")
+
+        print(75*'-')
 
         return train_logger
     
@@ -109,13 +120,14 @@ class AnomalyDetectorTrainMain:
         else:
             test_logger = None
 
+        print(f"\nTesting environment set. Testing will be logged at: {test_log_path}")
         return test_logger
 
     def _init_model(self, train_data_stats):
         """
         Load the anomaly detector model and set the requried run params.
         """
-        anomaly_detector = AnomalyDetector(self.fdet_config.anom_config)
+        anomaly_detector = AnomalyDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
         
         req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()
         run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params}
@@ -123,8 +135,9 @@ class AnomalyDetectorTrainMain:
         anomaly_detector.set_run_params(**run_config, data_stats=train_data_stats)
 
         # print model info
-        print("Anomaly Detector Model Initialized with the following configurations:")
+        print("\nAnomaly Detector Model Initialized with the following configurations:")
         anomaly_detector.print_model_info()
+        print(75*'-')
 
         return anomaly_detector
     
@@ -138,6 +151,7 @@ class AnomalyDetectorTrainMain:
         # update its data stats
         trained_anomaly_detector.data_stats = test_data_stats
 
+        print("\nTrained anomaly Detector model loaded for testing:")
         return trained_anomaly_detector
         
 

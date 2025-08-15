@@ -7,15 +7,15 @@ This module contains
 import sys
 import os
 
-DATA_DIR = os.path.join((os.path.abspath(__file__)))
-sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
+# DATA_DIR = os.path.join((os.path.abspath(__file__)))
+# sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
 
 from scipy.signal import butter, filtfilt
 import numpy as np
 import torch
 
 # local imports
-from config import DataConfig
+from .config import DataConfig
 
 
 class DomainTransformer:

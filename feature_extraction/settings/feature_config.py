@@ -1,6 +1,6 @@
 import os, sys
-SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
+# SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
@@ -28,7 +28,7 @@ def get_freq_feat_config(feat_type, data_config:DataConfig, **kwargs):
         - `first_n_modes` : **n_modes** (_int_) (will get 'mode values' and its 'frequency')
         - `full_spectrum` : **parameters** (_list_) (will get 'psd', 'mag', 'amp', 'freq')
     """
-    from manager import get_feature_list
+    from feature_extraction.settings.manager import get_feature_list
     config = {}
     config['type'] = feat_type
     config['fs'] = data_config.fs
@@ -70,7 +70,7 @@ def get_time_feat_config(feat_type, **kwargs):
             **perf_v** (_int_) (performance version), **rank_v** (_str_) (rank version, e.g., '[a=0.5]'), 
             **data_config** (_DataConfig_) (data configuration object) 
     """
-    from manager import get_feature_list
+    from feature_extraction.settings.manager import get_feature_list
     
     config = {}
     config['type'] = feat_type

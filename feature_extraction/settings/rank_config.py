@@ -44,6 +44,6 @@ class FeatureRankingConfig:
 
 
 if __name__ == "__main__":
-    from manager import ViewRankings
+    from feature_extraction.settings.manager import ViewRankings
     ViewRankings().view_ranking_tree()
 

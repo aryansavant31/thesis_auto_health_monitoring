@@ -1,10 +1,10 @@
 import os, sys
 
-ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+# ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
 SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
+# sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
 FDET_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGS_DIR = os.path.join(FDET_DIR, "logs")
@@ -22,8 +22,8 @@ import re
 from data.config import DataConfig
 
 # local imports
-from train_config import AnomalyDetectorTrainConfig
-from predict_config import AnomalyDetectorPredictConfig
+from .train_config import AnomalyDetectorTrainConfig
+from .predict_config import AnomalyDetectorPredictConfig
 
 
 class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
@@ -42,7 +42,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         n_dim : int
             The number of dimensions in each component in the dataset
         """
-        self.node_type = f"({'+'.join(self.data_config.node_type)})"
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -53,13 +53,13 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(base_path, 'train', f'{self.node_type}')
 
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, f"{self.node_type}_fault_detector_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[anom] {self.anom_config['type']}')
+        model_path = os.path.join(model_path, f'[anom] {self.anom_config['anom_type']}')
 
         # add datastats to path
         signal_types_str = ', '.join(
@@ -68,7 +68,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
         # add model hparams to path
-        model_path = os.path.join(model_path, f"[{self.anom_config['type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
+        model_path = os.path.join(model_path, f"[{self.anom_config['anom_type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
 
         # add domain type to path
         model_path = os.path.join(model_path, f'{self.domain_config['type']}')
@@ -123,10 +123,11 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             os.makedirs(self.train_log_path)
 
         config_path = os.path.join(self.train_log_path, f'train_config.pkl')
+
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        model_path = os.path.join(self.train_log_path, f'{self.node_type}_fault_detector_{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -153,10 +154,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f"{self.node_type}_fault_detector_{self.model_num}"
+            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")
         else:
-            new_model = f"{self.node_type}_fault_detector_1"
+            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_1"
 
         return os.path.join(parent_dir, new_model)
     
@@ -187,7 +188,7 @@ class AnomalyDetectorPredictManager(AnomalyDetectorPredictConfig):
         self.train_log_path = self.log_config.train_log_path
         self.node_type = self.log_config.node_type
 
-        self.selected_model_num = f"{self.node_type}_fault_detector_{self.log_config.model_num}"
+        self.selected_model_num = f"{self.node_type}-{self.log_config.anom_config['anom_type']}_fdet_{self.log_config.model_num}"
     
     def get_custom_test_log_path(self):
         """
@@ -468,7 +469,7 @@ class SelectFaultDetectionModel:
         self.run_type = run_type  # 'train' or 'predict'
 
         if self.run_type == 'train':
-            self.file_name = 'fault_detector'
+            self.file_name = 'fdet'
         elif self.run_type == 'custom_test':
             self.file_name = 'custom_test'
         elif self.run_type == 'predict':

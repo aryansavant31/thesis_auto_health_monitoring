@@ -272,12 +272,12 @@ class FinalFeatureRanking:
         ranks_name = os.path.basename(self.ranking_path)
 
         print(f"Final ranking for time features ({ranks_name}, {perf_name}):")
-        print(65 * "-")
+        print(75 * "-")
         for feature, score in Final_Ranking_Time.items():
             print(f"{feature.lower()}: {score:.4f}")
 
         print(f"\nFinal ranking for frequency features ({ranks_name}, {perf_name}):")
-        print(65 * "-")
+        print(75 * "-")
         for feature, score in Final_Ranking_Freq.items():
             print(f"{feature.lower()}: {score:.4f}")
 

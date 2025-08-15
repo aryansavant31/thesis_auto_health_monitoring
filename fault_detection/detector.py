@@ -1,9 +1,9 @@
 import os, sys
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+# ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-FDET_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, FDET_DIR) if FDET_DIR not in sys.path else None
+# FDET_DIR = os.path.dirname(os.path.abspath(__file__))
+# sys.path.insert(0, FDET_DIR) if FDET_DIR not in sys.path else None
 
 # other imports
 from sklearn.ensemble import IsolationForest
@@ -22,7 +22,7 @@ from data.transform import DomainTransformer, DataNormalizer
 from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureExtractor, FeatureReducer
 
 # local imports
-from settings.manager import AnomalyDetectorTrainManager
+from .settings.manager import AnomalyDetectorTrainManager
 
 class AnomalyDetector:
     def __init__(self, anom_config, hparams):
@@ -35,7 +35,7 @@ class AnomalyDetector:
                                          n_jobs=anom_config['n_jobs'], 
                                          n_estimators=anom_config['n_estimators'],)
             
-        elif anom_config['anom_type'] == 'SVM':
+        elif anom_config['anom_type'] == '1SVM':
             self.model = OneClassSVM(kernel=anom_config['kernel'],  
                                      gamma=anom_config['gamma'],
                                      nu=anom_config['nu'])
@@ -92,12 +92,12 @@ class AnomalyDetector:
         """
         print("Model type:", type(self.model).__name__)
         
-        if self.anom_config['type'] == 'IF':
+        if self.anom_config['anom_type'] == 'IF':
             print("Number of trees in the forest:", self.model.n_estimators)
         
-        elif self.anom_config['type'] == 'SVM':
-            print("Number of support vectors:", self.model.n_support_)
-            print("Support vectors shape:", self.model.support_vectors_.shape)
+        elif self.anom_config['anom_type'] == '1SVM':
+            # print("Number of support vectors:", self.model.n_support_)
+            # print("Support vectors shape:", self.model.support_vectors_.shape)
             print("Kernel:", self.model.kernel)
             print("Gamma:", self.model.gamma)
             print("Nu:", self.model.nu)
@@ -252,17 +252,20 @@ class TrainerAnomalyDetector:
         filtered_df = self.df[valid_rows]
 
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
-        print(f"Training accuracy: {accuracy:.2f}")
+        print(f"\nDataframe is as follows:")
+        print(self.df)
+
+        print(f"\nTraining accuracy: {accuracy:.2f}")
 
     # 3. Log model information
         self.model_type = type(anomaly_detector.model).__name__
 
-        # update hparams with training accuracy
-        anomaly_detector.hparams['train_accuracy'] = accuracy
-
         if self.logger:
             self.logger.add_scalar(f"{self.model_type}/train_accuracy", accuracy)
-            self.logger.add_hparams(anomaly_detector.hparams, {})
+            
+            # update hparams
+            anomaly_detector.hparams['train_accuracy'] = accuracy
+            anomaly_detector.hparams['model_id'] = os.path.basename(self.logger.log_dir)
 
             print(f"\nTraining hyperparameters logged for tensorboard at {self.logger.log_dir}")
 
@@ -272,6 +275,7 @@ class TrainerAnomalyDetector:
                 pickle.dump(anomaly_detector, f)
         
             print(f"\nModel saved at {model_path}")
+            print(75*'-')
         
         
     def predict(self, anomaly_detector:AnomalyDetector, predict_loader):
@@ -298,11 +302,12 @@ class TrainerAnomalyDetector:
         """
         Test the anomaly detection model on the provided data.
         """
+        print("\nTesting anomaly detection model...")
+
     # 1. Process the input data
         self.df = self.process_input_data(anomaly_detector, test_loader)
 
     # 2. Predict anomalies
-
         # test accuracy and scores
         self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
         self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
@@ -315,20 +320,25 @@ class TrainerAnomalyDetector:
         filtered_df = self.df[valid_rows]
 
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
-        print(f"Test accuracy: {accuracy:.2f}")
+        print(f"\nDataframe is as follows:")
+        print(self.df)
+
+        print(f"\nTest accuracy: {accuracy:.2f}")
 
     # 3. Log model information
         self.model_type = type(anomaly_detector.model).__name__
 
-        # update hparams with training accuracy
-        anomaly_detector.hparams['test_accuracy'] = accuracy
-
         if self.logger:
             self.logger.add_scalar(f"{self.model_type}/test_accuracy", accuracy)
+
+            # update hparams
+            anomaly_detector.hparams['test_accuracy'] = accuracy
+            anomaly_detector.hparams['run_type'] = os.path.basename(self.logger.log_dir)
             self.logger.add_hparams(anomaly_detector.hparams, {})
 
             print(f"\nTesting hyperparameters logged for tensorboard at {self.logger.log_dir}")
-   
+
+            print(75*'-')
                 
 # ================== Visualization Methods =======================
 
@@ -362,8 +372,11 @@ class TrainerAnomalyDetector:
         x_label = ['OK (prediction)', 'NOK (prediction)']
         y_label = ['OK (truth)', 'NOK (truth)']
 
+        given_labels = np.where(self.df['given_label'] == 1, -1, 1) # convert 1 to -1 (anomaly) and 0 to 1 (normal)
+        pred_labels = np.where(self.df['pred_label'] == 1, -1, 1) 
+
         cm = pd.crosstab(
-            self.df['given_label'], self.df['pred_label'], 
+            given_labels, pred_labels, 
             rownames=['Actual'], colnames=['Predicted'], dropna=False
             ).reindex(index=[1, -1], columns=[1, -1], fill_value=0)
         
@@ -380,7 +393,6 @@ class TrainerAnomalyDetector:
                         ha='center', va='center', color='grey', fontsize=10)
                 
         plt.title('Confusion Matrix')
-        plt.show()
 
         # save the confusion matrix if logger is available
         if self.logger:

@@ -2,13 +2,13 @@ import os, sys
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
+# SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
 
 # global imports
 from data.config import DataConfig, get_domain_config
-from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
+#from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
 
 class AnomalyDetectorTrainConfig:
     def __init__(self, data_config:DataConfig):
@@ -57,13 +57,13 @@ class AnomalyDetectorTrainConfig:
         self.is_log = True
 
         # dataset parameters
-        self.batch_size  = 50
+        self.batch_size  = 10
         self.train_rt    = 0.8
         self.test_rt     = 0.2
-        self.num_workers = 10
+        self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.3)
+        self.anom_config = get_anom_config('1SVM', nu=0.1)
 
         # run parameters
         self.domain_config = get_domain_config('time', data_config=self.data_config)
@@ -74,20 +74,37 @@ class AnomalyDetectorTrainConfig:
         self.reduc_config = None # or None
         self.feat_norm = None
 
-    # 3: Hyperparameters dictionary
-        self.hparams_1 = {
+    # 3: Hyperparameters
+        self.hparams = self.get_hparams()
+
+    def get_hparams(self):
+        """
+        Sets the hyperparameters for the anomaly detection model.
+        """
+        init_hparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
 
             'domain': self.domain_config['type'],
-            'raw_data_norm': self.raw_data_norm if self.raw_data_norm else 'None',
+            'raw_data_norm': self.raw_data_norm,
             'feats': f"[{', '.join([feat_config['type'] for feat_config in self.feat_configs])}]",
             'reduc': self.reduc_config['type'] if self.reduc_config else 'None',
-            'feat_norm': self.feat_norm if self.feat_norm else 'None',
+            'feat_norm': self.feat_norm
         }
-        self.hparams = {**self.hparams_1, **self.anom_config}
+        hparams = {**init_hparams, **self.anom_config}
 
+        for key, value in hparams.items():
+            if isinstance(value, list):
+                hparams[key] = ', '.join(map(str, value))
+            elif isinstance(value, (int, float)):
+                hparams[key] = str(value)
+            elif value is None:
+                hparams[key] = 'None'
+
+        return hparams
+        
+        # [TODO] all hyperparams must be string (convert any hp which is int or list into str)
 
 def get_anom_config(anom_type, **kwargs):
     """
@@ -95,18 +112,18 @@ def get_anom_config(anom_type, **kwargs):
     ----------
     anom_type : str
         The type of fault detection algorithm to be used. 
-        - `SVM`: Support Vector Machine
+        - `1SVM`: OneClass Support Vector Machine
         - `IF`: Isolation Forest)
     **kwargs : dict
         For all options of `anom_type`:
-        - `SVM`: **kernel**, **nu**, **gamma**
+        - `1SVM`: **kernel**, **nu**, **gamma**
         - `IF`: **n_estimators**, **seed**, **contam**, **n_jobs**
 
     """
     anom_config = {}
     anom_config['anom_type'] = anom_type
 
-    if anom_type == 'SVM':
+    if anom_type == '1SVM':
         anom_config['kernel'] = kwargs.get('kernel', 'rbf')
         anom_config['gamma'] = kwargs.get('gamma', 'scale')
         anom_config['nu'] = kwargs.get('nu', 0.5)

@@ -1,0 +1,140 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.train.py
+Base Name: (gearbox)-1SVM_fdet_4
+Start Time: 2025-08-15 21:50:56
+End Time: 2025-08-15 21:52:17
+==================================================
+
+
+Starting fault detection model training...
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+
+Node and signal types are set as follows:
+
+(<node_num>) <node_type> : [<signal_types>]
+---------------------------------------------
+(1) gearbox   : [acc]
+
+
+Total samples: 240, 
+Train: 190/192 [OK=142, NOK=48, UK=0], Test: 40/48 [OK=30, NOK=10, UK=0], Val: 0/0 [OK=0, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 19
+torch.Size([10, 1, 4000, 1])
+
+test_data_loader statistics:
+Number of batches: 4
+torch.Size([10, 1, 4000, 1])
+---------------------------------------------------------------------------
+
+Anomaly Detector Model Initialized with the following configurations:
+Model type: OneClassSVM
+Kernel: rbf
+Gamma: scale
+Nu: 0.1
+---------------------------------------------------------------------------
+'Version 1' already exists in the log path 
+'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\tr
+ain\(gearbox)\1SVM\(gearbox)-1SVM_fdet_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Next model number folder will be: (gearbox)-1SVM_fdet_4
+Model parameters saved to 
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\tra
+in\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4
+---------------------------------------------------------------------------
+
+Fitting anomaly detection model...
+
+Model fitted successfully in 3.57 seconds
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  ...  given_label    scores  pred_label
+0      0.402629    0.399401    0.402478  ...          0.0  0.010043           0
+1      0.434660    0.446715    0.456904  ...          0.0  0.018884           0
+2      0.429465    0.437538    0.462765  ...          1.0  0.000058           0
+3      0.423209    0.407219    0.402074  ...          0.0  0.005139           0
+4      0.439098    0.447320    0.446160  ...          0.0  0.007148           0
+..          ...         ...         ...  ...          ...       ...         ...
+185    0.442680    0.441368    0.431280  ...          0.0  0.035167           0
+186    0.450599    0.452213    0.456198  ...          0.0  0.014801           0
+187    0.419981    0.407219    0.407169  ...          0.0  0.018076           0
+188    0.437484    0.446059    0.448733  ...          0.0  0.003583           0
+189    0.422200    0.420284    0.417661  ...          0.0  0.007379           0
+
+[190 rows x 4003 columns]
+
+Training accuracy: 0.85
+
+Training hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4
+
+Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4\anomaly_detector.pkl
+---------------------------------------------------------------------------
+
+Trained anomaly Detector model loaded for testing:
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4\test
+
+Testing anomaly detection model...
+
+Dataframe is as follows:
+    comp0_dim0  comp1_dim0  comp2_dim0  ...  given_label    scores  pred_label
+0     0.427694    0.427547    0.421389  ...          0.0 -0.346800           1
+1     0.420589    0.447133    0.480129  ...          1.0 -0.522586           1
+2     0.371394    0.358566    0.368316  ...          0.0 -0.332292           1
+3     0.677812    0.632937    0.569878  ...          1.0 -0.525659           1
+4     0.417138    0.410907    0.408487  ...          0.0 -0.354965           1
+5     0.412226    0.410320    0.414499  ...          0.0 -0.340493           1
+6     0.670479    0.792345    0.884880  ...          1.0 -0.525720           1
+7     0.391700    0.371688    0.363477  ...          0.0 -0.345611           1
+8     0.388841    0.399617    0.414132  ...          0.0 -0.346862           1
+9     0.394193    0.469570    0.550667  ...          1.0 -0.521590           1
+10    0.388255    0.397125    0.388035  ...          0.0 -0.337528           1
+11    0.352041    0.379018    0.388548  ...          0.0 -0.335657           1
+12    0.373520    0.384443    0.396465  ...          0.0 -0.348758           1
+13    0.402989    0.391993    0.392433  ...          0.0 -0.352798           1
+14    0.420950    0.439130    0.433998  ...          0.0 -0.338800           1
+15    0.399031    0.378139    0.364724  ...          0.0 -0.338251           1
+16    0.423369    0.409807    0.395879  ...          0.0 -0.356079           1
+17    0.356806    0.354461    0.359592  ...          0.0 -0.345839           1
+18    0.416698    0.403723    0.389868  ...          0.0 -0.348943           1
+19    0.387815    0.384150    0.387962  ...          0.0 -0.347189           1
+20    0.416038    0.415452    0.413839  ...          0.0 -0.336249           1
+21    0.415818    0.418677    0.425715  ...          0.0 -0.330905           1
+22    0.373007    0.372787    0.391847  ...          0.0 -0.341773           1
+23    0.408487    0.412519    0.408048  ...          0.0 -0.336887           1
+24    0.409660    0.411053    0.403649  ...          0.0 -0.345751           1
+25    0.435401    0.456812    0.481009  ...          1.0 -0.528971           1
+26    0.397565    0.388841    0.387888  ...          0.0 -0.354000           1
+27    0.406508    0.401157    0.382097  ...          0.0 -0.347258           1
+28    0.388402    0.401303    0.420950  ...          0.0 -0.353802           1
+29    0.395439    0.402770    0.396978  ...          0.0 -0.349776           1
+30    0.372054    0.391920    0.395659  ...          0.0 -0.335400           1
+31    0.382903    0.359519    0.358639  ...          0.0 -0.346769           1
+32    0.465611    0.432175    0.402698  ...          1.0 -0.537207           1
+33    0.334595    0.351748    0.378212  ...          0.0 -0.348850           1
+34    0.378648    0.402112    0.425136  ...          1.0 -0.532634           1
+35    0.621352    0.541868    0.457398  ...          1.0 -0.522304           1
+36    0.353718    0.494354    0.628978  ...          1.0 -0.529982           1
+37    0.417211    0.402183    0.387595  ...          0.0 -0.351572           1
+38    0.727086    0.740578    0.721953  ...          1.0 -0.525350           1
+39    0.424542    0.439203    0.435538  ...          0.0 -0.348925           1
+
+[40 rows x 4003 columns]
+
+Test accuracy: 0.25
+
+Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4\test
+---------------------------------------------------------------------------
+
+Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_4\test
+
+Fault detection model training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-15 21:52:17

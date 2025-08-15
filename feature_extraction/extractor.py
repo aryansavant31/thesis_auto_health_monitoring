@@ -5,8 +5,8 @@ This module contains:
 """
 import os, sys
 
-FEX_DIR = os.path.dirname((os.path.abspath(__file__)))
-sys.path.insert(0, FEX_DIR) if FEX_DIR not in sys.path else None
+# FEX_DIR = os.path.dirname((os.path.abspath(__file__)))
+# sys.path.insert(0, FEX_DIR) if FEX_DIR not in sys.path else None
 
 # other imports
 import numpy as np
@@ -14,8 +14,8 @@ import torch
 from sklearn.decomposition import PCA
 
 # local imports
-import tf # time features
-import ff # frequency features
+from . import tf # time features
+from . import ff # frequency features
 
 
 class TimeFeatureExtractor:

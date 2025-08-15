@@ -1,9 +1,9 @@
 import os, sys
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+# ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
-SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
+# SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
 # global imports
 from data.config import DataConfig

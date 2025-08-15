@@ -12,7 +12,7 @@ from data.config import DataConfig
 from console_logger import ConsoleLogger
 
 # local imports
-from settings.manager import FeatureRankingManager
+from feature_extraction.settings.manager import FeatureRankingManager
 from ranking_utils.data_adapter import DataAdapter
 from ranking_utils.feature_performance import FeaturePerformance
 
