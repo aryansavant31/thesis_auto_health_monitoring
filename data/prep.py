@@ -7,9 +7,7 @@ This moduel contains:
 
 import sys, os
 
-# DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-# sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
-
+# other imports
 import numpy as np
 import torch
 from torch.utils.data.dataset import TensorDataset
@@ -162,7 +160,8 @@ class DataPreprocessor:
         """
         # set the data config based on run type
         self.data_config = data_config
-        
+        print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
+
         # load the dataset
         dataset = self._load_dataset()
 
@@ -197,9 +196,11 @@ class DataPreprocessor:
         # print loader statistics
         self.print_loader_stats(custom_loader, "custom")
 
+        print('\n' + 75*'-')
+
         return (custom_loader, data_stats)
     
-    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50, num_workers=1):
+    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=10, num_workers=1):
         """
         Create train, validation, and test dataloaders and compute their statistical metrics.
 
@@ -225,6 +226,11 @@ class DataPreprocessor:
         """
         # set the data config for training
         self.data_config = data_config
+
+        if self.data_config.run_type == 'train':
+            print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
+        else:
+            raise ValueError(f"{self.data_config.run_type} is selected for training. Please set run_type to 'train' in the data config.")
 
         # load the dataset
         dataset = self._load_dataset()
@@ -289,7 +295,7 @@ class DataPreprocessor:
         if val_loader is not None:
             self.print_loader_stats(val_loader, "val")
         
-        print(75*'-')
+        print('\n' + 75*'-')
 
         return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
         

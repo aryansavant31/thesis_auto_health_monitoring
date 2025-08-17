@@ -59,12 +59,14 @@ class DataConfig:
         # segement data
         self.window_length  = 4000
         self.stride         = 4000
+        
+        self.run_type       = run_type  # options: train, custom_test, predict
 
-        if run_type == 'train':
+        if self.run_type == 'train':
             self.set_train_dataset()
-        elif run_type == 'custom_test':
+        elif self.run_type == 'custom_test':
             self.set_custom_test_dataset()
-        elif run_type == 'predict':
+        elif self.run_type == 'predict':
             self.set_predict_dataset()
         
     def set_train_dataset(self):
@@ -86,13 +88,15 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'M=mIC14_E1_set01': [get_augment_config('OG')],
-            #'M=mlC14_E2_set02': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
-            # '0_B-007': [get_augment_config('OG')],
+            # '0_IR-007': [get_augment_config('OG')],
+            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {
@@ -102,10 +106,15 @@ class DataConfig:
     def set_predict_dataset(self):
         self.amt = 0.8
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
+            # '0_B-007': [get_augment_config('OG')],
+            # '0_IR-007': [get_augment_config('OG')],
+            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {

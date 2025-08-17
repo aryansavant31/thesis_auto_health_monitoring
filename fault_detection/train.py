@@ -62,36 +62,36 @@ class AnomalyDetectorTrainMain:
         train_logger = self._prep_for_training(anomaly_detector, train_loader)
 
         trainer = TrainerAnomalyDetector(logger=train_logger)
-        trainer.fit(anomaly_detector, train_loader)
+        trained_anomaly_detector = trainer.fit(anomaly_detector, train_loader)
 
-        # plot training results if required
-        if self.fdet_config.is_log:
-            pass # [TODO] add ploting code here
+        # [TODO] add train ploting code here
 
     # 4. Test the trained anomaly detector model
-        trained_anomaly_detector = self._load_model(self.train_log_path, test_data_stats)
-        
+        # update its data stats
+        trained_anomaly_detector.data_stats = test_data_stats
         test_logger = self._prep_for_testing()
 
         # test the trained model
         tester = TrainerAnomalyDetector(logger=test_logger)
         tester.test(trained_anomaly_detector, test_loader)
 
-        # plot testing results if required
-        if self.fdet_config.is_log:
-            tester.confusion_matrix()
+        # plot the test results
+        for plot_name, plot_config in self.fdet_config.test_plots.items():
+            if plot_config[0]:
+                getattr(tester, plot_name.split('-')[0])(**plot_config[1])
 
 
     def _prep_for_training(self, anomaly_detector, train_loader):
         """
         Prepare the training environment before starting the training process.
         """
-        # get log path to save trained model
-        n_comp, n_dims = TrainerAnomalyDetector().process_input_data(anomaly_detector, train_loader, get_data_shape=True)
-        self.train_log_path = self.fdet_config.get_train_log_path(n_comp, n_dims)
-
         # if logging enabled, save parameters and initialize TensorBoard logger
         if self.fdet_config.is_log:
+
+            # get log path to save trained model
+            n_comp, n_dims = TrainerAnomalyDetector().process_input_data(anomaly_detector, train_loader, get_data_shape=True)
+            self.train_log_path = self.fdet_config.get_train_log_path(n_comp, n_dims)
+            
             self.fdet_config.save_params()
             train_logger = SummaryWriter(log_dir=self.train_log_path)
 
@@ -99,11 +99,13 @@ class AnomalyDetectorTrainMain:
             formatted_params = "\n".join([f"{key}: {value}" for key, value in self.fdet_config.__dict__.items()])
             train_logger.add_text(os.path.basename(self.train_log_path), formatted_params)
             print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
+        
         else:
+            self.train_log_path = None
             train_logger = None
             print("\nTraining environment set. Logging is disabled.")
 
-        print(75*'-')
+        print('\n' + 75*'-')
 
         return train_logger
     
@@ -111,16 +113,16 @@ class AnomalyDetectorTrainMain:
         """
         Prepare the testing environment before starting the testing process.
         """
-        # get log path to save trained model
-        test_log_path = self.fdet_config.get_test_log_path()
-
         # if logging enabled, initialize TensorBoard logger
         if self.fdet_config.is_log:
+            # get log path to save trained model
+            test_log_path = self.fdet_config.get_test_log_path()
             test_logger = SummaryWriter(log_dir=test_log_path)
+            print(f"\nTesting environment set. Testing will be logged at: {test_log_path}")
         else:
             test_logger = None
-
-        print(f"\nTesting environment set. Testing will be logged at: {test_log_path}")
+            print("\nTesting environment set. Logging is disabled.")
+        
         return test_logger
 
     def _init_model(self, train_data_stats):
@@ -137,22 +139,22 @@ class AnomalyDetectorTrainMain:
         # print model info
         print("\nAnomaly Detector Model Initialized with the following configurations:")
         anomaly_detector.print_model_info()
-        print(75*'-')
+        print('\n' + 75*'-')
 
         return anomaly_detector
     
-    def _load_model(self, train_log_path, test_data_stats):
-        """
-        Load the anomaly detector model from the saved pickle file.
-        """
-        # load trained model
-        trained_anomaly_detector = AnomalyDetector.load_from_pickle(get_model_pickle_path(train_log_path))
+    # def _load_model(self, train_log_path, test_data_stats):
+    #     """
+    #     Load the anomaly detector model from the saved pickle file.
+    #     """
+    #     # load trained model
+    #     trained_anomaly_detector = AnomalyDetector.load_from_pickle(get_model_pickle_path(train_log_path))
 
-        # update its data stats
-        trained_anomaly_detector.data_stats = test_data_stats
+    #     # update its data stats
+    #     trained_anomaly_detector.data_stats = test_data_stats
 
-        print("\nTrained anomaly Detector model loaded for testing:")
-        return trained_anomaly_detector
+    #     print("\nTrained anomaly Detector model loaded for testing:")
+    #     return trained_anomaly_detector
         
 
 if __name__ == "__main__":
@@ -168,10 +170,11 @@ if __name__ == "__main__":
         train_pipeline = AnomalyDetectorTrainMain(data_config, fdet_config)
         train_pipeline.train()
 
-        print("\nFault detection model training completed.")
+        base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']
+        print('\n' + 75*'=')
+        print(f"\nFault detection model '{base_name}' training completed.")
 
     if fdet_config.is_log:
         # save the captured output to a file
         file_path = os.path.join(train_pipeline.train_log_path, "console_output.txt")
-        base_name = os.path.basename(train_pipeline.train_log_path)
         console_logger.save_to_file(file_path, script_name="fault_detection.train.py", base_name=base_name)

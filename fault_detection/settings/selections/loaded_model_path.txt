@@ -1,1 +1,1 @@
-c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\CWRU\scene_1\train\(gearbox)\(gearbox)_fault_detector_3\anomaly_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_2\anomaly_detector.pkl

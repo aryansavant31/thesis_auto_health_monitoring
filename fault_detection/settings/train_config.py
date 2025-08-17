@@ -63,7 +63,7 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('1SVM', nu=0.1)
+        self.anom_config = get_anom_config('IF')
 
         # run parameters
         self.domain_config = get_domain_config('time', data_config=self.data_config)
@@ -74,8 +74,16 @@ class AnomalyDetectorTrainConfig:
         self.reduc_config = None # or None
         self.feat_norm = None
 
-    # 3: Hyperparameters
+    # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
+
+        self.test_plots = {
+            'confusion_matrix'      : [True, {}],
+            'roc_curve'             : [False, {}],
+            'anomaly_score_dist-1'  : [True, {'is_pred':True}],
+            'anomaly_score_dist-2'  : [True, {'is_pred':False}],
+            'pair_plot'             : [True, {}],
+        }
 
     def get_hparams(self):
         """
