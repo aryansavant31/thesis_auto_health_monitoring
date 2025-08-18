@@ -456,7 +456,13 @@ class TrainerAnomalyDetector:
 
         feat_cols = self.comp_cols[:5] if feat_cols is None else feat_cols
 
-        palette = ['#1f77b4', '#ff7f0e']
+        if self.df[self.df['pred_label'] == 0].empty:
+            palette = ['#ff7f0e']
+        elif self.df[self.df['pred_label'] == 1].empty:
+            palette = ['#1f77b4']
+        else:
+            palette = ['#1f77b4', '#ff7f0e']
+
         pair_plot = sns.pairplot(self.df, vars=feat_cols, hue='pred_label', palette=palette)
         pair_plot.figure.suptitle(f"Pair Plot of Features ({self.model_id} / {self.run_type})", y=1.02)
 
@@ -577,7 +583,10 @@ class TrainerAnomalyDetector:
         indices_nok = self.df[self.df[label_col] == 1].index
 
         # handle negative scores by shifting them to positive range
-        min_score = min(scores_ok.min(), scores_nok.min())
+        min_score_ok = scores_ok.min() if not scores_ok.empty else 0
+        min_score_nok = scores_nok.min() if not scores_nok.empty else 0
+        min_score = min(min_score_ok, min_score_nok)
+
         if min_score <= 0:
             shift = abs(min_score) + 1 # boundary = 0 + shift = shift
             scores_ok += shift
