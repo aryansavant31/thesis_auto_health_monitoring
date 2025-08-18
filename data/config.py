@@ -6,6 +6,7 @@ from rich.console import Console
 import glob
 import numpy as np
 
+from .datasets.asml.module_groups import SignalTypeConfigMaker
 
 class DataConfig:
     def __init__(self, run_type='train'):
@@ -45,20 +46,20 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application    = 'BER'
+        self.application    = 'ASM'
 
-        self.machine_type   = 'cwru'
-        self.scenario       = 'scene_1'
-        self.signal_types   = {'gearbox': ['acc']}
-                               #'lra': ['pos_x', 'pos_y', 'pos_z']} 
+        self.machine_type   = 'NXE'
+        self.scenario       = 'full_wafer'
+
+        self.signal_types   = SignalTypeConfigMaker().ammf_acc
         
-        self.fs             =  np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs             =  None    # sampling frequency matrix, set in the data.prep.py
 
         self.format         = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 4000
-        self.stride         = 4000
+        self.window_length  = 500
+        self.stride         = 500
         
         self.run_type       = run_type  # options: train, custom_test, predict
 
@@ -71,15 +72,11 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            'E1_set01_M=mKT03': [get_augment_config('OG')],
+            'E1_set01_M=mAQ10': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
-            # '0_B-007': [get_augment_config('OG')],
-            # '0_IR-007': [get_augment_config('OG')],
-            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {
@@ -88,17 +85,12 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'E2_set02_M=mDP98': [get_augment_config('OG')],
-            #'M=mlC14_E2_set02': [get_augment_config('OG')],
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            'E1_set01_M=mDP98': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
-            # '0_B-007': [get_augment_config('OG')],
-            # '0_IR-007': [get_augment_config('OG')],
-            # '0_IR-021': [get_augment_config('OG')],
+            '(sim_nok)_E1_set01_M=mDP98': [get_augment_config('gau', mean=1, std=0.1)],
+
         }
 
         self.unknown_configs = {

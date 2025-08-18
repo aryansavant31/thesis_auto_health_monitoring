@@ -33,7 +33,7 @@ class AnomalyDetectorInferConfig:
         self.version = 1
         
         self.num_workers = 1
-        self.batch_size = 50
+        self.batch_size = 1
 
         self.test_plots = {
             'confusion_matrix'      : [True, {}],

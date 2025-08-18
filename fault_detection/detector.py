@@ -582,6 +582,8 @@ class TrainerAnomalyDetector:
             shift = abs(min_score) + 1 # boundary = 0 + shift = shift
             scores_ok += shift
             scores_nok += shift
+        else:
+            shift = 0
 
         # calculate means
         mean_ok = np.mean(scores_ok)
@@ -647,8 +649,8 @@ class TrainerAnomalyDetector:
         # save the distribution plot if logger is available
         if self.logger:
             fig = plt.gcf()
-            fig.savefig(os.path.join(self.logger.log_dir, f'anomaly_score_dist_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/anomaly_score_dist", fig, close=True)
+            fig.savefig(os.path.join(self.logger.log_dir, f'anomaly_score_dist_{label_col}({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.model_type}/anomaly_score_dist_{label_col}", fig, close=True)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
             print("\nAnomaly score distribution plot not logged as logging is disabled.\n")

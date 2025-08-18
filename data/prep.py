@@ -290,7 +290,7 @@ class DataPreprocessor:
         train_label_counts, n_train = self._get_label_counts(train_loader)
         test_label_counts, n_test = self._get_label_counts(test_loader)
         val_label_counts, n_val = self._get_label_counts(val_loader) if val_loader is not None else {0: 0, 1: 0, -1: 0}, 0
-        rem_label_counts, n_rem = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
+        rem_label_counts, _ = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
         print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
