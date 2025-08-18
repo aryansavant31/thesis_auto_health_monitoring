@@ -7,20 +7,19 @@ This moduel contains:
 
 import sys, os
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, DATA_DIR) if DATA_DIR not in sys.path else None
-
+# other imports
 import numpy as np
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data import DataLoader, random_split
 import h5py
 from torch.utils.data import Subset
+from collections import defaultdict
 
 # local imports
-from config import DataConfig
-from augment import add_gaussian_noise
-from collections import defaultdict
+from .config import DataConfig
+from .augment import add_gaussian_noise
+
 
 class DataPreprocessor:
     """
@@ -114,14 +113,14 @@ class DataPreprocessor:
 
         return data_stats
     
-    def _get_label_counts(self, dataset):
+    def _get_label_counts(self, data_loader):
         """
         Get the counts of each label in the dataset.
 
         Parameters
         ----------
-        dataset : torch.utils.data.Dataset
-            The dataset to count labels from.
+        data_loader : torch.utils.data.DataLoader
+            The data loader containing the dataset.
 
         Returns
         -------
@@ -130,10 +129,13 @@ class DataPreprocessor:
         """
         label_counts = {0: 0, 1: 0, -1: 0}  # Assuming labels are 0 for healthy, 1 for unhealthy, and -1 for unknown
 
-        for data in dataset:
-            label_value = int(data[-1].item())
-            label_counts[label_value] += 1
-        return label_counts
+        for data in data_loader:
+            for label_value in data[-1].view(-1).tolist():
+                label_counts[label_value] += 1
+
+        total_samples = sum(label_counts.values())
+
+        return label_counts, total_samples
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
@@ -158,7 +160,8 @@ class DataPreprocessor:
         """
         # set the data config based on run type
         self.data_config = data_config
-        
+        print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
+
         # load the dataset
         dataset = self._load_dataset()
 
@@ -177,22 +180,27 @@ class DataPreprocessor:
 
         if desired_samples < total_samples:
             dataset, remain_dataset = random_split(dataset, [desired_samples, remainder_samples])
-        
-        # get number of OK and NOK samples
-        des_label_counts = self._get_label_counts(dataset)
-        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
 
-        print(f"\n\nTotal samples: {total_samples}, \nDesired samples: {desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}], \nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
-        
         # get dataset statistics
         data_stats = self._get_dataset_stats(dataset)
 
         # create custom dataloader
         custom_loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+        remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remainder_samples > 0 else None
+
+        # get number of OK and NOK samples
+        des_label_counts, n_des = self._get_label_counts(custom_loader)
+        rem_label_counts, n_rem = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
+
+        print(f"\n\nTotal samples: {total_samples}, \nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        # print loader statistics
+        self.print_loader_stats(custom_loader, "custom")
+
+        print('\n' + 75*'-')
 
         return (custom_loader, data_stats)
     
-    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=50, num_workers=1):
+    def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=10, num_workers=1):
         """
         Create train, validation, and test dataloaders and compute their statistical metrics.
 
@@ -219,6 +227,11 @@ class DataPreprocessor:
         # set the data config for training
         self.data_config = data_config
 
+        if self.data_config.run_type == 'train':
+            print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
+        else:
+            raise ValueError(f"{self.data_config.run_type} is selected for training. Please set run_type to 'train' in the data config.")
+
         # load the dataset
         dataset = self._load_dataset()
 
@@ -238,32 +251,28 @@ class DataPreprocessor:
         if self.package == 'topology_estimation' and val_rt == 0:
             raise ValueError("Validation set is required for topology estimation. Please provide a non-zero validation ratio.")
         
-        n_train = int(train_rt * total_samples)
-        n_test = int(test_rt * total_samples)
-        n_val = int(val_rt * total_samples)
-        remainder_samples = total_samples - n_train - n_test - n_val
+        train_total = int(train_rt * total_samples)
+        test_total = int(test_rt * total_samples)
+        val_total = int(val_rt * total_samples)
+        remainder_samples = total_samples - train_total - test_total - val_total
 
         if self.package == 'topology_estimation':
-            if n_train + n_test + n_val < total_samples:
-                train_set, test_set, val_set, remain_dataset = random_split(dataset, [n_train, n_test, n_val, remainder_samples])
+            shuffle_data_loader = True
+
+            if train_total + test_total + val_total < total_samples:
+                train_set, test_set, val_set, remain_dataset = random_split(dataset, [train_total, test_total, val_total, remainder_samples])
             else:
-                train_set, test_set, val_set = random_split(dataset, [n_train, n_test, n_val])
+                train_set, test_set, val_set = random_split(dataset, [train_total, test_total, val_total])
 
         elif self.package == 'fault_detection':
-            if n_train + n_test < total_samples:
-                train_set, test_set, remain_dataset = random_split(dataset, [n_train, n_test, remainder_samples])
+            shuffle_data_loader = False
+
+            if train_total + test_total < total_samples:
+                train_set, test_set, remain_dataset = random_split(dataset, [train_total, test_total, remainder_samples])
             else:
-                train_set, test_set = random_split(dataset, [n_train, n_test])
+                train_set, test_set = random_split(dataset, [train_total, test_total])
 
             val_set = None  # No validation set for fault detection
-        
-        # get number of OK and NOK samples in each set
-        train_label_counts = self._get_label_counts(train_set)
-        test_label_counts = self._get_label_counts(test_set)
-        val_label_counts = self._get_label_counts(val_set) if val_set is not None else {0: 0, 1: 0, -1: 0}
-        rem_label_counts = self._get_label_counts(remain_dataset) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
-
-        print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}], \nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # get dataset statistics
         train_data_stats = self._get_dataset_stats(train_set)
@@ -271,12 +280,37 @@ class DataPreprocessor:
         val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
 
         # create dataloaders
-        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
-        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
-        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers) if val_set is not None else None
         
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data_loader, drop_last=True, num_workers=num_workers)
+        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers) if val_set is not None else None
+        remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remainder_samples > 0 else None
+
+        # get number of OK and NOK samples in each set
+        train_label_counts, n_train = self._get_label_counts(train_loader)
+        test_label_counts, n_test = self._get_label_counts(test_loader)
+        val_label_counts, n_val = self._get_label_counts(val_loader) if val_loader is not None else {0: 0, 1: 0, -1: 0}, 0
+        rem_label_counts, n_rem = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
+
+        print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+
+        # print loader statistics
+        self.print_loader_stats(train_loader, "train")
+        self.print_loader_stats(test_loader, "test")
+        if val_loader is not None:
+            self.print_loader_stats(val_loader, "val")
+        
+        print('\n' + 75*'-')
+
         return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
         
+    def print_loader_stats(self, loader, type):
+        dataiter = iter(loader)
+        data = next(dataiter)
+
+        print(f"\n{type}_data_loader statistics:")
+        print(f"Number of batches: {len(loader)}")
+        print(data[0].shape)
 
     def _make_tp_dataset(self, x, y, z):
         """
@@ -444,7 +478,7 @@ class DataPreprocessor:
                         fs_list = [f[key][:] for key in f.keys() if key.startswith('fs')]
 
                         data = np.concatenate(data_list, axis=0)  # shape: (n_reps, n_timesteps)
-                        fs = np.concatenate(fs_list, axis=0) # shape: (n_reps,)
+                        fs = np.concatenate(fs_list, axis=0) if len(fs_list) > 0 else [] # shape: (n_reps,)
 
                     # store the fs value for the current dimension
                     if len(fs) > 0:
@@ -479,7 +513,8 @@ class DataPreprocessor:
                 print(f"'fs' is updated in data_config as given in loaded healthy (or unknown) data.\nNew fs:")
                 print(np.array2string(fs_matrix, separator=', '))
             else:
-                print("No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config.")
+                print("No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:")
+                print(np.array2string(self.data_config.fs, separator=', '))
 
         return node_dim_collect
     

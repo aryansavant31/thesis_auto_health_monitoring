@@ -1,0 +1,82 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.infer.py
+Base Name: (gearbox)-1SVM_fdet_3/custom_test_2
+Start Time: 2025-08-17 20:27:20
+End Time: 2025-08-17 20:27:34
+==================================================
+
+
+Starting anomaly detector custom_test...
+
+'custom_test' type dataset selected:
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+
+Node and signal types are set as follows:
+
+(<node_num>) <node_type> : [<signal_types>]
+---------------------------------------------
+(1) gearbox   : [acc]
+
+
+Total samples: 240, 
+Desired samples: 200/240 [OK=180, NOK=20, UK=0],
+Remainder samples: 0 [OK=0, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 4
+torch.Size([50, 1, 4000, 1])
+
+---------------------------------------------------------------------------
+
+Anomaly detector model loaded for custom_test from c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\1SVM\(gearbox)-1SVM_fdet_3\anomaly_detector.pkl
+
+---------------------------------------------------------------------------
+
+custom_test number 1 for already exists for (gearbox)-1SVM_fdet_3 in the log path 
+'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\custom_test\(gea
+rbox)\1SVM\(gearbox)-1SVM_fdet_3\custom_test_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop custom_test (Choose 'a', 'b' or 'c'):  Next fault detection folder will be: custom_test_2
+custom_test parameters saved to 
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\custom_test\(gear
+box)\1SVM\(gearbox)-1SVM_fdet_3\custom_test_2.
+
+custom_test environment set. custom_test will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\custom_test\(gearbox)\1SVM\(gearbox)-1SVM_fdet_3\custom_test_2
+
+---------------------------------------------------------------------------
+
+Testing anomaly detection model...
+
+No seperate features extracted, so using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp3996_dim0, comp3997_dim0, comp3998_dim0, comp3999_dim0]
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  comp3_dim0  ...  comp3999_dim0  given_label    scores  pred_label
+0      0.437484    0.446059    0.448733    0.438796  ...       0.441066          0.0  0.002262           0
+1      0.430574    0.423007    0.423310    0.428808  ...       0.428960          0.0 -0.000130           1
+2      0.426841    0.420839    0.420183    0.427446  ...       0.425782          0.0  0.005493           0
+3      0.434357    0.438241    0.431633    0.423512  ...       0.409792          0.0  0.000001           0
+4      0.411658    0.418518    0.425984    0.429615  ...       0.423411          0.0  0.004144           0
+..          ...         ...         ...         ...  ...            ...          ...       ...         ...
+195    0.379919    0.369728    0.368113    0.374470  ...       0.431483          1.0 -0.463710           1
+196    0.464077    0.493845    0.523814    0.545005  ...       0.431685          1.0  0.000168           0
+197    0.449546    0.475479    0.497175    0.512513  ...       0.383047          1.0  0.000379           0
+198    0.424521    0.476388    0.532190    0.584057  ...       0.502220          1.0 -0.000130           1
+199    0.493542    0.492230    0.478204    0.460747  ...       0.599596          1.0  0.000143           0
+
+[200 rows x 4003 columns]
+
+Test accuracy: 0.91
+Precision: 0.55, Recall: 0.60, F1-score: 0.57
+
+Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\custom_test\(gearbox)\1SVM\(gearbox)-1SVM_fdet_3\custom_test_2
+
+---------------------------------------------------------------------------
+
+===========================================================================
+
+custom_test of anomaly detector '(gearbox)-1SVM_fdet_3/custom_test_2' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-17 20:27:34

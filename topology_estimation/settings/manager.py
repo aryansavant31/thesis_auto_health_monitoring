@@ -55,7 +55,7 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"edge_estimator_{self.n_edge_types}.{self.model_num}")
+        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}" , f"edge_est_{self.n_edge_types}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)

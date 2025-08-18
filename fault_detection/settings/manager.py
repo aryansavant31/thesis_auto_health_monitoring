@@ -1,10 +1,10 @@
 import os, sys
 
-ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+# ROOT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
 SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
+# sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
 FDET_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGS_DIR = os.path.join(FDET_DIR, "logs")
@@ -22,8 +22,8 @@ import re
 from data.config import DataConfig
 
 # local imports
-from train_config import AnomalyDetectorTrainConfig
-from predict_config import AnomalyDetectorPredictConfig
+from .train_config import AnomalyDetectorTrainConfig
+from .infer_config import AnomalyDetectorInferConfig
 
 
 class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
@@ -42,7 +42,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         n_dim : int
             The number of dimensions in each component in the dataset
         """
-        self.node_type = f"({'+'.join(self.data_config.node_type)})"
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -53,13 +53,13 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(base_path, 'train', f'{self.node_type}')
 
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, f"{self.node_type}_fault_detector_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[anom] {self.anom_config['type']}')
+        model_path = os.path.join(model_path, f'[anom] {self.anom_config['anom_type']}')
 
         # add datastats to path
         signal_types_str = ', '.join(
@@ -68,7 +68,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
         # add model hparams to path
-        model_path = os.path.join(model_path, f"[{self.anom_config['type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
+        # model_path = os.path.join(model_path, f"[{self.anom_config['anom_type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
 
         # add domain type to path
         model_path = os.path.join(model_path, f'{self.domain_config['type']}')
@@ -123,10 +123,11 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             os.makedirs(self.train_log_path)
 
         config_path = os.path.join(self.train_log_path, f'train_config.pkl')
+
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        model_path = os.path.join(self.train_log_path, f'{self.node_type}_fault_detector_{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -153,10 +154,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f"{self.node_type}_fault_detector_{self.model_num}"
+            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")
         else:
-            new_model = f"{self.node_type}_fault_detector_1"
+            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_1"
 
         return os.path.join(parent_dir, new_model)
     
@@ -179,128 +180,113 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 print("Stopped training.")
                 sys.exit()  # Exit the program gracefully
 
-class AnomalyDetectorPredictManager(AnomalyDetectorPredictConfig):
-    def __init__(self, data_config:DataConfig):
+class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
+    def __init__(self, data_config:DataConfig, run_type):
         super().__init__(data_config)
         self.helper = HelperClass()
+        self.run_type = run_type
 
         self.train_log_path = self.log_config.train_log_path
         self.node_type = self.log_config.node_type
 
-        self.selected_model_num = f"{self.node_type}_fault_detector_{self.log_config.model_num}"
+        self.selected_model_num = f"{self.node_type}-{self.log_config.anom_config['anom_type']}_fdet_{self.log_config.model_num}"
     
-    def get_custom_test_log_path(self):
+    def get_infer_log_path(self):
         """
         Sets the log path for the predict run.
         """
 
-        test_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}custom_test{os.sep}")
-        self.test_log_path = os.path.join(test_num_path, f'{self.node_type}_custom_test_{self.version}')
+        infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
+        self.infer_log_path = os.path.join(infer_num_path, f'{self.run_type}_{self.version}')
 
         # add healthy or healthy_unhealthy config to path
-        test_num_path = self.helper.set_ds_types_in_path(self.data_config, test_num_path)
+        infer_num_path = self.helper.set_ds_types_in_path(self.data_config, infer_num_path)
 
         # add timestep_id to path
-        self.test_id = os.path.join(test_num_path, f'T{self.data_config.window_length}')
+        self.infer_id = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
 
         # # add version
-        # self.test_id = os.path.join(test_num_path, f'test_num_{self.version}')
+        # self.infer_id = os.path.join(infer_num_path, f'infer_num_{self.version}')
 
         # check if version already exists
-        self.check_if_version_exists(self.test_log_path, 'custom_test')
+        self.check_if_version_exists()
 
-        return self.test_log_path
+        return self.infer_log_path
     
-    def get_predict_log_path(self):
-        """
-        Sets the log path for the predict run.
-        """
-        self.data_config.set_predict_dataset()
+    # def get_predict_log_path(self):
+    #     """
+    #     Sets the log path for the predict run.
+    #     """
+    #     self.data_config.set_predict_dataset()
 
-        predict_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}predict{os.sep}")
-        self.predict_log_path = os.path.join(predict_num_path, f'{self.node_type}_predict_{self.version}')
+    #     predict_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}predict{os.sep}")
+    #     self.predict_log_path = os.path.join(predict_num_path, f'{self.node_type}_predict_{self.version}')
 
-        # add healthy or healthy_unhealthy config to path
-        predict_num_path = self.helper.set_ds_types_in_path(self.data_config, predict_num_path)
+    #     # add healthy or healthy_unhealthy config to path
+    #     predict_num_path = self.helper.set_ds_types_in_path(self.data_config, predict_num_path)
 
-        # add timestep_id to path
-        self.predict_id = os.path.join(predict_num_path, f'T{self.data_config.window_length}')
+    #     # add timestep_id to path
+    #     self.predict_id = os.path.join(predict_num_path, f'T{self.data_config.window_length}')
 
-        # # add version
-        # self.predict_id = os.path.join(predict_num_path, f'predict_num_{self.version}')
+    #     # # add version
+    #     # self.predict_id = os.path.join(predict_num_path, f'predict_num_{self.version}')
 
-        # check if version already exists
-        self.check_if_version_exists(self.predict_log_path, 'predict')
+    #     # check if version already exists
+    #     self.check_if_version_exists(self.predict_log_path, 'predict')
 
-        return self.predict_log_path
+    #     return self.predict_log_path
     
-    def save_custom_test_params(self):
+    def save_infer_params(self):
         """
         Saves the test parameters in the test log path.
         """
-        if not os.path.exists(self.test_log_path):
-            os.makedirs(self.test_log_path)
+        if not os.path.exists(self.infer_log_path):
+            os.makedirs(self.infer_log_path)
 
-        config_path = os.path.join(self.test_log_path, f'custom_test_config.pkl')
+        config_path = os.path.join(self.infer_log_path, f'{self.run_type}_config.pkl')
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        test_num_path = os.path.join(self.test_log_path, f'{self.node_type}_custom_test_{self.version}.txt')
-        with open(test_num_path, 'w') as f:
-            f.write(self.test_id)
+        infer_num_path = os.path.join(self.infer_log_path, f'{self.run_type}_{self.version}.txt')
+        with open(infer_num_path, 'w') as f:
+            f.write(self.infer_id)
 
-        print(f"Custom test parameters saved to {self.test_log_path}.")
+        print(f"{self.run_type.capitalize()} parameters saved to {self.infer_log_path}.")
 
-    def save_predict_params(self):
-        """
-        Saves the predict parameters in the predict log path.
-        """
-        if not os.path.exists(self.predict_log_path):
-            os.makedirs(self.predict_log_path)
 
-        config_path = os.path.join(self.predict_log_path, f'predict_config.pkl')
-        with open(config_path, 'wb') as f:
-            pickle.dump(self.__dict__, f)
-
-        predict_num_path = os.path.join(self.predict_log_path, f'{self.node_type}_predict_{self.version}.txt')
-        with open(predict_num_path, 'w') as f:
-            f.write(self.predict_id)
-            
-        print(f"Predict parameters saved to {self.predict_log_path}.")
-
-    def _remove_version(self, log_path):
+    def _remove_version(self):
         """
         Removes the version from the log path.
         """
-        if os.path.exists(log_path):
-            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {log_path}? (y/n): ")
+        if os.path.exists(self.infer_log_path):
+            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.infer_log_path}? (y/n): ")
             if user_input.lower() == 'y':
-                shutil.rmtree(log_path)
-                print(f"Overwrote version {self.version} from the log path {log_path}.")
+                shutil.rmtree(self.infer_log_path)
+                print(f"Overwrote version {self.version} from the log path {self.infer_log_path}.")
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
                 sys.exit()  # Exit the program gracefully
 
-    def _get_next_version(self, log_path, run_type):
-        parent_dir = os.path.dirname(log_path)
+    def _get_next_version(self):
+        parent_dir = os.path.dirname(self.infer_log_path)
 
         # List all folders in parent_dir that match 'fault_detector_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'.*{run_type}_\d+$', f)]
+        model_folders = [f for f in folders if re.match(fr'.*{self.run_type}_\d+$', f)]
 
         if model_folders:
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.version = max_model + 1
-            new_model = f'{self.node_type}_{run_type}_{self.version}'
+            new_model = f'{self.run_type}_{self.version}'
             print(f"Next fault detection folder will be: {new_model}")
         else:
-            new_model = f'{self.node_type}_{run_type}_1'  # If no v folders exist
+            new_model = f'{self.run_type}_1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
-    def check_if_version_exists(self, log_path, run_type):
+    def check_if_version_exists(self):
         """
         Checks if the version already exists in the log path.
 
@@ -310,18 +296,15 @@ class AnomalyDetectorPredictManager(AnomalyDetectorPredictConfig):
             The path where the test and predict logs are stored.
         """
  
-        if os.path.isdir(log_path):
-            print(f"\n{run_type} number {self.version} for already exists for {self.selected_model_num} in the log path '{log_path}'.")
-            user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {run_type} (Choose 'a', 'b' or 'c'):  ")
+        if os.path.isdir(self.infer_log_path):
+            print(f"\n{self.run_type} number {self.version} for already exists for {self.selected_model_num} in the log path '{self.infer_log_path}'.")
+            user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {self.run_type} (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
-                self._remove_version(log_path)
+                self._remove_version()
 
             elif user_input.lower() == 'b':
-                if run_type == 'custom_test':
-                    self.test_log_path = self._get_next_version(log_path, run_type)
-                elif run_type == 'predict':
-                    self.predict_log_path = self._get_next_version(log_path, run_type)
+                self.infer_log_path = self._get_next_version()
 
             elif user_input.lower() == 'c':
                 print("Stopped operation.")
@@ -468,7 +451,7 @@ class SelectFaultDetectionModel:
         self.run_type = run_type  # 'train' or 'predict'
 
         if self.run_type == 'train':
-            self.file_name = 'fault_detector'
+            self.file_name = 'fdet'
         elif self.run_type == 'custom_test':
             self.file_name = 'custom_test'
         elif self.run_type == 'predict':
@@ -562,20 +545,21 @@ class SelectFaultDetectionModel:
                 2: "<ds_subtype>",
                 3: "<model>",
                 4: "<ds_stats>",
-                5: "<model_hparams>",
-                6: "<domain>",
-                7: "<feat_type>",
-                8: "<shape_compatibility>",
-                9: "<version>"
+                # 5: "<model_hparams>",
+                5: "<domain>",
+                6: "<feat_type>",
+                7: "<shape_compatibility>",
+                8: "<version>"
             }
         elif self.run_type in ['custom_test', 'predict']:
             label_map = {
                 0: "<node_name>",
                 1: "<trained_model>",
-                2: "<ds_type>",
-                3: "<ds_subtype>",
-                4: "ds_stats",
-                5: "<versions>"
+                2: "<model_id>",
+                3: "<ds_type>",
+                4: "<ds_subtype>",
+                5: "<ds_stats>",
+                6: "<versions>"
             }
                     
         added_labels = set()
@@ -597,6 +581,11 @@ class SelectFaultDetectionModel:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
+            if self.run_type in ['custom_test', 'predict'] and level == 2:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+                continue
+
             
             # All other folders: white
             branch = parent_node.add(f"[white]{safe_key}[/white]")

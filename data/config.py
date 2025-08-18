@@ -4,6 +4,7 @@ from pathlib import Path
 from rich.tree import Tree
 from rich.console import Console
 import glob
+import numpy as np
 
 
 class DataConfig:
@@ -44,38 +45,41 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application    = 'ASM'
+        self.application    = 'BER'
 
-        self.machine_type   = 'NXE'
-        self.scenario       = 'full_wafer'
-        self.signal_types   = {'ammf': ['acc_x', 'acc_y', 'acc_z'],
-                               'lra': ['pos_x', 'pos_y', 'pos_z']} 
-                 
-        self.node_type      = self.signal_types.keys()           # options ['ALL'] or the specific node type
+        self.machine_type   = 'cwru'
+        self.scenario       = 'scene_1'
+        self.signal_types   = {'gearbox': ['acc']}
+                               #'lra': ['pos_x', 'pos_y', 'pos_z']} 
         
-        self.fs             = None     # sampling frequency matrix, set in the data.prep.py
+        self.fs             =  np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
 
         self.format         = 'hdf5'  # options: hdf5
 
         # segement data
         self.window_length  = 4000
         self.stride         = 4000
+        
+        self.run_type       = run_type  # options: train, custom_test, predict
 
-        if run_type == 'train':
+        if self.run_type == 'train':
             self.set_train_dataset()
-        elif run_type == 'custom_test':
+        elif self.run_type == 'custom_test':
             self.set_custom_test_dataset()
-        elif run_type == 'predict':
+        elif self.run_type == 'predict':
             self.set_predict_dataset()
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'O_N': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            # '0_B-021': [get_augment_config('OG')],
+            '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
+            # '0_IR-007': [get_augment_config('OG')],
+            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {
@@ -86,11 +90,15 @@ class DataConfig:
         self.healthy_configs   = {
             'E2_set02_M=mDP98': [get_augment_config('OG')],
             #'M=mlC14_E2_set02': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
-            # '0_B-007': [get_augment_config('OG')],
+            # '0_IR-007': [get_augment_config('OG')],
+            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {
@@ -100,10 +108,15 @@ class DataConfig:
     def set_predict_dataset(self):
         self.amt = 0.8
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
+            # '0_B-007': [get_augment_config('OG')],
+            # '0_IR-007': [get_augment_config('OG')],
+            # '0_IR-021': [get_augment_config('OG')],
         }
 
         self.unknown_configs = {
