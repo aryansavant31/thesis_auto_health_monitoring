@@ -80,7 +80,7 @@ class NRI(LightningModule):
         self.decoder.set_run_params(**dec_run_params)
         
 
-    def forward(self, data):
+    def forward(self, data, batch_idx, current_epoch=0):
         """
         Run the forward pass of the encoder and decoder.
 
@@ -103,13 +103,13 @@ class NRI(LightningModule):
             Variance of the predicted node data.
         """
         # Encoder
-        logits = self.encoder(data)
+        logits = self.encoder(data, batch_idx, current_epoch=current_epoch)
         edge_matrix = F.gumbel_softmax(logits, tau=self.temp, hard=self.is_hard)
         edge_pred = F.softmax(logits, dim=-1)
 
         # Decoder
         self.decoder.set_edge_matrix(edge_matrix)
-        x_pred, x_var = self.decoder(data)
+        x_pred, x_var = self.decoder(data, batch_idx, current_epoch=current_epoch)
 
         return edge_pred, x_pred, x_var
     
@@ -145,11 +145,11 @@ class NRI(LightningModule):
         rec_rel, send_rel = rel_batch
         
         num_nodes = data.size(1)
-        target = self.decoder.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
+        target = self.decoder.process_input_data(data, batch_idx=batch_idx, current_epoch=self.current_epoch)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
         self.set_input_graph(rec_rel, send_rel)
-        edge_pred, x_pred, x_var = self.forward(data)
+        edge_pred, x_pred, x_var = self.forward(data, batch_idx, current_epoch=self.current_epoch)
 
         # Loss calculation
         # encoder loss

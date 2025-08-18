@@ -150,17 +150,55 @@ class Decoder(LightningModule):
         return non_rank_feats + rank_feats
     
     def init_input_processors(self):
+        print(f"\nInitializing input processors for anomaly detection model...") 
+
         self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
-        self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats) if self._raw_data_norm else None
-        self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm) if self._feat_norm else None
+        if self._domain == 'time':
+            print(f"\n>> Domain transformer initialized for 'time' domain") 
+        elif self._domain == 'freq':
+            print(f"\n>> Domain transformer initialized for 'frequency' domain") 
+
+        # initialize data normalizers
+        if self._raw_data_norm:
+            self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats)
+            print(f"\n>> Raw data normalizer initialized with '{self._raw_data_norm}' normalization") 
+        else:
+            self.raw_data_normalizer = None
+            print("\n>> No raw data normalization is applied") 
+
+        if self._feat_norm:
+            self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm)
+            print(f"\n>> Feature normalizer initialized with '{self._feat_norm}' normalization") 
+        else:
+            self.feat_normalizer = None
+            print("\n>> No feature normalization is applied") 
 
         # define feature objects
         if self._domain == 'time':
-            self.time_fex = TimeFeatureExtractor(self._feat_configs) if self._feat_configs else None
+            if self._feat_configs:
+                self.time_fex = TimeFeatureExtractor(self._feat_configs)
+                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") 
+            else:
+                self.time_fex = None
+                print("\n>> No time feature extraction is applied") 
+
         elif self._domain == 'freq':
-            self.freq_fex = FrequencyFeatureExtractor(self._feat_configs) if self._feat_configs else None
+            if self._feat_configs:
+                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs)
+                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") 
+            else:
+                self.freq_fex = None
+                print("\n>> No frequency feature extraction is applied") 
         
-        self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config) if self._reduc_config else None
+        # define feature reducer
+        if self._reduc_config:
+            self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config)
+            print(f"\n>> Feature reducer initialized with '{self._reduc_config['type']}' reduction") 
+        else:
+            self.feat_reducer = None
+            print("\n>> No feature reduction is applied") 
+
+        print('\n' + 75*'-') 
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
         receivers = torch.bmm(rec_rel, node_emb)
@@ -236,7 +274,7 @@ class Decoder(LightningModule):
 
         return edge_matrix
     
-    def process_input_data(self, time_data):
+    def process_input_data(self, time_data, batch_idx=0, current_epoch=0):
         """
         Parameters
         ----------
@@ -247,7 +285,8 @@ class Decoder(LightningModule):
         -------
         data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
         """
-        self.init_input_processors()
+        if current_epoch == 0 and batch_idx == 0:
+            self.init_input_processors()
 
         # domain transform data (mandatory)
         if self._domain == 'time':
@@ -260,7 +299,7 @@ class Decoder(LightningModule):
             if self._domain == 'time':
                 data = self.raw_data_normalizer.normalize(data)
             elif self._domain == 'freq':
-                print("\nFrequency data cannot be normalzied before feature extraction.")
+                print("\nFrequency data cannot be normalized before feature extraction. Hence skipping raw data normalization (for all iterations).") if current_epoch == 0 and batch_idx == 0 else None
 
         # extract features from data (optional)
         is_fex = False
@@ -278,7 +317,7 @@ class Decoder(LightningModule):
             if is_fex:
                 data = self.feat_normalizer.normalize(data)
             else:
-                print("\nNo features extracted, so feature normalization is skipped.")
+                print("\nNo features extracted, so feature normalization is skipped (for all iterations).") if current_epoch == 0 and batch_idx == 0 else None
 
         # reduce features (optional : if reduc_config is provided)
         if self.feat_reducer:
@@ -286,7 +325,7 @@ class Decoder(LightningModule):
 
         return data
     
-    def forward(self, data):
+    def forward(self, data, batch_idx, current_epoch=0):
         """
         Run the forward pass of the decoder.
 
@@ -304,8 +343,9 @@ class Decoder(LightningModule):
         preds : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dims)
         vars : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dims)
         """
+
         # process data
-        data = self.process_input_data(data)
+        data = self.process_input_data(data, batch_idx=batch_idx, current_epoch=current_epoch)
 
         # data has shape [batch_size, n_nodes, n_components, n_dims]
         inputs = data.transpose(1, 2).contiguous()
@@ -364,6 +404,7 @@ class Decoder(LightningModule):
             - data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
+
         if self.current_epoch == 0 and batch_idx == 0:
             self.start_time = time.time()
             print(f"train start time: {self.start_time}")
@@ -375,12 +416,12 @@ class Decoder(LightningModule):
 
         edge_matrix = 0.5*(rec_rel + send_rel).sum(dim=2, keepdim=True) 
         
-        target = self.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
+        target = self.process_input_data(data, batch_idx=batch_idx, current_epoch=self.current_epoch)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
         self.set_input_graph(rec_rel, send_rel)
         self.set_edge_matrix(edge_matrix)
-        x_pred, x_var = self.forward(data)
+        x_pred, x_var = self.forward(data, batch_idx, current_epoch=self.current_epoch)
 
         # Loss calculation
         if self.loss_type == 'nll':

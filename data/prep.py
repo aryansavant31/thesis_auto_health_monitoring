@@ -257,12 +257,16 @@ class DataPreprocessor:
         remainder_samples = total_samples - train_total - test_total - val_total
 
         if self.package == 'topology_estimation':
+            shuffle_data_loader = True
+
             if train_total + test_total + val_total < total_samples:
                 train_set, test_set, val_set, remain_dataset = random_split(dataset, [train_total, test_total, val_total, remainder_samples])
             else:
                 train_set, test_set, val_set = random_split(dataset, [train_total, test_total, val_total])
 
         elif self.package == 'fault_detection':
+            shuffle_data_loader = False
+
             if train_total + test_total < total_samples:
                 train_set, test_set, remain_dataset = random_split(dataset, [train_total, test_total, remainder_samples])
             else:
@@ -276,9 +280,10 @@ class DataPreprocessor:
         val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
 
         # create dataloaders
-        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
-        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
-        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers) if val_set is not None else None
+        
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data_loader, drop_last=True, num_workers=num_workers)
+        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers) if val_set is not None else None
         remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remainder_samples > 0 else None
 
         # get number of OK and NOK samples in each set

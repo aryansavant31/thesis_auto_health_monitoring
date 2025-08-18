@@ -1,8 +1,8 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.infer.py
 Base Name: (gearbox)-IF_fdet_2/custom_test_1
-Start Time: 2025-08-17 22:39:09
-End Time: 2025-08-17 22:39:45
+Start Time: 2025-08-18 10:26:59
+End Time: 2025-08-18 10:27:19
 ==================================================
 
 
@@ -31,6 +31,8 @@ torch.Size([50, 1, 4000, 1])
 ---------------------------------------------------------------------------
 
 Anomaly detector model loaded for 'custom_test' from c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_2\anomaly_detector.pkl
+
+Model type: IsolationForest, Model ID: (gearbox)-IF_fdet_2, Number of input features required: 4000
 
 ---------------------------------------------------------------------------
 
@@ -143,4 +145,4 @@ Custom_test of anomaly detector '(gearbox)-IF_fdet_2/custom_test_1' completed.
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-08-17 22:39:45
+Log saved at: 2025-08-18 10:27:19

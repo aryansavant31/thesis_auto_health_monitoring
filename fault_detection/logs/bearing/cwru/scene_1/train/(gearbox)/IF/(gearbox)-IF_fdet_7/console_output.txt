@@ -1,0 +1,259 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.train.py
+Base Name: (gearbox)-IF_fdet_7
+Start Time: 2025-08-18 12:35:04
+End Time: 2025-08-18 12:35:45
+==================================================
+
+
+Starting fault detection model training...
+
+'Train' type dataset selected:
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+
+Node and signal types are set as follows:
+
+(<node_num>) <node_type> : [<signal_types>]
+---------------------------------------------
+(1) gearbox   : [acc]
+
+
+Total samples: 240, 
+Train: 190/192 [OK=146, NOK=44, UK=0], Test: 40/48 [OK=27, NOK=13, UK=0], Val: 0/0 [OK=0, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 19
+torch.Size([10, 1, 4000, 1])
+
+test_data_loader statistics:
+Number of batches: 4
+torch.Size([10, 1, 4000, 1])
+
+---------------------------------------------------------------------------
+
+Anomaly Detector Model Initialized with the following configurations:
+Model type: IsolationForest
+Number of trees in the forest: 100
+Contamination: auto
+
+---------------------------------------------------------------------------
+'Version 7' already exists in the log path 
+'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\
+(gearbox)\IF\(gearbox)-IF_fdet_7'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the model number 7 from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7? (y/n): Overwrote exsiting model number '7' from the log path 
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(
+gearbox)\IF\(gearbox)-IF_fdet_7.
+Model parameters saved to 
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(
+gearbox)\IF\(gearbox)-IF_fdet_7.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7
+
+---------------------------------------------------------------------------
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized for frequency domain
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No frequency feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Frequency data cannot be normalized before feature extraction, hence skipping raw data normalization.
+
+No seperate features extracted, so using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp1996_dim0, comp1997_dim0, comp1998_dim0, comp1999_dim0]
+
+Fitting anomaly detection model...
+
+Model fitted successfully in 3.87 seconds
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  ...  given_label    scores  pred_label
+0      0.000244    0.000248    0.000268  ...          0.0  0.091407           0
+1      0.000173    0.000175    0.000180  ...          0.0  0.106394           0
+2      0.000304    0.000307    0.000337  ...          0.0  0.109988           0
+3      0.001015    0.001023    0.001050  ...          0.0  0.094682           0
+4      0.000803    0.000808    0.000831  ...          0.0  0.092709           0
+..          ...         ...         ...  ...          ...       ...         ...
+185    0.000047    0.000047    0.000038  ...          0.0  0.099522           0
+186    0.001095    0.001101    0.001124  ...          0.0  0.095874           0
+187    0.000776    0.000771    0.000748  ...          1.0  0.050404           0
+188    0.000933    0.000937    0.000932  ...          0.0  0.096028           0
+189    0.001200    0.001208    0.001236  ...          0.0  0.088196           0
+
+[190 rows x 2003 columns]
+
+Training accuracy: 0.88
+
+Training hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7
+
+Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\anomaly_detector.pkl
+
+---------------------------------------------------------------------------
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+Testing anomaly detection model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized for frequency domain
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No frequency feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Frequency data cannot be normalized before feature extraction, hence skipping raw data normalization.
+
+No seperate features extracted, so using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp1996_dim0, comp1997_dim0, comp1998_dim0, comp1999_dim0]
+
+Dataframe is as follows:
+      comp0_dim0  comp1_dim0  comp2_dim0  ...  given_label    scores  pred_label
+0   3.450628e-03    0.003455    0.003468  ...          1.0 -0.055739           1
+1   2.416537e-04    0.000242    0.000247  ...          0.0  0.107482           0
+2   3.557666e-04    0.000358    0.000368  ...          0.0  0.104087           0
+3   2.295280e-03    0.002319    0.002452  ...          1.0 -0.059502           1
+4   2.461992e-03    0.002476    0.002517  ...          1.0  0.014306           0
+5   6.105559e-04    0.000613    0.000617  ...          0.0  0.100999           0
+6   3.924034e-04    0.000394    0.000388  ...          0.0  0.090154           0
+7   1.168761e-03    0.001186    0.001281  ...          1.0 -0.028420           1
+8   4.328920e-04    0.000436    0.000457  ...          0.0  0.100987           0
+9   9.223757e-03    0.009255    0.009332  ...          1.0 -0.030527           1
+10  1.534260e-03    0.001544    0.001572  ...          0.0  0.091629           0
+11  1.074802e-04    0.000111    0.000121  ...          0.0  0.105009           0
+12  1.642752e-04    0.000197    0.000285  ...          1.0  0.029539           0
+13  5.912044e-03    0.005927    0.005932  ...          1.0  0.004387           0
+14  8.803547e-04    0.000887    0.000911  ...          0.0  0.093736           0
+15  1.400157e-03    0.001411    0.001466  ...          0.0  0.087469           0
+16  2.788661e-04    0.000281    0.000282  ...          0.0  0.079002           0
+17  4.323659e-04    0.000446    0.000451  ...          1.0 -0.056980           1
+18  1.039693e-03    0.001046    0.001086  ...          0.0  0.075797           0
+19  4.386634e-03    0.004413    0.004431  ...          1.0 -0.056426           1
+20  3.025162e-03    0.003064    0.003188  ...          1.0  0.010126           0
+21  1.165391e-03    0.001176    0.001220  ...          0.0  0.096084           0
+22  8.476582e-04    0.000854    0.000885  ...          0.0  0.091079           0
+23  1.721494e-03    0.001719    0.001664  ...          1.0 -0.030378           1
+24  5.430206e-05    0.000057    0.000086  ...          0.0  0.090946           0
+25  4.391323e-04    0.000442    0.000446  ...          0.0  0.098186           0
+26  9.339213e-04    0.000941    0.000960  ...          0.0  0.097653           0
+27  4.569034e-05    0.000043    0.000018  ...          0.0  0.088753           0
+28  5.523331e-04    0.000556    0.000575  ...          0.0  0.098358           0
+29  1.732817e-03    0.001742    0.001772  ...          0.0  0.099827           0
+30  6.968380e-07    0.000003    0.000017  ...          0.0  0.100411           0
+31  1.621593e-04    0.000166    0.000187  ...          0.0  0.106331           0
+32  8.689390e-04    0.000875    0.000893  ...          0.0  0.099667           0
+33  1.285864e-04    0.000129    0.000146  ...          0.0  0.105216           0
+34  3.663227e-04    0.000368    0.000373  ...          0.0  0.100759           0
+35  9.544778e-04    0.000960    0.000969  ...          0.0  0.100496           0
+36  7.314908e-04    0.000737    0.000756  ...          0.0  0.094381           0
+37  2.969321e-03    0.002985    0.003051  ...          1.0  0.044159           0
+38  5.040768e-04    0.000506    0.000514  ...          0.0  0.095286           0
+39  6.916747e-03    0.006953    0.007056  ...          1.0  0.018154           0
+
+[40 rows x 2003 columns]
+
+Test accuracy: 0.85
+Precision: 1.00, Recall: 0.54, F1-score: 0.70
+
+Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX >>>>>>>>>>>>
+
+> Creating confusion matrix for (gearbox)-IF_fdet_7 / test...
+
+Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION (PRED_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for (gearbox)-IF_fdet_7 / test...
+
+Total OK samples (from pred_label) : 33
+---------- Samples in OK bins ----------
+Bin 19 (0.00395, 0.00729): [13]
+Bin 20 (0.00729, 0.01063): [20]
+Bin 22 (0.01397, 0.01731): [4]
+Bin 23 (0.01731, 0.02065): [39]
+Bin 26 (0.02733, 0.03067): [12]
+Bin 31 (0.04403, 0.04737): [37]
+Bin 40 (0.07409, 0.07743): [18]
+Bin 41 (0.07743, 0.08076): [16]
+Bin 44 (0.08744, 0.09078): [6, 15, 27]
+Bin 45 (0.09078, 0.09412): [10, 14, 22, 24]
+Bin 46 (0.09412, 0.09746): [21, 36, 38]
+Bin 47 (0.09746, 0.10080): [25, 26, 28, 29, 30, 32, 34, 35]
+Bin 48 (0.10080, 0.10414): [2, 5, 8]
+Bin 49 (0.10414, 0.10748): [11, 31, 33]
+
+Total NOK samples (from pred_label) : 7
+---------- Samples in NOK bins ----------
+Bin 0 (-0.05950, -0.05616): [3, 17, 19]
+Bin 1 (-0.05616, -0.05282): [0]
+Bin 8 (-0.03278, -0.02944): [9, 23]
+Bin 9 (-0.02944, -0.02610): [7]
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION (GIVEN_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for (gearbox)-IF_fdet_7 / test...
+
+Total OK samples (from given_label) : 27
+---------- Samples in OK bins ----------
+Bin 40 (0.07409, 0.07743): [18]
+Bin 41 (0.07743, 0.08076): [16]
+Bin 44 (0.08744, 0.09078): [6, 15, 27]
+Bin 45 (0.09078, 0.09412): [10, 14, 22, 24]
+Bin 46 (0.09412, 0.09746): [21, 36, 38]
+Bin 47 (0.09746, 0.10080): [25, 26, 28, 29, 30, 32, 34, 35]
+Bin 48 (0.10080, 0.10414): [2, 5, 8]
+Bin 49 (0.10414, 0.10748): [11, 31, 33]
+
+Total NOK samples (from given_label) : 13
+---------- Samples in NOK bins ----------
+Bin 0 (-0.05950, -0.05616): [3, 17, 19]
+Bin 1 (-0.05616, -0.05282): [0]
+Bin 8 (-0.03278, -0.02944): [9, 23]
+Bin 9 (-0.02944, -0.02610): [7]
+Bin 19 (0.00395, 0.00729): [13]
+Bin 20 (0.00729, 0.01063): [20]
+Bin 22 (0.01397, 0.01731): [4]
+Bin 23 (0.01731, 0.02065): [39]
+Bin 26 (0.02733, 0.03067): [12]
+Bin 31 (0.04403, 0.04737): [37]
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for (gearbox)-IF_fdet_7 / test...
+
+Pair plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\IF\(gearbox)-IF_fdet_7\test
+
+
+===========================================================================
+
+Fault detection model '(gearbox)-IF_fdet_7' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-18 12:35:45

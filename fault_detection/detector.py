@@ -74,18 +74,56 @@ class AnomalyDetector:
 
         return non_rank_feats + rank_feats
             
-    def init_input_processors(self):
+    def init_input_processors(self, is_verbose=True):
+        print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
+
         self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
-        self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats) if self._raw_data_norm else None
-        self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm) if self._feat_norm else None
+        if self._domain == 'time':
+            print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None
+        elif self._domain == 'freq':
+            print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None
+
+        # initialize data normalizers
+        if self._raw_data_norm:
+            self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats)
+            print(f"\n>> Raw data normalizer initialized with '{self._raw_data_norm}' normalization") if is_verbose else None
+        else:
+            self.raw_data_normalizer = None
+            print("\n>> No raw data normalization is applied") if is_verbose else None
+
+        if self._feat_norm:
+            self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm)
+            print(f"\n>> Feature normalizer initialized with '{self._feat_norm}' normalization") if is_verbose else None
+        else:
+            self.feat_normalizer = None
+            print("\n>> No feature normalization is applied") if is_verbose else None
 
         # define feature objects
         if self._domain == 'time':
-            self.time_fex = TimeFeatureExtractor(self._feat_configs) if self._feat_configs else None
+            if self._feat_configs:
+                self.time_fex = TimeFeatureExtractor(self._feat_configs)
+                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+            else:
+                self.time_fex = None
+                print("\n>> No time feature extraction is applied") if is_verbose else None
+
         elif self._domain == 'freq':
-            self.freq_fex = FrequencyFeatureExtractor(self._feat_configs) if self._feat_configs else None
+            if self._feat_configs:
+                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs)
+                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+            else:
+                self.freq_fex = None
+                print("\n>> No frequency feature extraction is applied") if is_verbose else None
         
-        self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config) if self._reduc_config else None
+        # define feature reducer
+        if self._reduc_config:
+            self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config)
+            print(f"\n>> Feature reducer initialized with '{self._reduc_config['type']}' reduction") if is_verbose else None
+        else:
+            self.feat_reducer = None
+            print("\n>> No feature reduction is applied") if is_verbose else None
+
+        print('\n' + 75*'-') if is_verbose else None
 
     def print_model_info(self):
         """
@@ -147,9 +185,9 @@ class TrainerAnomalyDetector:
         data_list = []
         label_list = []
 
-        anomaly_detector.init_input_processors()
+        anomaly_detector.init_input_processors(is_verbose = not get_data_shape)
 
-        for time_data, label in data_loader:
+        for idx, (time_data, label) in enumerate(data_loader):
             # domain transform data (mandatory)
             if anomaly_detector._domain == 'time':
                 data = anomaly_detector.domain_transformer.transform(time_data)
@@ -161,7 +199,7 @@ class TrainerAnomalyDetector:
                 if anomaly_detector._domain == 'time':
                     data = anomaly_detector.raw_data_normalizer.normalize(data)
                 elif anomaly_detector._domain == 'freq':
-                    print("\nFrequency data cannot be normalzied before feature extraction.")
+                    print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not get_data_shape and idx == 0 else None
 
             # extract features from data (optional)
             is_fex = False
@@ -179,7 +217,7 @@ class TrainerAnomalyDetector:
                 if is_fex:
                     data = anomaly_detector.feat_normalizer.normalize(data)
                 else:
-                    print("\nNo features extracted, so feature normalization is skipped.")
+                    print("\nNo features extracted, so feature normalization is skipped.") if not get_data_shape and idx == 0 else None
 
             # reduce features (optional : if reduc_config is provided)
             if anomaly_detector.feat_reducer:
