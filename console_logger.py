@@ -4,6 +4,9 @@ from datetime import datetime
 from contextlib import contextmanager
 from io import StringIO
 import tempfile
+import platform
+import psutil
+import torch
 
 class ConsoleLogger:
     def __init__(self):
@@ -83,6 +86,37 @@ class ConsoleLogger:
             
             if self.temp_file:
                 self.temp_file.close()
+
+    def _get_system_info(self):
+        # CPU info
+        cpu_name = platform.processor() or platform.uname().processor or "Unknown CPU"
+        cpu_cores = psutil.cpu_count(logical=True) if psutil else "Unknown"
+        cpu_info = f"CPU: {cpu_name} (Cores: {cpu_cores})"
+        if psutil:
+            try:
+                cpu_freq = psutil.cpu_freq()
+                if cpu_freq:
+                    cpu_info += f", Max Frequency: {cpu_freq.max:.2f} MHz"
+            except Exception:
+                pass
+
+        # GPU info
+        if torch and torch.cuda.is_available():
+            try:
+                num_gpus = torch.cuda.device_count()
+                gpu_infos = []
+                for i in range(num_gpus):
+                    gpu_name = torch.cuda.get_device_name(i)
+                    gpu_props = torch.cuda.get_device_properties(i)
+                    gpu_mem = f"{gpu_props.total_memory / (1024**3):.2f} GB"
+                    gpu_infos.append(f"GPU {i}: {gpu_name}, Memory: {gpu_mem}")
+                gpu_info = f"GPUs Detected: {num_gpus}\n" + "\n".join(gpu_infos)
+            except Exception:
+                gpu_info = "GPU: Error retrieving GPU info"
+        else:
+            gpu_info = "GPU: None detected"
+
+        return f"{cpu_info}\n{gpu_info}"
     
     def save_to_file(self, log_file_path, script_name, base_name=None):
         """
@@ -108,7 +142,13 @@ class ConsoleLogger:
                 log_file.write(f"Base Name: {base_name}\n")
             log_file.write(f"Start Time: {start_time_str}\n")
             log_file.write(f"End Time: {end_time_str}\n")
-            log_file.write("=" * 50 + "\n\n")
+
+            # add system specs
+            log_file.write("\n" + self._get_system_info() + "\n")
+            log_file.write(f"OS: {platform.system()} {platform.release()} ({platform.version()})\n")
+            log_file.write(f"\nPython Version: {sys.version}\n")
+            
+            log_file.write("=" * 120 + "\n\n")
             
             # Write captured output
             if self.use_temp_file and self.temp_file_path:

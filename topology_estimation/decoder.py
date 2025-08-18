@@ -150,7 +150,7 @@ class Decoder(LightningModule):
         return non_rank_feats + rank_feats
     
     def init_input_processors(self):
-        print(f"\nInitializing input processors for anomaly detection model...") 
+        print(f"\nInitializing input processors for decoder model...") 
 
         self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
         if self._domain == 'time':

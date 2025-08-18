@@ -310,6 +310,7 @@ class TrainerAnomalyDetector:
         # update hparams
         anomaly_detector.hparams['train_accuracy'] = accuracy
         anomaly_detector.hparams['model_id'] = self.model_id
+        anomaly_detector.hparams['training_time'] = training_time
 
         if self.logger:
             self.logger.add_scalar(f"{self.model_type}/train_accuracy", accuracy)

@@ -490,7 +490,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         return non_rank_feats + rank_feats
     
     def init_input_processors(self, is_verbose=True):
-        print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
+        print(f"\nInitializing input processors for encoder model...") if is_verbose else None
 
         self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
         if self._domain == 'time':
