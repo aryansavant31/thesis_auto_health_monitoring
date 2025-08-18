@@ -84,7 +84,7 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'M=mIC14_E1_set01': [get_augment_config('OG')],
+            'E2_set02_M=mDP98': [get_augment_config('OG')],
             #'M=mlC14_E2_set02': [get_augment_config('OG')],
         }
         
