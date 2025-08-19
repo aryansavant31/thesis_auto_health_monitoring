@@ -48,7 +48,7 @@ fault isolation:
 """
 
 import argparse
-from topology_estimation.train import TrainNRIMain, PredictNRIMain
+from topology_estimation.train_old import TrainNRIMain, PredictNRIMain
 
 parser = argparse.ArgumentParser(description="Run the AFD implementation")
 parser.add_argument('--package', type=str, 

@@ -8,7 +8,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 
 # global imports
 from data.config import DataConfig, get_domain_config
-#from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
+from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
 
 class AnomalyDetectorTrainConfig:
     def __init__(self, data_config:DataConfig):

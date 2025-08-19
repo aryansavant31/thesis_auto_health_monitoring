@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader, random_split
 import h5py
 from torch.utils.data import Subset
 from collections import defaultdict
+from scipy.interpolate import interp1d
 
 # local imports
 from .config import DataConfig
@@ -49,21 +50,21 @@ class DataPreprocessor:
         node_path_map, edge_path_map = self.data_config.get_dataset_paths()
 
         # prepare data and labels from paths
-        x_node, y_node, y_edge = {}, {}, {}
+        x_node, y_node, y_edge, y_rep = {}, {}, {}, {}
 
         for ds_type in node_path_map.keys():
             node_type_map = node_path_map[ds_type]
             ds_subtype_map = edge_path_map[ds_type]
             if node_type_map is not None and ds_subtype_map is not None:
-                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = self._prepare_data_from_path(node_type_map, ds_subtype_map, ds_type)
+                x_node[ds_type], y_node[ds_type], y_edge[ds_type], y_rep[ds_type] = self._prepare_data_from_path(node_type_map, ds_subtype_map, ds_type)
             else:
-                x_node[ds_type], y_node[ds_type], y_edge[ds_type] = None, None, None
+                x_node[ds_type], y_node[ds_type], y_edge[ds_type], y_rep[ds_type] = None, None, None, None
 
         # create datasets
         if self.package == 'fault_detection':
-            dataset = self._make_fdet_dataset(x_node, y_node)
+            dataset = self._make_fdet_dataset(x_node, y_node, y_rep)
         elif self.package == 'topology_estimation':
-            dataset = self._make_tp_dataset(x_node, y_edge, y_node)    
+            dataset = self._make_tp_dataset(x_node, y_edge, y_node, y_rep)
 
         return dataset
     
@@ -130,7 +131,7 @@ class DataPreprocessor:
         label_counts = {0: 0, 1: 0, -1: 0}  # Assuming labels are 0 for healthy, 1 for unhealthy, and -1 for unknown
 
         for data in data_loader:
-            for label_value in data[-1].view(-1).tolist():
+            for label_value in data[-2].view(-1).tolist(): # data has (..., y_node (we want this), y_rep)
                 label_counts[label_value] += 1
 
         total_samples = sum(label_counts.values())
@@ -162,14 +163,30 @@ class DataPreprocessor:
         self.data_config = data_config
         print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
 
-        # load the dataset
-        dataset = self._load_dataset()
+        print(f"\n\nds_subtype selections:\n")
+        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
+        print(45*'-')
+        print(">> Healthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
+
+        print("\n>> Unhealthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
+
+        print("\n>> Unknown configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
+
 
         print("\n\nNode and signal types are set as follows:\n")
         print("(<node_num>) <node_type> : [<signal_types>]")
         print(45*'-')
         for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
             print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+
+        # load the dataset
+        dataset = self._load_dataset()
 
         # retain only the desired number of samples
         total_samples = len(dataset)
@@ -231,15 +248,31 @@ class DataPreprocessor:
             print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
         else:
             raise ValueError(f"{self.data_config.run_type} is selected for training. Please set run_type to 'train' in the data config.")
+        
+        print(f"\n\nds_subtype selections:\n")
+        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
+        print(45*'-')
+        print(">> Healthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
 
-        # load the dataset
-        dataset = self._load_dataset()
+        print("\n>> Unhealthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
+
+        print("\n>> Unknown configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
+
 
         print("\n\nNode and signal types are set as follows:\n")
         print("(<node_num>) <node_type> : [<signal_types>]")
         print(45*'-')
         for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
             print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+
+        # load the dataset
+        dataset = self._load_dataset()
 
         # split the dataset into train, validation, and test sets
         total_samples = len(dataset)
@@ -290,7 +323,7 @@ class DataPreprocessor:
         train_label_counts, n_train = self._get_label_counts(train_loader)
         test_label_counts, n_test = self._get_label_counts(test_loader)
         val_label_counts, n_val = self._get_label_counts(val_loader) if val_loader is not None else {0: 0, 1: 0, -1: 0}, 0
-        rem_label_counts, _ = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}
+        rem_label_counts, _ = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
 
         print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
@@ -312,71 +345,80 @@ class DataPreprocessor:
         print(f"Number of batches: {len(loader)}")
         print(data[0].shape)
 
-    def _make_tp_dataset(self, x, y, z):
+    def _make_tp_dataset(self, x_node, y_edge, y_node, y_rep):
         """
         Create a TensorDataset for topology estimation (tp) from the provided data and labels.
 
         Parameters
         ----------
-        x : dict
+        x_node : dict
             Dictionary containing tensor node data for each dataset type.
-        y : dict
+        y_edge : dict
             Dictionary containing tensor edge labels for each dataset type.
-        z : dict
-            Dictionary containing tensor node labels for each dataset type (to count number of OK and NOK samples).
-
+        y_node : dict
+            Dictionary containing tensor node labels for each dataset type (to count OK and NOK samples).
+        y_rep : dict
+            Dictionary containing rep labels for each dataset type.
+        
         Returns
         -------
         TensorDataset
             A dataset containing the (concatenated) data and labels.
         """
-        x_list, y_list, z_list = [], [], []
+        x_node_list, y_edge_list, y_node_list, y_rep_list = [], [], [], []
 
-        for ds_type in x.keys():
-            if x[ds_type] is not None and y[ds_type] is not None and z[ds_type] is not None:
-                x_list.append(x[ds_type])
-                y_list.append(y[ds_type])
-                z_list.append(z[ds_type])
+        for ds_type in x_node.keys():
+            if x_node[ds_type] is not None and y_edge[ds_type] is not None and y_node[ds_type] is not None and y_rep[ds_type] is not None:
+                x_node_list.append(x_node[ds_type])
+                y_edge_list.append(y_edge[ds_type])
+                y_node_list.append(y_node[ds_type])
+                y_rep_list.append(y_rep[ds_type])
 
-        if not x_list or not y_list or not z_list:
+        if not x_node_list or not y_edge_list or not y_node_list or not y_rep_list:
             raise ValueError("No data available to create datasets.")
-        
-        x_all = torch.cat(x_list, dim=0)
-        y_all = torch.cat(y_list, dim=0)
-        z_all = torch.cat(z_list, dim=0)
 
-        return TensorDataset(x_all, y_all, z_all)
-    
-    def _make_fdet_dataset(self, x, y):
+        x_node_all = torch.cat(x_node_list, dim=0)
+        y_edge_all = torch.cat(y_edge_list, dim=0)
+        y_node_all = torch.cat(y_node_list, dim=0)
+        y_rep_all = torch.cat(y_rep_list, dim=0)
+
+        return TensorDataset(x_node_all, y_edge_all, y_node_all, y_rep_all)
+
+    def _make_fdet_dataset(self, x_node, y_node, y_rep):
         """
         Create a TensorDataset for topology estimation (tp) from the provided data and labels.
 
         Parameters
         ----------
-        x : dict
+        x_node : dict
             Dictionary containing tensor node data for each dataset type.
-        y : dict
+        y_node : dict
             Dictionary containing tensor node labels for each dataset type.
+        y_rep : dict
+            Dictionary containing rep labels for each dataset type
 
         Returns
         -------
         TensorDataset
             A dataset containing the (concatenated) data and labels.
         """
-        x_list, y_list = [], []
+        x_node_list, y_node_list, y_rep_list = [], [], []
 
-        for ds_type in x.keys():
-            if x[ds_type] is not None and y[ds_type] is not None:
-                x_list.append(x[ds_type])
-                y_list.append(y[ds_type])
+        for ds_type in x_node.keys():
+            if x_node[ds_type] is not None and y_node[ds_type] is not None and y_rep[ds_type] is not None:
+                x_node_list.append(x_node[ds_type])
+                y_node_list.append(y_node[ds_type])
+                y_rep_list.append(y_rep[ds_type])
 
-        if not x_list or not y_list:
+        if not x_node_list or not y_node_list or not y_rep_list:
             raise ValueError("No data available to create datasets.")
         
-        x_all = torch.cat(x_list, dim=0)
-        y_all = torch.cat(y_list, dim=0)
+        x_node_all = torch.cat(x_node_list, dim=0)
+        y_node_all = torch.cat(y_node_list, dim=0)
+        y_rep_all = torch.cat(y_rep_list, dim=0)
 
-        return TensorDataset(x_all, y_all)
+
+        return TensorDataset(x_node_all, y_node_all, y_rep_all)
 
     def _prepare_data_from_path(self, node_type_map, ds_subtype_map, ds_type):
         """
@@ -400,7 +442,7 @@ class DataPreprocessor:
             The processed edge label data.
         """
         # step 1: process node data
-        node_dim_collect = self._process_node_data(node_type_map, ds_type)
+        node_dim_collect, rep_num_collect = self._process_node_data(node_type_map, ds_type)
 
         # step 2: flatten edge matrices per ds_subtype
         ds_subtype_edge_map = self._process_edge_data(ds_subtype_map)
@@ -408,43 +450,65 @@ class DataPreprocessor:
         # step 3: prepare node and edge data
         all_ds_subtype_node_blocks = []  # each: (n_samples, n_nodes, t, d)
         all_ds_subtype_edges = []        # each: (n_samples, n_edges)
+        all_ds_subtype_rep_labels = []   # each: (n_samples,)
 
         for ds_subtype in ds_subtype_map.keys():
-            per_node_tensors = []
+            node_tensors = []
+            rep_tensors = []
             min_samples_per_node = np.inf
 
-            for node_type in sorted(node_type_map.keys()):
+            for node_idx, node_type in enumerate(node_type_map.keys()):
                 dim_segment_arrays = []
+                dim_rep_arrays = []
 
-                for dim_idx in sorted(node_dim_collect[node_type][ds_subtype].keys()):
+                for dim_idx in node_dim_collect[node_type][ds_subtype].keys():
                     all_segments = np.concatenate(node_dim_collect[node_type][ds_subtype][dim_idx], axis=0)
+                    all_reps = np.concatenate(rep_num_collect[node_type][ds_subtype][dim_idx], axis=0)
                     dim_segment_arrays.append(all_segments)
+                    dim_rep_arrays.append(all_reps)
 
                 # truncate to min_segments across dims
                 min_segments = min(arr.shape[0] for arr in dim_segment_arrays)
                 trimmed_segments = [arr[:min_segments] for arr in dim_segment_arrays]
+                trimmed_segments_reps = [arr[:min_segments] for arr in dim_rep_arrays]
 
                 # concatenate dims → (min_segments, t, n_dims)
                 node_tensor = np.concatenate(trimmed_segments, axis=-1)
+                rep_tensor = trimmed_segments_reps[0] # taking 1st dim, assuming all dims have same rep numbers
 
-                min_samples_per_node = min(min_samples_per_node, node_tensor.shape[0])
+                # update min_samples_per_node and track the corresponding node_type
+                if node_tensor.shape[0] < min_samples_per_node:
+                    min_samples_per_node = node_tensor.shape[0]
+                    min_samples_node_idx = node_idx
+
                 trimmed_node_tensor = node_tensor[:min_samples_per_node] # so that each sample has access to all nodes
+                trimmed_rep_tensor = rep_tensor[:min_samples_per_node]
 
-                per_node_tensors.append(trimmed_node_tensor)
+                node_tensors.append(trimmed_node_tensor)
+                rep_tensors.append(trimmed_rep_tensor)
 
             # Now we have list of (min_segments, t, n_dims) for each node
             # stack nodes → (min_segments, n_nodes, t, n_dims)
-            node_block = np.stack(per_node_tensors, axis=1)
+            node_block = np.stack(node_tensors, axis=1)
             all_ds_subtype_node_blocks.append(node_block)
 
+            # pick rep labels from the node that determined min_samples_per_node
+            rep_block = rep_tensors[min_samples_node_idx]
+            all_ds_subtype_rep_labels.append(rep_block)
+            
             # copy flat edge per segment
             edge_vec = ds_subtype_edge_map[ds_subtype]
             edge_block = np.tile(edge_vec, (min_segments, 1))  # (min_segments, n_edges)
             all_ds_subtype_edges.append(edge_block)
 
+            # collect rep labels from the node that determined min_samples_per_node
+            # rep_labels = np.array(rep_num_collect[min_samples_node_type][ds_subtype][:min_samples_per_node])
+            # all_ds_subtype_rep_labels.append(rep_labels)
+
         # step 4: Final concatenation across ds_subtypes
         final_node_data_np = np.concatenate(all_ds_subtype_node_blocks, axis=0)  # (n_samples, n_nodes, t, d)
         final_edge_data_np = np.concatenate(all_ds_subtype_edges, axis=0)        # (n_samples, n_edges)
+        final_rep_labels_np = np.concatenate(all_ds_subtype_rep_labels, axis=0)  # (n_samples,)
         
         if ds_type == 'OK':
             final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
@@ -454,34 +518,53 @@ class DataPreprocessor:
             final_node_labels_np = (-1) * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors
-        final_node_data = torch.tensor(final_node_data_np, dtype=torch.float32)
-        final_node_labels = torch.tensor(final_node_labels_np, dtype=torch.float32)
-        final_edge_data = torch.tensor(final_edge_data_np, dtype=torch.float32)
+        final_node_data = torch.from_numpy(final_node_data_np)
+        final_node_labels = torch.from_numpy(final_node_labels_np)
+        final_edge_data = torch.from_numpy(final_edge_data_np)
+        final_rep_labels = torch.from_numpy(final_rep_labels_np)
 
-        return final_node_data, final_node_labels, final_edge_data
+        return final_node_data, final_node_labels, final_edge_data, final_rep_labels
+
 
     def _process_node_data(self, node_type_map, ds_type):
         # node_type -> ds_subtype -> dim -> segments
         node_dim_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        rep_num_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))  # to store rep numbers for each node and subtype
         fs_matrix = [] # to store fs values for each node
+
+        # get reference values for end time and timesteps
+        max_timesteps = self._get_max_timesteps(node_type_map)
 
         # process node data
         for node_type, ds_subtype_map in node_type_map.items():
-            node_fs_list = []  # to store fs values for all dimensions of the current node
 
-            for ds_subtype, signal_type_paths in ds_subtype_map.items():
+            for ds_subtype_idx, (ds_subtype, signal_type_paths) in enumerate(ds_subtype_map.items()):
+                node_fs_list = []  # to store fs values for all dimensions of the current node
+
                 for dim_idx, hdf5_path in enumerate(signal_type_paths):
 
                     # load node data
                     with h5py.File(hdf5_path, 'r') as f:
-                        data_list = [f[key][:] for key in f.keys() if key.startswith('time_data')]
-                        fs_list = [f[key][:] for key in f.keys() if key.startswith('fs')]
+                        data_list = [f[key][:] for key in f.keys() if key.startswith('data')]
+                        time_list = [f[key][:] for key in f.keys() if key.startswith('time')]
+                        
+                        try:
+                            is_default_rep = False
+                            rep_num_list = [int(key.split('_')[-1]) for key in f.keys() if key.startswith('data')]
+
+                        except ValueError:
+                            is_default_rep = True
+                            rep_num_list = [i + 1 for i in range(len(data_list))]
 
                         data = np.concatenate(data_list, axis=0)  # shape: (n_reps, n_timesteps)
-                        fs = np.concatenate(fs_list, axis=0) if len(fs_list) > 0 else [] # shape: (n_reps,)
+                        time = np.concatenate(time_list, axis=0) if len(time_list) > 0 else np.array([]) # shape: (n_reps, n_timesteps)
 
-                    # store the fs value for the current dimension
-                    if len(fs) > 0:
+                    if time.size != 0:
+                        # interpolate data with lesser timesteps to match global max_timesteps (if time is available)
+                        data, new_time = self._interpolate_data(data, time, max_timesteps)
+
+                        # calcualte fs
+                        fs = 1 / np.mean(np.diff(new_time, axis=1), axis=1)  # shape: (n_reps,)
                         node_fs_list.append(fs[0])  # assumes fs is consistent across reps for a dimension
       
                     # Apply augmentations
@@ -493,12 +576,20 @@ class DataPreprocessor:
 
                     elif ds_type == 'UK':
                        data = self.add_augmentations(data, self.data_config.unknown_configs[ds_subtype], ds_subtype)
-                                                     
+
+                    # segment the data                              
                     data_segments = segment_data(data, self.data_config.window_length, self.data_config.stride)
                     data_segments = np.expand_dims(data_segments, axis=-1)  # (n_segments, n_timesteps, 1)
 
-                    # store segments
+                    # generate segmented rep numbers
+                    segmented_rep_nums = []
+                    for rep_num in rep_num_list:
+                        for seg_num in range(len(data_segments) // len(rep_num_list)): # iterate over number of segments per rep
+                            segmented_rep_nums.append(float(f"{rep_num:02d}{ds_subtype_idx+1:03d}.{seg_num+1:03d}"))
+                            
+                    # store segments and rep numbers
                     node_dim_collect[node_type][ds_subtype][dim_idx].append(data_segments)
+                    rep_num_collect[node_type][ds_subtype][dim_idx].append(segmented_rep_nums)
 
             # append the fs values for the current node to the fs_matrix
             fs_matrix.append(node_fs_list)
@@ -506,17 +597,84 @@ class DataPreprocessor:
         # convert fs_matrix to numpy array of shape (n_nodes, n_dims)
         fs_matrix = np.array(fs_matrix, dtype=np.float32)
 
-        # save fs values to data_config for only OK type data
+        # verbose output
         if ds_type == 'OK' or ds_type == 'UK':
+            print(f"\n\nFor ds_type '{ds_type}' and others....")
+            print(f"\nMaximum timesteps across all node types: {max_timesteps}")
+            
+            # save fs values to data_config for only OK type data
             if fs_matrix.size != 0:
                 self.data_config.fs = fs_matrix
-                print(f"'fs' is updated in data_config as given in loaded healthy (or unknown) data.\nNew fs:")
+                print(f"\n'fs' is updated in data_config as given in loaded healthy (or unknown) data.\nNew fs:")
                 print(np.array2string(fs_matrix, separator=', '))
             else:
-                print("No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:")
+                print("\nNo 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:")
                 print(np.array2string(self.data_config.fs, separator=', '))
 
-        return node_dim_collect
+            # print if rep number is default or not
+            if is_default_rep:
+                print(f"\nNo exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.")
+            else:
+                print(f"\nExclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.")
+
+        return node_dim_collect, rep_num_collect
+    
+    def _interpolate_data(self, data, time, target_timesteps):
+        """
+        Interpolate data to match the target number of timesteps.
+
+        Parameters
+        ----------
+        data : np.ndarray, shape (n_reps, n_timesteps)
+        time : np.ndarray, shape (n_reps, n_timesteps)
+        target_timesteps : int
+            The desired number of timesteps.
+
+        Returns
+        -------
+        interp_data : np.ndarray, shape (n_reps, target_timesteps)
+        new_time_data : np.ndarray, shape (n_reps, target_timesteps)
+        """
+        n_reps, _ = data.shape
+        interp_data = []
+        new_time_list = []
+
+        for rep in range(n_reps):
+            interp_func = interp1d(time[rep], data[rep], kind='linear', fill_value="extrapolate")
+            new_time = np.linspace(time[rep, 0], time[rep, -1], target_timesteps)
+            interp_data.append(interp_func(new_time))
+            new_time_list.append(new_time)
+        
+        return np.array(interp_data), np.array(new_time_list)
+    
+    def _get_max_timesteps(self, node_type_map):
+        """
+        Get the maximum timesteps for each node and ds_subtype.
+
+        Parameters
+        ----------
+        node_type_map : dict
+            A dictionary containing paths to the datasets.
+        """
+        # min_end_time = float('inf')
+        max_timesteps = 0
+
+        for node_type, ds_subtype_map in node_type_map.items():
+            for ds_subtype, signal_type_paths in ds_subtype_map.items():
+                for dim_idx, hdf5_path in enumerate(signal_type_paths):
+                    with h5py.File(hdf5_path, 'r') as f:
+                        data_keys = [key for key in f.keys() if key.startswith('data')]
+                        # end_times = [f[key][-1] for key in time_keys]  # Get the last time value for each rep
+                        # min_end_time = min(min_end_time, *end_times)
+
+                        # Calculate max_timesteps globally
+                        for key in data_keys:
+                            max_timesteps = max(max_timesteps, len(f[key][:].flatten()))
+
+        # print(f"\nMinimum end time across all ds_subtypes: {min_end_time}")
+
+        return max_timesteps
+
     
     def add_augmentations(self, data, augment_configs, ds_subtype="_"):
         augmented_data_list = []

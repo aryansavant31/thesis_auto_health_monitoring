@@ -24,7 +24,7 @@ from data.config import DataConfig
 
 # local imports
 from train_config import NRITrainConfig, DecoderTrainConfig
-from predict_config import NRIPredictConfig
+from topology_estimation.settings.infer_config import NRIPredictConfig
 
 class NRITrainManager(NRITrainConfig):
     def __init__(self, data_config:DataConfig):
@@ -51,8 +51,9 @@ class NRITrainManager(NRITrainConfig):
         # For directed graph path 
         model_path = os.path.join(base_path, 'nri',)  # add framework type
 
-        # add num of edge types to path
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
+        # add num of edge types and node types to path
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
 
         # get train log path
         self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}" , f"edge_est_{self.n_edge_types}.{self.model_num}")
@@ -218,8 +219,9 @@ class DecoderTrainManager(DecoderTrainConfig):
         # For directed graph path 
         model_path = os.path.join(base_path, 'decoder',)  # add framework type
 
-        # add num of edge types to path
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}')
+        # add num of edge types and node types to path
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
 
         # get train log path
         self.train_log_path = os.path.join(model_path, f"decoder_{self.n_edge_types}.{self.model_num}")
@@ -635,51 +637,55 @@ class SelectTopologyEstimatorModel:
             if is_no_sparsif:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<ds_type>",
-                    2: "<ds_subtype>",
-                    3: "<model>",
-                    4: "<ds_stats>",
-                    5: "<sparsif_type>",
-                    6: "<domain>",
-                    7: "<nri_fex_type>",
-                    8: "<shape_compatibility>",
-                    9: "<versions>"
-                }
-            else:
-                label_map = {
-                    0: "<n_edge_types>",
-                    1: "<ds_type>",
-                    2: "<ds_subtype>",
-                    3: "<model>",
-                    4: "<ds_stats>",
-                    5: "<sparsif_type>",
-                    6: "<sparsif_fex_type>",
+                    1: "<node_types>",
+                    2: "<ds_type>",
+                    3: "<ds_subtype>",
+                    4: "<model>",
+                    5: "<ds_stats>",
+                    6: "<sparsif_type>",
                     7: "<domain>",
                     8: "<nri_fex_type>",
                     9: "<shape_compatibility>",
                     10: "<versions>"
                 }
+            else:
+                label_map = {
+                    0: "<n_edge_types>",
+                    1: "<node_types>",
+                    2: "<ds_type>",
+                    3: "<ds_subtype>",
+                    4: "<model>",
+                    5: "<ds_stats>",
+                    6: "<sparsif_type>",
+                    7: "<sparsif_fex_type>",
+                    8: "<domain>",
+                    9: "<nri_fex_type>",
+                    10: "<shape_compatibility>",
+                    11: "<versions>"
+                }
         elif self.run_type in ['custom_test', 'predict']:
             if is_no_sparsif:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<trained_model>",
-                    2: "<ds_type>",
-                    3: "<ds_subtype>",
-                    4: "ds_stats",
-                    5: "<sparsif_type>",
-                    6: "<versions>"
+                    1: "<node_types>",
+                    2: "<trained_model>",
+                    3: "<ds_type>",
+                    4: "<ds_subtype>",
+                    5: "ds_stats",
+                    6: "<sparsif_type>",
+                    7: "<versions>"
                 }
             else:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<trained_model>",
-                    2: "<ds_type>",
-                    3: "<ds_subtype>",
-                    4: "<ds_stats>",
-                    5: "<sparsif_type>",
-                    6: "<sparsif_fex_type>",
-                    7: "<versions>"
+                    1: "<node_types>",
+                    2: "<trained_model>",
+                    3: "<ds_type>",
+                    4: "<ds_subtype>",
+                    5: "<ds_stats>",
+                    6: "<sparsif_type>",
+                    7: "<sparsif_fex_type>",
+                    8: "<versions>"
                 }
                     
         added_labels = set()
@@ -693,11 +699,11 @@ class SelectTopologyEstimatorModel:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For directed graph, make the model folder under framework yellow
-            if self.run_type == "train" and level == 3:
+            if self.run_type == "train" and level == 4:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
-            if self.run_type in ['custom_test', 'predict'] and level == 1:
+            if self.run_type in ['custom_test', 'predict'] and level == 2:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
@@ -936,16 +942,20 @@ class HelperClass:
     
     def set_sparsifier_in_path(self, spf_config, spf_domain_config, spf_feat_configs, spf_reduc_config, log_path):
         expert_str = "True" if spf_config['is_expert'] else "False"
+        
         if spf_config['type'] != 'no_spf':
-            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str}) ({spf_domain_config['type']})") 
+            if spf_config['type'] != 'vanilla':
+                log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str}) ({spf_domain_config['type']})") 
 
-            # sparsifer features
-            feat_types = self.get_feat_type_str_list(spf_feat_configs)
-            reduc_type = spf_reduc_config['type'] if spf_reduc_config else 'no_reduc'
+                # sparsifer features
+                feat_types = self.get_feat_type_str_list(spf_feat_configs)
+                reduc_type = spf_reduc_config['type'] if spf_reduc_config else 'no_reduc'
 
-            log_path = os.path.join(log_path, f"(spf) [{' + '.join(feat_types)}] [{reduc_type}]")           
+                log_path = os.path.join(log_path, f"(spf) [{' + '.join(feat_types)}] [{reduc_type}]")           
+            else:
+                log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str})")
         else:
-            log_path = os.path.join(log_path, f"(spf) {spf_config['type']} (is_exp_top = {expert_str})")
+            log_path = os.path.join(log_path, f"(spf) {spf_config['type']}")
 
         return log_path
     

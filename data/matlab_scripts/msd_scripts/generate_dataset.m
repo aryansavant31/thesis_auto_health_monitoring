@@ -1,7 +1,7 @@
 function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
 
     % Get dynamics outputs
-    [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);
+    [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);
 
     % Signal types and corresponding data
     signal_types = {'pos', 'vel', 'acc'};
@@ -22,18 +22,21 @@ function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
             S = struct();
             % node_data = signal_data(:, m);  % Time series for mass m
 
-            save_path = fullfile(base_path, 'nodes', sprintf('%d_mass_%d', m, m), signal_type);
+            save_path = fullfile(base_path, 'nodes', sprintf('mass_%d', m), signal_type);
             if ~exist(save_path, 'dir')
                 mkdir(save_path);
             end
 
             % Save as <ds_subtype>.mat
-            save_filename = fullfile(save_path, strcat(ds_subtype, '_node', '.mat'));
+            save_filename = fullfile(save_path, strcat(signal_type, '_node', '.mat'));
 
-            varname_node = sprintf('%s_mass_%d_time', signal_type, m);
-            S.(varname_node) = signal_data(:, m); % Time series for mass m
+            % varname_node_data = sprintf('%s_mass_%d_data', signal_type, m);
+            % varname_node_time = sprintf('%time_mass_%d', m);
+            S.('name') = sprintf('%s_mass_%d', signal_type, m);
+            S.('data') = signal_data(:, m); % Time series for mass m
+            S.('time') = time;
 
-            save(save_filename, '-struct', 'S');
+            save(save_filename, 'S');
         end
     end
 

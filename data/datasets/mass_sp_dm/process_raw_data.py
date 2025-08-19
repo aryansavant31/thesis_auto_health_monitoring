@@ -50,19 +50,20 @@ class ProcessRawMSDNodeData:
 
     def convert_mat_to_hdf5(self, mat_file_path, processed_path, label):
         mat_data = scipy.io.loadmat(mat_file_path)
-        key_name = next((signal for signal in list(mat_data.keys()) if '_time' in signal), None)
-        if key_name is None:
-            raise ValueError(f"No signal containing '_time' found in {mat_file_path}")
-        single_data = mat_data.get(key_name)
+        structure_data = mat_data.get('S', {})
 
-        # Reshape to (1, signal_length)
-        data_to_save = single_data.reshape(1, -1)
+        for fields in structure_data:
+            for name, data, time in zip(fields['name'], fields['data'], fields['time']):
+                name = name[0].item()
+                data = data.reshape(1, -1)
+                time = time.reshape(1, -1)
 
-        hdf5_filename = os.path.splitext(os.path.basename(mat_file_path))[0] + '.hdf5'
-        hdf5_path = os.path.join(processed_path, hdf5_filename)
-        with h5py.File(hdf5_path, 'w') as f:
-            f.create_dataset('data', data=data_to_save)
-            f.create_dataset('label', data=label)
+                hdf5_filename = name + '.hdf5'
+                hdf5_path = os.path.join(processed_path, hdf5_filename)
+
+                with h5py.File(hdf5_path, 'w') as f:
+                    f.create_dataset('data', data=data)
+                    f.create_dataset('time', data=time)
 
     def process_all(self):
         mat_files = self.find_mat_files()

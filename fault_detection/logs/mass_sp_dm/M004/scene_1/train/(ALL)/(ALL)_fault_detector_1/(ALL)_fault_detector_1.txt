@@ -1,1 +1,0 @@
-c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M004\scene_1\train\(ALL)\healthy\series_tp[OG]\[anom] IF\T600 [1_mass_1: (acc, pos, vel), 2_mass_2: (acc, pos, vel), 3_mass_3: (acc, pos, vel), 4_mass_4: (acc, pos, vel)]\[IF] (n_estimators=1000, seed=42, contam=0.3, n_jobs=-1)\time\(anom) [no_feat] [no_reduc]\anom (comps = 1800)

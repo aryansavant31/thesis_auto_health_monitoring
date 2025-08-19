@@ -59,7 +59,7 @@ class ProcessRawBearingData:
         hdf5_filename = os.path.splitext(os.path.basename(mat_file_path))[0] + '.hdf5'
         hdf5_path = os.path.join(processed_path, hdf5_filename)
         with h5py.File(hdf5_path, 'w') as f:
-            f.create_dataset('time_data', data=data_to_save)
+            f.create_dataset('data', data=data_to_save)
             f.create_dataset('label', data=label)
 
     def process_all(self):

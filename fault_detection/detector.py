@@ -184,10 +184,11 @@ class TrainerAnomalyDetector:
         """
         data_list = []
         label_list = []
+        rep_num_list = []
 
         anomaly_detector.init_input_processors(is_verbose = not get_data_shape)
 
-        for idx, (time_data, label) in enumerate(data_loader):
+        for idx, (time_data, label, rep_num) in enumerate(data_loader):
             # domain transform data (mandatory)
             if anomaly_detector._domain == 'time':
                 data = anomaly_detector.domain_transformer.transform(time_data)
@@ -225,21 +226,32 @@ class TrainerAnomalyDetector:
  
             n_comps = data.shape[2] 
             n_dims = data.shape[3]
+
             # get data shape if required (used to get log path)
             if get_data_shape:   
                 return n_comps, n_dims
 
             # convert data to numpy array for fitting
             data_np = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
-            label_np = label.view(-1).numpy()  # shape (batch size,) (0 for OK, 1 for NOK, -1 for UK)
 
+            # match n_samples of labels with data
+            label_np = np.repeat(label.view(-1).numpy(), data.size(1))  # shape (batch size*n_nodes,) (0 for OK, 1 for NOK, -1 for UK)
+
+            # match n_samples of rep_num with data
+            rep_num = np.repeat(rep_num.view(-1).numpy(), data.size(1))
+            
             # # make labels optimized for sklearn models (convert label to 1 for normal data and -1 for anomalies)
             # label_skl = np.where(label_np == 0, 1, -1)  # assuming 0 is normal and 1 is anomaly
 
             data_list.append(data_np)
             label_list.append(label_np)
+            rep_num_list.append(rep_num)
 
-        data_np_all, label_np_all = np.vstack(data_list), np.hstack(label_list)
+        data_np_all, label_np_all, rep_num_np_all = np.vstack(data_list), np.hstack(label_list), np.hstack(rep_num_list)
+
+        # add datashape to hparams
+        anomaly_detector.hparams['n_comps'] = str(int(n_comps))
+        anomaly_detector.hparams['n_dims'] = str(int(n_dims))
 
         # convert np data into pd dataframe
         if anomaly_detector._feat_names and anomaly_detector.feat_reducer is None:
@@ -254,6 +266,7 @@ class TrainerAnomalyDetector:
 
         df = pd.DataFrame(data_np_all, columns=self.comp_cols)
         df['given_label'] = label_np_all
+        df['rep_num'] = rep_num_np_all
 
         return df
     
@@ -646,14 +659,16 @@ class TrainerAnomalyDetector:
         for bin_idx, samples in bin_samples_ok.items():
             if samples:  # Only print non-empty bins
                 low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {samples}")
+                sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {sample_info}")
 
         print(f"\nTotal NOK samples (from {label_col}) : {len(scores_nok)}")
         print(10*"-" + " Samples in NOK bins " + 10*"-")
         for bin_idx, samples in bin_samples_nok.items():
             if samples:  # Only print non-empty bins
                 low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {samples}")
+                sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {sample_info}")
 
         # save the distribution plot if logger is available
         if self.logger:

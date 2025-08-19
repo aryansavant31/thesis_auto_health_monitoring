@@ -1,4 +1,8 @@
-import os
+import sys, os
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
+
 from typing import List, Dict
 from pathlib import Path
 from rich.tree import Tree
@@ -6,7 +10,8 @@ from rich.console import Console
 import glob
 import numpy as np
 
-from .datasets.asml.module_groups import SignalTypeConfigMaker
+from data.datasets.asml.module_groups import SignalTypeConfigMaker
+from data.datasets.mass_sp_dm.groups import MSDGroupMaker
 
 class DataConfig:
     def __init__(self, run_type='train'):
@@ -40,28 +45,26 @@ class DataConfig:
 
         To view rest of the attribute options, run this file directly.
         """
+        self.run_type  = run_type  # options: train, custom_test, predict
+
         self.application_map = {'BER':'bearing',
                                 'MSD':'mass_sp_dm',
                                 'SPP':'spring_particles',
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application    = 'ASM'
+        self.application = 'BER'
+        self.machine_type = 'cwru'
+        self.scenario = 'scene_1'
 
-        self.machine_type   = 'NXE'
-        self.scenario       = 'full_wafer'
-
-        self.signal_types   = SignalTypeConfigMaker().ammf_acc
+        self.signal_types = {'gearbox': ['acc']}
         
-        self.fs             =  None    # sampling frequency matrix, set in the data.prep.py
-
-        self.format         = 'hdf5'  # options: hdf5
+        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length  = 500
-        self.stride         = 500
-        
-        self.run_type       = run_type  # options: train, custom_test, predict
+        self.window_length      = 5000
+        self.stride             = 5000
 
         if self.run_type == 'train':
             self.set_train_dataset()
@@ -72,11 +75,13 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'E1_set01_M=mKT03': [get_augment_config('OG')],
-            'E1_set01_M=mAQ10': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
+            '1_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
+            '0_B-021': [get_augment_config('OG')],
+            
         }
 
         self.unknown_configs = {
@@ -85,12 +90,11 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'E1_set01_M=mDP98': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
-            '(sim_nok)_E1_set01_M=mDP98': [get_augment_config('gau', mean=1, std=0.1)],
-
+            
         }
 
         self.unknown_configs = {

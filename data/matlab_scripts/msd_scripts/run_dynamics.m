@@ -1,4 +1,4 @@
-function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
+function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
 
     % Get root directory where run_dynamics.m is located
     root_dir_path = mfilename('fullpath');
@@ -45,7 +45,7 @@ function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_t
     % =======================================================
     
     % Time
-    fs = 1000;
+    fs = 2000;
     t_end = 100;
     tspan = 0:1/fs:t_end;
     

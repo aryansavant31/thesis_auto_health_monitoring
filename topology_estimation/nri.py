@@ -20,11 +20,12 @@ from decoder import Decoder
 
 
 class NRI(LightningModule):
-    def __init__(self, encoder_params, decoder_params):
+    def __init__(self, encoder_params, decoder_params, hparams):
         super(NRI, self).__init__()
         self.save_hyperparameters()  # This will log encoder_params and decoder_params
         self.encoder = Encoder(**encoder_params)
         self.decoder = Decoder(**decoder_params)
+        self.hparams = hparams
 
     def print_model_info(self):
         """
@@ -32,13 +33,13 @@ class NRI(LightningModule):
         """
         pass  # [TODO]: Implement this method to print model information
 
-    def set_training_params(self, lr=0.001, optimizer='adam', loss_type_encoder='kld',
-                             loss_type_decoder='nll', prior=None):
+    def set_training_params(self, lr=0.001, optimizer='adam', loss_type_enc='kld',
+                             loss_type_dec='nll', prior=None):
         self.lr = lr
         self.optimizer = optimizer
         self.prior = prior
-        self.loss_type_encoder = loss_type_encoder
-        self.loss_type_decoder = loss_type_decoder
+        self.loss_type_encoder = loss_type_enc
+        self.loss_type_decoder = loss_type_dec
 
         self.train_losses_per_epoch = []
 

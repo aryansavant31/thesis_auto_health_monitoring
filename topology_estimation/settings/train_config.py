@@ -28,24 +28,24 @@ class DecoderTrainConfig:
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1
-        self.num_workers = 10
+        self.num_workers = 1
 
         # optimization parameters
         self.max_epochs = 5
         self.lr = 0.001
         self.optimizer = 'adam'
-        self.loss_type_dec = 'nnl'
+        self.loss_type = 'nnl'
 
     # 2: Decoder parameters
 
         self.msg_out_size = 64
     
         # embedding function parameters 
-        edge_mlp_config = {'mlp': 'default'}
-        out_mlp_config = {'mlp': 'default'}
+        self.edge_mlp_config = {'mlp': 'default'}
+        self.out_mlp_config = {'mlp': 'default'}
 
-        self.do_prob_dec = 0
-        self.is_batch_norm_dec = True
+        self.do_prob = 0
+        self.is_batch_norm = True
 
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
@@ -67,8 +67,8 @@ class DecoderTrainConfig:
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      
 
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
 
     # 3: Sparsifier parameters
 
@@ -82,15 +82,64 @@ class DecoderTrainConfig:
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.spf_feat_norm = None
 
-        # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
-        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+    # 4: Hyperparameters and plots
+        self.hparams = self.get_hparams()
 
-    # 4: Hyperparameters to log
-        self.hyperparams = {
-            'model_num': self.model_num,
+
+    def get_hparams(self):
+        """
+        Sets the hyperparameters for the decoder model.
+        """
+        hparams = {
+            'batch_size': self.batch_size,
+            'train_rt': self.train_rt,
+            'test_rt': self.test_rt,
+            'val_rt': self.val_rt,
+            'max_epochs': self.max_epochs,
+            'lr': self.lr,
+            'optimizer': self.optimizer,
+            'loss_type': self.loss_type,
+            'n_edge_types': self.n_edge_types,
+
+            # decoder parameters
+            'msg_out_size': self.msg_out_size,
+            'recur_emb_type': self.recur_emb_type,
+            'do_prob': self.do_prob,
+            'batch_norm': self.is_batch_norm,
+            'domain_dec': self.dec_domain_config['type'],
+            'raw_data_norm_dec': self.dec_raw_data_norm,
+            'feats_dec': f"[{', '.join([feat_config['type'] for feat_config in self.dec_feat_configs])}]",
+            'reduc_dec': self.dec_reduc_config['type'] if self.dec_reduc_config else 'None',
+            'feat_norm_dec': self.dec_feat_norm,
+            'skip_first_edge': self.skip_first_edge_type,
+            'pred_steps': self.pred_steps,
+            'is_burn_in': self.is_burn_in,
+            'burn_in_steps': self.burn_in_steps,
+            'is_dynamic_graph': self.is_dynamic_graph,
+            'temp': self.temp,
+            'is_hard': self.is_hard,
+            'edge_mlp_config': f"{self.edge_mlp_config_dec}",
+            'out_mlp_config': f"{self.out_mlp_config_dec}",
+
+            # sparsifier parameters
+            'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            'domain_spf': self.spf_domain_config['type'],
+            'raw_data_norm_spf': self.spf_raw_data_norm,
+            'feats_spf': f"[{', '.join([feat_config['type'] for feat_config in self.spf_feat_configs])}]",
+            'reduc_spf': self.spf_reduc_config['type'] if self.spf_reduc_config else 'None',
+            'feat_norm_spf': self.spf_feat_norm
         }
 
-        
+        for key, value in hparams.items():
+            if isinstance(value, list):
+                hparams[key] = ', '.join(map(str, value))
+            elif isinstance(value, (int, float)):
+                hparams[key] = str(value)
+            elif value is None:
+                hparams[key] = 'None'
+
+        return hparams
+
 
 class NRITrainConfig:
     def __init__(self, data_config:DataConfig):
@@ -189,11 +238,11 @@ class NRITrainConfig:
         self.is_residual_connection = True 
 
         # embedding function parameters
-        edge_emd_config = {
+        self.edge_emb_config = {
             'mlp': 'default',
             'cnn': 'default'
             }
-        node_emb_config = {
+        self.node_emb_config = {
             'mlp': 'default',
             'cnn': 'default'
             }
@@ -221,16 +270,16 @@ class NRITrainConfig:
         self.is_hard = True   
 
         self.pipeline = ext.get_enc_pipeline(self.pipeline_type)  
-        self.edge_emb_configs_enc = ext.get_enc_emb_config(config_type=edge_emd_config)  
-        self.node_emb_configs_enc = ext.get_enc_emb_config(config_type=node_emb_config)
+        self.edge_emb_configs_enc = ext.get_enc_emb_config(config_type=self.edge_emb_config)  
+        self.node_emb_configs_enc = ext.get_enc_emb_config(config_type=self.node_emb_config)
 
     # 3: Decoder parameters
 
         self.msg_out_size = 64
     
         # embedding function parameters 
-        edge_mlp_config = {'mlp': 'default'}
-        out_mlp_config = {'mlp': 'default'}
+        self.edge_mlp_config = {'mlp': 'default'}
+        self.out_mlp_config = {'mlp': 'default'}
 
         self.do_prob_dec = 0
         self.is_batch_norm_dec = True
@@ -253,8 +302,8 @@ class NRITrainConfig:
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
 
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(edge_mlp_config, self.msg_out_size)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(out_mlp_config, self.msg_out_size)['mlp']
+        self.edge_mlp_config_dec = ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
+        self.out_mlp_config_dec = ext.get_dec_emb_config(self.out_mlp_config, self.msg_out_size)['mlp']
 
     # 4: Sparsifier parameters
 
@@ -267,14 +316,80 @@ class NRITrainConfig:
         ]    
         self.spf_feat_norm = None
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        
+    # 5: Hyperparameters and plots
+        self.hparams = self.get_hparams()
 
-        # [TODO]: define all the parameters depending on sparsif_type and attach it to config dict (like get_fex_config() method)
-        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+    def get_hparams(self):
+        """
+        Sets the hyperparameters for the NRI model.
+        """
+        hparams = {
+            'batch_size': self.batch_size,
+            'train_rt': self.train_rt,
+            'test_rt': self.test_rt,
+            'val_rt': self.val_rt,
+            'max_epochs': self.max_epochs,
+            'lr': self.lr,
+            'optimizer': self.optimizer,
+            'loss_type_enc': self.loss_type_enc,
+            'loss_type_dec': self.loss_type_dec,
+            'n_edge_types': self.n_edge_types,
+            'prior': self.prior,
+            'add_const_kld': self.add_const_kld,
 
-    # 5: Hyperparameters to log
-        self.hyperparams = {
-            'model_num': self.model_num,
+            # encoder parameters
+            'pipeline_type': self.pipeline_type,
+            'is_residual_connection': self.is_residual_connection,
+            'do_prob_enc': f"{self.do_prob_enc}",
+            'is_batch_norm_enc': f"{self.is_batch_norm_enc}",
+            'domain_enc': self.enc_domain_config['type'],
+            'raw_data_norm_enc': self.enc_raw_data_norm,
+            'feats_enc': f"[{', '.join([feat_config['type'] for feat_config in self.enc_feat_configs])}]",
+            'reduc_enc': self.enc_reduc_config['type'] if self.enc_reduc_config else 'None',
+            'feat_norm_enc': self.enc_feat_norm,
+            'edge_emb_configs_enc': f"{self.edge_emb_config}",
+            'node_emb_configs_enc': f"{self.node_emb_config}",
+            'temp': self.temp,
+            'is_hard': self.is_hard,
+            'attention_output_size': self.attention_output_size,
+
+            # decoder parameters
+            'msg_out_size': self.msg_out_size,
+            'do_prob_dec': self.do_prob_dec,
+            'is_batch_norm_dec': self.is_batch_norm_dec,
+            'recur_emb_type': self.recur_emb_type,
+            'domain_dec': self.dec_domain_config['type'],
+            'raw_data_norm_dec': self.dec_raw_data_norm,
+            'feats_dec': f"[{', '.join([feat_config['type'] for feat_config in self.dec_feat_configs])}]",
+            'reduc_dec': self.dec_reduc_config['type'] if self.dec_reduc_config else 'None',
+            'feat_norm_dec': self.dec_feat_norm,
+            'edge_mlp_config': f"{self.edge_mlp_config}",
+            'out_mlp_config': f"{self.out_mlp_config}",
+            'skip_first_edge': self.skip_first_edge_type,
+            'pred_steps': self.pred_steps,
+            'is_burn_in': self.is_burn_in,
+            'burn_in_steps': self.burn_in_steps,
+            'is_dynamic_graph': self.is_dynamic_graph,
+
+            # sparsifier parameters
+            'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            'domain_spf': self.spf_domain_config['type'],
+            'raw_data_norm_spf': self.spf_raw_data_norm,
+            'feats_spf': f"[{', '.join([feat_config['type'] for feat_config in self.spf_feat_configs])}]",
+            'reduc_spf': self.spf_reduc_config['type'] if self.spf_reduc_config else 'None',
+            'feat_norm_spf': self.spf_feat_norm
         }
+
+        for key, value in hparams.items():
+            if isinstance(value, list):
+                hparams[key] = ', '.join(map(str, value))
+            elif isinstance(value, (int, float)):
+                hparams[key] = str(value)
+            elif value is None:
+                hparams[key] = 'None'
+
+        return hparams
         
 
 class ExtraSettings:
@@ -397,8 +512,9 @@ def get_spf_config(spf_type, **kwargs):
         Type of sparsifier to use.
     **kwargs : dict
         For all options of `spf_type`:
-        - `no_spf`: **is_expert** (_bool_) (whether to use expert topology)
-
+        - `no_spf`: None, *_is_expert = False_*
+        - `vanilla`: None, *_is_expert = True_*
+        
     
     Returns
     -------
@@ -407,7 +523,12 @@ def get_spf_config(spf_type, **kwargs):
     """
     config = {}
     config['type'] = spf_type
-    config['is_expert'] = kwargs.get('is_expert', False)
+    config['is_expert'] = kwargs.get('is_expert', False) 
+
+    if spf_type == 'no_spf':
+        config['is_expert'] = False
+    elif spf_type == 'vanilla':
+        config['is_expert'] = True
     
     return config
     

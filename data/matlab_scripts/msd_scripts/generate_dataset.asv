@@ -1,7 +1,7 @@
 function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
 
     % Get dynamics outputs
-    [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);
+    [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);
 
     % Signal types and corresponding data
     signal_types = {'pos', 'vel', 'acc'};
@@ -11,7 +11,7 @@ function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
     M = size(pos, 2);
 
     % Base path to save
-    base_path = fullfile('.', 'data', 'datasets', 'msd', machine_type, scenario, ds_type, ds_subtype, 'raw');
+    base_path = fullfile('.', 'data', 'datasets', 'mass_sp_dm', machine_type, scenario, ds_type, ds_subtype, 'raw');
 
     % Save signals (per mass, per signal type)
     for s = 1:length(signal_types)
@@ -28,10 +28,12 @@ function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
             end
 
             % Save as <ds_subtype>.mat
-            save_filename = fullfile(save_path, strcat(ds_subtype, '.mat'));
+            save_filename = fullfile(save_path, strcat(ds_subtype, '_node', '.mat'));
 
-            varname_node = sprintf('%s_mass_%d_time', signal_type, m);
+            varname_node_data = sprintf('%s_mass_%d', signal_type, m);
+            varname_node_time
             S.(varname_node) = signal_data(:, m); % Time series for mass m
+            
 
             save(save_filename, '-struct', 'S');
         end
@@ -54,8 +56,8 @@ function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
     end
     adj_filename = fullfile(edge_save_path, strcat(ds_subtype, '_adj.mat'));
     
-    E = 
-    varname_edge = sprintf('%s', ds_subtype);
+    E = struct();
+    varname_edge = sprintf('%s_adj', ds_subtype);
     E.(varname_edge) = adj; 
             
     save(adj_filename, '-struct', 'E');
