@@ -193,7 +193,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
     
     def get_infer_log_path(self):
         """
-        Sets the log path for the predict run.
+        Sets the log path for the run.
         """
 
         infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
@@ -238,7 +238,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
     
     def save_infer_params(self):
         """
-        Saves the test parameters in the test log path.
+        Saves the infer parameters in the infer log path.
         """
         if not os.path.exists(self.infer_log_path):
             os.makedirs(self.infer_log_path)
@@ -280,7 +280,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.version = max_model + 1
             new_model = f'{self.run_type}_{self.version}'
-            print(f"Next fault detection folder will be: {new_model}")
+            print(f"Next fault detection infer folder will be: {new_model}")
         else:
             new_model = f'{self.run_type}_1'  # If no v folders exist
 
@@ -289,11 +289,6 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
     def check_if_version_exists(self):
         """
         Checks if the version already exists in the log path.
-
-        Parameters
-        ----------
-        log_path : str
-            The path where the test and predict logs are stored.
         """
  
         if os.path.isdir(self.infer_log_path):

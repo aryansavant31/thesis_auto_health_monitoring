@@ -279,7 +279,8 @@ class MessagePassingLayers():
 class Encoder(LightningModule, MessagePassingLayers):
     def __init__(self, n_comps, n_dims, 
                  pipeline, n_edge_types, is_residual_connection, 
-                 edge_emb_configs, node_emb_configs, do_prob, is_batch_norm, attention_output_size):
+                 edge_emb_configs, node_emb_configs, do_prob, is_batch_norm, attention_output_size,
+                 hparams=None):
         
         if n_comps and n_dims is not None:
             super(Encoder, self).__init__()
@@ -302,6 +303,9 @@ class Encoder(LightningModule, MessagePassingLayers):
 
             # attention parameters
             self.attention_output_size = attention_output_size
+
+            # hyperparameters
+            self.hparams = hparams
 
             self.init_embedding_functions()
             self.init_attention_layers()

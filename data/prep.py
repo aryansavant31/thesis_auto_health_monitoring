@@ -137,6 +137,49 @@ class DataPreprocessor:
         total_samples = sum(label_counts.values())
 
         return label_counts, total_samples
+    
+    def _get_augment_str(self, augments):
+        """
+        Get the string representation of the augmentations.
+        """
+        augment_strings = []
+        for augment in augments:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in augment.items() if key != 'type'])
+            if additional_keys:
+                augment_strings.append(f"{augment['type']}({additional_keys})")
+            else:
+                augment_strings.append(f"{augment['type']}")
+
+        return ', '.join(augment_strings)
+    
+    def _print_data_selections(self):
+        """
+        - Print the data selections for healthy, unhealthy, and unknown configurations.
+        - Prints the node and signal types.
+        """
+        # print the data selections
+        print(f"\n\nds_subtype selections:\n")
+        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
+        print(45*'-')
+        print(">> Healthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        print("\n>> Unhealthy configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        print("\n>> Unknown configs")
+        for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
+            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        # print node and signal types
+        print("\n\nNode and signal types are set as follows:\n")
+        print("(<node_num>) <node_type> : [<signal_types>]")
+        print(45*'-')
+        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
+            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
@@ -163,27 +206,7 @@ class DataPreprocessor:
         self.data_config = data_config
         print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
 
-        print(f"\n\nds_subtype selections:\n")
-        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
-        print(45*'-')
-        print(">> Healthy configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-        print("\n>> Unhealthy configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-        print("\n>> Unknown configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-
-        print("\n\nNode and signal types are set as follows:\n")
-        print("(<node_num>) <node_type> : [<signal_types>]")
-        print(45*'-')
-        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
-            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+        self._print_data_selections()        
 
         # load the dataset
         dataset = self._load_dataset()
@@ -247,29 +270,9 @@ class DataPreprocessor:
         if self.data_config.run_type == 'train':
             print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
         else:
-            raise ValueError(f"{self.data_config.run_type} is selected for training. Please set run_type to 'train' in the data config.")
+            raise ValueError(f"'{self.data_config.run_type}' is selected for training. Please set run_type to 'train' in the data config.")
         
-        print(f"\n\nds_subtype selections:\n")
-        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
-        print(45*'-')
-        print(">> Healthy configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-        print("\n>> Unhealthy configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-        print("\n>> Unknown configs")
-        for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{', '.join([augment['type'] for augment in augments])}]")
-
-
-        print("\n\nNode and signal types are set as follows:\n")
-        print("(<node_num>) <node_type> : [<signal_types>]")
-        print(45*'-')
-        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
-            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+        self._print_data_selections()
 
         # load the dataset
         dataset = self._load_dataset()

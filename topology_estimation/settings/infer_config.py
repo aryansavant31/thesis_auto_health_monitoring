@@ -1,52 +1,88 @@
-import os
-import sys
+import os, sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 # from manager import SelectTopologyEstimatorModel, load_selected_config, get_selected_ckpt_path
 
-TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
+# TOPOLOGY_ESTIMATION_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# sys.path.append(os.path.dirname(TOPOLOGY_ESTIMATION_DIR))
 
-# from feature_extraction.settings import get_freq_fex_config
+# global imports
+from data.config import DataConfig, get_domain_config
+from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
 
+# local imports
+from topology_estimation.settings.train_config import get_spf_config
 
-class NRIPredictConfig:
-    def __init__(self):
-        self.log_config = load_selected_config()
-        self.ckpt_path = get_selected_ckpt_path()
+class NRIInferConfig:
+    def __init__(self, data_config:DataConfig):
+        """
+        Miscellaneous Attributes
+        -----------------------
+        log_config : object
+            Train config object of selected trained model.
+        ckpt_path : str
+            Path to the selected NRI model
+        """
+        from topology_estimation.settings.manager import load_selected_config, get_selected_ckpt_path
+        
+        self.data_config = data_config
+        self.log_config = load_selected_config('nri')
+        self.ckpt_path = get_selected_ckpt_path('nri')
 
-        self.set_predict_params()
-        self.set_run_params()
-  
-    def set_predict_params(self):
+        self.is_log = True
         self.version = 2
-        self.batch_size = 50
-        self.amt_rt = 0.8
+        
+        self.num_workers = 1
+        self.batch_size = 1
+        
+    # Sparsifier parameters
+        self.spf_config = get_spf_config('no_spf', is_expert=True)
+        
+        self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        self.spf_raw_data_norm = None 
+        self.spf_feat_configs = [
+            # get_time_feat_config('first_n_modes', data_config=self.data_config),
+        ]    
+        self.spf_feat_norm = None
+        self.spf_reduc_config = None
 
-    def set_custom_test_params(self):
-        pass
 
-    def set_run_params(self):
-       # input graph paramters
-        self.sparsif_type     = 'path'
-        self.domain_sparsif   = self.log_config.domain_sparsif_config  # options: time, frequency
-        self.fex_configs_sparsif = self.log_config.fex_configs_sparsif  # first feature extraction config type
+class DecoderInferConfig:
+    def __init__(self, data_config:DataConfig):
+        """
+        Miscellaneous Attributes
+        -----------------------
+        log_config : object
+            Train config object of selected trained model.
+        ckpt_path : str
+            Path to the selected Decoder model
+        """
+        from topology_estimation.settings.manager import load_selected_config, get_selected_ckpt_path
 
-        # [TODO]: Add domain config, raw_norm and fex_norm, reduc_config for sparsifier, encoder and decoder (see fault detection config)
+        self.data_config = data_config
+        self.log_config = load_selected_config('decoder')
+        self.ckpt_path = get_selected_ckpt_path('decoder')
 
-        self.domain_encoder   = self.log_config.domain_encoder_config
-        self.norm_type_encoder = self.log_config.norm_type_encoder
-        self.fex_configs_encoder = self.log_config.fex_configs_encoder
+        self.is_log = True
+        self.version = 2
+        
+        self.num_workers = 1
+        self.batch_size = 1
 
-        # Gumble Softmax Parameters
-        self.temp = 1.0       # temperature for Gumble Softmax
-        self.is_hard = True      # if True, use hard Gumble Softmax
+    # Sparsifier parameters 
+        self.spf_config = get_spf_config('no_spf', is_expert=True)
+        
+        self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        self.spf_raw_data_norm = None 
+        self.spf_feat_configs = [
+            # get_time_feat_config('first_n_modes', data_config=self.data_config),
+        ]    
+        self.spf_feat_norm = None
+        self.spf_reduc_config = None
 
-        # decoder run parameters
-        self.domain_decoder = self.log_config.domain_decoder_config   # options: time, frequency
-        self.norm_type_decoder = self.log_config.norm_type_decoder
-        self.fex_configs_decoder = self.log_config.fex_configs_decoder
 
-        self.skip_first_edge_type = True 
-        # TASK: add rest of the decoder run params
+
+
 
 if __name__ == "__main__":
     from manager import SelectTopologyEstimatorModel

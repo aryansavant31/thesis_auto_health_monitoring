@@ -23,8 +23,8 @@ import glob
 from data.config import DataConfig
 
 # local imports
-from train_config import NRITrainConfig, DecoderTrainConfig
-from topology_estimation.settings.infer_config import NRIPredictConfig
+from .train_config import NRITrainConfig, DecoderTrainConfig
+from .infer_config import NRIInferConfig, DecoderInferConfig
 
 class NRITrainManager(NRITrainConfig):
     def __init__(self, data_config:DataConfig):
@@ -56,7 +56,7 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}" , f"edge_est_{self.n_edge_types}.{self.model_num}")
+        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}" , f"(E={self.pipeline_type}_D={self.recur_emb_type})_edge_est_{self.n_edge_types}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -224,7 +224,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"decoder_{self.n_edge_types}.{self.model_num}")
+        self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"({self.recur_emb_type})_decoder_{self.n_edge_types}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -361,163 +361,129 @@ class DecoderTrainManager(DecoderTrainConfig):
                     sys.exit()  # Exit the program gracefully
 
 
-class PredictNRIConfigMain(NRIPredictConfig):
-    def __init__(self):
-        super().__init__()
+class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
+    def __init__(self, data_config, framework, run_type):
+        """
+        Initializes the infer manager for topology estimation.
 
-        self.data_config = DataConfig()
-        self.data_config.set_predict_dataset()
+        Parameters
+        ----------
+        data_config : DataConfig
+            The data configuration object.
+        framework : str
+            The framework to use ('nri' or 'decoder').
+        run_type : str
+            The type of run ('train', 'custom_test', or 'predict').
+        """
+        if framework == 'nri':
+            NRIInferConfig.__init__(self, data_config)
+        elif framework == 'decoder':
+            DecoderInferConfig.__init__(self, data_config)
 
         self.helper = HelperClass()
+        self.run_type = run_type
+        self.framework = framework
 
         self.train_log_path = self.log_config.train_log_path
         self.n_edge_types = self.log_config.n_edge_types
 
-        self.selected_model_num = f"{self.n_edge_types}.{self.log_config.model_num}"
-    
-    def get_custom_test_log_path(self):
-        """
-        Sets the log path for the predict run.
-        """
-        self.data_config.set_custom_test_dataset()
+        self.selected_model_num = os.path.basename(self.train_log_path)
 
-        test_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}custom_test{os.sep}")
-        self.test_log_path = os.path.join(test_num_path, f'custom_test_{self.n_edge_types}.{self.version}')
+    def get_infer_log_path(self):
+        """
+        Sets the log path for the run.
+        """
+
+        infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
+        self.infer_log_path = os.path.join(infer_num_path, f'{self.run_type}_{self.version}')
 
         # add healthy or healthy_unhealthy config to path
-        test_num_path = self.helper.set_ds_types_in_path(self.data_config, test_num_path)
+        infer_num_path = self.helper.set_ds_types_in_path(self.data_config, infer_num_path)
 
         # add timestep_id to path
-        test_num_path = os.path.join(test_num_path, f'T{self.data_config.window_length}')
+        infer_num_path = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
 
         # add sparsifier type to path
-        self.test_id = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, test_num_path)
+        self.infer_id = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, infer_num_path)
 
         # # add version
         # self.test_id = os.path.join(test_num_path, f'test_num_{self.version}')
 
         # check if version already exists
-        self.check_if_version_exists(self.test_log_path, 'custom_test')
+        self.check_if_version_exists()
 
-        return self.test_log_path
+        return self.infer_log_path
     
-    def get_predict_log_path(self):
-        """
-        Sets the log path for the predict run.
-        """
-        self.data_config.set_predict_dataset()
-
-        predict_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}predict{os.sep}")
-        self.predict_log_path = os.path.join(predict_num_path, f'predict_{self.n_edge_types}.{self.version}')
-
-        # add healthy or healthy_unhealthy config to path
-        predict_num_path = self.helper.set_ds_types_in_path(self.data_config, predict_num_path)
-
-        # add timestep_id to path
-        predict_num_path = os.path.join(predict_num_path, f'T{self.data_config.window_length}')
-
-        # add sparsifier type to path
-        self.predict_id = self.helper.set_sparsifier_in_path(self.sparsif_type, self.domain_sparsif, self.fex_configs_sparsif, predict_num_path)
-
-        # # add version
-        # self.predict_id = os.path.join(predict_num_path, f'predict_num_{self.version}')
-
-        # check if version already exists
-        self.check_if_version_exists(self.predict_log_path, 'predict')
-
-        return self.predict_log_path
     
-    def save_custom_test_params(self):
+    def save_infer_params(self):
         """
-        Saves the test parameters in the test log path.
+        Saves the infer parameters in the infer log path.
         """
-        if not os.path.exists(self.test_log_path):
-            os.makedirs(self.test_log_path)
+        if not os.path.exists(self.infer_log_path):
+            os.makedirs(self.infer_log_path)
 
-        config_path = os.path.join(self.test_log_path, f'custom_test_config.pkl')
+        config_path = os.path.join(self.infer_log_path, f'{self.run_type}_config.pkl')
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        test_num_path = os.path.join(self.test_log_path, f'custom_test_{self.n_edge_types}.{self.version}.txt')
-        with open(test_num_path, 'w') as f:
-            f.write(self.test_id)
+        infer_num_path = os.path.join(self.infer_log_path, f'{self.run_type}_{self.version}.txt')
+        with open(infer_num_path, 'w') as f:
+            f.write(self.infer_id)
 
-        print(f"Custom test parameters saved to {self.test_log_path}.")
+        print(f"{self.run_type.capitalize()} parameters saved to {self.infer_log_path}.")
 
-    def save_predict_params(self):
-        """
-        Saves the predict parameters in the predict log path.
-        """
-        if not os.path.exists(self.predict_log_path):
-            os.makedirs(self.predict_log_path)
 
-        config_path = os.path.join(self.predict_log_path, f'predict_config.pkl')
-        with open(config_path, 'wb') as f:
-            pickle.dump(self.__dict__, f)
-
-        predict_num_path = os.path.join(self.predict_log_path, f'predict_{self.n_edge_types}.{self.version}.txt')
-        with open(predict_num_path, 'w') as f:
-            f.write(self.predict_id)
-            
-        print(f"Predict parameters saved to {self.predict_log_path}.")
-
-    def _remove_version(self, log_path):
+    def _remove_version(self):
         """
         Removes the version from the log path.
         """
-        if os.path.exists(log_path):
-            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {log_path}? (y/n): ")
+        if os.path.exists(self.infer_log_path):
+            user_input = input(f"Are you sure you want to remove the version {self.version} from the log path {self.infer_log_path}? (y/n): ")
             if user_input.lower() == 'y':
-                shutil.rmtree(log_path)
-                print(f"Removed version {self.version} from the log path {log_path}.")
+                shutil.rmtree(self.infer_log_path)
+                print(f"Overwrote version {self.version} from the log path {self.infer_log_path}.")
 
             else:
                 print(f"Operation cancelled. Version {self.version} still remains.")
-                sys.exit()  # Exit the program gracefully
+                sys.exit()  # Exit the program gracefully     
 
-    def _get_next_version(self, log_path, run_type):
-        parent_dir = os.path.dirname(log_path)
+    def _get_next_version(self):
+        parent_dir = os.path.dirname(self.infer_log_path)
 
-        # List all folders in parent_dir that match 'edge_estimator_<number>'
+        # List all folders in parent_dir that match 'fault_detector_<number>'
         folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'^{run_type}_{self.n_edge_types}\.\d+$', f)]
+        model_folders = [f for f in folders if re.match(fr'.*{self.run_type}_\d+$', f)]
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[-1].split('.')[1]) for f in model_folders)
+            max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.version = max_model + 1
-            new_model = f'{run_type}_{self.n_edge_types}.{self.version}'
+            new_model = f'{self.run_type}_{self.version}'
+            print(f"Next {self.framework} infer folder will be: {new_model}")
         else:
-            new_model = f'{run_type}_{self.n_edge_types}.1'  # If no v folders exist
+            new_model = f'{self.run_type}_1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
-    def check_if_version_exists(self, log_path, run_type):
+    
+    def check_if_version_exists(self):
         """
         Checks if the version already exists in the log path.
-
-        Parameters
-        ----------
-        log_path : str
-            The path where the test and predict logs are stored.
         """
- 
-        if os.path.isdir(log_path):
-            print(f"\n{run_type} number {self.version} for already exists for edge_estimator_{self.selected_model_num} in the log path '{log_path}'.")
-            user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {run_type} (Choose 'a', 'b' or 'c'):  ")
+        if os.path.isdir(self.infer_log_path):
+            print(f"\n{self.run_type} number {self.version} for already exists for {self.selected_model_num} in the log path '{self.infer_log_path}'.")
+            user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {self.run_type} (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
-                self._remove_version(log_path)
+                self._remove_version()
 
             elif user_input.lower() == 'b':
-                if run_type == 'custom_test':
-                    self.test_log_path = self._get_next_version(log_path, run_type)
-                elif run_type == 'predict':
-                    self.predict_log_path = self._get_next_version(log_path, run_type)
+                self.infer_log_path = self._get_next_version()
 
             elif user_input.lower() == 'c':
                 print("Stopped operation.")
-                sys.exit()  # Exit the program gracefully
+                sys.exit()  # Exit the program gracefully   
+
 
     
 class SelectTopologyEstimatorModel:
@@ -538,7 +504,7 @@ class SelectTopologyEstimatorModel:
 
         if self.run_type == 'train':
             if self.framework == 'nri':
-                self.file_name = 'edge_estimator'
+                self.file_name = 'edge_est'
             elif self.framework == 'decoder':
                 self.file_name = 'decoder'
         elif self.run_type == 'custom_test':
@@ -750,10 +716,10 @@ class SelectTopologyEstimatorModel:
             ckpt_file_path = get_checkpoint_path(selected_log_path)
             config_file_path = get_param_pickle_path(selected_log_path)
 
-            with open(os.path.join(SETTINGS_DIR, "selections", "loaded_ckpt_path.txt"), "w") as f:
+            with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "loaded_ckpt_path.txt"), "w") as f:
                 f.write(ckpt_file_path)
 
-            with open(os.path.join(SETTINGS_DIR, "selections", "loaded_config_path.txt"), "w") as f:
+            with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "loaded_config_path.txt"), "w") as f:
                 f.write(config_file_path)
 
             print(f"\nSelected .ckpt file path: {ckpt_file_path}")
@@ -958,7 +924,7 @@ class HelperClass:
             log_path = os.path.join(log_path, f"(spf) {spf_config['type']}")
 
         return log_path
-    
+
 # Functions to load checkpoint files
 
 def get_checkpoint_path(log_path):
@@ -994,15 +960,39 @@ def get_param_pickle_path(log_path):
     
     return param_path
 
-def get_selected_ckpt_path():
-    with open(os.path.join(SETTINGS_DIR, "selections", "loaded_ckpt_path.txt"), "r") as f:
+
+# Functions to load from selection folders
+
+def get_selected_ckpt_path(framework):
+    """
+    Returns the path to the selected checkpoint file for the given framework.
+    The path is read from a text file in the settings directory.
+
+    Parameters
+    ----------
+    framework : str
+        The framework for which to load the checkpoint path (e.g., 'nri', 'decoder').
+    """
+    with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "loaded_ckpt_path.txt"), "r") as f:
         ckpt_path = f.read() 
     return ckpt_path
 
-def load_selected_config():
-    log_config = NRITrainManager()
+def load_selected_config(framework):
+    """
+    Loads the training config class from a pickle file for the given framework.
+    The path to the pickle file is read from a text file in the settings directory.
 
-    with open(os.path.join(SETTINGS_DIR, "selections", "loaded_config_path.txt"), "r") as f:
+    Parameters
+    ----------
+    framework : str
+        The framework for which to load the training config class (e.g., 'nri', 'decoder').
+    """
+    if framework == 'nri':
+        log_config = NRITrainManager()
+    elif framework == 'decoder':
+        log_config = DecoderTrainManager()
+
+    with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "loaded_config_path.txt"), "r") as f:
         log_config_path = f.read()
 
     if not os.path.exists(log_config_path):

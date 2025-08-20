@@ -53,18 +53,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'BER'
-        self.machine_type = 'cwru'
+        self.application = 'MSD'
+        self.machine_type = 'M004'
         self.scenario = 'scene_1'
 
-        self.signal_types = {'gearbox': ['acc']}
+        self.signal_types = MSDGroupMaker().m004_all
         
-        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 5000
-        self.stride             = 5000
+        self.window_length      = 100000
+        self.stride             = 100000
 
         if self.run_type == 'train':
             self.set_train_dataset()
@@ -75,12 +75,14 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            'series_tp_(fs=1000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.0, std=0.1), 
+                                    get_augment_config('gau', mean=0.0, std=0.2)],
+            'series_tp_(fs=2000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.1, std=0.2), 
+                                    get_augment_config('gau', mean=0.3, std=0.2)],
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
+            # '0_B-021': [get_augment_config('OG')],
             
         }
 
@@ -90,7 +92,10 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
+            'series_tp_(fs=1000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.0, std=0.1), 
+                                    get_augment_config('gau', mean=0.0, std=0.2)],
+            'series_tp_(fs=2000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.1, std=0.2), 
+                                    get_augment_config('gau', mean=0.3, std=0.2)],
         }
         
         self.unhealthy_configs = {

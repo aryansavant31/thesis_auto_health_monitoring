@@ -13,6 +13,8 @@ import torch.nn.functional as F
 from torch.optim import Adam, SGD
 from pytorch_lightning import LightningModule
 import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 # global imports
 from data.transform import DomainTransformer, DataNormalizer
@@ -26,9 +28,11 @@ class Decoder(LightningModule):
 
     def __init__(self, n_dims, 
                  msg_out_size, n_edge_types,
-                 edge_mlp_config, recur_emb_type, out_mlp_config, do_prob, is_batch_norm 
-                 ):
+                 edge_mlp_config, recur_emb_type, out_mlp_config, do_prob, is_batch_norm,
+                 hparams=None):
         super(Decoder, self).__init__()
+        self.save_hyperparameters()  # This will log decoder_params
+        
         # input parameters
         self.n_dims = n_dims
 
@@ -42,6 +46,9 @@ class Decoder(LightningModule):
         self.out_mlp_config = out_mlp_config
         self.do_prob = do_prob
         self.is_batch_norm = is_batch_norm
+
+        # hyperparameters
+        self.hparams = hparams
         
         # Make MLPs for each edge type
         self.edge_mlp_fn = nn.ModuleList(MLP(2*self.msg_out_size, 
@@ -138,7 +145,10 @@ class Decoder(LightningModule):
         self.optimizer = optimizer
         self.loss_type = loss_type
 
-        self.train_losses_per_epoch = []
+        self.train_losses = {
+            'train_losses': [],
+            'val_losses': [],
+        }
         
     def _get_feature_names(self):
         """
@@ -393,9 +403,47 @@ class Decoder(LightningModule):
 
         return preds, vars
     
+    def configure_optimizers(self):
+        if self.optimizer == 'adam':
+            return Adam(self.parameters(), lr=self.lr)
+        elif self.optimizer == 'sgd':
+            return SGD(self.parameters(), lr=self.lr)
+    
+    def _forward_pass(self, batch, batch_idx):
+        """
+        Perform a forward pass through the model.
+        """
+        data_batch, rel_batch = batch
+
+        data, relations, _, rep_num = data_batch
+        rec_rel, send_rel = rel_batch
+
+        edge_matrix = 0.5*(rec_rel + send_rel).sum(dim=2, keepdim=True) 
+        
+        target = self.process_input_data(data, batch_idx=batch_idx, current_epoch=self.current_epoch)[:, :, 1:, :] # get target for decoder based on its transform
+
+        # Forward pass
+        self.set_input_graph(rec_rel, send_rel)
+        self.set_edge_matrix(edge_matrix)
+
+        x_pred, x_var = self.forward(data, batch_idx, current_epoch=self.current_epoch)
+
+        # Loss calculation
+        if self.loss_type == 'nll':
+            loss = nll_gaussian(x_pred, target, x_var)
+
+        decoder_plot_data = {
+            'x_pred': x_pred,
+            'x_var': x_var,
+            'target': target,
+            'rep_num': rep_num,
+        }
+
+        return loss, decoder_plot_data
+
     def training_step(self, batch, batch_idx):
         """
-        Training step for the topology estimator.
+        Training step for the decoder.
 
         Parameters
         ----------
@@ -409,38 +457,275 @@ class Decoder(LightningModule):
             self.start_time = time.time()
             print(f"train start time: {self.start_time}")
 
-        data_batch, rel_batch = batch
-
-        data, relations, _ = data_batch
-        rec_rel, send_rel = rel_batch
-
-        edge_matrix = 0.5*(rec_rel + send_rel).sum(dim=2, keepdim=True) 
-        
-        target = self.process_input_data(data, batch_idx=batch_idx, current_epoch=self.current_epoch)[:, :, 1:, :] # get target for decoder based on its transform
-
-        # Forward pass
-        self.set_input_graph(rec_rel, send_rel)
-        self.set_edge_matrix(edge_matrix)
-        x_pred, x_var = self.forward(data, batch_idx, current_epoch=self.current_epoch)
-
-        # Loss calculation
-        if self.loss_type == 'nll':
-            loss = nll_gaussian(x_pred, target, x_var)
+        loss, _ = self._forward_pass(batch, batch_idx)
 
         self.log_dict(
-            {
-                'train_loss': loss,
-            },
+            {'train_loss': loss},
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True
+        )     
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        """
+        Validation step for the decoder.
+
+        Parameters
+        ----------
+        batch : tuple
+            A tuple containing the data batch and the relationship batch.
+            - data_batch : tuple
+                Contains the data tensor and the relations tensor.
+            - rel_batch : tuple
+                Contains the receiver and sender relationship matrices.
+        """
+        loss, self.decoder_plot_data_val = self._forward_pass(batch, batch_idx)
+
+        self.log_dict(
+            {'val_loss': loss},
             on_step=False,
             on_epoch=True,
             prog_bar=True,
             logger=True
         )
-            
-        return loss
 
-    def configure_optimizers(self):
-        if self.optimizer == 'adam':
-            return Adam(self.parameters(), lr=self.lr)
-        elif self.optimizer == 'sgd':
-            return SGD(self.parameters(), lr=self.lr)
+        return loss
+    
+    def test_step(self, batch, batch_idx):
+        """
+        Test step for the decoder.
+
+        Parameters
+        ----------
+        batch : tuple
+            A tuple containing the data batch and the relationship batch.
+            - data_batch : tuple
+                Contains the data tensor and the relations tensor.
+            - rel_batch : tuple
+                Contains the receiver and sender relationship matrices.
+        """
+        loss, self.decoder_plot_data_test = self._forward_pass(batch, batch_idx)
+
+        self.log_dict(
+            {'test_loss': loss},
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True
+        )
+        return loss
+    
+    def predict_step(self, batch, batch_idx):
+        """
+        Prediction step for the topology estimator.
+
+        Parameters
+        ----------
+        batch : tuple
+            A tuple containing the data batch and the relationship batch.
+            - data_batch : tuple
+                Contains the data tensor and the relations tensor.
+            - rel_batch : tuple
+                Contains the receiver and sender relationship matrices.
+        """
+        loss, self.decoder_plot_data_predict = self._forward_pass(batch, batch_idx)
+
+        print(f"\nDecoder residuals: {loss.item():.4f}")
+        print('\n' + 75*'-')
+
+        self.model_id = self.hparams.get('model_id', 'decoder')
+
+        # make decoder output plot
+        self.decoder_output_plot(**self.decoder_plot_data_predict)
+
+        return {
+            'residuals': loss.item(),
+            'x_pred': self.decoder_plot_data_predict['x_pred'],
+        }
+    
+    def on_train_epoch_end(self):
+        """
+        Called at the end of each training epoch. Updates the training losses.
+        """
+        self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
+
+        # print stats after each epoch
+        print(
+            f"\nEpoch {self.current_epoch}/{self.trainer.max_epochs}:" 
+            f"\ntrain_loss: {self.train_losses['train_losses'][-1]:.4f}" 
+            )
+        
+    def on_validation_epoch_end(self):
+        """
+        Called at the end of the validation epoch. Updates the validation losses.
+        """
+        self.train_losses['val_losses'].append(self.trainer.callback_metrics['val_loss'].item())
+
+        # make decoder output plot
+        self.decoder_output_plot(**self.decoder_plot_data_val)
+
+        # print stats after each epoch
+        print(f"val_loss: {self.train_losses['val_losses'][-1]:.4f}")
+
+    def on_test_epoch_end(self):
+        """
+        Called at the end of the test epoch. Updates the hyperparameters with test losses.
+        """
+        # Log model information
+        self.model_id = self.hparams.get('model_id', 'decoder')
+        self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
+
+        # update hparams
+        self.hparams.update({
+            'test_loss': self.trainer.callback_metrics['test_loss'].item(),
+        })
+
+        # make decoder output plot
+        self.decoder_output_plot(**self.decoder_plot_data_test)
+
+        # print stats after each epoch
+        print(f"\ntest_loss: {self.hparams['test_loss']:.4f}")
+        
+        if self.logger:
+            self.logger.log_hyperparams(self.hparams, {})
+            print(f"\nTest metrics and hyperparameters logged for tensorboard at {self.logger.log_dir}")
+        else:
+            print("\nTest metrics and hyperparameters not logged as logging is disabled.")
+        
+        print('\n' + 75*'-')
+
+    def on_train_end(self):
+        training_time = time.time() - self.start_time
+        print(f"\nTraining completed in {training_time:.2f} seconds or {training_time / 60:.2f} minutes or {training_time / 60 / 60} hours.")
+
+        # Log model information
+        self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'decoder'
+        self.run_type = 'train'
+
+        # update hparams
+        self.hparams.update({
+            'model_id': self.model_id,
+            'training_time': training_time,
+            'train_loss': self.train_losses['train_losses'][-1],
+            'val_loss': self.train_losses['val_losses'][-1],
+        })
+
+        # plot training losses
+        self.training_loss_plot()
+        
+        if self.logger:
+            print(f"\nTraining completed for model '{self.model_id}'. Trained model saved at {os.path.join(self.logger.log_dir, 'checkpoints')}")
+        else:
+            print(f"\nTraining completed for model '{self.model_id}'. Logging is disabled, so no checkpoints are saved.")
+
+        print('\n' + 75*'-')
+
+# ================== Visualization Methods =======================
+
+    def training_loss_plot(self):
+        """
+        Plot all the losses against the epochs.
+        """
+        if not self.train_losses:
+            raise ValueError("No training losses found. Please run the training step first.")
+        
+        print("\n" + 12*"<" + " TRAINING LOSS PLOT (TRAIN + VAL) " + 12*">")
+        print(f"\nCreating training loss plot for {self.model_id}...")
+
+        epochs = range(1, len(self.train_losses[f'train_losses']) + 1)
+
+        # create a figure with 3 subplots in a vertical grid
+        plt.figure(figsize=(8, 6), dpi=100)
+
+        # plot nri losses
+        plt.plot(epochs, self.train_losses[f'train_losses'], label='train loss', color='blue')
+        plt.plot(epochs, self.train_losses[f'val_losses'], label='val loss', color='orange', linestyle='--')
+        plt.title(F"Train and Validation Losses ({self.model_id})")
+        plt.ylabel('Loss')
+        plt.xlabel('Epochs')
+        plt.legend()
+        plt.grid(True)
+
+        # save loss plot if logger is avaialble
+        if self.logger:
+            fig = plt.gcf()
+            fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id})'), dpi=500)
+            self.logger.experiment.add_figure(f"{self.model_id}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
+        else:
+            print("\nTraining loss plot not logged as logging is disabled.\n")
+
+    def decoder_output_plot(self, x_pred, x_var, target, rep_num, sample_idx=0):
+        """
+        Plot the decoder output for a given sample.
+
+        Parameters
+        ----------
+        x_pred : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
+            Predicted node data from the decoder.
+        x_var : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
+            Variance of the predicted node data.
+        target : torch.Tensor, shape (batch_size, n_nodes, n_components-1, n_dim)
+            Target node data for the decoder.
+        rep_num : int
+            rep label
+        sample_idx : int, optional
+            Index of the sample to plot. Default is 0.
+        """
+        print("\n" + 12*"<" + " DECODER OUTPUT PLOT " + 12*">")
+        print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]}' for {self.model_id}...")
+
+        # convert tensors to numpy arrays for plotting
+        x_pred = x_pred.detach().cpu().numpy()
+        x_var = x_var.detach().cpu().numpy()
+        target = target.detach().cpu().numpy()
+
+        batch_size, n_nodes, n_comps, n_dims = x_pred.shape
+
+        node_names = [f'Node {i+1}' for i in range(n_nodes)]
+        dim_names = [f'Dim {i+1}' for i in range(n_dims)]
+
+        # create figure with subplots for each node and dimension
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=True, sharey=True)
+        if n_nodes == 1:
+            axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
+        if n_dims == 1:
+            axes = np.expand_dims(axes, axis=1)
+
+        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]} ({self.model_id})", fontsize=16)
+
+        for node in range(n_nodes):
+            for dim in range(n_dims):
+                ax = axes[node, dim]
+
+                # extract data for the current node and dim
+                timesteps = np.arange(n_comps)
+                gt = target[sample_idx, node, :, dim]  # ground truth
+                pred = x_pred[sample_idx, node, :, dim]  # predictions
+                conf_band_upper = pred + 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # upper confidence band
+                conf_band_lower = pred - 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # lower confidence band
+
+                # plot ground truth, predictions, and confidence band
+                ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
+                ax.plot(timesteps, pred, label="prediction", color="orange")
+                ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
+
+                # Add labels and legend
+                if node == n_nodes - 1:
+                    ax.set_xlabel(dim_names[dim])
+                if dim == 0:
+                    ax.set_ylabel(node_names[node])
+                if node == 0 and dim == n_dims - 1:
+                    ax.legend(loc="upper right")
+
+                ax.grid(True)
+
+        # save the plot if logger is available
+        if self.logger:
+            fig.savefig(os.path.join(self.logger.log_dir, f'decoder_output_plot_({rep_num[sample_idx]})_({self.model_id})'), dpi=500)
+            self.logger.experiment.add_figure(f"{self.model_id}/decoder_output_plot", fig, global_step=self.global_step, close=True)
+            print(f"\nDecoder output plot for rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
+        else:
+            print("\nDecoder output plot not logged as logging is disabled.\n")
