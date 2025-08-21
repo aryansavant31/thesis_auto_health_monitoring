@@ -353,6 +353,9 @@ class HelperClass:
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)                    
                 augment_str_main = ', '.join(augment_str_list) 
 
+                if data_config.application == 'ASM':
+                    healthy_type = healthy_type.replace("set01_", "").replace("set02_", "")
+
                 healthy_config_str_list.append(f'(OK):{healthy_type}[{augment_str_main}]')
 
             config_str = ' + '.join(healthy_config_str_list)
@@ -363,7 +366,10 @@ class HelperClass:
 
             for unhealthy_type, augment_configs in data_config.unhealthy_configs.items():
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)
-                augment_str_main = ', '.join(augment_str_list) 
+                augment_str_main = ', '.join(augment_str_list)
+
+                if data_config.application == 'ASM':
+                    unhealthy_type = unhealthy_type.replace("set01_", "").replace("set02_", "") 
 
                 unhealthy_config_str_list.append(f'(NOK):{unhealthy_type}[{augment_str_main}]')
 
@@ -378,7 +384,10 @@ class HelperClass:
 
             for unknown_type, augment_configs in data_config.unknown_configs.items():
                 augment_str_list = self.get_augmment_config_str_list(augment_configs)
-                augment_str_main = ', '.join(augment_str_list) 
+                augment_str_main = ', '.join(augment_str_list)
+
+                if data_config.application == 'ASM':
+                    unknown_type = unknown_type.replace("set01_", "").replace("set02_", "") 
 
                 unknown_config_str_list.append(f'(UK):{unknown_type}[{augment_str_main}]')
 

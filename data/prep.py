@@ -553,7 +553,7 @@ class DataPreprocessor:
                         
                         try:
                             is_default_rep = False
-                            rep_num_list = [int(key.split('_')[-1]) for key in f.keys() if key.startswith('data')]
+                            rep_num_list = [int(key.split('_')[-1].removeprefix('rep')) for key in f.keys() if key.startswith('data')]
 
                         except ValueError:
                             is_default_rep = True
@@ -762,17 +762,17 @@ def load_spring_particle_data(batch_size=10):
     # vel_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\\nodes\T50\OG\\all_nodes\\vel"
     # edge_path = "C:\AFD\data\datasets\spring_particles\P005\scenario_1\healthy\H1\processed\edges"
 
-    loc_train = np.load(f'{loc_path}\\loc_train_springs' + '5' + '.npy')
-    vel_train = np.load(f'{vel_path}\\vel_train_springs' + '5' + '.npy')
-    edges_train = np.load(f'{edge_path}\\edges_train_springs' + '5' + '.npy')
+    # loc_train = np.load(f'{loc_path}\\loc_train_springs' + '5' + '.npy')
+    # vel_train = np.load(f'{vel_path}\\vel_train_springs' + '5' + '.npy')
+    # edges_train = np.load(f'{edge_path}\\edges_train_springs' + '5' + '.npy')
 
-    loc_valid = np.load(f'{loc_path}\\loc_valid_springs' + '5' + '.npy')
-    vel_valid = np.load(f'{vel_path}\\vel_valid_springs' + '5' + '.npy')
-    edges_valid = np.load(f'{edge_path}\\edges_valid_springs' + '5' + '.npy')
+    # loc_valid = np.load(f'{loc_path}\\loc_valid_springs' + '5' + '.npy')
+    # vel_valid = np.load(f'{vel_path}\\vel_valid_springs' + '5' + '.npy')
+    # edges_valid = np.load(f'{edge_path}\\edges_valid_springs' + '5' + '.npy')
 
-    loc_test = np.load(f'{loc_path}\\loc_test_springs' + '5' + '.npy')
-    vel_test = np.load(f'{vel_path}\\vel_test_springs' + '5' + '.npy')
-    edges_test = np.load(f'{edge_path}\\edges_test_springs' + '5' + '.npy')
+    # loc_test = np.load(f'{loc_path}\\loc_test_springs' + '5' + '.npy')
+    # vel_test = np.load(f'{vel_path}\\vel_test_springs' + '5' + '.npy')
+    # edges_test = np.load(f'{edge_path}\\edges_test_springs' + '5' + '.npy')
 
     # [num_samples, num_timesteps, num_dims, num_atoms]
     num_atoms = loc_train.shape[3]
