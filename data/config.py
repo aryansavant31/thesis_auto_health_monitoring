@@ -10,7 +10,7 @@ from rich.console import Console
 import glob
 import numpy as np
 
-from data.datasets.asml.module_groups import SignalTypeConfigMaker
+from data.datasets.asml.groups import NXEGroupMaker
 from data.datasets.mass_sp_dm.groups import MSDGroupMaker
 
 class DataConfig:
@@ -53,18 +53,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M004'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = MSDGroupMaker().m004_all
+        self.signal_types = NXEGroupMaker().ammf_acc
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 100000
-        self.stride             = 100000
+        self.window_length      = 4000
+        self.stride             = 4000
 
         if self.run_type == 'train':
             self.set_train_dataset()

@@ -553,7 +553,7 @@ class DataPreprocessor:
                         
                         try:
                             is_default_rep = False
-                            rep_num_list = [int(key.split('_')[-1]) for key in f.keys() if key.startswith('data')]
+                            rep_num_list = [int(key.split('_')[-1].removeprefix('rep')) for key in f.keys() if key.startswith('data')]
 
                         except ValueError:
                             is_default_rep = True
