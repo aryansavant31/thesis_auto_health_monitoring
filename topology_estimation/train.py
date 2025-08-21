@@ -188,7 +188,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
             The NRI training configuration object.
         """
         super().__init__(data_config, nri_config)
-        self.nri_config = nri_config
+        # self.nri_config = nri_config
 
     def train(self):
         """
@@ -209,7 +209,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         train_logger, ckpt_path = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
         trainer = Trainer(
             logger=train_logger,
-            max_epochs=self.nri_config.max_epochs,
+            max_epochs=self.tp_config.max_epochs,
             enable_progress_bar=True,
             log_every_n_steps=1
             )
@@ -229,8 +229,14 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         """
         Initialize the NRI model with the given parameters.
         """
-        nri_model = NRI(enc_model_params, dec_model_params)
-        nri_model.set_run_params(enc_run_params, dec_run_params, train_data_stats, self.nri_config.temp, self.nri_config.is_hard)
+        # prep hparams
+        self.tp_config.hparams.update({
+            'n_comps': str(int(enc_model_params['n_comps'])),
+            'n_dims': str(int(dec_model_params['n_dims'])),
+            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1]))   
+        })
+        nri_model = NRI(enc_model_params, dec_model_params, hparams=self.tp_config.hparams)
+        nri_model.set_run_params(enc_run_params, dec_run_params, train_data_stats, self.tp_config.temp, self.tp_config.is_hard)
 
         # print model info
         print("\nNRI Model Initialized with the following configurations:")
@@ -244,7 +250,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         Load the trained NRI model from the checkpoint path.
         """
         trained_nri_model = NRI.load_from_checkpoint(get_checkpoint_path(self.train_log_path))
-        trained_nri_model.set_run_params(enc_run_params, dec_run_params, test_data_stats, self.nri_config.temp, self.nri_config.is_hard)
+        trained_nri_model.set_run_params(enc_run_params, dec_run_params, test_data_stats, self.tp_config.temp, self.tp_config.is_hard)
 
         print("\nTrained NRI Model Loaded for testing.")
         return trained_nri_model
@@ -263,7 +269,7 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
             The Decoder training configuration object.
         """
         super().__init__(data_config, decoder_config)
-        self.decoder_config = decoder_config
+        # self.decoder_config = decoder_config
 
     def train(self):
         """
@@ -283,7 +289,7 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         train_logger, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
         trainer = Trainer(
             logger=train_logger,
-            max_epochs=self.decoder_config.max_epochs,
+            max_epochs=self.tp_config.max_epochs,
             enable_progress_bar=True,
             log_every_n_steps=1
             )
@@ -302,7 +308,12 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         """
         Initialize the Decoder model with the given parameters.
         """
-        decoder_model = Decoder(**dec_model_params)
+        # prep hparams
+        self.tp_config.hparams.update({
+            'n_dims': str(int(dec_model_params['n_dims'])),
+            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1] ))  
+        })
+        decoder_model = Decoder(**dec_model_params, hparams=self.tp_config.hparams)
         decoder_model.set_run_params(**dec_run_params, data_stats=train_data_stats)
 
         print("\nDecoder Model Initialized with the following configurations:")

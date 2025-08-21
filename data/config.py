@@ -75,10 +75,9 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.0, std=0.1), 
-                                    get_augment_config('gau', mean=0.0, std=0.2)],
-            'series_tp_(fs=2000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.1, std=0.2), 
-                                    get_augment_config('gau', mean=0.3, std=0.2)],
+            'series_tp_(fs=1000)': [get_augment_config('OG')],
+            'series_tp_(fs=2000)': [get_augment_config('OG')]
+                                    
         }
         
         self.unhealthy_configs = {
@@ -92,10 +91,9 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.0, std=0.1), 
-                                    get_augment_config('gau', mean=0.0, std=0.2)],
-            'series_tp_(fs=2000)': [get_augment_config('OG'), get_augment_config('gau', mean=0.1, std=0.2), 
-                                    get_augment_config('gau', mean=0.3, std=0.2)],
+            'series_tp_(fs=1000)': [get_augment_config('OG')],
+            'series_tp_(fs=2000)': [get_augment_config('OG')]
+                                    
         }
         
         self.unhealthy_configs = {
