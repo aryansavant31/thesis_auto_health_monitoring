@@ -66,10 +66,10 @@ class AnomalyDetectorTrainConfig:
         self.anom_config = get_anom_config('IF', n_estimators=10000)
 
         # run parameters
-        self.domain_config = get_domain_config('freq', data_config=self.data_config)
+        self.domain_config = get_domain_config('freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            # get_time_feat_config('from_ranks', n=5, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
+            get_freq_feat_config('first_n_modes', n_modes = 6), 
         ]  
         self.reduc_config = None # or None
         self.feat_norm = None
@@ -89,15 +89,19 @@ class AnomalyDetectorTrainConfig:
         """
         Sets the hyperparameters for the anomaly detection model.
         """
+        domain_str = self._get_config_str([self.domain_config])
+        feat_str = self._get_config_str(self.feat_configs)
+        reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
+
         init_hparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
 
-            'domain': self.domain_config['type'],
+            'domain': domain_str,
             'raw_data_norm': self.raw_data_norm,
-            'feats': f"[{', '.join([feat_config['type'] for feat_config in self.feat_configs])}]",
-            'reduc': self.reduc_config['type'] if self.reduc_config else 'None',
+            'feats': f"[{feat_str}]",
+            'reduc': reduc_str,
             'feat_norm': self.feat_norm
         }
         hparams = {**init_hparams, **self.anom_config}
@@ -112,7 +116,21 @@ class AnomalyDetectorTrainConfig:
 
         return hparams
         
-        # [TODO] all hyperparams must be string (convert any hp which is int or list into str)
+    def _get_config_str(self, configs:list):
+        """
+        Get a neat string that has the type of config and its parameters.
+        Eg: "PCA(comps=3)"
+        """
+        config_strings = []
+
+        for config in configs:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            if additional_keys:
+                config_strings.append(f"{config['type']}({additional_keys})")
+            else:
+                config_strings.append(f"{config['type']}")
+
+        return ', '.join(config_strings)
 
 def get_anom_config(anom_type, **kwargs):
     """

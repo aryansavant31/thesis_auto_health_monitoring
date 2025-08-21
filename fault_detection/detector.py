@@ -41,7 +41,7 @@ class AnomalyDetector:
                                      gamma=anom_config['gamma'],
                                      nu=anom_config['nu'])
             
-    def set_run_params(self, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
+    def set_run_params(self, data_config, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
         Set the run parameters for the anomaly detection model
 
@@ -54,6 +54,7 @@ class AnomalyDetector:
         raw_data_norm : str, optional
             Normalization type for raw data (e.g., 'min_max', 'standard')
         """
+        self._data_config = data_config
         self._domain_config = domain_config
         self._raw_data_norm = raw_data_norm
         self._feat_norm = feat_norm
@@ -69,15 +70,15 @@ class AnomalyDetector:
         """
         Get the names of the features that will be used in the anomaly detection model.
         """
-        non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
-        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
+        # non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
+        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), None)
 
-        return non_rank_feats + rank_feats
+        return rank_feats
             
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
 
-        self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
+        self.domain_transformer = DomainTransformer(domain_config=self._domain_config, data_config=self._data_config)
         if self._domain == 'time':
             print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None
         elif self._domain == 'freq':
@@ -109,7 +110,7 @@ class AnomalyDetector:
 
         elif self._domain == 'freq':
             if self._feat_configs:
-                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs)
+                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs, data_config=self._data_config)
                 print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
             else:
                 self.freq_fex = None

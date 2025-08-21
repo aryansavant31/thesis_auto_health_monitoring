@@ -55,9 +55,6 @@ class AnomalyDetectorTrainMain:
         train_loader, train_data_stats = train_data
         test_loader, test_data_stats = test_data
 
-        # update latest fs in fdet_config
-        self.fdet_config.domain_config['fs'] = self.data_config.fs
-
     # 2. Initialize the anomaly detector model
         anomaly_detector = self._init_model(train_data_stats)
 
@@ -135,9 +132,9 @@ class AnomalyDetectorTrainMain:
         anomaly_detector = AnomalyDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
         
         req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()
-        run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params}
+        run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params and key not in ['data_config']}
 
-        anomaly_detector.set_run_params(**run_config, data_stats=train_data_stats)
+        anomaly_detector.set_run_params(**run_config, data_config=self.data_config, data_stats=train_data_stats)
 
         # print model info
         print("\nAnomaly Detector Model Initialized with the following configurations:")
