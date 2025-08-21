@@ -21,12 +21,12 @@ from .decoder import Decoder
 
 
 class NRI(LightningModule):
-    def __init__(self, encoder_params, decoder_params, hparams):
+    def __init__(self, encoder_params, decoder_params, hyperparams):
         super(NRI, self).__init__()
         self.save_hyperparameters()  # This will log encoder_params and decoder_params
         self.encoder = Encoder(**encoder_params)
         self.decoder = Decoder(**decoder_params)
-        self.hparams = hparams
+        self.hyperparams = hyperparams
 
     def print_model_info(self):
         """
@@ -369,7 +369,7 @@ class NRI(LightningModule):
         print(f"\nDecoder residuals: {log_data['loss_decoder'].item():.4f}")
         print('\n' + 75*'-')
 
-        self.model_id = self.hparams.get('model_id', 'NRI_Model')
+        self.model_id = self.hyperparams.get('model_id', 'NRI_Model')
 
         # make decoder output plot
         self.decoder_output_plot(**self.decoder_plot_data_predict)
@@ -427,32 +427,32 @@ class NRI(LightningModule):
         Called at the end of the test epoch. Updates the hyperparameters with test losses and accuracies.
         """
         # Log model information
-        self.model_id = self.hparams.get('model_id', 'NRI_Model')
+        self.model_id = self.hyperparams.get('model_id', 'NRI_Model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
-        # update hparams
-        self.hparams.update({
+        # update hyperparams
+        self.hyperparams.update({
             'nri/test_loss': self.trainer.callback_metrics['nri/test_loss'].item(),
             'encoder/test_loss': self.trainer.callback_metrics['encoder/test_loss'].item(),
             'decoder/test_loss': self.trainer.callback_metrics['decoder/test_loss'].item(),
         })
 
         if 'encoder/test_edge_accuracy' in self.trainer.callback_metrics:
-            self.hparams['encoder/test_edge_accuracy'] = self.trainer.callback_metrics['encoder/test_edge_accuracy'].item()
+            self.hyperparams['encoder/test_edge_accuracy'] = self.trainer.callback_metrics['encoder/test_edge_accuracy'].item()
 
         # make decoder output plot
         self.decoder_output_plot(**self.decoder_plot_data_test)
 
         # print stats after each epoch
         print(
-            f"\nnri/test_loss: {self.hparams['nri/test_loss']:.4f}, " 
-            f"encoder/test_loss: {self.hparams['encoder/test_loss']:.4f}, "
-            f"decoder/test_loss: {self.hparams['decoder/test_loss']:.4f}, "
-            f"encoder/test_edge_accuracy: {self.hparams.get('encoder/test_edge_accuracy', -1):.4f}"
+            f"\nnri/test_loss: {self.hyperparams['nri/test_loss']:.4f}, " 
+            f"encoder/test_loss: {self.hyperparams['encoder/test_loss']:.4f}, "
+            f"decoder/test_loss: {self.hyperparams['decoder/test_loss']:.4f}, "
+            f"encoder/test_edge_accuracy: {self.hyperparams.get('encoder/test_edge_accuracy', -1):.4f}"
             )
         
         if self.logger:
-            self.logger.log_hyperparams(self.hparams, {})
+            self.logger.log_hyperparams(self.hyperparams, {})
             print(f"\nTest metrics and hyperparameters logged for tensorboard at {self.logger.log_dir}")
         else:
             print("\nTest metrics and hyperparameters not logged as logging is disabled.")
@@ -467,8 +467,8 @@ class NRI(LightningModule):
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'NRI_model'
         self.run_type = 'train'
 
-        # update hparams
-        self.hparams.update({
+        # update hyperparams
+        self.hyperparams.update({
             'model_id': self.model_id,
 
             # log train data
