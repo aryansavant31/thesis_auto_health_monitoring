@@ -63,11 +63,11 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=1000)
+        self.anom_config = get_anom_config('IF', n_estimators=10000)
 
         # run parameters
-        self.domain_config = get_domain_config('time', data_config=self.data_config)
-        self.raw_data_norm = 'min_max' 
+        self.domain_config = get_domain_config('freq', data_config=self.data_config)
+        self.raw_data_norm = None
         self.feat_configs = [
             # get_time_feat_config('from_ranks', n=5, perf_v=1, rank_v='[a=0.5]', data_config=self.data_config), 
         ]  
