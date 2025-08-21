@@ -13,7 +13,7 @@ from console_logger import ConsoleLogger
 
 # local imports
 from .settings.manager import TopologyEstimationInferManager, get_checkpoint_path
-from .graph_structures import RelationMatrixMaker
+from .relations import RelationMatrixMaker
 from .utils.custom_loader import CombinedDataLoader
 from .nri import NRI
 from .decoder import Decoder
