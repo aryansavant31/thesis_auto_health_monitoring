@@ -471,7 +471,11 @@ class DataPreprocessor:
                     dim_rep_arrays.append(all_reps)
 
                 # truncate to min_segments across dims
-                min_segments = min(arr.shape[0] for arr in dim_segment_arrays)
+                try:
+                    min_segments = min(arr.shape[0] for arr in dim_segment_arrays)
+                except ValueError:
+                    print(f"ds_subtype '{ds_subtype}' is missing data")
+                    
                 trimmed_segments = [arr[:min_segments] for arr in dim_segment_arrays]
                 trimmed_segments_reps = [arr[:min_segments] for arr in dim_rep_arrays]
 

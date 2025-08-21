@@ -46,7 +46,7 @@ class DataConfig:
         To view rest of the attribute options, run this file directly.
         """
         self.run_type  = run_type  # options: train, custom_test, predict
-
+    
         self.application_map = {'BER':'bearing',
                                 'MSD':'mass_sp_dm',
                                 'SPP':'spring_particles',
@@ -63,8 +63,10 @@ class DataConfig:
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 4000
-        self.stride             = 4000
+        self.window_length      = 2000
+        self.stride             = 2000
+
+        self.view = DatasetViewer(self)
 
         if self.run_type == 'train':
             self.set_train_dataset()
@@ -75,9 +77,7 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG')],
-            'series_tp_(fs=2000)': [get_augment_config('OG')]
-                                    
+            key : [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')         
         }
         
         self.unhealthy_configs = {
@@ -91,9 +91,7 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG')],
-            'series_tp_(fs=2000)': [get_augment_config('OG')]
-                                    
+            key : [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')         
         }
         
         self.unhealthy_configs = {
@@ -199,7 +197,7 @@ class DataConfig:
         edge_ds_path_main = {}
         
         # get actual node types to iterate over
-        self.view = DatasetViewer()
+        
         # self.node_options = self.view.node_types  if self.node_type == ['ALL'] else self.node_type
 
         
@@ -265,15 +263,14 @@ def get_domain_config(domain_type, data_config:DataConfig, **kwargs):
 # Helper class to view dataset structure
 # =====================================================
 
-class DatasetViewer(DataConfig):
+class DatasetViewer:
     """
     A class to view hierarchical dataset structure and store folder names.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, data_config:DataConfig):
         self.base_dir = Path(os.path.dirname(os.path.abspath(__file__))) 
         self.base_path = "datasets"
-        self.application_full = self.application_map[self.application]
+        self.application_full = data_config.application_map[data_config.application]
         
         # Initialize lists for folder names
         self.machine_types: List[str] = []
@@ -331,7 +328,12 @@ class DatasetViewer(DataConfig):
 
         # sort node types by their numeric prefix
         # self.node_types = sorted(set(self.node_types), key=lambda x: int(x.split('_')[0]) if x.split('_')[0].isdigit() else (_ for _ in ()).throw(ValueError(f"Invalid node type format: {x}. Node types should start with a number.")))
-    
+        # sort ds subtypes by their numeric prefix
+        self.healthy_types = sorted(set(self.healthy_types))
+        self.unhealthy_types = sorted(set(self.unhealthy_types))
+        self.unknown_types = sorted(set(self.unknown_types))
+
+
     def _explore_scenario(self, scenario_path: Path) -> Dict:
         """
         Explore scenario folder structure (healthy/unhealthy).
@@ -534,7 +536,8 @@ class DatasetViewer(DataConfig):
     
 if __name__ == "__main__":
     # data_config.set_train_valid_dataset()
-    data_viewer = DatasetViewer()
+    data_config = DataConfig()
+    data_viewer = DatasetViewer(data_config)
 
     data_viewer.view_dataset_tree()
 
