@@ -232,7 +232,7 @@ def get_augment_config(augment_type, **kwargs):
         
         return config
 
-def get_domain_config(domain_type, data_config:DataConfig, **kwargs):
+def get_domain_config(domain_type, **kwargs):
     """
     Get the domain configuration based on the specified domain.
 
@@ -240,8 +240,6 @@ def get_domain_config(domain_type, data_config:DataConfig, **kwargs):
     ----------
     domain_type : str
         The domain of the data (e.g., 'time', 'freq').
-    data_config : DataConfig
-        Data configuration object containing sampling frequency.
 
     **kwargs : dict
         Additional parameters for the domain configuration.
@@ -250,7 +248,6 @@ def get_domain_config(domain_type, data_config:DataConfig, **kwargs):
     """
     config = {}
     config['type'] = domain_type
-    config['fs'] = data_config.fs  # default sampling frequency
 
     if domain_type == 'time':
         config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency for time domain

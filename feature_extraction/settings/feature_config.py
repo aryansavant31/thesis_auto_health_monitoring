@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 from data.config import DataConfig
 
 
-def get_freq_feat_config(feat_type, data_config:DataConfig, **kwargs):
+def get_freq_feat_config(feat_type, **kwargs):
     """
     All the frequency feature extraction configurations are defined here.
 
@@ -17,12 +17,11 @@ def get_freq_feat_config(feat_type, data_config:DataConfig, **kwargs):
     ----------
     feat_type : str
         The type of feature extraction to be used (e.g., 'first_n_modes', 'PCA').
-    data_config : DataConfig
-        Data configuration object containing sampling frequency.
 
     **kwargs : dict
         - `from_ranks`: **n** (_int_) (number of top features to extract),
             **perf_v** (_int_) (performance version), **rank_v** (_str_) (rank version, e.g., '[a=0.5]'),
+            **data_config** (_DataConfig_) (data configuration object) 
 
         2 or more dimensional features
         - `first_n_modes` : **n_modes** (_int_) (will get 'mode values' and its 'frequency')
@@ -31,16 +30,19 @@ def get_freq_feat_config(feat_type, data_config:DataConfig, **kwargs):
     from feature_extraction.settings.manager import get_feature_list
     config = {}
     config['type'] = feat_type
-    config['fs'] = data_config.fs
 
     # rank based features
     if feat_type == 'from_ranks':
+        config['n'] = kwargs.get('n', 5)
+        config['perv_v'] = kwargs.get('perf_v', 1)
+        config['rank_v'] = kwargs.get('rank_v', '[a=0.5]')
+
         config['feat_list'] = get_feature_list(
-            n = kwargs.get('n', 5),
-            perf_v = kwargs.get('perf_v', 1),
-            rank_v = kwargs.get('rank_v', '[a=0.5]'),
+            n = config['n'],
+            perf_v = config['perv_v'],
+            rank_v = config['rank_v'],
             domain='freq',
-            data_config=data_config
+            data_config=kwargs.get('data_config', None)
         )
 
     # 2 or more dimensional features
@@ -62,8 +64,6 @@ def get_time_feat_config(feat_type, **kwargs):
     ----------
     feat_type : str
         The type of time feature extraction
-    data_config : DataConfig
-        Data configuration object
 
     **kwargs : dict
         - `from_ranks`: **n** (_int_) (number of top features to extract), 
@@ -77,10 +77,14 @@ def get_time_feat_config(feat_type, **kwargs):
 
     # rank based features
     if feat_type == 'from_ranks':
+        config['n'] = kwargs.get('n', 5)
+        config['perv_v'] = kwargs.get('perf_v', 1)
+        config['rank_v'] = kwargs.get('rank_v', '[a=0.5]')
+
         config['feat_list'] = get_feature_list(
-            n = kwargs.get('n', 5),
-            perf_v = kwargs.get('perf_v', 1),
-            rank_v = kwargs.get('rank_v', '[a=0.5]'),
+            n = config['n'],
+            perf_v = config['perv_v'],
+            rank_v = config['rank_v'],
             domain='time',
             data_config=kwargs.get('data_config', None)
         )

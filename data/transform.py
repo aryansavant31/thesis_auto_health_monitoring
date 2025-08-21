@@ -25,7 +25,7 @@ class DomainTransformer:
     v
     Normalization (std, min-max)
     """
-    def __init__(self, domain_config):
+    def __init__(self, domain_config, data_config:DataConfig):
         """
         Parameters
         ----------
@@ -37,7 +37,7 @@ class DomainTransformer:
         """
         self.domain_config = domain_config
         self.domain = domain_config['type'] 
-        self.fs = domain_config['fs']
+        self.fs = data_config.fs
 
     def transform(self, time_data):
         """

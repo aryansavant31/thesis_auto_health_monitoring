@@ -13,6 +13,9 @@ import numpy as np
 import torch
 from sklearn.decomposition import PCA
 
+# global import
+from data.config import DataConfig
+
 # local imports
 from . import tf # time features
 from . import ff # frequency features
@@ -76,7 +79,7 @@ class TimeFeatureExtractor:
              
 
 class FrequencyFeatureExtractor:
-    def __init__(self, feat_configs):
+    def __init__(self, feat_configs, data_config:DataConfig):
         """
         Initialize the feature extractor model with the specified type.
         
@@ -86,7 +89,7 @@ class FrequencyFeatureExtractor:
             Type of features to be used (e.g., 'first_n_modes').
         """
         self.feat_configs = feat_configs
-        self.fs = feat_configs[0]['fs']  # sampling frequency
+        self.fs = data_config.fs  # sampling frequency
 
     def extract(self, freq_mag, freq_bins):
         """
