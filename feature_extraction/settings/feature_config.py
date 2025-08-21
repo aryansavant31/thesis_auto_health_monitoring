@@ -99,13 +99,13 @@ def get_reduc_config(reduc_type, **kwargs):
         The type of feature reduction to be used (e.g., 'PCA').
     **kwargs : dict
         For all options of `reduc_type`:
-        - `PCA`: **n_components** (_int_) (number of components to keep)
+        - `PCA`: **n_comps** (_int_) (number of components to keep)
     """
     config = {}
     config['type'] = reduc_type
 
     if reduc_type == 'PCA':
-        config['n_components'] = kwargs.get('n_components', 5)  # default to 5 components if not specified
+        config['n_comps'] = kwargs.get('n_comps', 5)  # default to 5 components if not specified
 
     return config
 

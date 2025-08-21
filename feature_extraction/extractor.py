@@ -175,7 +175,7 @@ class FeatureReducer:
     def __init__(self, reduc_config):
 
         if reduc_config['type'] == 'PCA':
-            self.model = PCA(n_components=reduc_config['n_components'])
+            self.model = PCA(n_components=reduc_config['n_comps'])
 
     def reduce(self, data):
         """
@@ -188,13 +188,14 @@ class FeatureReducer:
         # convert data to 2D numpy array
         batch_size, n_nodes, n_components, n_dims = data.shape
         device = data.device
-        data_np = data.view(-1, data.shape[-2] * data.shape[-1]).detach().cpu().numpy()  # shape (batch_size * n_nodes, n_components * n_dims)
+        data_np = data.view(batch_size*n_nodes, n_components*n_dims).detach().cpu().numpy()  # shape (batch_size * n_nodes, n_components * n_dims)
 
         features = self.model.fit_transform(data_np)  
-        
+        n_comps_reduc = features.shape[-1]
+
         # convert features back to torch tensor and reshape
         features = torch.from_numpy(features).to(device)
-        final_tensor = features.view(batch_size, n_nodes, -1, n_dims)
+        final_tensor = features.view(batch_size, n_nodes, n_comps_reduc, 1)
 
         return final_tensor
         
