@@ -94,10 +94,10 @@ class TopologyEstimationTrainHelper:
         req_enc_run_params = inspect.signature(Encoder.set_run_params).parameters.keys()
 
         enc_model_params = {
-            key.removesuffix('_enc'): value for key, value in self.tp_config.__dict__.items() if key.removesuffix('_enc') in req_enc_model_params
+            key.removesuffix('_enc'): value for key, value in self.tp_config.__dict__.items() if key.removesuffix('_enc') in req_enc_model_params and key not in ['hyperparams']
         }
         enc_run_params = {
-            key.removeprefix('enc_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params
+            key.removeprefix('enc_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params and key not in ['data_config']
         }
         # get n_comps and n_dims for encoder and decoder
         none_dict = {param: None for param in inspect.signature(Encoder).parameters.keys()}
@@ -119,10 +119,10 @@ class TopologyEstimationTrainHelper:
         req_dec_run_params = inspect.signature(Decoder.set_run_params).parameters.keys()
 
         dec_model_params = {
-            key.removesuffix('_dec'): value for key, value in self.tp_config.__dict__.items() if key.removesuffix('_dec') in req_dec_model_params
+            key.removesuffix('_dec'): value for key, value in self.tp_config.__dict__.items() if key.removesuffix('_dec') in req_dec_model_params and key not in ['hyperparams']
         }
         dec_run_params = {
-            key.removeprefix('dec_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params
+            key.removeprefix('dec_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params and key not in ['data_config']
         }
         dec_model_params['n_dims'] = next(iter(self.train_loader))[0].shape[3]
 
@@ -134,7 +134,7 @@ class TopologyEstimationTrainHelper:
         """
         # if logging enabled, save parameters and initialize TensorBoard logger
         if self.tp_config.is_log:
-            self.train_log_path = self.tp_config.get_train_log_path(n_dims, n_comps)
+            self.train_log_path = self.tp_config.get_train_log_path(n_dims, n_comps=n_comps)
 
             # if continue training, load ckpt path of untrained model 
             if self.tp_config.continue_training:
@@ -235,8 +235,28 @@ class NRITrainMain(TopologyEstimationTrainHelper):
             'n_dims': str(int(dec_model_params['n_dims'])),
             'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1]))   
         })
-        nri_model = NRI(enc_model_params, dec_model_params, hyperparams=self.tp_config.hyperparams)
-        nri_model.set_run_params(enc_run_params, dec_run_params, train_data_stats, self.tp_config.temp, self.tp_config.is_hard)
+        nri_model = NRI(
+            encoder_params=enc_model_params, 
+            decoder_params=dec_model_params, 
+            hyperparams=self.tp_config.hyperparams
+            )
+        
+        nri_model.set_run_params(
+            enc_run_params=enc_run_params, 
+            dec_run_params=dec_run_params, 
+            data_config=self.data_config, 
+            data_stats=train_data_stats, 
+            temp=self.tp_config.temp, 
+            is_hard=self.tp_config.is_hard
+            )
+        
+        nri_model.set_training_params(
+            lr=self.tp_config.lr, 
+            optimizer=self.tp_config.optimizer,
+            loss_type_enc=self.tp_config.loss_type_enc,
+            loss_type_dec=self.tp_config.loss_type_dec,
+            prior = self.tp_config.prior
+            )
 
         # print model info
         print("\nNRI Model Initialized with the following configurations:")
@@ -250,7 +270,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         Load the trained NRI model from the checkpoint path.
         """
         trained_nri_model = NRI.load_from_checkpoint(get_checkpoint_path(self.train_log_path))
-        trained_nri_model.set_run_params(enc_run_params, dec_run_params, test_data_stats, self.tp_config.temp, self.tp_config.is_hard)
+        trained_nri_model.set_run_params(enc_run_params, dec_run_params, self.data_config, test_data_stats, self.tp_config.temp, self.tp_config.is_hard)
 
         print("\nTrained NRI Model Loaded for testing.")
         return trained_nri_model
@@ -309,13 +329,25 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         Initialize the Decoder model with the given parameters.
         """
         # prep hyperparams
-        dec_model_params['hyperparams'].update({
+        self.tp_config.hyperparams.update({
             'n_dims': str(int(dec_model_params['n_dims'])),
             'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1] ))  
         })
-        decoder_model = Decoder(**dec_model_params)
-        decoder_model.set_run_params(**dec_run_params, data_stats=train_data_stats)
+        decoder_model = Decoder(**dec_model_params, hyperparams=self.tp_config.hyperparams)
+        
+        decoder_model.set_run_params(
+            **dec_run_params, 
+            data_config=self.data_config, 
+            data_stats=train_data_stats
+            )
+        
+        decoder_model.set_training_params(
+            lr=self.tp_config.lr, 
+            optimizer=self.tp_config.optimizer,
+            loss_type=self.tp_config.loss_type
+            )
 
+        print("\n" + 75*'-')
         print("\nDecoder Model Initialized with the following configurations:")
         print("\nDecoder Model Summary:")
         print(decoder_model)
@@ -328,7 +360,7 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         Load the trained Decoder model from the checkpoint path.
         """
         trained_decoder_model = Decoder.load_from_checkpoint(get_checkpoint_path(self.train_log_path))
-        trained_decoder_model.set_run_params(**dec_run_params, data_stats=test_data_stats)
+        trained_decoder_model.set_run_params(**dec_run_params, data_config=self.data_config, data_stats=test_data_stats)
 
         print("\nTrained Decoder Model Loaded for testing.")
         return trained_decoder_model

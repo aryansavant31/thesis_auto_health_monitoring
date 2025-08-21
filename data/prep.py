@@ -525,9 +525,9 @@ class DataPreprocessor:
             final_node_labels_np = (-1) * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors
-        final_node_data = torch.from_numpy(final_node_data_np)
-        final_node_labels = torch.from_numpy(final_node_labels_np)
-        final_edge_data = torch.from_numpy(final_edge_data_np)
+        final_node_data = torch.from_numpy(final_node_data_np).to(torch.float32)
+        final_node_labels = torch.from_numpy(final_node_labels_np).to(torch.float32)
+        final_edge_data = torch.from_numpy(final_edge_data_np).to(torch.float32)
         final_rep_labels = torch.from_numpy(final_rep_labels_np)
 
         return final_node_data, final_node_labels, final_edge_data, final_rep_labels

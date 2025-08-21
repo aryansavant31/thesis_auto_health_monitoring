@@ -71,7 +71,7 @@ class TopologyEstimationInferHelper:
         # encoder params
         req_enc_run_params = inspect.signature(Encoder.set_run_params).parameters.keys()
         enc_run_params = {
-            key.removeprefix('enc_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params
+            key.removeprefix('enc_'): value for key, value in self.tp_config.log_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params and key not in ['data_config']
         }
         return enc_run_params
         
@@ -87,7 +87,7 @@ class TopologyEstimationInferHelper:
         # decoder params
         req_dec_run_params = inspect.signature(Decoder.set_run_params).parameters.keys()
         dec_run_params = {
-            key.removeprefix('dec_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params
+            key.removeprefix('dec_'): value for key, value in self.tp_config.log_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params and key not in ['data_config']
         }
 
         return dec_run_params
@@ -105,7 +105,7 @@ class TopologyEstimationInferHelper:
 
             # log all the attributes of train_config
             formatted_params = "\n".join([f"{key}: {value}" for key, value in self.tp_config.__dict__.items()])
-            logger.experiment.add_text(os.path.basename(self.train_log_path), formatted_params)
+            logger.experiment.add_text(os.path.basename(self.infer_log_path), formatted_params)
             print(f"\n{self.tp_config.run_type.capitalize()} environment set. {self.tp_config.run_type.capitalize()} will be logged at: {self.infer_log_path}")
 
         else:
@@ -182,7 +182,7 @@ class NRIInferMain(TopologyEstimationInferHelper):
         trained_nri_model = NRI.load_from_checkpoint(self.nri_config.ckpt_path)
 
         # update the model with new run params and custom data statistics
-        trained_nri_model.set_run_params(enc_run_params, dec_run_params, data_stats, self.nri_config.temp, self.nri_config.is_hard)
+        trained_nri_model.set_run_params(enc_run_params, dec_run_params, self.data_config, data_stats, self.nri_config.temp, self.nri_config.is_hard)
 
         print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
         print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_components}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
@@ -250,7 +250,7 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         trained_decoder_model = Decoder.load_from_checkpoint(self.decoder_config.ckpt_path)
 
         # update the model with new run params and custom data statistics
-        trained_decoder_model.set_run_params(dec_run_params, data_stats, self.decoder_config.temp, self.decoder_config.is_hard)
+        trained_decoder_model.set_run_params(**dec_run_params, data_config=self.data_config, data_stats=data_stats)
 
         print(f"\nDecoder model loaded for '{self.decoder_config.run_type}' from {self.decoder_config.ckpt_path}")
         print(f"\nModel type: {type(trained_decoder_model).__name__}, Model ID: {trained_decoder_model.hparams['model_id']}, No. of dimensions req.: {trained_decoder_model.n_dims}")

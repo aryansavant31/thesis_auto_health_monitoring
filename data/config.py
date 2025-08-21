@@ -92,7 +92,8 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            key : [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')         
+            'series_tp_(fs=1000)': [get_augment_config('OG')],
+            'series_tp_(fs=2000)': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {

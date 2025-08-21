@@ -1,0 +1,60 @@
+do_prob: 0
+edge_mlp_config:
+- - 64
+  - tanh
+- - 32
+  - tanh
+- - 16
+  - tanh
+- - 64
+  - null
+hyperparams:
+  batch_norm: 'True'
+  batch_size: '5'
+  burn_in_steps: '1'
+  do_prob: '0'
+  domain_dec: time(cutoff_freq=0)
+  edge_mlp_config: '[[64, ''tanh''], [32, ''tanh''], [16, ''tanh''], [64, None]]'
+  feat_norm_dec: None
+  feats_dec: '[]'
+  is_burn_in: 'False'
+  is_dynamic_graph: 'False'
+  is_hard: 'True'
+  loss_type: nnl
+  lr: '0.001'
+  max_epochs: '5'
+  msg_out_size: '64'
+  n_dims: '3'
+  n_edge_types: '1'
+  n_nodes: '4'
+  optimizer: adam
+  out_mlp_config: '[[64, ''tanh''], [32, ''tanh''], [16, ''tanh''], [64, None]]'
+  pred_steps: '1'
+  raw_data_norm_dec: None
+  recur_emb_type: gru
+  reduc_dec: None
+  skip_first_edge: 'False'
+  spf_config: no_spf
+  spf_domain: time(cutoff_freq=0)
+  spf_feat_norm: None
+  spf_feats: '[]'
+  spf_raw_data_norm: None
+  spf_reduc: None
+  temp: '1.0'
+  test_rt: '0.1'
+  train_rt: '0.8'
+  val_rt: '0.1'
+is_batch_norm: true
+msg_out_size: 64
+n_dims: 3
+n_edge_types: 1
+out_mlp_config:
+- - 64
+  - tanh
+- - 32
+  - tanh
+- - 16
+  - tanh
+- - 64
+  - null
+recur_emb_type: gru

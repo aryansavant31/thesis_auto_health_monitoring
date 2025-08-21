@@ -51,7 +51,7 @@ class DecoderTrainConfig:
         self.recur_emb_type = 'gru'
         
         # Run parameters
-        self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.dec_domain_config = get_domain_config('time')
         self.dec_raw_data_norm = None
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
@@ -74,7 +74,7 @@ class DecoderTrainConfig:
 
         self.spf_config = get_spf_config('no_spf', is_expert=False)
 
-        self.spf_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.spf_domain_config = get_domain_config('time')
         self.spf_raw_data_norm = None 
         self.spf_feat_configs = [
            # get_time_feat_config('first_n_modes', data_config=self.data_config),
@@ -90,6 +90,14 @@ class DecoderTrainConfig:
         """
         Sets the hyperparameters for the decoder model.
         """
+        domain_dec_str = get_config_str([self.dec_domain_config])
+        feat_dec_str = get_config_str(self.dec_feat_configs)
+        reduc_dec_str = get_config_str([self.dec_reduc_config]) if self.dec_reduc_config else 'None'
+
+        spf_domain_str = get_config_str([self.spf_domain_config])
+        spf_feat_str = get_config_str(self.spf_feat_configs)
+        spf_reduc_str = get_config_str([self.spf_reduc_config]) if self.spf_reduc_config else 'None'
+
         hyperparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
@@ -106,10 +114,10 @@ class DecoderTrainConfig:
             'recur_emb_type': self.recur_emb_type,
             'do_prob': self.do_prob,
             'batch_norm': self.is_batch_norm,
-            'domain_dec': self.dec_domain_config['type'],
+            'domain_dec': domain_dec_str,
             'raw_data_norm_dec': self.dec_raw_data_norm,
-            'feats_dec': f"[{', '.join([feat_config['type'] for feat_config in self.dec_feat_configs])}]",
-            'reduc_dec': self.dec_reduc_config['type'] if self.dec_reduc_config else 'None',
+            'feats_dec': f"[{feat_dec_str}]",
+            'reduc_dec': reduc_dec_str,
             'feat_norm_dec': self.dec_feat_norm,
             'skip_first_edge': self.skip_first_edge_type,
             'pred_steps': self.pred_steps,
@@ -123,11 +131,11 @@ class DecoderTrainConfig:
 
             # sparsifier parameters
             'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            'domain_spf': self.spf_domain_config['type'],
-            'raw_data_norm_spf': self.spf_raw_data_norm,
-            'feats_spf': f"[{', '.join([feat_config['type'] for feat_config in self.spf_feat_configs])}]",
-            'reduc_spf': self.spf_reduc_config['type'] if self.spf_reduc_config else 'None',
-            'feat_norm_spf': self.spf_feat_norm
+            'spf_domain': spf_domain_str,
+            'spf_raw_data_norm': self.spf_raw_data_norm,
+            'spf_feats': f"[{spf_feat_str}]",
+            'spf_reduc': spf_reduc_str,
+            'spf_feat_norm': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():
@@ -139,7 +147,7 @@ class DecoderTrainConfig:
                 hyperparams[key] = 'None'
 
         return hyperparams
-
+    
 
 class NRITrainConfig:
     def __init__(self, data_config:DataConfig):
@@ -259,7 +267,7 @@ class NRITrainConfig:
         self.attention_output_size = 5   
 
         # Run parameters
-        self.enc_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.enc_domain_config = get_domain_config('time')
         self.enc_raw_data_norm = None  
         self.enc_feat_configs = []
         self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
@@ -288,7 +296,7 @@ class NRITrainConfig:
         self.recur_emb_type = 'gru'
         
         # Run parameters
-        self.dec_domain_config = get_domain_config('time', data_config=self.data_config)
+        self.dec_domain_config = get_domain_config('time')
         self.dec_raw_data_norm = None 
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
@@ -309,10 +317,10 @@ class NRITrainConfig:
 
         self.spf_config = get_spf_config('no_spf', is_expert=True)
         
-        self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        self.spf_domain_config   = get_domain_config('time')
         self.spf_raw_data_norm = None 
         self.spf_feat_configs = [
-            # get_time_feat_config('first_n_modes', data_config=self.data_config),
+            # get_time_feat_config('first_n_modes'),
         ]    
         self.spf_feat_norm = None
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
@@ -324,6 +332,18 @@ class NRITrainConfig:
         """
         Sets the hyperparameters for the NRI model.
         """
+        domain_enc_str = get_config_str([self.enc_domain_config])
+        feat_enc_str = get_config_str(self.enc_feat_configs)
+        reduc_enc_str = get_config_str([self.enc_reduc_config]) if self.enc_reduc_config else 'None'
+
+        domain_dec_str = get_config_str([self.dec_domain_config])
+        feat_dec_str = get_config_str(self.dec_feat_configs)
+        reduc_dec_str = get_config_str([self.dec_reduc_config]) if self.dec_reduc_config else 'None'
+
+        spf_domain_str = get_config_str([self.spf_domain_config])
+        spf_feat_str = get_config_str(self.spf_feat_configs)
+        spf_reduc_str = get_config_str([self.spf_reduc_config]) if self.spf_reduc_config else 'None'
+
         hyperparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
@@ -339,46 +359,46 @@ class NRITrainConfig:
             'add_const_kld': self.add_const_kld,
 
             # encoder parameters
-            'pipeline_type': self.pipeline_type,
-            'is_residual_connection': self.is_residual_connection,
-            'do_prob_enc': f"{self.do_prob_enc}",
-            'is_batch_norm_enc': f"{self.is_batch_norm_enc}",
-            'domain_enc': self.enc_domain_config['type'],
-            'raw_data_norm_enc': self.enc_raw_data_norm,
-            'feats_enc': f"[{', '.join([feat_config['type'] for feat_config in self.enc_feat_configs])}]",
-            'reduc_enc': self.enc_reduc_config['type'] if self.enc_reduc_config else 'None',
-            'feat_norm_enc': self.enc_feat_norm,
-            'edge_emb_configs_enc': f"{self.edge_emb_config}",
-            'node_emb_configs_enc': f"{self.node_emb_config}",
-            'temp': self.temp,
-            'is_hard': self.is_hard,
-            'attention_output_size': self.attention_output_size,
+            'enc_pipeline_type': self.pipeline_type,
+            'enc_is_residual_connection': self.is_residual_connection,
+            'enc_do_prob': f"{self.do_prob_enc}",
+            'enc_is_batch_norm': f"{self.is_batch_norm_enc}",
+            'enc_domain': domain_enc_str,
+            'enc_raw_data_norm': self.enc_raw_data_norm,
+            'enc_feats': f"[{feat_enc_str}]",
+            'enc_reduc': reduc_enc_str,
+            'enc_feat_norm': self.enc_feat_norm,
+            'enc_edge_emb_configs_enc': f"{self.edge_emb_config}",
+            'enc_node_emb_configs_enc': f"{self.node_emb_config}",
+            'enc_temp': self.temp,
+            'enc_is_hard': self.is_hard,
+            'enc_attention_output_size': self.attention_output_size,
 
             # decoder parameters
-            'msg_out_size': self.msg_out_size,
-            'do_prob_dec': self.do_prob_dec,
-            'is_batch_norm_dec': self.is_batch_norm_dec,
-            'recur_emb_type': self.recur_emb_type,
-            'domain_dec': self.dec_domain_config['type'],
-            'raw_data_norm_dec': self.dec_raw_data_norm,
-            'feats_dec': f"[{', '.join([feat_config['type'] for feat_config in self.dec_feat_configs])}]",
-            'reduc_dec': self.dec_reduc_config['type'] if self.dec_reduc_config else 'None',
-            'feat_norm_dec': self.dec_feat_norm,
-            'edge_mlp_config': f"{self.edge_mlp_config}",
-            'out_mlp_config': f"{self.out_mlp_config}",
-            'skip_first_edge': self.skip_first_edge_type,
-            'pred_steps': self.pred_steps,
-            'is_burn_in': self.is_burn_in,
-            'burn_in_steps': self.burn_in_steps,
-            'is_dynamic_graph': self.is_dynamic_graph,
+            'dec_msg_out_size': self.msg_out_size,
+            'dec_do_prob': self.do_prob_dec,
+            'dec_is_batch_norm': self.is_batch_norm_dec,
+            'dec_recur_emb_type': self.recur_emb_type,
+            'dec_domain': domain_dec_str,
+            'dec_raw_data_norm': self.dec_raw_data_norm,
+            'dec_feats': f"[{feat_dec_str}]",
+            'dec_reduc': reduc_dec_str,
+            'dec_feat_norm': self.dec_feat_norm,
+            'dec_edge_mlp_config': f"{self.edge_mlp_config}",
+            'dec_out_mlp_config': f"{self.out_mlp_config}",
+            'dec_dec_skip_first_edge': self.skip_first_edge_type,
+            'dec_pred_steps': self.pred_steps,
+            'dec_is_burn_in': self.is_burn_in,
+            'dec_burn_in_steps': self.burn_in_steps,
+            'dec_is_dynamic_graph': self.is_dynamic_graph,
 
             # sparsifier parameters
             'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            'domain_spf': self.spf_domain_config['type'],
-            'raw_data_norm_spf': self.spf_raw_data_norm,
-            'feats_spf': f"[{', '.join([feat_config['type'] for feat_config in self.spf_feat_configs])}]",
-            'reduc_spf': self.spf_reduc_config['type'] if self.spf_reduc_config else 'None',
-            'feat_norm_spf': self.spf_feat_norm
+            'spf_domain': spf_domain_str,
+            'spf_raw_data_norm': self.spf_raw_data_norm,
+            'spf_feats': f"[{spf_feat_str}]",
+            'spf_reduc': spf_reduc_str,
+            'spf_feat_norm': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():
@@ -391,6 +411,23 @@ class NRITrainConfig:
 
         return hyperparams
         
+
+def get_config_str(configs:list):
+    """
+    Get a neat string that has the type of config and its parameters.
+    Eg: "PCA(comps=3)"
+    """
+    config_strings = []
+
+    for config in configs:
+        additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+        if additional_keys:
+            config_strings.append(f"{config['type']}({additional_keys})")
+        else:
+            config_strings.append(f"{config['type']}")
+
+    return ', '.join(config_strings)
+
 
 class ExtraSettings:
     def get_enc_pipeline(self, pipeline_type, custom_pipeline=None):

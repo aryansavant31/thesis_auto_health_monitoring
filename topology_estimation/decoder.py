@@ -106,7 +106,7 @@ class Decoder(LightningModule):
         """
         self.edge_matrix = edge_matrix
 
-    def set_run_params(self, data_stats, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None, 
+    def set_run_params(self, data_config, data_stats, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None, 
                         skip_first_edge_type=False, pred_steps=1,
                         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
                         encoder=None, temp=None, is_hard=False):
@@ -123,6 +123,7 @@ class Decoder(LightningModule):
                 the graph will be estimated from encoder. 
                 So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
         """
+        self._data_config = data_config
         self._domain_config = domain_config
         self._raw_data_norm = raw_data_norm
         self._feat_norm = feat_norm
@@ -164,7 +165,7 @@ class Decoder(LightningModule):
     def init_input_processors(self):
         print(f"\nInitializing input processors for decoder model...") 
 
-        self.domain_transformer = DomainTransformer(domain_config=self._domain_config)
+        self.domain_transformer = DomainTransformer(domain_config=self._domain_config, data_config=self._data_config)
         if self._domain == 'time':
             print(f"\n>> Domain transformer initialized for 'time' domain") 
         elif self._domain == 'freq':
@@ -196,7 +197,7 @@ class Decoder(LightningModule):
 
         elif self._domain == 'freq':
             if self._feat_configs:
-                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs)
+                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs, data_config=self._data_config)
                 print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") 
             else:
                 self.freq_fex = None
