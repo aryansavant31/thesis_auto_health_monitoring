@@ -2,12 +2,12 @@ import os, sys
 
 # other imports
 from torch.utils.tensorboard import SummaryWriter
+import argparse
 
 # global imports
 from data.config import DataConfig
 from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
-import argparse
 
 # local imports
 from .settings.manager import AnomalyDetectorInferManager, get_model_pickle_path
@@ -89,6 +89,7 @@ class AnomalyDetectorInferMain:
         print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.ckpt_path}")
         print(f"\nModel type: {type(anomaly_detector.model).__name__}, Model ID: {anomaly_detector.hparams['model_id']}, No. of input features req.: {anomaly_detector.model.n_features_in_ if hasattr(anomaly_detector.model, 'n_features_in_') else 'Unknown'}")
         print('\n' + 75*'-')
+        
         return anomaly_detector    
     
     def _prep_for_inference(self):
@@ -117,7 +118,7 @@ class AnomalyDetectorInferMain:
 if __name__ == "__main__":
     # create console logger to log all the outputs in terminal
     console_logger = ConsoleLogger()
-    parser = argparse.ArgumentParser(description="Run the AFD implementation")
+    parser = argparse.ArgumentParser(description="Infer the anomaly detector model.")
 
     parser.add_argument('--run-type', type=str, 
                     choices=['custom_test', 'predict'],

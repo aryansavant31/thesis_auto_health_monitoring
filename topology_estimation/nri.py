@@ -78,7 +78,7 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, enc_run_params, dec_run_params, temp, is_hard):
+    def set_run_params(self, enc_run_params, dec_run_params, data_stats, temp, is_hard):
         """
         Parameters
         ----------
@@ -91,11 +91,12 @@ class NRI(LightningModule):
         is_hard : bool
             If True, use hard Gumble Softmax.
         """
+        self.save_hyperparameters()
         self.temp = temp
         self.is_hard = is_hard
 
-        self.encoder.set_run_params(**enc_run_params)
-        self.decoder.set_run_params(**dec_run_params)
+        self.encoder.set_run_params(**enc_run_params, data_stats=data_stats)
+        self.decoder.set_run_params(**dec_run_params, data_stats=data_stats)
         
 
     def forward(self, data, batch_idx, current_epoch=0):

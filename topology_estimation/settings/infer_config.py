@@ -34,7 +34,10 @@ class NRIInferConfig:
         
         self.num_workers = 1
         self.batch_size = 1
-        
+
+        self.temp = 0.1
+        self.is_hard = False
+
     # Sparsifier parameters
         self.spf_config = get_spf_config('no_spf', is_expert=True)
         
@@ -68,6 +71,9 @@ class DecoderInferConfig:
         
         self.num_workers = 1
         self.batch_size = 1
+
+        self.temp = 0.1
+        self.is_hard = False
 
     # Sparsifier parameters 
         self.spf_config = get_spf_config('no_spf', is_expert=True)

@@ -31,7 +31,7 @@ class NRITrainManager(NRITrainConfig):
         super().__init__(data_config)
         self.helper = HelperClass()
 
-    def get_train_log_path(self, n_comps, n_dim):
+    def get_train_log_path(self, n_dim, n_comps):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -201,7 +201,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         super().__init__(data_config)
         self.helper = HelperClass()
 
-    def get_train_log_path(self, n_dim):
+    def get_train_log_path(self, n_dim, **kwargs):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -554,10 +554,16 @@ class SelectTopologyEstimatorModel:
                 node = node.setdefault(part, {})
             if "_versions" not in node:
                 node["_versions"] = []
+
             # Sort versions by edge_estimator number before assigning vnum
+            if self.run_type == 'train':
+                key_pattern = lambda x: int(re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]) else 0
+            else:
+                key_pattern = lambda x: int(re.search(fr'.*{self.file_name}_(\d+)', x[1]).group(1)) if re.search(fr'.*{self.file_name}_(\d+)', x[1]) else 0
+
             sorted_versions = sorted(
                 versions,
-                key=lambda x: int(re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', x[1]) else 0
+                key=key_pattern
             )
             for idx, (txt_file, model_name) in enumerate(sorted_versions, 1):
                 node["_versions"].append({
@@ -686,10 +692,16 @@ class SelectTopologyEstimatorModel:
             if "<versions>" not in added_labels:
                 parent_node.add(f"[blue]<versions>[/blue]")
                 added_labels.add("<versions>")
+
             # --- SORT VERSIONS BY MODEL NUMBER ---
+            if self.run_type == 'train':
+                key_pattern = lambda v: int(re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']) else 0
+            else:
+                key_pattern = lambda v: int(re.search(fr'.*{self.file_name}_(\d+)', v['model_name']).group(1)) if re.search(fr'.*{self.file_name}_(\d+)', v['model_name']) else 0
+
             sorted_versions = sorted(
                 structure["_versions"],
-                key=lambda v: int(re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']).group(1)) if re.search(fr'{self.file_name}_\d+\.(\d+)', v['model_name']) else 0
+                key= key_pattern
             )
             for v in sorted_versions:
                 model_disp = f"{v['model_name']} (v{v['vnum']})"

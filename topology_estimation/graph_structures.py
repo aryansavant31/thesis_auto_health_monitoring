@@ -57,9 +57,8 @@ class RelationMatrixMaker:
     - expert knowledge infusion
     - undirected graph learning (using the MakeUndirectedGraph class)
     """
-    def __init__(self, spf_config, n_nodes):
+    def __init__(self, spf_config):
         
-        self.n_nodes = n_nodes
         self.spf_config = spf_config
 
     def get_relation_matrix_loader(self, data_loader: DataLoader):
@@ -67,8 +66,9 @@ class RelationMatrixMaker:
         send_rel_list = []
         batch_size = data_loader.batch_size
 
-        for _, y_edges, _ in data_loader:
-            rec_rel, send_rel = self.make_relation_matrix(y_edges, batch_size)
+        for data, y_edges, _, _ in data_loader:
+            n_nodes = data.shape[1]
+            rec_rel, send_rel = self.make_relation_matrix(y_edges, n_nodes, batch_size)
             rec_rel_list.append(rec_rel)
             send_rel_list.append(send_rel)
 
@@ -78,9 +78,11 @@ class RelationMatrixMaker:
         rel_dataset = TensorDataset(rec_rel_all, send_rel_all)
         rel_loader = DataLoader(rel_dataset, batch_size=data_loader.batch_size, shuffle=False, num_workers=data_loader.num_workers)
 
+        self.print_loader_stats(rel_loader)
+        
         return rel_loader
 
-    def make_relation_matrix(self, y_edges, batch_size):
+    def make_relation_matrix(self, y_edges, n_nodes, batch_size):
         """
         Generate relation matrices for the sparsified graph.
 
@@ -88,6 +90,8 @@ class RelationMatrixMaker:
         ----------
         y_edges : torch.Tensor, shape (batch_size, n_edges)
             Edge label indicating which edges are present in the graph.
+        n_nodes : int
+            Number of nodes in the graph.
 
         Returns
         -------
@@ -96,17 +100,17 @@ class RelationMatrixMaker:
         send_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)   
             Sender relation matrix that indicate which edges are senders of nodes.
         """
-        n_edges = self.n_nodes * (self.n_nodes - 1)  # excluding self-loops
+        n_edges = n_nodes * (n_nodes - 1)  # excluding self-loops
 
-        rec_rel = torch.zeros((batch_size, n_edges, self.n_nodes), device=y_edges.device)
-        send_rel = torch.zeros((batch_size, n_edges, self.n_nodes), device=y_edges.device)
+        rec_rel = torch.zeros((batch_size, n_edges, n_nodes), device=y_edges.device)
+        send_rel = torch.zeros((batch_size, n_edges, n_nodes), device=y_edges.device)
 
         if self.spf_config['type'] != 'no_spf':
             spf_edges = None # Placeholder for future implementation of undirected graph learning
 
         edge_idx = 0
-        for sender in range(self.n_nodes):
-            for receiver in range(self.n_nodes):
+        for sender in range(n_nodes):
+            for receiver in range(n_nodes):
                 if sender != receiver:
                     # add sparsified graph edges if enabled
                     if self.spf_config['type'] != 'no_spf':
@@ -133,6 +137,21 @@ class RelationMatrixMaker:
                     edge_idx += 1
 
         return rec_rel, send_rel
+    
+    def print_loader_stats(self, rel_loader):
+        """
+        Prints the statistics of the relation matrix loader.
+        """
+        print("\nRelation Matrix Loader Statistics:")
+
+        rel = next(iter(rel_loader))
+
+        print(rel[0][0])
+        print(f"Receiver relation matrix shape: {rel[0].shape}")
+
+        print(rel[1][0])
+        print(f"Sender relation matrix shape: {rel[1].shape}")
+        
 
 class UndirectedGraph:
     """
