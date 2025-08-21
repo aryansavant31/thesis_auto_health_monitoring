@@ -57,21 +57,21 @@ class AnomalyDetectorTrainConfig:
         self.is_log = True
 
         # dataset parameters
-        self.batch_size  = 1
+        self.batch_size  = 20
         self.train_rt    = 0.8
         self.test_rt     = 0.2
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=10000)
+        self.anom_config = get_anom_config('1SVM', nu=0.1)
 
         # run parameters
         self.domain_config = get_domain_config('freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes = 6), 
+            # get_freq_feat_config('first_n_modes', n_modes = 6), 
         ]  
-        self.reduc_config = None # or None
+        self.reduc_config = get_reduc_config('PCA', n_comps=5)
         self.feat_norm = None
 
     # 3: Hyperparameters and plots
