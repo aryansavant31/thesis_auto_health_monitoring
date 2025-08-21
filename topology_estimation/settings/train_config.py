@@ -24,7 +24,7 @@ class DecoderTrainConfig:
         self.n_edge_types = 1
 
         # dataset parameters
-        self.batch_size = 50
+        self.batch_size = 5
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1

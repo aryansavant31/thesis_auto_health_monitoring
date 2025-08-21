@@ -74,9 +74,9 @@ class TopologyEstimationTrainHelper:
         rel_loader_val : DataLoader
             DataLoader for the relation matrices of the validation data.
         """
-        self.rel_loader_train = self.rm.get_relation_matrix_loader(self.train_loader)
-        self.rel_loader_test = self.rm.get_relation_matrix_loader(self.test_loader)
-        self.rel_loader_val = self.rm.get_relation_matrix_loader(self.val_loader)
+        self.rel_loader_train = self.rm.get_relation_matrix_loader(self.train_loader, data_type='train')
+        self.rel_loader_test = self.rm.get_relation_matrix_loader(self.test_loader, data_type='test')
+        self.rel_loader_val = self.rm.get_relation_matrix_loader(self.val_loader, data_type='val')
 
     def get_encoder_params(self):
         """
