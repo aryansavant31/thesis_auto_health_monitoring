@@ -15,9 +15,9 @@ import time
 import numpy as np
 
 # local imports
-from utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
-from encoder import Encoder
-from decoder import Decoder
+from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+from .encoder import Encoder
+from .decoder import Decoder
 
 
 class NRI(LightningModule):

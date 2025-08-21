@@ -60,6 +60,8 @@ class Decoder(LightningModule):
         if self.recurremt_emb_type == 'gru':
             self.recurrent_emb_fn = GRU(self.n_dims,
                                         self.msg_out_size)
+        elif self.recurremt_emb_type == 'mlp':
+            self.mlp_emb_fn = nn.Linear(self.msg_out_size, self.msg_out_size)
         
         # Make MLP to predict mean of prediction
         self.mean_mlp = MLP(self.msg_out_size,
@@ -263,8 +265,12 @@ class Decoder(LightningModule):
         # agg_msgs has shape (batch_size, n_nodes, msg_out_size)
 
         # Recurrent embedding function
-        hidden = self.recurrent_emb_fn(inputs, agg_msgs, hidden)         #### h_tilde_j^t+1   
-
+        if self.recurremt_emb_type in ['gru']:
+            hidden = self.recurrent_emb_fn(inputs, agg_msgs, hidden)         #### h_tilde_j^t+1   
+        
+        elif self.recurremt_emb_type in ['mlp']:
+            hidden = self.mlp_emb_fn(agg_msgs)
+            
         # Predict mean delta of signal
         x_m = self.mean_mlp(hidden)  
         mean = self.mean_output_layer(x_m)       #### fout(h_tilde_j^t+1)

@@ -61,7 +61,7 @@ class RelationMatrixMaker:
         
         self.spf_config = spf_config
 
-    def get_relation_matrix_loader(self, data_loader: DataLoader):
+    def get_relation_matrix_loader(self, data_loader: DataLoader, data_type='custom'):
         rec_rel_list = []
         send_rel_list = []
         batch_size = data_loader.batch_size
@@ -78,7 +78,7 @@ class RelationMatrixMaker:
         rel_dataset = TensorDataset(rec_rel_all, send_rel_all)
         rel_loader = DataLoader(rel_dataset, batch_size=data_loader.batch_size, shuffle=False, num_workers=data_loader.num_workers)
 
-        self.print_loader_stats(rel_loader)
+        self.print_loader_stats(rel_loader, data_type)
         
         return rel_loader
 
@@ -138,11 +138,11 @@ class RelationMatrixMaker:
 
         return rec_rel, send_rel
     
-    def print_loader_stats(self, rel_loader):
+    def print_loader_stats(self, rel_loader, data_type='custom'):
         """
         Prints the statistics of the relation matrix loader.
         """
-        print("\nRelation Matrix Loader Statistics:")
+        print(f"\nRelation Matrix Loader Statistics for '{data_type.capitalize()}' dataset:")
 
         rel = next(iter(rel_loader))
 
