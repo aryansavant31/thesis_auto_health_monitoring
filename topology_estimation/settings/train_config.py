@@ -83,14 +83,14 @@ class DecoderTrainConfig:
         self.spf_feat_norm = None
 
     # 4: Hyperparameters and plots
-        self.hparams = self.get_hparams()
+        self.hyperparams = self.get_hyperparams()
 
 
-    def get_hparams(self):
+    def get_hyperparams(self):
         """
         Sets the hyperparameters for the decoder model.
         """
-        hparams = {
+        hyperparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
@@ -130,15 +130,15 @@ class DecoderTrainConfig:
             'feat_norm_spf': self.spf_feat_norm
         }
 
-        for key, value in hparams.items():
+        for key, value in hyperparams.items():
             if isinstance(value, list):
-                hparams[key] = ', '.join(map(str, value))
+                hyperparams[key] = ', '.join(map(str, value))
             elif isinstance(value, (int, float)):
-                hparams[key] = str(value)
+                hyperparams[key] = str(value)
             elif value is None:
-                hparams[key] = 'None'
+                hyperparams[key] = 'None'
 
-        return hparams
+        return hyperparams
 
 
 class NRITrainConfig:
@@ -318,13 +318,13 @@ class NRITrainConfig:
         self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         
     # 5: Hyperparameters and plots
-        self.hparams = self.get_hparams()
+        self.hyperparams = self.get_hyperparams()
 
-    def get_hparams(self):
+    def get_hyperparams(self):
         """
         Sets the hyperparameters for the NRI model.
         """
-        hparams = {
+        hyperparams = {
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
@@ -381,15 +381,15 @@ class NRITrainConfig:
             'feat_norm_spf': self.spf_feat_norm
         }
 
-        for key, value in hparams.items():
+        for key, value in hyperparams.items():
             if isinstance(value, list):
-                hparams[key] = ', '.join(map(str, value))
+                hyperparams[key] = ', '.join(map(str, value))
             elif isinstance(value, (int, float)):
-                hparams[key] = str(value)
+                hyperparams[key] = str(value)
             elif value is None:
-                hparams[key] = 'None'
+                hyperparams[key] = 'None'
 
-        return hparams
+        return hyperparams
         
 
 class ExtraSettings:

@@ -229,13 +229,13 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         """
         Initialize the NRI model with the given parameters.
         """
-        # prep hparams
-        self.tp_config.hparams.update({
+        # prep hyperparams
+        self.tp_config.hyperparams.update({
             'n_comps': str(int(enc_model_params['n_comps'])),
             'n_dims': str(int(dec_model_params['n_dims'])),
             'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1]))   
         })
-        nri_model = NRI(enc_model_params, dec_model_params, hparams=self.tp_config.hparams)
+        nri_model = NRI(enc_model_params, dec_model_params, hyperparams=self.tp_config.hyperparams)
         nri_model.set_run_params(enc_run_params, dec_run_params, train_data_stats, self.tp_config.temp, self.tp_config.is_hard)
 
         # print model info
@@ -304,16 +304,16 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         tester.test(model=trained_decoder_model, dataloaders=CombinedDataLoader(self.test_loader, self.rel_loader_test))
 
 
-    def _init_decoder_model(self, dec_model_params, dec_run_params, train_data_stats):
+    def _init_decoder_model(self, dec_model_params:dict, dec_run_params:dict, train_data_stats):
         """
         Initialize the Decoder model with the given parameters.
         """
-        # prep hparams
-        self.tp_config.hparams.update({
+        # prep hyperparams
+        dec_model_params['hyperparams'].update({
             'n_dims': str(int(dec_model_params['n_dims'])),
             'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1] ))  
         })
-        decoder_model = Decoder(**dec_model_params, hparams=self.tp_config.hparams)
+        decoder_model = Decoder(**dec_model_params)
         decoder_model.set_run_params(**dec_run_params, data_stats=train_data_stats)
 
         print("\nDecoder Model Initialized with the following configurations:")

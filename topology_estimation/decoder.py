@@ -29,7 +29,7 @@ class Decoder(LightningModule):
     def __init__(self, n_dims, 
                  msg_out_size, n_edge_types,
                  edge_mlp_config, recur_emb_type, out_mlp_config, do_prob, is_batch_norm,
-                 hparams=None):
+                 hyperparams:dict=None):
         super(Decoder, self).__init__()
         self.save_hyperparameters()  # This will log decoder_params
         
@@ -48,7 +48,7 @@ class Decoder(LightningModule):
         self.is_batch_norm = is_batch_norm
 
         # hyperparameters
-        self.hparams = hparams
+        self.hyperparams = hyperparams
         
         # Make MLPs for each edge type
         self.edge_mlp_fn = nn.ModuleList(MLP(2*self.msg_out_size, 
@@ -541,7 +541,7 @@ class Decoder(LightningModule):
         print(f"\nDecoder residuals: {loss.item():.4f}")
         print('\n' + 75*'-')
 
-        self.model_id = self.hparams.get('model_id', 'decoder')
+        self.model_id = self.hyperparams.get('model_id', 'decoder')
 
         # make decoder output plot
         self.decoder_output_plot(**self.decoder_plot_data_predict)
@@ -580,11 +580,11 @@ class Decoder(LightningModule):
         Called at the end of the test epoch. Updates the hyperparameters with test losses.
         """
         # Log model information
-        self.model_id = self.hparams.get('model_id', 'decoder')
+        self.model_id = self.hyperparams.get('model_id', 'decoder')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         # update hparams
-        self.hparams.update({
+        self.hyperparams.update({
             'test_loss': self.trainer.callback_metrics['test_loss'].item(),
         })
 
@@ -592,10 +592,10 @@ class Decoder(LightningModule):
         self.decoder_output_plot(**self.decoder_plot_data_test)
 
         # print stats after each epoch
-        print(f"\ntest_loss: {self.hparams['test_loss']:.4f}")
+        print(f"\ntest_loss: {self.hyperparams['test_loss']:.4f}")
         
         if self.logger:
-            self.logger.log_hyperparams(self.hparams, {})
+            self.logger.log_hyperparams(self.hyperparams, {})
             print(f"\nTest metrics and hyperparameters logged for tensorboard at {self.logger.log_dir}")
         else:
             print("\nTest metrics and hyperparameters not logged as logging is disabled.")
@@ -611,7 +611,7 @@ class Decoder(LightningModule):
         self.run_type = 'train'
 
         # update hparams
-        self.hparams.update({
+        self.hyperparams.update({
             'model_id': self.model_id,
             'training_time': training_time,
             'train_loss': self.train_losses['train_losses'][-1],
