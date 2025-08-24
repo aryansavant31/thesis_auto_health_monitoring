@@ -24,7 +24,7 @@ class DecoderTrainConfig:
         self.n_edge_types = 1
 
         # dataset parameters
-        self.batch_size = 5
+        self.batch_size = 50
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1
@@ -34,7 +34,7 @@ class DecoderTrainConfig:
         self.max_epochs = 5
         self.lr = 0.001
         self.optimizer = 'adam'
-        self.loss_type = 'nnl'
+        self.loss_type = 'nll'
 
     # 2: Decoder parameters
 
@@ -67,8 +67,8 @@ class DecoderTrainConfig:
         self.temp = 1.0       # temperature for Gumble Softmax
         self.is_hard = True      
 
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.dec_edge_mlp_config = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.dec_out_mlp_config = ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
 
     # 3: Sparsifier parameters
 
@@ -110,32 +110,32 @@ class DecoderTrainConfig:
             'n_edge_types': self.n_edge_types,
 
             # decoder parameters
-            'msg_out_size': self.msg_out_size,
-            'recur_emb_type': self.recur_emb_type,
-            'do_prob': self.do_prob,
-            'batch_norm': self.is_batch_norm,
-            'domain_dec': domain_dec_str,
-            'raw_data_norm_dec': self.dec_raw_data_norm,
-            'feats_dec': f"[{feat_dec_str}]",
-            'reduc_dec': reduc_dec_str,
-            'feat_norm_dec': self.dec_feat_norm,
-            'skip_first_edge': self.skip_first_edge_type,
-            'pred_steps': self.pred_steps,
-            'is_burn_in': self.is_burn_in,
-            'burn_in_steps': self.burn_in_steps,
-            'is_dynamic_graph': self.is_dynamic_graph,
-            'temp': self.temp,
-            'is_hard': self.is_hard,
-            'edge_mlp_config': f"{self.edge_mlp_config_dec}",
-            'out_mlp_config': f"{self.out_mlp_config_dec}",
+            'dec/msg_out_size': self.msg_out_size,
+            'dec/recur_emb_type': self.recur_emb_type,
+            'dec/do_prob': self.do_prob,
+            'dec/batch_norm': self.is_batch_norm,
+            'dec/domain': domain_dec_str,
+            'dec/raw_data_norm': self.dec_raw_data_norm,
+            'dec/feats': f"[{feat_dec_str}]",
+            'dec/reduc': reduc_dec_str,
+            'dec/feat_norm': self.dec_feat_norm,
+            'dec/skip_first_edge': self.skip_first_edge_type,
+            'dec/pred_steps': self.pred_steps,
+            'dec/is_burn_in': self.is_burn_in,
+            'dec/burn_in_steps': self.burn_in_steps,
+            'dec/is_dynamic_graph': self.is_dynamic_graph,
+            'enc/temp': self.temp,
+            'enc/is_hard': self.is_hard,
+            'dec/edge_mlp_config': f"{self.edge_mlp_config}",
+            'dec/out_mlp_config': f"{self.out_mlp_config}",
 
             # sparsifier parameters
-            'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            'spf_domain': spf_domain_str,
-            'spf_raw_data_norm': self.spf_raw_data_norm,
-            'spf_feats': f"[{spf_feat_str}]",
-            'spf_reduc': spf_reduc_str,
-            'spf_feat_norm': self.spf_feat_norm
+            'spf/config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            'spf/domain': spf_domain_str,
+            'spf/raw_data_norm': self.spf_raw_data_norm,
+            'spf/feats': f"[{spf_feat_str}]",
+            'spf/reduc': spf_reduc_str,
+            'spf/feat_norm': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():
@@ -219,14 +219,14 @@ class NRITrainConfig:
         self.continue_training = False
         self.is_log = True
         
-        self.n_edge_types = 2
+        self.n_edge_types = 1
 
         # dataset parameters
         self.batch_size = 50
         self.train_rt = 0.8
         self.test_rt = 0.1
         self.val_rt = 0.1
-        self.num_workers = 10
+        self.num_workers = 1
 
         # optimization parameters
         self.max_epochs = 5
@@ -237,7 +237,7 @@ class NRITrainConfig:
         self.prior = None
         self.add_const_kld = True  # this needs to be True, adds a constant term to the KL divergence
 
-        self.loss_type_dec = 'nnl'
+        self.loss_type_dec = 'nll'
 
     # 2: Encoder parameters
 
@@ -255,11 +255,11 @@ class NRITrainConfig:
             'cnn': 'default'
             }
 
-        self.do_prob_enc = {
+        self.enc_do_prob = {
             'mlp': 0.0,
             'cnn': 0.0
             }
-        self.is_batch_norm_enc = {
+        self.enc_is_batch_norm = {
             'mlp': True,
             'cnn': False
             }
@@ -278,8 +278,8 @@ class NRITrainConfig:
         self.is_hard = True   
 
         self.pipeline = ext.get_enc_pipeline(self.pipeline_type)  
-        self.edge_emb_configs_enc = ext.get_enc_emb_config(config_type=self.edge_emb_config)  
-        self.node_emb_configs_enc = ext.get_enc_emb_config(config_type=self.node_emb_config)
+        self.enc_edge_emb_configs = ext.get_enc_emb_config(config_type=self.edge_emb_config)  
+        self.enc_node_emb_configs = ext.get_enc_emb_config(config_type=self.node_emb_config)
 
     # 3: Decoder parameters
 
@@ -289,8 +289,8 @@ class NRITrainConfig:
         self.edge_mlp_config = {'mlp': 'default'}
         self.out_mlp_config = {'mlp': 'default'}
 
-        self.do_prob_dec = 0
-        self.is_batch_norm_dec = True
+        self.dec_do_prob = 0
+        self.dec_is_batch_norm = True
 
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
@@ -310,12 +310,12 @@ class NRITrainConfig:
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
 
-        self.edge_mlp_config_dec = ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
-        self.out_mlp_config_dec = ext.get_dec_emb_config(self.out_mlp_config, self.msg_out_size)['mlp']
+        self.dec_edge_mlp_config = ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
+        self.dec_out_mlp_config = ext.get_dec_emb_config(self.out_mlp_config, self.msg_out_size)['mlp']
 
     # 4: Sparsifier parameters
 
-        self.spf_config = get_spf_config('no_spf', is_expert=True)
+        self.spf_config = get_spf_config('vanilla', is_expert=True)
         
         self.spf_domain_config   = get_domain_config('time')
         self.spf_raw_data_norm = None 
@@ -352,53 +352,53 @@ class NRITrainConfig:
             'max_epochs': self.max_epochs,
             'lr': self.lr,
             'optimizer': self.optimizer,
-            'loss_type_enc': self.loss_type_enc,
-            'loss_type_dec': self.loss_type_dec,
+            'enc/loss_type': self.loss_type_enc,
+            'dec/loss_type': self.loss_type_dec,
             'n_edge_types': self.n_edge_types,
-            'prior': self.prior,
-            'add_const_kld': self.add_const_kld,
+            'enc/prior': self.prior,
+            'enc/add_const_kld': self.add_const_kld,
 
             # encoder parameters
-            'enc_pipeline_type': self.pipeline_type,
-            'enc_is_residual_connection': self.is_residual_connection,
-            'enc_do_prob': f"{self.do_prob_enc}",
-            'enc_is_batch_norm': f"{self.is_batch_norm_enc}",
-            'enc_domain': domain_enc_str,
-            'enc_raw_data_norm': self.enc_raw_data_norm,
-            'enc_feats': f"[{feat_enc_str}]",
-            'enc_reduc': reduc_enc_str,
-            'enc_feat_norm': self.enc_feat_norm,
-            'enc_edge_emb_configs_enc': f"{self.edge_emb_config}",
-            'enc_node_emb_configs_enc': f"{self.node_emb_config}",
-            'enc_temp': self.temp,
-            'enc_is_hard': self.is_hard,
-            'enc_attention_output_size': self.attention_output_size,
+            'enc/pipeline_type': self.pipeline_type,
+            'enc/is_residual_connection': self.is_residual_connection,
+            'enc/do_prob': f"{self.enc_do_prob}",
+            'enc/is_batch_norm': f"{self.enc_is_batch_norm}",
+            'enc/domain': domain_enc_str,
+            'enc/raw_data_norm': self.enc_raw_data_norm,
+            'enc/feats': f"[{feat_enc_str}]",
+            'enc/reduc': reduc_enc_str,
+            'enc/feat_norm': self.enc_feat_norm,
+            'enc/edge_emb_configs_enc': f"{self.edge_emb_config}",
+            'enc/node_emb_configs_enc': f"{self.node_emb_config}",
+            'enc/temp': self.temp,
+            'enc/is_hard': self.is_hard,
+            'enc/attention_output_size': self.attention_output_size,
 
             # decoder parameters
-            'dec_msg_out_size': self.msg_out_size,
-            'dec_do_prob': self.do_prob_dec,
-            'dec_is_batch_norm': self.is_batch_norm_dec,
-            'dec_recur_emb_type': self.recur_emb_type,
-            'dec_domain': domain_dec_str,
-            'dec_raw_data_norm': self.dec_raw_data_norm,
-            'dec_feats': f"[{feat_dec_str}]",
-            'dec_reduc': reduc_dec_str,
-            'dec_feat_norm': self.dec_feat_norm,
-            'dec_edge_mlp_config': f"{self.edge_mlp_config}",
-            'dec_out_mlp_config': f"{self.out_mlp_config}",
-            'dec_dec_skip_first_edge': self.skip_first_edge_type,
-            'dec_pred_steps': self.pred_steps,
-            'dec_is_burn_in': self.is_burn_in,
-            'dec_burn_in_steps': self.burn_in_steps,
-            'dec_is_dynamic_graph': self.is_dynamic_graph,
+            'dec/msg_out_size': self.msg_out_size,
+            'dec/do_prob': self.dec_do_prob,
+            'dec/is_batch_norm': self.dec_is_batch_norm,
+            'dec/recur_emb_type': self.recur_emb_type,
+            'dec/domain': domain_dec_str,
+            'dec/raw_data_norm': self.dec_raw_data_norm,
+            'dec/feats': f"[{feat_dec_str}]",
+            'dec/reduc': reduc_dec_str,
+            'dec/feat_norm': self.dec_feat_norm,
+            'dec/edge_mlp_config': f"{self.edge_mlp_config}",
+            'dec/out_mlp_config': f"{self.out_mlp_config}",
+            'dec/dec_skip_first_edge': self.skip_first_edge_type,
+            'dec/pred_steps': self.pred_steps,
+            'dec/is_burn_in': self.is_burn_in,
+            'dec/burn_in_steps': self.burn_in_steps,
+            'dec/is_dynamic_graph': self.is_dynamic_graph,
 
             # sparsifier parameters
-            'spf_config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            'spf_domain': spf_domain_str,
-            'spf_raw_data_norm': self.spf_raw_data_norm,
-            'spf_feats': f"[{spf_feat_str}]",
-            'spf_reduc': spf_reduc_str,
-            'spf_feat_norm': self.spf_feat_norm
+            'spf/config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            'spf/domain': spf_domain_str,
+            'spf/raw_data_norm': self.spf_raw_data_norm,
+            'spf/feats': f"[{spf_feat_str}]",
+            'spf/reduc': spf_reduc_str,
+            'spf/feat_norm': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():

@@ -34,10 +34,10 @@ class MessagePassingLayers():
                 - If prev_emb_fn_type == 'mlp': (batch_size, n_nodes, n_hid_out)
                 - If prev_emb_fn_type == 'cnn': (batch_size * n_nodes, n_chn_out)
 
-        rec_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
             Receiver matrix, used to get node embeddings on the receiving end of edges.
 
-        send_rel : torch.Tensor, shape (batch_size, n_edges, n_nodes)
+        send_rel : torch.Tensor, shape (n_edges, n_nodes)
             Sender matrix, used to get node embeddings on the sending end of edges.
 
         pairwise_op : str
@@ -65,8 +65,8 @@ class MessagePassingLayers():
         # reshape input (for both 1st time and subsequent times (cnn or mlp output))
         node_emb = node_emb.view(batch_size, n_nodes, -1)
 
-        receiver_emds = torch.bmm(rec_rel, node_emb)
-        sender_emds = torch.bmm(send_rel, node_emb)
+        receiver_emds = torch.matmul(rec_rel, node_emb)
+        sender_emds = torch.matmul(send_rel, node_emb)
 
         # optimize receiver and sender emd shape for next edge emb type
         receiver_emds, sender_emds = self.optimize_shape_for_pairwise_op(
@@ -112,11 +112,13 @@ class MessagePassingLayers():
 
         """
         if agg_type == 'sum':
-            node_feature = torch.bmm(rel_rec.transpose(1, 2), edge_emb)
+            node_feature = torch.matmul(rel_rec.t(), edge_emb)
         elif agg_type == 'mean':
-            n_edges_per_node = rel_rec.sum(dim=1, keepdim=True).transpose(1, 2) # shape (batch_size, n_nodes, 1)
-            edge_feature_sum = torch.bmm(rel_rec.transpose(1, 2), edge_emb) # shape (batch_size, n_nodes, n_features)   
-            node_feature = edge_feature_sum / n_edges_per_node
+            node_feature = torch.matmul(rel_rec.t(), edge_emb)
+            n_edges_per_node = torch.sum(rel_rec, dim=0, keepdim=True).t() # shape (n_nodes, 1)
+            node_feature = node_feature / torch.clamp(n_edges_per_node, min=1)
+            # torch.clamp is used to avoid division by zero if there are nodes with no incoming edges
+            
         # elif agg_type == 'weighted_sum':  
 
         #     alpha = self.get_attention_weights(edge_emb)
@@ -180,9 +182,9 @@ class MessagePassingLayers():
         """
         if rank == 1: # this rank differntiation is only requried b/c of CNN's dim
             if emd_fn_type == 'mlp':
-                x = x.view(batch_size, n_nodes, self.n_components * self.n_dims)
+                x = x.view(batch_size, n_nodes, self.n_comps * self.n_dims)
             elif emd_fn_type == 'cnn':
-                x = x.view(batch_size * n_nodes, self.n_dims, self.n_components)
+                x = x.view(batch_size * n_nodes, self.n_dims, self.n_comps)
         elif rank == 2:
             if emd_fn_type == 'mlp':
                 x = x.view(batch_size, n_nodes, x.size(-1))
@@ -277,43 +279,81 @@ class MessagePassingLayers():
 
 
 class Encoder(LightningModule, MessagePassingLayers):
-    def __init__(self, n_comps, n_dims, 
-                 pipeline, n_edge_types, is_residual_connection, 
-                 edge_emb_configs, node_emb_configs, do_prob, is_batch_norm, attention_output_size,
-                 hyperparams=None):
+    def __init__(self):
         
-        if n_comps and n_dims is not None:
-            super(Encoder, self).__init__()
-            MessagePassingLayers.__init__(self)
+        super(Encoder, self).__init__()
+        MessagePassingLayers.__init__(self)
 
-            # input parameters
-            self.n_components = n_comps
-            self.n_dims = n_dims
+        # model parameters
+        self.n_comps = None  # input parameters....
+        self.n_dims = None
+        self.pipeline = None  # pipeline parameters....
+        self.n_edge_types = None
+        self.is_residual_connection = None
+        self.edge_emb_configs = None   # embedding configurations....
+        self.node_emb_configs = None
+        self.do_prob = None
+        self.is_batch_norm = None
+        self.attention_output_size = None  # attention layer parameters
 
-            # pipeline parameters
-            self.pipeline = pipeline
-            self.n_edge_types = n_edge_types
-            self.is_residual_connection = is_residual_connection
+        # input processors params
+        self.domain_config = None
+        self.raw_data_norm = None
+        self.feat_norm = None
+        self.feat_configs = None
+        self.reduc_config = None
 
-            # embedding configurations
-            self.edge_emb_configs = edge_emb_configs
-            self.node_emb_configs = node_emb_configs
-            self.dropout_prob = do_prob
-            self.is_batch_norm = is_batch_norm
 
-            # attention parameters
-            self.attention_output_size = attention_output_size
+    def set_hyperparams(self, hyperparams):
+        self.hyperparams = hyperparams
 
-            # hyperparameters
-            self.hyperparams = hyperparams
+    def set_input_graph(self, rec_rel, send_rel):
+        """
+        Set the relationship matrices defining the input graph structure.
+        
+        Parameters
+        ----------
+        rec_rel: torch.Tensor, shape (n_edges, n_nodes)
+            Reciever matrix
+            
+        send_rel: torch.Tensor, shape (n_edges, n_nodes)
+            Sender matrix
+        """
+        self.rec_rel = rec_rel
+        self.send_rel = send_rel
 
-            self.init_embedding_functions()
-            self.init_attention_layers()
+ 
+    def set_run_params(self, data_config, data_stats):
+        """
+        Set the run parameters for the encoder model
 
-            # define output layer
-            final_emd_type = self.pipeline[-1][1]
-            final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
-            self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
+        Parameters
+        ----------
+        domain_config : str
+            Domain configuration of the data (e.g., 'time', 'frequency')
+        """
+        self.data_stats = data_stats
+        self.data_config = data_config
+        self.domain = self.domain_config['type']
+        self.feat_names = self._get_feature_names() if self.feat_configs else None
+
+    def _get_feature_names(self):
+        """
+        Get the names of the features that will be used in the enocder model.
+        """
+        # non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
+        rank_feats = next((feat_config['feat_list'] for feat_config in self.feat_configs if feat_config['type'] == 'from_ranks'), None)
+
+        return rank_feats
+
+    def build_model(self):
+        self.init_embedding_functions()
+        self.init_attention_layers()
+
+        # define output layer
+        final_emd_type = self.pipeline[-1][1]
+        final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
+        self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
 
 
     def init_attention_layers(self):
@@ -352,7 +392,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first edge embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        edge_main_input_size = self.n_components * self.n_dims
+                        edge_main_input_size = self.n_comps * self.n_dims
                     elif layer[1] == 'cnn':
                         edge_main_input_size = self.n_dims
                 else:
@@ -396,7 +436,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 if layer[1] == 'mlp':
                     self.emb_fn_dict[layer[0].replace(".", "")] = MLP(edge_emd_input_size, 
                                                     self.edge_emb_configs['mlp'],
-                                                    do_prob=self.dropout_prob['mlp'],
+                                                    do_prob=self.do_prob['mlp'],
                                                     is_batch_norm=self.is_batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
@@ -412,7 +452,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                 # Check if it is the first node embedding function
                 if emd_fn_rank == 1:
                     if layer[1] == 'mlp':
-                        node_emd_input_size = self.n_components * self.n_dims
+                        node_emd_input_size = self.n_comps * self.n_dims
                     elif layer[1] == 'cnn':
                         node_emd_input_size = self.n_dims
 
@@ -442,110 +482,74 @@ class Encoder(LightningModule, MessagePassingLayers):
                 if layer[1] == 'mlp':
                     self.emb_fn_dict[layer[0].replace(".", "")] = MLP(node_emd_input_size, 
                                                     self.node_emb_configs['mlp'],
-                                                    do_prob=self.dropout_prob['mlp'],
+                                                    do_prob=self.do_prob['mlp'],
                                                     is_batch_norm=self.is_batch_norm['mlp'],
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN'
 
-    def set_input_graph(self, rec_rel, send_rel):
-        """
-        Set the relationship matrices defining the input graph structure.
-        
-        Parameters
-        ----------
-        rec_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
-            Reciever matrix
-            
-        send_rel: torch.Tensor, shape (batch_size, n_edges, n_nodes)
-            Sender matrix
-        """
-        self.rec_rel = rec_rel
-        self.send_rel = send_rel
-
- 
-    def set_run_params(self, data_config, data_stats, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
-        """
-        Set the run parameters for the encoder model
-
-        Parameters
-        ----------
-        domain_config : str
-            Domain configuration of the data (e.g., 'time', 'frequency')
-        """
-        self._data_config = data_config
-        self._domain_config = domain_config
-        self._raw_data_norm = raw_data_norm
-        self._feat_norm = feat_norm
-        self._feat_configs = feat_configs
-        self._reduc_config = reduc_config
-
-        self._domain = domain_config['type']
-        self._feat_names = self._get_feature_names() if self._feat_configs else None
-
-        self.data_stats = data_stats
-
-    def _get_feature_names(self):
-        """
-        Get the names of the features that will be used in the enocder model.
-        """
-        non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
-        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
-
-        return non_rank_feats + rank_feats
     
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for encoder model...") if is_verbose else None
 
-        self.domain_transformer = DomainTransformer(domain_config=self._domain_config, data_config=self._data_config)
-        if self._domain == 'time':
-            print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None
-        elif self._domain == 'freq':
-            print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None
+        self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self.data_config)
+        if self.domain == 'time':
+            print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None 
+        elif self.domain == 'freq':
+            print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None 
 
-        # initialize data normalizers
-        if self._raw_data_norm:
-            self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats)
-            print(f"\n>> Raw data normalizer initialized with '{self._raw_data_norm}' normalization") if is_verbose else None
+        # initialize raw data normalizers
+        if self.raw_data_norm:
+            if not self.feat_configs or self.domain == 'time': # have raw data normalization for both doamin if no feature extraction. But if feature extraction, only allow time domain
+                self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm, data_stats=self.data_stats)
+                print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None 
+            else:
+                self.raw_data_normalizer = None
+                print(f"\n>> Raw data normalization skipped due to data domain being '{self.domain}' ({self.domain} data cannot be normalized before feature extraction.") if is_verbose else None
         else:
             self.raw_data_normalizer = None
-            print("\n>> No raw data normalization is applied") if is_verbose else None
+            print("\n>> No raw data normalization is applied") if is_verbose else None 
 
-        if self._feat_norm:
-            self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm)
-            print(f"\n>> Feature normalizer initialized with '{self._feat_norm}' normalization") if is_verbose else None
+        # initialize feature normalizer
+        if self.feat_norm:
+            if self.feat_configs:
+                self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
+                print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization") if is_verbose else None
+            else:
+                self.feat_normalizer = None
+                print(f"\n>> Feature normalization skipped as no feature extraction is applied.") if is_verbose else None 
         else:
             self.feat_normalizer = None
-            print("\n>> No feature normalization is applied") if is_verbose else None
+            print("\n>> No feature normalization is applied") if is_verbose else None 
 
         # define feature objects
-        if self._domain == 'time':
-            if self._feat_configs:
-                self.time_fex = TimeFeatureExtractor(self._feat_configs)
-                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+        if self.domain == 'time':
+            if self.feat_configs:
+                self.time_fex = TimeFeatureExtractor(self.feat_configs)
+                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self.feat_configs])}") if is_verbose else None 
             else:
                 self.time_fex = None
-                print("\n>> No time feature extraction is applied") if is_verbose else None
+                print("\n>> No time feature extraction is applied") if is_verbose else None 
 
-        elif self._domain == 'freq':
-            if self._feat_configs:
-                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs, data_config=self._data_config)
-                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+        elif self.domain == 'freq':
+            if self.feat_configs:
+                self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
+                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self.feat_configs])}") if is_verbose else None 
             else:
                 self.freq_fex = None
-                print("\n>> No frequency feature extraction is applied") if is_verbose else None
+                print("\n>> No frequency feature extraction is applied") if is_verbose else None 
         
         # define feature reducer
-        if self._reduc_config:
-            self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config)
-            print(f"\n>> Feature reducer initialized with '{self._reduc_config['type']}' reduction") if is_verbose else None
+        if self.reduc_config:
+            self.feat_reducer = FeatureReducer(reduc_config=self.reduc_config)
+            print(f"\n>> Feature reducer initialized with '{self.reduc_config['type']}' reduction") if is_verbose else None 
         else:
             self.feat_reducer = None
-            print("\n>> No feature reduction is applied") if is_verbose else None
+            print("\n>> No feature reduction is applied") if is_verbose else None 
 
-        print('\n' + 75*'-') if is_verbose else None
+        print('\n' + 75*'-') if is_verbose else None 
 
-    def process_input_data(self, time_data, batch_idx=0, current_epoch=0, get_data_shape=False):
+    def process_input_data(self, time_data, get_data_shape=False):
         """
         Parameters
         ----------
@@ -555,40 +559,36 @@ class Encoder(LightningModule, MessagePassingLayers):
         Returns
         -------
         data: torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Processed node data ready for input to the encoder model
+
+        - *_If **get_data_shape** is True_*
+        n_comps: int
+            Number of components in the processed data 
+        n_dims: int
+            Number of dimensions in the processed data
         """
-        if batch_idx == 0 and current_epoch == 0:
-            self.init_input_processors(is_verbose = not get_data_shape)
 
         # domain transform data (mandatory)
-        if self._domain == 'time':
+        if self.domain == 'time':
             data = self.domain_transformer.transform(time_data)
-        elif self._domain == 'freq':
+        elif self.domain == 'freq':
             data, freq_bins = self.domain_transformer.transform(time_data)
 
         # normalize raw data (optional)
         if self.raw_data_normalizer:
-            if self._domain == 'time':
-                data = self.raw_data_normalizer.normalize(data)
-            elif self._domain == 'freq':
-                print("\nFrequency data cannot be normalized before feature extraction. Hence skipping raw data normalization (for all iterations).") if not get_data_shape and current_epoch == 0 and batch_idx == 0 else None
+            data = self.raw_data_normalizer.normalize(data)
 
         # extract features from data (optional)
-        is_fex = False
-        if self._domain == 'time':
+        if self.domain == 'time':
             if self.time_fex:
                 data = self.time_fex.extract(data)
-                is_fex = True
-        elif self._domain == 'freq':
+        elif self.domain == 'freq':
             if self.freq_fex:
                 data = self.freq_fex.extract(data, freq_bins)
-                is_fex = True
 
         # normalize features (optional : if feat_norm is provided)
         if self.feat_normalizer:
-            if is_fex:
-                data = self.feat_normalizer.normalize(data)
-            else:
-                print("\nNo features extracted, so feature normalization is skipped (for all iterations).") if not get_data_shape and current_epoch == 0 and batch_idx == 0 else None
+            data = self.feat_normalizer.normalize(data)
 
         # reduce features (optional : if reduc_config is provided)
         if self.feat_reducer:
@@ -601,7 +601,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         return data
 
-    def forward(self, data, batch_idx, current_epoch=0):
+    def forward(self, data):
         """
         Forward pass through the encoder pipeline to compute edge logits.
 
@@ -617,15 +617,18 @@ class Encoder(LightningModule, MessagePassingLayers):
         Returns
         -------
         edge_matrix: torch.Tensor, shape (batch_size, n_edges, n_edge_types) 
-
         """
         emd_fn_rank = 0   # used to find the first embedding function (for node or edge)
         batch_size = data.size(0)
         n_nodes = data.size(1)
-        n_edges = self.rec_rel.size(1)
+        n_edges = self.rec_rel.size(0)
+
+        # put rec_rel and send_rel to device of data
+        self.rec_rel = self.rec_rel.to(data.device)
+        self.send_rel = self.send_rel.to(data.device)
 
         # process the input data
-        x = self.process_input_data(data, batch_idx=batch_idx, current_epoch=current_epoch)
+        x = self.process_input_data(data)
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]

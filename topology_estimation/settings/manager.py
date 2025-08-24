@@ -52,11 +52,12 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(base_path, 'nri',)  # add framework type
 
         # add num of edge types and node types to path
-        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
+        self.group_type = f"grp={self.data_config.signal_types['node_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type)
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}" , f"(E={self.pipeline_type}_D={self.recur_emb_type})_edge_est_{self.n_edge_types}.{self.model_num}")
+        self.model_name = f"({self.data_config.signal_types['node_group_name']})-(E={self.pipeline_type}_D={self.recur_emb_type})_edge_est_{self.n_edge_types}"
+        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}", f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -66,7 +67,7 @@ class NRITrainManager(NRITrainConfig):
 
         # add datastats to path
         signal_types_str = ', '.join(
-            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types.items()
+            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
@@ -120,13 +121,13 @@ class NRITrainManager(NRITrainConfig):
         Removes the model from the log path.
         """
         if os.path.exists(self.train_log_path):
-            user_input = input(f"Are you sure you want to remove the 'edge_estimator_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
+            user_input = input(f"Are you sure you want to remove the '{self.model_name}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.train_log_path)
-                print(f"Overwrote 'edge_estimator_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}.")
+                print(f"Overwrote '{self.model_name}.{self.model_num}' from the log path {self.train_log_path}.")
 
             else:
-                print(f"Operation cancelled. edge_estimator_{self.n_edge_types}.{self.model_num} still remains.")
+                print(f"Operation cancelled. {self.model_name}.{self.model_num} still remains.")
                 sys.exit()  # Exit the program gracefully
 
     
@@ -134,17 +135,17 @@ class NRITrainManager(NRITrainConfig):
         parent_dir = os.path.dirname(self.train_log_path)
 
         # List all folders in parent_dir that match 'edge_estimator_<number>'
-        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'^edge_estimator_{self.n_edge_types}\.\d+$', f)]
+        #folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
+        model_folders = os.listdir(parent_dir)
 
         if model_folders:
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1].split('.')[-1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f'edge_estimator_{self.n_edge_types}.{self.model_num}'
+            new_model = f"{self.model_name}.{self.model_num}"
             print(f"Next edge estimator folder will be: {new_model}")
         else:
-            new_model = f'edge_estimator_{self.n_edge_types}.1'  # If no v folders exist
+            new_model = f"{self.model_name}.1"  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
@@ -159,7 +160,7 @@ class NRITrainManager(NRITrainConfig):
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
         
-        model_path = os.path.join(self.train_log_path, f'edge_estimator_{self.n_edge_types}.{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'{self.model_name}.{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -177,13 +178,13 @@ class NRITrainManager(NRITrainConfig):
         """
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
-                print(f"\nContinuing training from 'edge_estimator_{self.n_edge_types}.{self.model_num}' in the log path '{self.train_log_path}'.")
+                print(f"\nContinuing training from '{self.model_name}.{self.model_num}' in the log path '{self.train_log_path}'.")
                 
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
         else:
             if os.path.isdir(self.train_log_path):
-                print(f"\n'edge_estimator_{self.n_edge_types}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
+                print(f"\n'{self.model_name}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
                 user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
                 if user_input.lower() == 'a':
@@ -220,11 +221,12 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(base_path, 'decoder',)  # add framework type
 
         # add num of edge types and node types to path
-        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.node_type)
+        self.group_type = f"grp={self.data_config.signal_types['node_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type)
 
         # get train log path
-        self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"({self.recur_emb_type})_decoder_{self.n_edge_types}.{self.model_num}")
+        self.model_name = f"({self.data_config.signal_types['node_group_name']})-({self.recur_emb_type})_decoder_{self.n_edge_types}"
+        self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -234,7 +236,7 @@ class DecoderTrainManager(DecoderTrainConfig):
 
         # add datastats to path
         signal_types_str = ', '.join(
-            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types.items()
+            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
@@ -285,13 +287,13 @@ class DecoderTrainManager(DecoderTrainConfig):
         Removes the model from the log path.
         """
         if os.path.exists(self.train_log_path):
-            user_input = input(f"Are you sure you want to remove the 'decoder_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
+            user_input = input(f"Are you sure you want to remove the '{self.model_name}.{self.model_num}' from the log path {self.train_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.train_log_path)
-                print(f"Overwrote 'decoder_{self.n_edge_types}.{self.model_num}' from the log path {self.train_log_path}.")
+                print(f"Overwrote '{self.model_name}.{self.model_num}' from the log path {self.train_log_path}.")
 
             else:
-                print(f"Operation cancelled. decoder_{self.n_edge_types}.{self.model_num} still remains.")
+                print(f"Operation cancelled. {self.model_name}.{self.model_num} still remains.")
                 sys.exit()  # Exit the program gracefully
 
     
@@ -299,16 +301,16 @@ class DecoderTrainManager(DecoderTrainConfig):
         parent_dir = os.path.dirname(self.train_log_path)
 
         # List all folders in parent_dir that match 'decoder_<number>'
-        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'^decoder_{self.n_edge_types}\.\d+$', f)]
+        model_folders = os.listdir(parent_dir)
 
         if model_folders:
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f'decoder_{self.n_edge_types}.{self.model_num}'
+            new_model = f'{self.model_name}.{self.model_num}'
+            print(f"Next decoder folder will be: {new_model}")
         else:
-            new_model = f'decoder_{self.n_edge_types}.1'  # If no v folders exist
+            new_model = f'{self.model_name}.1'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
@@ -323,7 +325,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
         
-        model_path = os.path.join(self.train_log_path, f'decoder_{self.n_edge_types}.{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'{self.model_name}.{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -341,13 +343,13 @@ class DecoderTrainManager(DecoderTrainConfig):
         """
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
-                print(f"\nContinuing training from 'decoder_{self.n_edge_types}.{self.model_num}' in the log path '{self.train_log_path}'.")
+                print(f"\nContinuing training from '{self.model_name}.{self.model_num}' in the log path '{self.train_log_path}'.")
                 
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
         else:
             if os.path.isdir(self.train_log_path):
-                print(f"\n'decoder_{self.n_edge_types}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
+                print(f"\n'{self.model_name}.{self.model_num}' already exists in the log path '{self.train_log_path}'.")
                 user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
                 if user_input.lower() == 'a':
@@ -524,7 +526,7 @@ class SelectTopologyEstimatorModel:
         base = self.logs_dir / self.application / self.machine / self.scenario / self.framework / self.run_type 
         os.makedirs(base, exist_ok=True)
 
-        txt_files = list(base.rglob(f"{self.file_name}_*.txt"))
+        txt_files = list(base.rglob(f"*{self.file_name}_*.txt"))
         self.version_txt_files = txt_files
 
         path_map = {}
@@ -609,7 +611,7 @@ class SelectTopologyEstimatorModel:
             if is_no_sparsif:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<node_types>",
+                    1: "<node_group>",
                     2: "<ds_type>",
                     3: "<ds_subtype>",
                     4: "<model>",
@@ -623,7 +625,7 @@ class SelectTopologyEstimatorModel:
             else:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<node_types>",
+                    1: "<node_group>",
                     2: "<ds_type>",
                     3: "<ds_subtype>",
                     4: "<model>",
@@ -639,7 +641,7 @@ class SelectTopologyEstimatorModel:
             if is_no_sparsif:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<node_types>",
+                    1: "<node_group>",
                     2: "<trained_model>",
                     3: "<ds_type>",
                     4: "<ds_subtype>",
@@ -650,7 +652,7 @@ class SelectTopologyEstimatorModel:
             else:
                 label_map = {
                     0: "<n_edge_types>",
-                    1: "<node_types>",
+                    1: "<node_group>",
                     2: "<trained_model>",
                     3: "<ds_type>",
                     4: "<ds_subtype>",

@@ -42,7 +42,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         n_dim : int
             The number of dimensions in each component in the dataset
         """
-        self.node_type = f"({'+'.join(list(self.data_config.signal_types.keys()))})"
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types['group'].keys()))})"
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -63,7 +63,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
 
         # add datastats to path
         signal_types_str = ', '.join(
-            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types.items()
+            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
         model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 

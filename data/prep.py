@@ -177,9 +177,9 @@ class DataPreprocessor:
         print("\n\nNode and signal types are set as follows:\n")
         print("(<node_num>) <node_type> : [<signal_types>]")
         print(45*'-')
-        for node_num, (node, signals) in enumerate(self.data_config.signal_types.items()):
+        for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
             print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
-
+        print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
@@ -230,9 +230,16 @@ class DataPreprocessor:
 
         # get number of OK and NOK samples
         des_label_counts, n_des = self._get_label_counts(custom_loader)
-        rem_label_counts, n_rem = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
 
-        print(f"\n\nTotal samples: {total_samples}, \nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        if remainder_samples > 0:
+            rem_label_counts, _ = self._get_label_counts(remain_loader)
+        else:
+            rem_label_counts = {0: 0, 1: 0, -1: 0}
+
+        print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
+        print(45*'-')
+        print(f"Total samples: {total_samples}", f"\nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        
         # print loader statistics
         self.print_loader_stats(custom_loader, "custom")
 
@@ -317,18 +324,27 @@ class DataPreprocessor:
 
         # create dataloaders
         
-        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data_loader, drop_last=True, num_workers=num_workers)
-        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers)
-        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers) if val_set is not None else None
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data_loader, drop_last=True, num_workers=num_workers, persistent_workers=True)
+        test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers, persistent_workers=True)
+        val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers, persistent_workers=True) if val_set is not None else None
         remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remainder_samples > 0 else None
 
         # get number of OK and NOK samples in each set
         train_label_counts, n_train = self._get_label_counts(train_loader)
         test_label_counts, n_test = self._get_label_counts(test_loader)
-        val_label_counts, n_val = self._get_label_counts(val_loader) if val_loader is not None else {0: 0, 1: 0, -1: 0}, 0
-        rem_label_counts, _ = self._get_label_counts(remain_loader) if remainder_samples > 0 else {0: 0, 1: 0, -1: 0}, 0
+        if val_loader is not None:
+            val_label_counts, n_val = self._get_label_counts(val_loader) 
+        else: 
+            val_label_counts, n_val = {0: 0, 1: 0, -1: 0}, 0
 
-        print(f"\n\nTotal samples: {total_samples}, \nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        if remainder_samples > 0:
+            rem_label_counts, _ = self._get_label_counts(remain_loader)
+        else:
+            rem_label_counts = {0: 0, 1: 0, -1: 0}
+
+        print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
+        print(45*'-')
+        print(f"Total samples: {total_samples}", f"\nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # print loader statistics
         self.print_loader_stats(train_loader, "train")
@@ -343,10 +359,11 @@ class DataPreprocessor:
     def print_loader_stats(self, loader, type):
         dataiter = iter(loader)
         data = next(dataiter)
+        shape_str = " => (batch_size, n_nodes, n_timesteps, n_dims)" if type in ['train', 'custom'] else ""
 
         print(f"\n{type}_data_loader statistics:")
         print(f"Number of batches: {len(loader)}")
-        print(data[0].shape)
+        print(data[0].shape, f"{shape_str}")
 
     def _make_tp_dataset(self, x_node, y_edge, y_node, y_rep):
         """

@@ -53,18 +53,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'MSD'
+        self.machine_type = 'M004'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = MSDGroupMaker().m004_all
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 2000
-        self.stride             = 2000
+        self.window_length      = 100
+        self.stride             = 100
 
         self.view = DatasetViewer(self)
 
@@ -78,7 +78,7 @@ class DataConfig:
     def set_train_dataset(self):
         self.healthy_configs   = {
             'series_tp_(fs=1000)': [get_augment_config('OG')],
-            'series_tp_(fs=2000)': [get_augment_config('OG')],
+            # 'series_tp_(fs=2000)': [get_augment_config('OG')],
         }
         
         self.unhealthy_configs = {
@@ -152,7 +152,7 @@ class DataConfig:
                 edge_ds_paths[ds_subtype] = edge_hdf5_files
                 
             # Build node paths
-            for node_type, signal_types in self.signal_types.items():
+            for node_type, signal_types in self.signal_types['group'].items():
                 node_ds_paths[node_type] = {}
 
                 for ds_subtype, _ in config.items():

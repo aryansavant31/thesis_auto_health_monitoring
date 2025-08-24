@@ -10,8 +10,9 @@ class MSDGroupMaker:
             - m004_all: contains all masses and all signal types
         """
         self.m004_all = {
-            'mass_1': ['acc', 'pos', 'vel'],
-            'mass_2': ['acc', 'pos', 'vel'],
-            'mass_3': ['acc', 'pos', 'vel'],
-            'mass_4': ['acc', 'pos', 'vel'],
+            'node_group_name'  : 'm004',  
+            'group' : {'mass_1': ['acc', 'pos', 'vel'],
+                       'mass_2': ['acc', 'pos', 'vel'],
+                       'mass_3': ['acc', 'pos', 'vel'],
+                       'mass_4': ['acc', 'pos', 'vel'],}         
             }
