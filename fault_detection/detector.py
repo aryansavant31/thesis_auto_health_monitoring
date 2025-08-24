@@ -478,7 +478,7 @@ class TrainerAnomalyDetector:
             palette = ['#1f77b4', '#ff7f0e']
 
         pair_plot = sns.pairplot(self.df, vars=feat_cols, hue='pred_label', palette=palette)
-        pair_plot.figure.suptitle(f"Pair Plot of Features ({self.model_id} / {self.run_type})", y=1.02)
+        pair_plot.figure.suptitle(f"Pair Plot of Features [{self.model_id} / {self.run_type}]", y=1.02)
 
         # save the pair plot if logger is available
         if self.logger:
@@ -522,7 +522,7 @@ class TrainerAnomalyDetector:
                 cm_plot.text(j + 0.5, i + 0.3, cell_labels[i][j],
                         ha='center', va='center', color='grey', fontsize=10)
                 
-        plt.title(f'Confusion Matrix ({self.model_id} / {self.run_type})')
+        plt.title(f'Confusion Matrix [{self.model_id} / {self.run_type}]')
 
         # save the confusion matrix if logger is available
         if self.logger:
@@ -557,7 +557,7 @@ class TrainerAnomalyDetector:
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title(f'ROC Curve with Thresholds ({self.model_id} / {self.run_type})')
+        plt.title(f'ROC Curve with Thresholds [{self.model_id} / {self.run_type}]')
         plt.legend()
 
         # save the ROC curve if logger is available
@@ -648,7 +648,7 @@ class TrainerAnomalyDetector:
 
         plt.xlabel('Anomaly Score (Shifted)')
         plt.ylabel('Number of Samples (log scale)')
-        plt.title(f'Anomaly Score Distribution ({label_col}) ({self.model_id} / {self.run_type})')
+        plt.title(f'Anomaly Score Distribution ({label_col}) [{self.model_id} / {self.run_type}]')
         plt.legend()
         plt.grid(True)
         plt.yscale('log')  
@@ -704,7 +704,7 @@ class TrainerAnomalyDetector:
             plt.text(i, counts[i] / 2, f"Samples: {', '.join(map(str, samples))}", 
                     ha='center', va='center', fontsize=10, color='grey', wrap=True)
 
-        plt.title(f"Predictions OK v/s NOK ({self.model_id} / {self.run_type})")
+        plt.title(f"Predictions OK v/s NOK [{self.model_id} / {self.run_type}]")
         plt.ylabel("Number of Samples")
 
         # save the bar plot if logger is available
