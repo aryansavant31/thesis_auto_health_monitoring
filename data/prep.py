@@ -736,8 +736,9 @@ class DataPreprocessor:
             elif augment_config['type'] == 'glitch':
                 augmented_data = add_glitches(data, augment_config['prob'], augment_config['amp'])
 
+            # chain augmentations
             if augment_config['add_next'] and idx < len(augment_configs) - 1:
-                data = augmented_data  # chain augmentations
+                data = augmented_data 
             else:
                 augmented_data_list.append(augmented_data)
                 data = og_data  # reset to original data for next augmentation
