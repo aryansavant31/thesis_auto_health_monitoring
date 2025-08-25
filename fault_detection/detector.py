@@ -78,11 +78,15 @@ class AnomalyDetector:
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
 
+        domain_str = self._get_config_str([self._domain_config])
+        feat_str = self._get_config_str(self._feat_configs) if self._feat_configs else 'None'
+        reduc_str = self._get_config_str([self._reduc_config]) if self._reduc_config else 'None'
+
         self.domain_transformer = DomainTransformer(domain_config=self._domain_config, data_config=self._data_config)
-        if self._domain == 'time':
-            print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None
-        elif self._domain == 'freq':
-            print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None
+        # if self._domain == 'time':
+        print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None
+        # elif self._domain == 'freq':
+        #     print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None
 
         # initialize data normalizers
         if self._raw_data_norm:
@@ -103,7 +107,7 @@ class AnomalyDetector:
         if self._domain == 'time':
             if self._feat_configs:
                 self.time_fex = TimeFeatureExtractor(self._feat_configs)
-                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+                print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.time_fex = None
                 print("\n>> No time feature extraction is applied") if is_verbose else None
@@ -111,7 +115,7 @@ class AnomalyDetector:
         elif self._domain == 'freq':
             if self._feat_configs:
                 self.freq_fex = FrequencyFeatureExtractor(self._feat_configs, data_config=self._data_config)
-                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self._feat_configs])}") if is_verbose else None
+                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.freq_fex = None
                 print("\n>> No frequency feature extraction is applied") if is_verbose else None
@@ -119,12 +123,28 @@ class AnomalyDetector:
         # define feature reducer
         if self._reduc_config:
             self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config)
-            print(f"\n>> Feature reducer initialized with '{self._reduc_config['type']}' reduction") if is_verbose else None
+            print(f"\n>> Feature reducer initialized with '{reduc_str}' reduction") if is_verbose else None
         else:
             self.feat_reducer = None
             print("\n>> No feature reduction is applied") if is_verbose else None
 
         print('\n' + 75*'-') if is_verbose else None
+
+    def _get_config_str(self, configs:list):
+        """
+        Get a neat string that has the type of config and its parameters.
+        Eg: "PCA(comps=3)"
+        """
+        config_strings = []
+
+        for config in configs:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            if additional_keys:
+                config_strings.append(f"{config['type']}({additional_keys})")
+            else:
+                config_strings.append(f"{config['type']}")
+
+        return ', '.join(config_strings)
 
     def print_model_info(self):
         """

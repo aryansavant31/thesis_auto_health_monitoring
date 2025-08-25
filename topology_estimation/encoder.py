@@ -492,11 +492,15 @@ class Encoder(LightningModule, MessagePassingLayers):
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for encoder model...") if is_verbose else None
 
+        domain_str = self._get_config_str([self.domain_config])
+        feat_str = self._get_config_str(self.feat_configs) if self.feat_configs else 'None'
+        reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
+
         self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self.data_config)
-        if self.domain == 'time':
-            print(f"\n>> Domain transformer initialized for 'time' domain") if is_verbose else None 
-        elif self.domain == 'freq':
-            print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None 
+        # if self.domain == 'time':
+        print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None 
+        # elif self.domain == 'freq':
+        #     print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None 
 
         # initialize raw data normalizers
         if self.raw_data_norm:
@@ -526,7 +530,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         if self.domain == 'time':
             if self.feat_configs:
                 self.time_fex = TimeFeatureExtractor(self.feat_configs)
-                print(f"\n>> Time feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self.feat_configs])}") if is_verbose else None 
+                print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None 
             else:
                 self.time_fex = None
                 print("\n>> No time feature extraction is applied") if is_verbose else None 
@@ -534,7 +538,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         elif self.domain == 'freq':
             if self.feat_configs:
                 self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
-                print(f"\n>> Frequency feature extractor initialized with features: {', '.join([feat_config['type'] for feat_config in self.feat_configs])}") if is_verbose else None 
+                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None 
             else:
                 self.freq_fex = None
                 print("\n>> No frequency feature extraction is applied") if is_verbose else None 
@@ -542,12 +546,28 @@ class Encoder(LightningModule, MessagePassingLayers):
         # define feature reducer
         if self.reduc_config:
             self.feat_reducer = FeatureReducer(reduc_config=self.reduc_config)
-            print(f"\n>> Feature reducer initialized with '{self.reduc_config['type']}' reduction") if is_verbose else None 
+            print(f"\n>> Feature reducer initialized with '{reduc_str}' reduction") if is_verbose else None 
         else:
             self.feat_reducer = None
             print("\n>> No feature reduction is applied") if is_verbose else None 
 
         print('\n' + 75*'-') if is_verbose else None 
+
+    def _get_config_str(self, configs:list):
+        """
+        Get a neat string that has the type of config and its parameters.
+        Eg: "PCA(comps=3)"
+        """
+        config_strings = []
+
+        for config in configs:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            if additional_keys:
+                config_strings.append(f"{config['type']}({additional_keys})")
+            else:
+                config_strings.append(f"{config['type']}")
+
+        return ', '.join(config_strings)
 
     def process_input_data(self, time_data, get_data_shape=False):
         """
