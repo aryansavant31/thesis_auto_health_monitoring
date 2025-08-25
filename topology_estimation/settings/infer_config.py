@@ -35,8 +35,16 @@ class NRIInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
+    # Encoder run parameters
         self.temp = 0.1
         self.is_hard = False
+
+    # Decoder run parameters
+        self.skip_first_edge_type = False
+        self.pred_steps = 1
+        self.is_burn_in = False
+        self.burn_in_steps = 1
+        self.is_dynamic_graph = False
 
     # Sparsifier parameters
         self.spf_config = get_spf_config('no_spf', is_expert=True)
@@ -72,8 +80,16 @@ class DecoderInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
-        self.temp = 0.1
-        self.is_hard = False
+    # Decoder run parameters
+        self.skip_first_edge_type = False
+        self.pred_steps = 1
+        self.is_burn_in = False
+        self.burn_in_steps = 1
+        self.is_dynamic_graph = False
+        
+        # if dynamic graph is true
+        self.temp = 1.0        # temperature for Gumble Softmax
+        self.is_hard = True 
 
     # Sparsifier parameters 
         self.spf_config = get_spf_config('no_spf', is_expert=True)

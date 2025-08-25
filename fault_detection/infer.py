@@ -61,11 +61,11 @@ class AnomalyDetectorInferMain:
                     getattr(tester, plot_name.split('-')[0])(**plot_config[1])
                 
         elif self.fdet_config.run_type == 'predict':
-            preds = tester.predict(anomaly_detector, custom_loader)
+            preds, scores = tester.predict(anomaly_detector, custom_loader)
             
             tester.anomaly_score_dist(is_pred=True, bins=100)
 
-            return preds
+            return preds, scores
 
     def _load_model(self, data_stats):
         """
@@ -138,7 +138,7 @@ if __name__ == "__main__":
             infer_pipeline.infer()
 
         elif args.run_type == 'predict':
-            preds = infer_pipeline.infer()
+            preds, scores = infer_pipeline.infer()
         
         base_name = f"{fdet_config.selected_model_num}/{os.path.basename(infer_pipeline.infer_log_path)}" if infer_pipeline.infer_log_path else f"{fdet_config.selected_model_num}/{args.run_type}"
         print('\n' + 75*'=')

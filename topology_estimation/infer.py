@@ -58,30 +58,6 @@ class TopologyEstimationInferHelper:
     #         DataLoader for the relation matrices of the training data.
     #     """
     #     self.rel_loader = self.rm.get_relation_matrix_loader(self.custom_loader)
-
-    def get_encoder_params(self):
-        """
-        Get the encoder parameters required for initializing the NRI model.
-
-        Returns
-        -------
-        enc_run_params : dict
-            Dictionary containing the encoder run parameters.
-        """
-        # encoder params
-        req_enc_run_params = inspect.signature(Encoder.set_run_params).parameters.keys()
-        enc_run_params = {
-            key.removeprefix('enc_'): value for key, value in self.tp_config.log_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params and key not in ['data_config']
-        }
-
-        print("\nEncoder run parameters:")
-        print(15 * "-")
-        for key, value in enc_run_params.items():
-            print(f"{key}: {value}")
-
-        # print('\n' + 35*'-')
-        
-        return enc_run_params
         
     def get_decoder_params(self):
         """
@@ -95,7 +71,7 @@ class TopologyEstimationInferHelper:
         # decoder params
         req_dec_run_params = inspect.signature(Decoder.set_run_params).parameters.keys()
         dec_run_params = {
-            key.removeprefix('dec_'): value for key, value in self.tp_config.log_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params and key not in ['data_config']
+            key.removeprefix('dec_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('dec_') in req_dec_run_params and key not in ['data_config']
         }
 
         print("\nDecoder run parameters:")
@@ -148,7 +124,6 @@ class NRIInferMain(TopologyEstimationInferHelper):
             Configuration object for the NRI inference.
         """
         super().__init__(data_config, nri_config)
-        self.nri_config = nri_config
 
     def infer(self):
         """
@@ -161,11 +136,10 @@ class NRIInferMain(TopologyEstimationInferHelper):
         rec_rel, send_rel = self.rm.get_relation_matrix(self.custom_loader)
 
         # initialize model
-        enc_run_params = self.get_encoder_params()
         dec_run_params = self.get_decoder_params()
         
         nri_model = self._load_model(
-            enc_run_params, dec_run_params, 
+            dec_run_params, 
             rec_rel, send_rel, self.custom_data_stats
             )
 
@@ -173,24 +147,26 @@ class NRIInferMain(TopologyEstimationInferHelper):
         logger = self._prep_for_inference()
 
         tester = Trainer(logger=logger)
-        if self.nri_config.run_type == 'custom_test':
-            tester.test(nri_model, CombinedDataLoader(self.custom_loader, self.rel_loader))
+        if self.tp_config.run_type == 'custom_test':
+            tester.test(nri_model, self.custom_loader)
 
-        elif self.nri_config.run_type == 'predict':
-            preds = tester.predict(nri_model, CombinedDataLoader(self.custom_loader, self.rel_loader))
+        elif self.tp_config.run_type == 'predict':
+            preds = tester.predict(nri_model, self.custom_loader)
             return preds
 
     
-    def _load_model(self, enc_run_params, dec_run_params, rec_rel, send_rel, data_stats):
+    def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
         """
         Load the NRI model from the checkpoint path.
 
         Parameters
         ----------
-        enc_run_params : dict
-            Dictionary containing the encoder run parameters.
         dec_run_params : dict
             Dictionary containing the decoder run parameters.
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Receiver relation matrix that indicate which edges are on reciever end of nodes.
+        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Sender relation matrix that indicate which edges are senders of nodes.
         data_stats : dict
             Statistics of the custom data.
 
@@ -199,13 +175,12 @@ class NRIInferMain(TopologyEstimationInferHelper):
         trained_nri_model : NRI
             The loaded NRI model.
         """
-        trained_nri_model = NRI.load_from_checkpoint(self.nri_config.ckpt_path)
+        trained_nri_model = NRI.load_from_checkpoint(self.tp_config.ckpt_path)
 
         # update the model with new run params and custom data statistics
         trained_nri_model.set_input_graph(rec_rel, send_rel)
 
         trained_nri_model.set_run_params(
-            enc_run_params=enc_run_params, 
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
             data_stats=data_stats, 
@@ -214,7 +189,7 @@ class NRIInferMain(TopologyEstimationInferHelper):
             )
 
         print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
-        print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_components}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
+        print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_comps}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
         print('\n' + 75*'-')
 
         return trained_nri_model
@@ -235,7 +210,6 @@ class DecoderInferMain(TopologyEstimationInferHelper):
             Configuration object for the Decoder inference.
         """
         super().__init__(data_config, decoder_config)
-        self.decoder_config = decoder_config
 
     def infer(self):
         """
@@ -249,17 +223,20 @@ class DecoderInferMain(TopologyEstimationInferHelper):
 
         # initialize model
         dec_run_params = self.get_decoder_params()
-        decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.custom_data_stats)
+        decoder_model = self._load_model(
+            dec_run_params, 
+            rec_rel, send_rel, self.custom_data_stats
+            )
 
         # infer using the decoder model
         logger = self._prep_for_inference()
 
         tester = Trainer(logger=logger)
-        if self.decoder_config.run_type == 'custom_test':
-            tester.test(decoder_model, CombinedDataLoader(self.custom_loader, self.rel_loader))
+        if self.tp_config.run_type == 'custom_test':
+            tester.test(decoder_model, self.custom_loader)
 
-        elif self.decoder_config.run_type == 'predict':
-            preds = tester.predict(decoder_model, CombinedDataLoader(self.custom_loader, self.rel_loader))
+        elif self.tp_config.run_type == 'predict':
+            preds = tester.predict(decoder_model, self.custom_loader)
             return preds
         
     def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
@@ -270,6 +247,10 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         ----------
         dec_run_params : dict
             Dictionary containing the decoder run parameters.
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Receiver relation matrix that indicate which edges are on reciever end of nodes.
+        send_rel : torch.Tensor, shape (n_edges, n_nodes)
+            Sender relation matrix that indicate which edges are senders of nodes.
         data_stats : dict
             Statistics of the custom data.
 
@@ -278,14 +259,10 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         Decoder
             The loaded Decoder model.
         """
-        trained_decoder_model = Decoder.load_from_checkpoint(self.decoder_config.ckpt_path)
+        trained_decoder_model = Decoder.load_from_checkpoint(self.tp_config.ckpt_path)
 
         # update the model with new run params and custom data statistics
-        trained_decoder_model.set_input_graph(rec_rel, send_rel)
-
-        edge_matrix = 0.5*(rec_rel + send_rel).sum(dim=-1, keepdim=True)
-        edge_matrix = edge_matrix.unsqueeze(0).repeat(self.custom_loader.batch_size, 1, 1) # shape: (batch_size, n_edges, n_edge_types)
-        trained_decoder_model.set_edge_matrix(edge_matrix)
+        trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.custom_loader.batch_size)
 
         trained_decoder_model.set_run_params(
             **dec_run_params, 
@@ -293,7 +270,7 @@ class DecoderInferMain(TopologyEstimationInferHelper):
             data_stats=data_stats
             )
 
-        print(f"\nDecoder model loaded for '{self.decoder_config.run_type}' from {self.decoder_config.ckpt_path}")
+        print(f"\nDecoder model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
         print(f"\nModel type: {type(trained_decoder_model).__name__}, Model ID: {trained_decoder_model.hparams['model_id']}, No. of dimensions req.: {trained_decoder_model.n_dims}")
         print('\n' + 75*'-')
 

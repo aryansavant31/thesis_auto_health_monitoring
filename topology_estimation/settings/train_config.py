@@ -64,7 +64,9 @@ class DecoderTrainConfig:
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
-        self.temp = 1.0       # temperature for Gumble Softmax
+
+        # if dynamic graph is true
+        self.temp = 1.0    # temperature for Gumble Softmax
         self.is_hard = True      
 
         self.dec_edge_mlp_config = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']

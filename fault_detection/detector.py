@@ -400,6 +400,7 @@ class TrainerAnomalyDetector:
 
         # convert predictions to tensor
         preds = torch.tensor(self.df['pred_label'].values, dtype=torch.int64)
+        scores = torch.tensor(self.df['scores'].values, dtype=torch.float32)
         print(f"\nPredictions: {preds}")
 
     # 3. Log model information
@@ -410,7 +411,7 @@ class TrainerAnomalyDetector:
 
         print('\n' + 75*'-')
 
-        return preds
+        return preds, scores
     
     def test(self, anomaly_detector:AnomalyDetector, test_loader):
         """

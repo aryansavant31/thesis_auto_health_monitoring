@@ -85,25 +85,19 @@ class TopologyEstimationTrainHelper:
         -------
         enc_model_params : dict
             Dictionary containing the encoder model parameters.
-        enc_run_params : dict
-            Dictionary containing the encoder run parameters.
         """
         # encoder params
         req_enc_model_params = [param for param in Encoder().__dict__.keys()]
-        req_enc_run_params = inspect.signature(Encoder.set_run_params).parameters.keys()
 
         enc_model_params = {
             key.removeprefix('enc_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('enc_') in req_enc_model_params and key not in ['hyperparams']
-        }
-        enc_run_params = {
-            key.removeprefix('enc_'): value for key, value in self.tp_config.__dict__.items() if key.removeprefix('enc_') in req_enc_run_params and key not in ['data_config']
         }
 
         # get n_comps and n_dims for encoder and decoder
         pre_enc = Encoder()
         for key, value in enc_model_params.items():
             setattr(pre_enc, key, value)
-        pre_enc.set_run_params(**enc_run_params, data_config=self.data_config, data_stats=self.train_data_stats)
+        pre_enc.set_run_params(data_config=self.data_config, data_stats=self.train_data_stats)
         pre_enc.init_input_processors(is_verbose=False)
         n_comps, n_dims = pre_enc.process_input_data(next(iter(self.train_loader))[0], get_data_shape=True)
 
@@ -116,14 +110,9 @@ class TopologyEstimationTrainHelper:
         for key, value in enc_model_params.items():
             print(f"{key}: {value}")
 
-        print("\nEncoder run parameters:")
-        print(25 * "-")
-        for key, value in enc_run_params.items():
-            print(f"{key}: {value}")
-
         # print('\n' + 35*'-')
 
-        return enc_model_params, enc_run_params
+        return enc_model_params
         
     def get_decoder_params(self):
         """
@@ -228,7 +217,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         rec_rel, send_rel = self.rm.get_relation_matrix(self.train_loader)
 
     # 2. Initialize the NRI model
-        enc_model_params, enc_run_params = self.get_encoder_params()
+        enc_model_params = self.get_encoder_params()
         dec_model_params, dec_run_params = self.get_decoder_params()
 
         nri_model = self._init_nri_model(
