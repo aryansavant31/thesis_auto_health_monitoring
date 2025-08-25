@@ -26,7 +26,7 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     
     % periodic force
     A = [1];    % amplitude
-    f0 = 1;     % fundamental freq (hz)
+    f0 = 100;     % fundamental freq (hz)
     freq = [f0]; % freq (hz)
     
     u_cells{M} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
@@ -45,8 +45,8 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     % =======================================================
     
     % Time
-    fs = 2000;
-    t_end = 100;
+    fs = 500;
+    t_end = 2;
     tspan = 0:1/fs:t_end;
     
     % Initial positions and velocities

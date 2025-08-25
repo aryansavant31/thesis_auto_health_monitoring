@@ -456,7 +456,13 @@ class NRI(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        log_data, self.decoder_plot_data_test, _ = self._forward_pass(batch, batch_idx)
+        log_data, self.decoder_plot_data_test, self.edge_preds = self._forward_pass(batch, batch_idx)
+        data_batch, _ = batch
+        data, _, _, self.rep_nums = data_batch
+        num_nodes = data.size(1)
+
+        # convert edge predictions to adjacency matrix
+        self.adj_matrices = self.edge_pred_to_adjacency_matrix(self.edge_preds, num_nodes)
 
         # Log the losses and metrics
         log_dict = {
@@ -493,7 +499,7 @@ class NRI(LightningModule):
             self.hyperparams['enc/test_edge_accuracy'] = self.trainer.callback_metrics['enc/test_edge_accuracy'].item()
 
 
-        # print stats after each epoch
+        # print stats after testing
         print(
             f"\nnri_test_loss: {self.hyperparams['nri/test_loss']:.4f}, " 
             f"enc_test_loss: {self.hyperparams['enc/test_loss']:.4f}, "
@@ -501,6 +507,17 @@ class NRI(LightningModule):
             f"enc_test_edge_accuracy: {self.hyperparams.get('enc/test_edge_accuracy', -1):.4f}"
             )
         
+        print("\nEdge predictions are as follows (showing probabilities for each edge type):")
+        for edge_pred, rep in zip(self.edge_preds, self.rep_nums):
+            print(f"\nRep {rep.item():,.3f}:")
+            print(edge_pred.cpu().numpy())
+
+        print("\nAdjacency matrix from edge pred is as follows:")
+        for adj_matrix, rep in zip(self.adj_matrices, self.rep_nums):
+            print(f"\nRep {rep.item():,.3f}:")
+            print(adj_matrix.cpu().numpy())
+
+
         if self.logger:
             self.logger.log_hyperparams(self.hyperparams)
             print(f"\nTest metrics and hyperparameters logged for tensorboard at {self.logger.log_dir}")
@@ -693,7 +710,7 @@ class NRI(LightningModule):
         dim_names = [f'Dim {i+1}' for i in range(n_dims)]
 
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=True, sharey=True)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=True, sharey=True, dpi=100)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:

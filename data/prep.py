@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 
 # local imports
 from .config import DataConfig
-from .augment import add_gaussian_noise
+from .augment import *
 
 
 class DataPreprocessor:
@@ -593,13 +593,13 @@ class DataPreprocessor:
       
                     # Apply augmentations
                     if ds_type == 'OK':
-                       data = self.add_augmentations(data, self.data_config.healthy_configs[ds_subtype], ds_subtype)   
+                       data = self.add_augmentations(data, self.data_config.healthy_configs[ds_subtype], fs[0], ds_subtype)   
 
                     elif ds_type == 'NOK':
-                       data = self.add_augmentations(data, self.data_config.unhealthy_configs[ds_subtype], ds_subtype)
+                       data = self.add_augmentations(data, self.data_config.unhealthy_configs[ds_subtype], fs[0], ds_subtype)
 
                     elif ds_type == 'UK':
-                       data = self.add_augmentations(data, self.data_config.unknown_configs[ds_subtype], ds_subtype)
+                       data = self.add_augmentations(data, self.data_config.unknown_configs[ds_subtype], fs[0], ds_subtype)
 
                     # segment the data                              
                     data_segments = segment_data(data, self.data_config.window_length, self.data_config.stride)
@@ -700,24 +700,47 @@ class DataPreprocessor:
         return max_timesteps
 
     
-    def add_augmentations(self, data, augment_configs, ds_subtype="_"):
+    def add_augmentations(self, data, augment_configs, fs, ds_subtype="_"):
+        """
+        Apply augmentations to the data based on the provided configurations.
+
+        Parameters
+        ----------
+        data : np.ndarray, shape (n_samples, n_timesteps)
+            The input data to be augmented.
+        augment_configs : list of dict
+            List of augmentation configurations.
+            Each dict should have a 'type' key indicating the type of augmentation and other keys for parameters.
+        fs : float
+            Sampling frequency of the data.
+        ds_subtype : str
+            The dataset subtype (for error messages).
+        """
         augmented_data_list = []
+        og_data = data.copy()
 
         if augment_configs == []:
             raise ValueError(f"No original or augmentation configs for the dataset subtype {ds_subtype} provided.")
 
-        for augment_config in augment_configs:
+        for idx, augment_config in enumerate(augment_configs):
             # original data
             if augment_config['type'] == 'OG':
                 augmented_data = data
             # gaussian noise
             if augment_config['type'] == 'gau':
                 augmented_data = add_gaussian_noise(data, augment_config['mean'], augment_config['std'])
+            # sine wave (freq modulation)
+            elif augment_config['type'] == 'sine':
+                augmented_data = add_sine_waves(data, augment_config['freqs'], augment_config['amps'], fs)
+            # gitches
+            elif augment_config['type'] == 'glitch':
+                augmented_data = add_glitches(data, augment_config['prob'], augment_config['amp'])
 
-            # apply other augmentations if needed
-            # ...
-
-            augmented_data_list.append(augmented_data)
+            if augment_config['add_next'] and idx < len(augment_configs) - 1:
+                data = augmented_data  # chain augmentations
+            else:
+                augmented_data_list.append(augmented_data)
+                data = og_data  # reset to original data for next augmentation
 
         return np.concatenate(augmented_data_list, axis=0)
     

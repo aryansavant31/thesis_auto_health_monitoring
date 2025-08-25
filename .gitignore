@@ -1,7 +1,9 @@
 data/datasets/asml/
-fault_detection/logs/asml/
+fault_detection/logs/asml/**/*.pkl
 fault_isolation/logs/asml/
-topology_estimation/logs/asml/
+topology_estimation/logs/asml/**/*.pkl
+topology_estimation/logs/asml/**/checkpoints/
+
 
 data/datasets/bearing/cwru/
 

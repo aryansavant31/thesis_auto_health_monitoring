@@ -77,7 +77,7 @@ class DataConfig:
         
     def set_train_dataset(self):
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG')],
+            'series_tp': [get_augment_config('OG')],
             # 'series_tp_(fs=2000)': [get_augment_config('OG')],
         }
         
@@ -92,8 +92,9 @@ class DataConfig:
     def set_custom_test_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'series_tp_(fs=1000)': [get_augment_config('OG')],
-            'series_tp_(fs=2000)': [get_augment_config('OG')],
+            'series_tp': [#get_augment_config('glitch', prob=0.1, amp=20.0, add_next=True), 
+                          get_augment_config('sine', freqs=[10.0, 150.0], amps=[5.0, 2.0], add_next=True)
+                          ]
         }
         
         self.unhealthy_configs = {
@@ -221,8 +222,11 @@ def get_augment_config(augment_type, **kwargs):
 
         **kwargs : dict
             For all `augment_type`, the following parameters are available:
-            - 'OG' (Original data): No additional parameters
-            - 'gau' (Gaussian noise): `mean`, `std`
+            - `OG` (Original data): No additional parameters
+            - `gau` (Gaussian noise): **mean**, **std**
+            - `sine` (Sine wave): **freqs** (_list_), **amps** (_list_)
+            - `glitch` (Random glitches): **prob**, **amp**
+
         """
         config = {}
         config['type'] = augment_type
@@ -230,6 +234,14 @@ def get_augment_config(augment_type, **kwargs):
         if augment_type == 'gau':
             config['mean'] = kwargs.get('mean', 0.0)
             config['std'] = kwargs.get('std', 0.1)
+        elif augment_type == 'sine':
+            config['freqs'] = kwargs.get('freqs', 10.0)
+            config['amps'] = kwargs.get('amps', 5.0)
+        elif augment_type == 'glitch':
+            config['prob'] = kwargs.get('prob', 0.01)
+            config['amp'] = kwargs.get('amp', 5.0)
+
+        config['add_next'] = kwargs.get('add_next', False)  # whether to add the next augmentation to the current one
         
         return config
 

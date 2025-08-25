@@ -1,4 +1,4 @@
-function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
+function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
 
     % Get root directory where run_dynamics.m is located
     root_dir_path = mfilename('fullpath');
@@ -26,7 +26,7 @@ function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_t
     
     % periodic force
     A = [1];    % amplitude
-    f0 = 1;     % fundamental freq (hz)
+    f0 = 0;     % fundamental freq (hz)
     freq = [f0]; % freq (hz)
     
     u_cells{M} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
@@ -45,8 +45,8 @@ function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_t
     % =======================================================
     
     % Time
-    fs = 1000;
-    t_end = 100;
+    fs = 500;
+    t_end = 2;
     tspan = 0:1/fs:t_end;
     
     % Initial positions and velocities
@@ -56,8 +56,12 @@ function [pos, vel, acc, conn_pairs] = run_dynamics(machine_type, scenario, ds_t
     
     [time, X] = ode45(odefun, tspan, x0);
 
-
-    %% Get pos, vel and acc from X
+    %% Extract outputs
+    
+    % get connection pairs
+    conn_pairs = conn.pairs;
+    
+    % Get pos, vel and acc from X
 
     pos = X(:, 1:M);         % size: [length(tspan) x M]
     vel = X(:, M+1:end);     % size: [length(tspan) x M]
