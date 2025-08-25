@@ -30,7 +30,7 @@ class AnomalyDetectorInferConfig:
         self.ckpt_path = get_selected_model_path()
 
         self.is_log = True
-        self.version = 2
+        self.version = 1
         
         self.num_workers = 1
         self.batch_size = 1

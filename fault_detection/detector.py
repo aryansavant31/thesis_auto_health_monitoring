@@ -273,6 +273,7 @@ class TrainerAnomalyDetector:
         # add datashape to hparams
         anomaly_detector.hparams['n_comps'] = str(int(n_comps))
         anomaly_detector.hparams['n_dims'] = str(int(n_dims))
+        anomaly_detector.hparams['n_comps_total'] = str(int(n_comps*n_dims))
 
         # convert np data into pd dataframe
         if anomaly_detector._feat_names and anomaly_detector.feat_reducer is None:

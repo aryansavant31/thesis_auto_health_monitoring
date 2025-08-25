@@ -1,1 +1,1 @@
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\(ammf)\IF\(ammf)-IF_fdet_1\anomaly_detector.pkl
+c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\(ammf)\IF\(ammf)-IF_fdet_6\anomaly_detector.pkl

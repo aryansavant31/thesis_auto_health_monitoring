@@ -841,21 +841,15 @@ class HelperClass:
         """
         Returns a list of strings representing the augment configurations.
         """
-        augment_str_list = []
-        
-        for augment_config in augment_configs:
-            idx = 0
-            augment_str = f"{augment_config['type']}"
-            for key, value in augment_config.items():
-                if key != 'type':
-                    if idx == 0:
-                        augment_str += "_" 
-                        idx += 1
-                    augment_str += f"{key[0]}={value}"
+        augment_strings = []
+        for augment in augment_configs:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in augment.items() if key != 'type'])
+            if additional_keys and augment['type'] != 'OG':
+                augment_strings.append(f"{augment['type']}({additional_keys})")
+            else:
+                augment_strings.append(f"{augment['type']}")
 
-            augment_str_list.append(augment_str)
-
-        return augment_str_list
+        return augment_strings
     
     def set_ds_types_in_path(self, data_config:DataConfig, log_path):
         """

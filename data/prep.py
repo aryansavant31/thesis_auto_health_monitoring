@@ -145,7 +145,7 @@ class DataPreprocessor:
         augment_strings = []
         for augment in augments:
             additional_keys = ', '.join([f"{key}={value}" for key, value in augment.items() if key != 'type'])
-            if additional_keys:
+            if additional_keys and augment['type'] != 'OG':
                 augment_strings.append(f"{augment['type']}({additional_keys})")
             else:
                 augment_strings.append(f"{augment['type']}")
@@ -179,7 +179,9 @@ class DataPreprocessor:
         print(45*'-')
         for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
             print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
-        print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
+        
+        if self.package == 'topology_estimation':
+            print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """

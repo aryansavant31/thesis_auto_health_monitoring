@@ -108,6 +108,8 @@ class DecoderTrainConfig:
             'optimizer': self.optimizer,
             'loss_type': self.loss_type,
             'n_edge_types': self.n_edge_types,
+            'window_length': self.data_config.window_length,
+            'stride': self.data_config.stride,
 
             # decoder parameters
             'dec/msg_out_size': self.msg_out_size,
@@ -349,6 +351,8 @@ class NRITrainConfig:
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
             'val_rt': self.val_rt,
+            'window_length': self.data_config.window_length,
+            'stride': self.data_config.stride,
             'max_epochs': self.max_epochs,
             'lr': self.lr,
             'optimizer': self.optimizer,
