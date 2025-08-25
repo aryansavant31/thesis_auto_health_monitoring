@@ -41,7 +41,7 @@ class FeatureRankingManager(FeatureRankingConfig):
             The data configuration object. Since the data_config attribute values can change outside, 
             it is being passed as a parameter here to provide new log paths.
         """
-        self.node_type = f"({'+'.join(self.data_config.node_type)})"
+        self.node_type = f"({'+'.join(list(self.data_config.signal_types['group'].keys()))})"
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -73,7 +73,7 @@ class FeatureRankingManager(FeatureRankingConfig):
 
         # add timestep id and signal type to path
         signal_types_str = ', '.join(
-            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types.items()
+            f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
         ranking_path = os.path.join(ranking_path, f"T{self.data_config.window_length} [{signal_types_str}]")
 
