@@ -708,11 +708,10 @@ class NRI(LightningModule):
 
         batch_size, n_nodes, n_comps, n_dims = x_pred.shape
 
-        node_names = [f'Node {i+1}' for i in range(n_nodes)]
-        dim_names = [f'Dim {i+1}' for i in range(n_dims)]
+        node_names = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
 
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=True, sharey=True, dpi=100)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=80)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
@@ -721,6 +720,8 @@ class NRI(LightningModule):
         fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
+            dim_names = self.data_config.signal_types['group'][node_names[node]]
+
             for dim in range(n_dims):
                 ax = axes[node, dim]
 
@@ -737,14 +738,20 @@ class NRI(LightningModule):
                 ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
 
                 # Add labels and legend
-                if node == n_nodes - 1:
-                    ax.set_xlabel(dim_names[dim])
-                if dim == 0:
-                    ax.set_ylabel(node_names[node])
+                #if node == n_nodes - 1:
+                ax.set_xlabel("components")
+                ax.set_ylabel(f"{dim_names[dim]} (SI units)")
+                         
                 if node == 0 and dim == n_dims - 1:
                     ax.legend(loc="upper right")
 
+                # add node name as title for each row
+                ax.set_title(f"{node_names[node]}", fontsize=11)
+
                 ax.grid(True)
+
+        # adjust subplot spacing to prevent label overlap
+        plt.subplots_adjust(left=0.15, bottom=0.1, right=0.95, top=0.9, wspace=0.3, hspace=0.6)
 
         # save the plot if logger is available
         if self.logger:
@@ -756,6 +763,3 @@ class NRI(LightningModule):
         else:
             if is_end:
                 print("\nDecoder output plot not logged as logging is disabled.\n")
-                
-
-

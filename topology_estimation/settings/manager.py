@@ -311,7 +311,7 @@ class DecoderTrainManager(DecoderTrainConfig):
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[1].split('.')[1]) for f in model_folders)
+            max_model = max(int(f.split('_')[-1].split('.')[1]) for f in model_folders)
             self.model_num = max_model + 1
             new_model = f'{self.model_name}.{self.model_num}'
             print(f"Next decoder folder will be: {new_model}")
