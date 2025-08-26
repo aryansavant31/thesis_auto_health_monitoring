@@ -55,16 +55,16 @@ class AnomalyDetector:
             Normalization type for raw data (e.g., 'min_max', 'standard')
         """
         self._data_config = data_config
-        self._domain_config = domain_config
         self._raw_data_norm = raw_data_norm
         self._feat_norm = feat_norm
         self._feat_configs = feat_configs
         self._reduc_config = reduc_config
 
-        self._domain = domain_config['type']
+        
         self._feat_names = self._get_feature_names() if self._feat_configs else None
 
         self.data_stats = data_stats
+        self.domain_config = domain_config
 
     def _get_feature_names(self):
         """
@@ -77,12 +77,14 @@ class AnomalyDetector:
             
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
+        
+        self._domain = self.domain_config['type']
 
-        domain_str = self._get_config_str([self._domain_config])
+        domain_str = self._get_config_str([self.domain_config])
         feat_str = self._get_config_str(self._feat_configs) if self._feat_configs else 'None'
         reduc_str = self._get_config_str([self._reduc_config]) if self._reduc_config else 'None'
 
-        self.domain_transformer = DomainTransformer(domain_config=self._domain_config, data_config=self._data_config)
+        self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self._data_config)
         # if self._domain == 'time':
         print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None
         # elif self._domain == 'freq':
