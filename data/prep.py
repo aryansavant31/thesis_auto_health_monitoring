@@ -180,8 +180,8 @@ class DataPreprocessor:
         for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
             print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
         
-        if self.package == 'topology_estimation':
-            print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
+        print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
+        print(f'Signal group name: {self.data_config.signal_types['signal_group_name']}')
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
@@ -626,7 +626,7 @@ class DataPreprocessor:
         # verbose output
         if ds_type == 'OK' or ds_type == 'UK':
             print(f"\n\nFor ds_type '{ds_type}' and others....")
-            print(f"\nMaximum timesteps across all node types: {max_timesteps}")
+            print(f"\nMaximum timesteps across all node types: {max_timesteps:,}")
             
             # save fs values to data_config for only OK type data
             if fs_matrix.size != 0:

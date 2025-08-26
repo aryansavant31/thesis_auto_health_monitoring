@@ -569,7 +569,7 @@ class Decoder(LightningModule):
             {'train_loss': loss},
             on_step=False,
             on_epoch=True,
-            prog_bar=True,
+            prog_bar=False,
             logger=True
         )     
         return loss
@@ -593,7 +593,7 @@ class Decoder(LightningModule):
             {'val_loss': loss},
             on_step=False,
             on_epoch=True,
-            prog_bar=True,
+            prog_bar=False,
             logger=True
         )
         return loss
@@ -604,15 +604,21 @@ class Decoder(LightningModule):
         """
         self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
         print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed")
+        train_loss_str = f"train_loss: {self.train_losses['train_losses'][-1]:,.4f}"
 
         # make decoder output plot for training data
         self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
 
         if self.trainer.val_dataloaders:
             self.train_losses['val_losses'].append(self.trainer.callback_metrics['val_loss'].item())
+            val_loss_str = f", val_loss: {self.train_losses['val_losses'][-1]:,.4f}"
 
             # make decoder output plot for val data
             self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
+        else:
+            val_loss_str = ""
+        
+        print(f"{train_loss_str}{val_loss_str}")
 
         # update hparams
         self.training_time = time.time() - self.start_time
@@ -688,7 +694,7 @@ class Decoder(LightningModule):
             })
 
         # print stats after each epoch
-        print(f"\ntest_loss: {self.hyperparams['test_loss']:.4f}")
+        print(f"\ntest_loss: {self.hyperparams['test_loss']:,.4f}")
         
         if self.logger:
             self.logger.log_hyperparams(self.hyperparams)
@@ -727,7 +733,7 @@ class Decoder(LightningModule):
         """
         loss, self.decoder_plot_data_predict = self._forward_pass(batch, batch_idx)
 
-        print(f"\nDecoder residuals: {loss.item():.4f}")
+        print(f"\nDecoder residuals: {loss.item():,.4f}")
         print('\n' + 75*'-')
 
         # make decoder output plot
@@ -762,6 +768,7 @@ class Decoder(LightningModule):
         plt.title(F"Train and Validation Losses [{self.model_id}]")
         plt.ylabel('Loss')
         plt.xlabel('Epochs')
+        plt.yscale('log')
         plt.legend()
         plt.grid(True)
 

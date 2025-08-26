@@ -46,7 +46,7 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     
     % Time
     fs = 500;
-    t_end = 2;
+    t_end = 1000;
     tspan = 0:1/fs:t_end;
     
     % Initial positions and velocities

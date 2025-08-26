@@ -229,7 +229,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"({self.node_group})", self.signal_group)
 
         # get train log path
-        self.model_name = f"({self.node_group}-{self.signal_group})-[{self.recur_emb_type}]_dec_{self.n_edge_types}"
+        self.model_name = f"({self.node_group}-{self.signal_group})-{self.recur_emb_type}_dec_{self.n_edge_types}"
         self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path

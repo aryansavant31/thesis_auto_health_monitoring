@@ -57,14 +57,14 @@ class DataConfig:
         self.machine_type = 'M004'
         self.scenario = 'scene_1'
 
-        #self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = MSDGroupMaker().m004_all
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 2000
-        self.stride             = 2000
+        self.window_length      = 100
+        self.stride             = 100
 
         self.view = DatasetViewer(self)
 
@@ -76,8 +76,10 @@ class DataConfig:
             self.set_predict_dataset()
         
     def set_train_dataset(self):
+        # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+
         self.healthy_configs   = {
-            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+            'series_tp': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {

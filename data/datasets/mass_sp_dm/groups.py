@@ -11,6 +11,7 @@ class MSDGroupMaker:
         """
         self.m004_all = {
             'node_group_name'  : 'm004',  
+            'signal_group_name': 'apv',
             'group' : {'mass_1': ['acc', 'pos', 'vel'],
                        'mass_2': ['acc', 'pos', 'vel'],
                        'mass_3': ['acc', 'pos', 'vel'],

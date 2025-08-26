@@ -343,9 +343,9 @@ class NRI(LightningModule):
 
         print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed")
         print(
-            f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:.4f}, " 
-            f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:.4f}, "
-            f"dec_train_loss: {self.train_losses['dec/train_losses'][-1]:.4f}, "
+            f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:,.4f}, " 
+            f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:,.4f}, "
+            f"dec_train_loss: {self.train_losses['dec/train_losses'][-1]:,.4f}, "
             f"enc_train_edge_accuracy: {self.train_accuracies['enc/train_edge_accuracy'][-1]:.4f}"
             )
 
@@ -365,9 +365,9 @@ class NRI(LightningModule):
             self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
 
             print(
-                f"nri_val_loss: {self.train_losses['nri/val_losses'][-1]:.4f}, " 
-                f"enc_val_loss: {self.train_losses['enc/val_losses'][-1]:.4f}, "
-                f"dec_val_loss: {self.train_losses['dec/val_losses'][-1]:.4f}, "
+                f"nri_val_loss: {self.train_losses['nri/val_losses'][-1]:,.4f}, " 
+                f"enc_val_loss: {self.train_losses['enc/val_losses'][-1]:,.4f}, "
+                f"dec_val_loss: {self.train_losses['dec/val_losses'][-1]:,.4f}, "
                 f"enc_val_edge_accuracy: {self.train_accuracies['enc/val_edge_accuracy'][-1]:.4f}"
                 )
             
@@ -501,9 +501,9 @@ class NRI(LightningModule):
 
         # print stats after testing
         print(
-            f"\nnri_test_loss: {self.hyperparams['nri/test_loss']:.4f}, " 
-            f"enc_test_loss: {self.hyperparams['enc/test_loss']:.4f}, "
-            f"dec_test_loss: {self.hyperparams['dec/test_loss']:.4f}, "
+            f"\nnri_test_loss: {self.hyperparams['nri/test_loss']:,.4f}, " 
+            f"enc_test_loss: {self.hyperparams['enc/test_loss']:,.4f}, "
+            f"dec_test_loss: {self.hyperparams['dec/test_loss']:,.4f}, "
             f"enc_test_edge_accuracy: {self.hyperparams.get('enc/test_edge_accuracy', -1):.4f}"
             )
         
@@ -576,7 +576,7 @@ class NRI(LightningModule):
         print(f"\n Adjacency matrix (shape {adj_matrix.shape})")
         print(adj_matrix)
 
-        print(f"\nDecoder residuals: {log_data['loss_decoder'].item():.4f}")
+        print(f"\nDecoder residuals: {log_data['loss_decoder'].item():,.4f}")
         print('\n' + 75*'-')
 
         # make decoder output plot
@@ -650,6 +650,7 @@ class NRI(LightningModule):
         axes[1].plot(epochs, self.train_losses[f'dec/val_losses'], label='val loss', color='cyan', linestyle='--')
         axes[1].set_title('Decoder Losses')
         axes[1].set_ylabel('Loss')
+        axes[1].set_yscale('log')
         axes[1].legend()
         axes[1].grid(True)
 
@@ -659,6 +660,7 @@ class NRI(LightningModule):
         axes[2].set_title('NRI Losses (Encoder + Decoder)')
         axes[2].set_ylabel('Loss')
         axes[2].set_xlabel('Epochs')
+        axes[2].set_yscale('log')
         axes[2].legend()
         axes[2].grid(True)
 

@@ -1,1 +1,0 @@
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\grp=m004\healthy\(OK):series_tp_(fs=1000)[OG]\[D] gru\T100 [mass_1: (acc, pos, vel), mass_2: (acc, pos, vel), mass_3: (acc, pos, vel), mass_4: (acc, pos, vel)]\(spf) no_spf\(D) time\(D) [no_feat] [no_reduc]\(D) (dims = 3)
