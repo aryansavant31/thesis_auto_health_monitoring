@@ -42,7 +42,8 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         n_dim : int
             The number of dimensions in each component in the dataset
         """
-        self.node_type = f"({'+'.join(list(self.data_config.signal_types['group'].keys()))})"
+        self.node_type = f"{self.data_config.signal_types['node_group_name']}"
+        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -50,10 +51,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                                 f'{self.data_config.scenario}')
 
         # add node name to path
-        model_path = os.path.join(base_path, 'train', f'{self.node_type}')
+        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}')
 
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -65,7 +66,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         signal_types_str = ', '.join(
             f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
+        model_path = os.path.join(model_path, f"{signal_types_str}")
+
+        # add timestepp id to path
+        model_path = os.path.join(model_path, f'T{self.data_config.window_length}')
 
         # add model hparams to path
         # model_path = os.path.join(model_path, f"[{self.anom_config['anom_type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
@@ -127,7 +131,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        model_path = os.path.join(self.train_log_path, f'{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -154,10 +158,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_{self.model_num}"
+            new_model = f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")
         else:
-            new_model = f"{self.node_type}-{self.anom_config['anom_type']}_fdet_1"
+            new_model = f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_1"
 
         return os.path.join(parent_dir, new_model)
     
@@ -188,8 +192,9 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
 
         self.train_log_path = self.log_config.train_log_path
         self.node_type = self.log_config.node_type
+        self.signal_group = self.log_config.signal_group
 
-        self.selected_model_num = f"{self.node_type}-{self.log_config.anom_config['anom_type']}_fdet_{self.log_config.model_num}"
+        self.selected_model_num = f"({self.node_type}-{self.signal_group})-{self.log_config.anom_config['anom_type']}_fdet_{self.log_config.model_num}"
     
     def get_infer_log_path(self):
         """
@@ -478,8 +483,18 @@ class SelectFaultDetectionModel:
             except Exception as e:
                 print(f"Could not read {txt_file}: {e}")
                 continue
+
+            new_parts = model_path.split(os.sep)
+            if "logs" in  new_parts:
+                framework_index = new_parts.index("logs")
+            else:
+                raise ValueError(f"Framework directory 'AFD' or 'AFD_thesis' not found in path: {model_path}")
+            
+            new_root = model_path.split(os.sep)[:framework_index + 1]
+            new_root_path = os.sep.join(new_root)
+
             # Remove base logs dir and split by os.sep
-            rel_path = os.path.relpath(model_path, str(self.logs_dir))
+            rel_path = os.path.relpath(model_path, str(new_root_path))
             path_parts = rel_path.split(os.sep)
             # Only keep the parts after framework (skip first 4: app, machine, scenario, train)
             path_parts = path_parts[4:]
@@ -539,25 +554,27 @@ class SelectFaultDetectionModel:
         if self.run_type == 'train':
             label_map = {
                 0: "<node_name>",
-                1: "<ds_type>",
-                2: "<ds_subtype>",
-                3: "<model>",
-                4: "<ds_stats>",
-                # 5: "<model_hparams>",
-                5: "<domain>",
-                6: "<feat_type>",
-                7: "<shape_compatibility>",
-                8: "<version>"
+                1: "<signal_group>",
+                2: "<ds_type>",
+                3: "<ds_subtype>",
+                4: "<model>",
+                5: "<signal_types>",
+                6: "<timestep_id>",
+                7: "<domain>",
+                8: "<feat_type>",
+                9: "<shape_compatibility>",
+                10: "<version>"
             }
         elif self.run_type in ['custom_test', 'predict']:
             label_map = {
                 0: "<node_name>",
-                1: "<trained_model>",
-                2: "<model_id>",
-                3: "<ds_type>",
-                4: "<ds_subtype>",
-                5: "<ds_stats>",
-                6: "<versions>"
+                1: "<signal_group>",
+                2: "<trained_model>",
+                3: "<model_id>",
+                4: "<ds_type>",
+                5: "<ds_subtype>",
+                6: "<timestep_id>",
+                7: "<versions>"
             }
                     
         added_labels = set()
@@ -571,15 +588,15 @@ class SelectFaultDetectionModel:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For directed graph, make the model folder under framework yellow
-            if self.run_type == "train" and level == 3:
-                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
-                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
-                continue
-            if self.run_type in ['custom_test', 'predict'] and level == 1:
+            if self.run_type == "train" and level == 4:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
             if self.run_type in ['custom_test', 'predict'] and level == 2:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+                continue
+            if self.run_type in ['custom_test', 'predict'] and level == 3:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue

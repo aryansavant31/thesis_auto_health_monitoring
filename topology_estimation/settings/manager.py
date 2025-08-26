@@ -52,11 +52,12 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(base_path, 'nri',)  # add framework type
 
         # add num of edge types and node types to path
-        self.group_type = f"grp={self.data_config.signal_types['node_group_name']}"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type)
+        self.group_type = f"n_grp={self.data_config.signal_types['node_group_name']}"
+        self.signal_group_type = f"s_grp={self.data_config.signal_types['signal_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type, self.signal_group_type)
 
         # get train log path
-        self.model_name = f"({self.data_config.signal_types['node_group_name']})-(E={self.pipeline_type}_D={self.recur_emb_type})_edge_est_{self.n_edge_types}"
+        self.model_name = f"({self.data_config.signal_types['node_group_name']}-{self.data_config.signal_types['signal_group_name']})-[E={self.pipeline_type}_D={self.recur_emb_type}]_edge_est_{self.n_edge_types}"
         self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}", f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
@@ -69,7 +70,9 @@ class NRITrainManager(NRITrainConfig):
         signal_types_str = ', '.join(
             f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
+        model_path = os.path.join(model_path, f"{signal_types_str}")
+
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
 
         # add sparsifier type to path
         model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
@@ -221,11 +224,12 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(base_path, 'decoder',)  # add framework type
 
         # add num of edge types and node types to path
-        self.group_type = f"grp={self.data_config.signal_types['node_group_name']}"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type)
+        self.group_type = f"n_grp={self.data_config.signal_types['node_group_name']}"
+        self.signal_group_type = f"s_grp={self.data_config.signal_types['signal_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type, self.signal_group_type)
 
         # get train log path
-        self.model_name = f"({self.data_config.signal_types['node_group_name']})-({self.recur_emb_type})_decoder_{self.n_edge_types}"
+        self.model_name = f"({self.data_config.signal_types['node_group_name']}-{self.data_config.signal_types['signal_group_name']})-[{self.recur_emb_type}]_dec_{self.n_edge_types}"
         self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
@@ -238,7 +242,9 @@ class DecoderTrainManager(DecoderTrainConfig):
         signal_types_str = ', '.join(
             f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length} [{signal_types_str}]")
+        model_path = os.path.join(model_path, f"{signal_types_str}")
+
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
 
         # add sparsifier type to path
         model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
@@ -508,7 +514,7 @@ class SelectTopologyEstimatorModel:
             if self.framework == 'nri':
                 self.file_name = 'edge_est'
             elif self.framework == 'decoder':
-                self.file_name = 'decoder'
+                self.file_name = 'dec'
         elif self.run_type == 'custom_test':
             self.file_name = 'custom_test'
         elif self.run_type == 'predict':
@@ -537,8 +543,18 @@ class SelectTopologyEstimatorModel:
             except Exception as e:
                 print(f"Could not read {txt_file}: {e}")
                 continue
+            
+            new_parts = model_path.split(os.sep)
+            if "logs" in  new_parts:
+                framework_index = new_parts.index("logs")
+            else:
+                raise ValueError(f"Framework directory 'AFD' or 'AFD_thesis' not found in path: {model_path}")
+            
+            new_root = model_path.split(os.sep)[:framework_index + 1]
+            new_root_path = os.sep.join(new_root)
+
             # Remove base logs dir and split by os.sep
-            rel_path = os.path.relpath(model_path, str(self.logs_dir))
+            rel_path = os.path.relpath(model_path, str(new_root_path))
             path_parts = rel_path.split(os.sep)
             # Only keep the parts after framework (skip first 4: app, machine, scenario, framework, train)
             path_parts = path_parts[5:]
@@ -612,54 +628,60 @@ class SelectTopologyEstimatorModel:
                 label_map = {
                     0: "<n_edge_types>",
                     1: "<node_group>",
-                    2: "<ds_type>",
-                    3: "<ds_subtype>",
-                    4: "<model>",
-                    5: "<ds_stats>",
-                    6: "<sparsif_type>",
-                    7: "<domain>",
-                    8: "<nri_fex_type>",
-                    9: "<shape_compatibility>",
-                    10: "<versions>"
+                    2: "<signal_group>",
+                    3: "<ds_type>",
+                    4: "<ds_subtype>",
+                    5: "<model>",
+                    6: "<signal_types>",
+                    7: "<timestep_id>",
+                    8: "<sparsif_type>",
+                    9: "<domain>",
+                    10: "<nri_fex_type>",
+                    11: "<shape_compatibility>",
+                    12: "<versions>"
                 }
             else:
                 label_map = {
                     0: "<n_edge_types>",
                     1: "<node_group>",
-                    2: "<ds_type>",
-                    3: "<ds_subtype>",
-                    4: "<model>",
-                    5: "<ds_stats>",
-                    6: "<sparsif_type>",
-                    7: "<sparsif_fex_type>",
-                    8: "<domain>",
-                    9: "<nri_fex_type>",
-                    10: "<shape_compatibility>",
-                    11: "<versions>"
+                    2: "<signal_group>",
+                    3: "<ds_type>",
+                    4: "<ds_subtype>",
+                    5: "<model>",
+                    6: "<signal_types>",
+                    7: "<timestep_id>",
+                    8: "<sparsif_type>",
+                    9: "<sparsif_fex_type>",
+                    10: "<domain>",
+                    11: "<nri_fex_type>",
+                    12: "<shape_compatibility>",
+                    13: "<versions>"
                 }
         elif self.run_type in ['custom_test', 'predict']:
             if is_no_sparsif:
                 label_map = {
                     0: "<n_edge_types>",
                     1: "<node_group>",
-                    2: "<trained_model>",
-                    3: "<ds_type>",
-                    4: "<ds_subtype>",
-                    5: "ds_stats",
-                    6: "<sparsif_type>",
-                    7: "<versions>"
+                    2: "<signal_group>",
+                    3: "<trained_model>",
+                    4: "<ds_type>",
+                    5: "<ds_subtype>",
+                    6: "ds_stats",
+                    7: "<sparsif_type>",
+                    8: "<versions>"
                 }
             else:
                 label_map = {
                     0: "<n_edge_types>",
                     1: "<node_group>",
-                    2: "<trained_model>",
-                    3: "<ds_type>",
-                    4: "<ds_subtype>",
-                    5: "<ds_stats>",
-                    6: "<sparsif_type>",
-                    7: "<sparsif_fex_type>",
-                    8: "<versions>"
+                    2: "<signal_group>",
+                    3: "<trained_model>",
+                    4: "<ds_type>",
+                    5: "<ds_subtype>",
+                    6: "<ds_stats>",
+                    7: "<sparsif_type>",
+                    8: "<sparsif_fex_type>",
+                    9: "<versions>"
                 }
                     
         added_labels = set()
@@ -673,11 +695,11 @@ class SelectTopologyEstimatorModel:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For directed graph, make the model folder under framework yellow
-            if self.run_type == "train" and level == 4:
+            if self.run_type == "train" and level == 5:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
-            if self.run_type in ['custom_test', 'predict'] and level == 2:
+            if self.run_type in ['custom_test', 'predict'] and level == 3:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue

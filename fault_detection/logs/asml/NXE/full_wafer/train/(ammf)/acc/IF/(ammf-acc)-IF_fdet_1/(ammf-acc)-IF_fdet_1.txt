@@ -1,0 +1,1 @@
+C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\(ammf)\acc\healthy\(OK):E1_M=mKW33[OG]\[anom] IF\ammf: (acc_rx, acc_ry, acc_rz, acc_x, acc_y, acc_z)\T4000\time\(anom) [no_feat] [no_reduc]\anom (comps = 24000)

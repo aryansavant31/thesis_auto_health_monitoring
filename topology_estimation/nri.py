@@ -749,7 +749,7 @@ class NRI(LightningModule):
             self.logger.experiment.add_figure(f"{self.model_id}/{type}/decoder_output_plot", fig, global_step=self.global_step, close=True)
 
             if is_end:
-                fig.savefig(os.path.join(self.logger.log_dir, f'decoder_output_plot_{type}_({rep_num[sample_idx]})_({self.model_id}).png'), dpi=500)
+                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)
                 print(f"\nDecoder output plot for rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
         else:
             if is_end:

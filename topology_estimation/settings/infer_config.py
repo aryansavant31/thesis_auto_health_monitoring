@@ -86,7 +86,7 @@ class DecoderInferConfig:
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
-        
+
         # if dynamic graph is true
         self.temp = 1.0        # temperature for Gumble Softmax
         self.is_hard = True 
@@ -107,7 +107,7 @@ class DecoderInferConfig:
 
 
 if __name__ == "__main__":
-    from manager import SelectTopologyEstimatorModel
+    from topology_estimation.settings.manager import SelectTopologyEstimatorModel
 
     user_text_1 = "To view/select nri models, type (a)\nTo view/select decoder models, type (b)\nEnter input: "
     user_input_1 = input(user_text_1).strip("'\"")
