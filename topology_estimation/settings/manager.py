@@ -52,12 +52,12 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(base_path, 'nri',)  # add framework type
 
         # add num of edge types and node types to path
-        self.group_type = f"n_grp={self.data_config.signal_types['node_group_name']}"
-        self.signal_group_type = f"s_grp={self.data_config.signal_types['signal_group_name']}"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type, self.signal_group_type)
+        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
+        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"({self.node_group})", self.signal_group)
 
         # get train log path
-        self.model_name = f"({self.data_config.signal_types['node_group_name']}-{self.data_config.signal_types['signal_group_name']})-[E={self.pipeline_type}_D={self.recur_emb_type}]_edge_est_{self.n_edge_types}"
+        self.model_name = f"({self.node_group}-{self.signal_group})-[E={self.pipeline_type}_D={self.recur_emb_type}]_edge_est_{self.n_edge_types}"
         self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}", f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
@@ -224,12 +224,12 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(base_path, 'decoder',)  # add framework type
 
         # add num of edge types and node types to path
-        self.group_type = f"n_grp={self.data_config.signal_types['node_group_name']}"
-        self.signal_group_type = f"s_grp={self.data_config.signal_types['signal_group_name']}"
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', self.group_type, self.signal_group_type)
+        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
+        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"({self.node_group})", self.signal_group)
 
         # get train log path
-        self.model_name = f"({self.data_config.signal_types['node_group_name']}-{self.data_config.signal_types['signal_group_name']})-[{self.recur_emb_type}]_dec_{self.n_edge_types}"
+        self.model_name = f"({self.node_group}-{self.signal_group})-[{self.recur_emb_type}]_dec_{self.n_edge_types}"
         self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
