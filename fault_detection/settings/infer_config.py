@@ -35,6 +35,12 @@ class AnomalyDetectorInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
+        self.log_config.domain_config.update({'cutoff_freq' : 100})
+        self.domain_config = self.log_config.domain_config
+        print("domain config", self.domain_config)
+
+        self.new_hparams = self.get_new_hparams()
+
         self.test_plots = {
             'confusion_matrix'      : [True, {}],
             'roc_curve'             : [False, {}],
@@ -42,6 +48,40 @@ class AnomalyDetectorInferConfig:
             'anomaly_score_dist-2'  : [True, {'is_pred':False}],
             'pair_plot'             : [True, {}],
         }
+
+        
+    def get_new_hparams(self):
+
+        domain_str = self._get_config_str([self.domain_config])
+        new_hparams = {
+            'domain': domain_str,
+        }
+
+        for key, value in new_hparams.items():
+            if isinstance(value, list):
+                new_hparams[key] = ', '.join(map(str, value))
+            elif isinstance(value, (int, float)):
+                new_hparams[key] = str(value)
+            elif value is None:
+                new_hparams[key] = 'None'
+
+        return new_hparams
+    
+    def _get_config_str(self, configs:list):
+        """
+        Get a neat string that has the type of config and its parameters.
+        Eg: "PCA(comps=3)"
+        """
+        config_strings = []
+
+        for config in configs:
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            if additional_keys:
+                config_strings.append(f"{config['type']}({additional_keys})")
+            else:
+                config_strings.append(f"{config['type']}")
+
+        return ', '.join(config_strings)
         
         
 if __name__ == "__main__":

@@ -53,18 +53,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M004'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = MSDGroupMaker().m004_all
+        self.signal_types = NXEGroupMaker().ammf_acc
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 100
-        self.stride             = 100
+        self.window_length      = 2000
+        self.stride             = 2000
 
         self.view = DatasetViewer(self)
 
@@ -79,7 +79,7 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
 
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')]
+            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
         }
         
         self.unhealthy_configs = {
@@ -97,7 +97,9 @@ class DataConfig:
         }
         
         self.unhealthy_configs = {
-            '(sim)_E1_set01_M=mAI26': [get_augment_config('glitch', prob=0.1, amps=1)]
+            '(sim)_E1_set01_M=mAI26': [get_augment_config('glitch', prob=0.001, amp=0.05, add_next=True),
+                                       get_augment_config('gau', mean=0, std=0.0001, add_next=True),
+                                       get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])]
         }
 
         self.unknown_configs = {
