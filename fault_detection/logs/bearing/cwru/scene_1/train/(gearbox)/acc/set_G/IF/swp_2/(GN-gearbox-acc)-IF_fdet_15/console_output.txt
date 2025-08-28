@@ -1,0 +1,286 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.train.py
+Base Name: (GN-gearbox-acc)-IF_fdet_15
+Start Time: 2025-08-28 23:39:02
+End Time: 2025-08-28 23:39:37
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model training...
+
+'Train' type dataset selected:
+
+
+ds_subtype selections:
+
+(<ds_subtype_num>) <ds_subtype> : [<augments>]
+---------------------------------------------
+>> Healthy configs
+(1) 0_N    : [OG]
+
+>> Unhealthy configs
+(1) 0_B-021    : [OG]
+
+>> Unknown configs
+
+
+Node and signal types are set as follows:
+
+(<node_num>) <node_type> : [<signal_types>]
+---------------------------------------------
+(1) gearbox   : [acc]
+
+Node group name: gearbox
+Signal group name: acc
+
+
+For ds_type 'OK' and others....
+
+Maximum timesteps across all node types: 243,938
+
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 972 
+Train: 720/777 [OK=368, NOK=352, UK=0], Test: 160/194 [OK=73, NOK=87, UK=0], Val: 0/0 [OK=0, NOK=0, UK=0],
+Remainder: 1 [OK=0, NOK=1, UK=0]
+
+train_data_loader statistics:
+Number of batches: 9
+torch.Size([80, 1, 1000, 1])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 2
+torch.Size([80, 1, 1000, 1]) 
+
+---------------------------------------------------------------------------
+
+Anomaly Detector Model Initialized with the following configurations:
+Model type: IsolationForest
+Number of trees in the forest: 2000
+Contamination: auto
+
+---------------------------------------------------------------------------
+Model parameters saved to 
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\beari
+ng\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_
+15.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15
+
+---------------------------------------------------------------------------
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: freq(cutoff_freq=100)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No frequency feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Frequency data cannot be normalized before feature extraction, hence skipping raw data normalization.
+
+No seperate features extracted, so using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp496_dim0, comp497_dim0, comp498_dim0, comp499_dim0]
+
+Fitting anomaly detection model...
+
+Model fitted successfully in 4.40 seconds
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  ...   rep_num    scores  pred_label
+0      0.007680    0.010091    0.014761  ...  1001.181  0.095963           0
+1      0.002699    0.001892    0.011002  ...  1001.255  0.097140           0
+2      0.000443    0.001422    0.003923  ...  1001.057  0.054314           0
+3      0.005477    0.006130    0.007999  ...  1001.420  0.102818           0
+4      0.004481    0.005503    0.008153  ...  1001.190  0.096400           0
+..          ...         ...         ...  ...       ...       ...         ...
+715    0.005013    0.004554    0.011749  ...  1001.044  0.098068           0
+716    0.022706    0.028327    0.037871  ...  1001.003  0.033265           0
+717    0.009705    0.011894    0.015829  ...  1001.176  0.088266           0
+718    0.000992    0.002282    0.008999  ...  1001.293  0.102484           0
+719    0.008424    0.010108    0.012972  ...  1001.431  0.096608           0
+
+[720 rows x 504 columns]
+
+Training accuracy: 0.63
+
+Training hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15
+
+Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\anomaly_detector.pkl
+
+---------------------------------------------------------------------------
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+Testing anomaly detection model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: freq(cutoff_freq=100)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No frequency feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Frequency data cannot be normalized before feature extraction, hence skipping raw data normalization.
+
+No seperate features extracted, so using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp496_dim0, comp497_dim0, comp498_dim0, comp499_dim0]
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  ...   rep_num    scores  pred_label
+0      0.007110    0.008841    0.011686  ...  1001.427  0.105340           0
+1      0.016990    0.015957    0.041888  ...  1001.392  0.023630           0
+2      0.003647    0.003375    0.007499  ...  1001.210  0.092532           0
+3      0.011023    0.009877    0.022518  ...  1001.457  0.060236           0
+4      0.020872    0.021188    0.036290  ...  1001.056  0.069606           0
+..          ...         ...         ...  ...       ...       ...         ...
+155    0.008926    0.008856    0.013691  ...  1001.383  0.062123           0
+156    0.009247    0.008984    0.012362  ...  1001.107  0.047714           0
+157    0.008755    0.009839    0.021335  ...  1001.245  0.014195           0
+158    0.002028    0.001664    0.005857  ...  1001.411  0.092423           0
+159    0.004188    0.005007    0.007144  ...  1001.147  0.094952           0
+
+[160 rows x 504 columns]
+
+Test accuracy: 0.55
+Precision: 1.00, Recall: 0.17, F1-score: 0.29
+
+Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX >>>>>>>>>>>>
+
+> Creating confusion matrix for (GN-gearbox-acc)-IF_fdet_15 / test...
+
+Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION (PRED_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for (GN-gearbox-acc)-IF_fdet_15 / test...
+
+Total OK samples (from pred_label) : 145
+---------- Samples in OK bins ----------
+Bin 29 (-0.00056, 0.00448): 6 (1,001.065), 47 (1,001.211), 71 (1,001.063), 74 (1,001.344), 77 (1,001.025)
+Bin 30 (0.00448, 0.00953): 28 (1,001.126), 31 (1,001.267), 107 (1,001.128), 116 (1,001.482)
+Bin 31 (0.00953, 0.01457): 97 (1,001.295), 157 (1,001.245)
+Bin 32 (0.01457, 0.01961): 30 (1,001.243), 33 (1,001.433), 92 (1,001.030), 141 (1,001.187), 152 (1,001.307)
+Bin 33 (0.01961, 0.02465): 1 (1,001.392), 36 (1,001.198), 57 (1,001.172), 69 (1,001.219)
+Bin 34 (0.02465, 0.02970): 19 (1,001.116), 26 (1,001.348), 46 (1,001.180), 61 (1,001.192)
+Bin 35 (0.02970, 0.03474): 86 (1,001.313)
+Bin 36 (0.03474, 0.03978): 34 (1,001.436), 101 (1,001.150)
+Bin 37 (0.03978, 0.04483): 58 (1,001.396), 79 (1,001.011), 84 (1,001.118), 88 (1,001.098), 89 (1,001.007), 103 (1,001.377), 131 (1,001.426), 132 (1,001.044)
+Bin 38 (0.04483, 0.04987): 17 (1,001.169), 22 (1,001.066), 49 (1,001.350), 59 (1,001.397), 99 (1,001.317), 145 (1,001.117), 156 (1,001.107)
+Bin 39 (0.04987, 0.05491): 40 (1,001.165), 51 (1,001.418), 81 (1,001.247), 135 (1,001.258)
+Bin 40 (0.05491, 0.05995): 9 (1,001.455), 11 (1,001.004), 12 (1,001.382), 14 (1,001.343), 48 (1,001.101), 66 (1,001.443), 68 (1,001.481), 72 (1,001.246), 75 (1,001.354), 95 (1,001.104), 98 (1,001.310), 104 (1,001.334), 114 (1,001.217), 119 (1,001.475)
+Bin 41 (0.05995, 0.06500): 3 (1,001.457), 5 (1,001.390), 20 (1,001.389), 96 (1,001.428), 121 (1,001.364), 129 (1,001.153), 133 (1,001.170), 155 (1,001.383)
+Bin 42 (0.06500, 0.07004): 4 (1,001.056), 8 (1,001.325), 93 (1,001.071)
+Bin 43 (0.07004, 0.07508): 139 (1,001.026)
+Bin 44 (0.07508, 0.08013): 102 (1,001.087)
+Bin 45 (0.08013, 0.08517): 100 (1,001.112)
+Bin 46 (0.08517, 0.09021): 35 (1,001.103), 43 (1,001.220), 65 (1,001.101), 80 (1,001.232), 94 (1,001.049), 144 (1,001.018)
+Bin 47 (0.09021, 0.09525): 2 (1,001.210), 7 (1,001.254), 10 (1,001.192), 15 (1,001.375), 16 (1,001.335), 29 (1,001.414), 37 (1,001.139), 38 (1,001.069), 39 (1,001.223), 42 (1,001.140), 73 (1,001.421), 78 (1,001.193), 106 (1,001.339), 110 (1,001.102), 111 (1,001.416), 112 (1,001.473), 113 (1,001.309), 120 (1,001.231), 123 (1,001.154), 126 (1,001.453), 134 (1,001.285), 136 (1,001.160), 137 (1,001.045), 143 (1,001.354), 150 (1,001.302), 154 (1,001.025), 158 (1,001.411), 159 (1,001.147)
+Bin 48 (0.09525, 0.10030): 18 (1,001.389), 21 (1,001.265), 27 (1,001.271), 32 (1,001.412), 45 (1,001.014), 50 (1,001.447), 53 (1,001.423), 54 (1,001.128), 56 (1,001.066), 60 (1,001.124), 62 (1,001.433), 67 (1,001.097), 70 (1,001.455), 82 (1,001.459), 83 (1,001.374), 87 (1,001.129), 90 (1,001.245), 91 (1,001.120), 105 (1,001.224), 109 (1,001.060), 115 (1,001.067), 118 (1,001.100), 122 (1,001.056), 124 (1,001.233), 130 (1,001.282), 140 (1,001.350), 142 (1,001.228), 147 (1,001.170), 149 (1,001.226)
+Bin 49 (0.10030, 0.10534): 23 (1,001.036), 24 (1,001.307), 41 (1,001.235), 52 (1,001.395), 76 (1,001.313), 128 (1,001.048), 151 (1,001.249)
+
+Total NOK samples (from pred_label) : 15
+---------- Samples in NOK bins ----------
+Bin 0 (-0.14680, -0.14176): 13 (1,001.088)
+Bin 3 (-0.13167, -0.12663): 148 (1,001.311)
+Bin 6 (-0.11655, -0.11150): 63 (1,001.353)
+Bin 10 (-0.09637, -0.09133): 108 (1,001.092)
+Bin 17 (-0.06107, -0.05603): 55 (1,001.273)
+Bin 18 (-0.05603, -0.05099): 44 (1,001.406)
+Bin 22 (-0.03586, -0.03082): 25 (1,001.182), 125 (1,001.398), 153 (1,001.229)
+Bin 24 (-0.02577, -0.02073): 127 (1,001.365), 146 (1,001.236)
+Bin 25 (-0.02073, -0.01569): 117 (1,001.042)
+Bin 27 (-0.01065, -0.00560): 85 (1,001.388), 138 (1,001.255)
+Bin 28 (-0.00560, -0.00056): 64 (1,001.407)
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION (GIVEN_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for (GN-gearbox-acc)-IF_fdet_15 / test...
+
+Total OK samples (from given_label) : 73
+---------- Samples in OK bins ----------
+Bin 44 (0.07508, 0.08013): 102 (1,001.087)
+Bin 45 (0.08013, 0.08517): 100 (1,001.112)
+Bin 46 (0.08517, 0.09021): 35 (1,001.103), 43 (1,001.220), 65 (1,001.101), 80 (1,001.232), 94 (1,001.049), 144 (1,001.018)
+Bin 47 (0.09021, 0.09525): 2 (1,001.210), 7 (1,001.254), 10 (1,001.192), 15 (1,001.375), 16 (1,001.335), 29 (1,001.414), 37 (1,001.139), 38 (1,001.069), 39 (1,001.223), 42 (1,001.140), 73 (1,001.421), 78 (1,001.193), 106 (1,001.339), 110 (1,001.102), 111 (1,001.416), 112 (1,001.473), 113 (1,001.309), 120 (1,001.231), 123 (1,001.154), 126 (1,001.453), 134 (1,001.285), 136 (1,001.160), 137 (1,001.045), 143 (1,001.354), 150 (1,001.302), 154 (1,001.025), 158 (1,001.411), 159 (1,001.147)
+Bin 48 (0.09525, 0.10030): 18 (1,001.389), 21 (1,001.265), 27 (1,001.271), 32 (1,001.412), 45 (1,001.014), 50 (1,001.447), 53 (1,001.423), 54 (1,001.128), 56 (1,001.066), 60 (1,001.124), 62 (1,001.433), 67 (1,001.097), 70 (1,001.455), 82 (1,001.459), 83 (1,001.374), 87 (1,001.129), 90 (1,001.245), 91 (1,001.120), 105 (1,001.224), 109 (1,001.060), 115 (1,001.067), 118 (1,001.100), 122 (1,001.056), 124 (1,001.233), 130 (1,001.282), 140 (1,001.350), 142 (1,001.228), 147 (1,001.170), 149 (1,001.226)
+Bin 49 (0.10030, 0.10534): 23 (1,001.036), 24 (1,001.307), 41 (1,001.235), 52 (1,001.395), 76 (1,001.313), 128 (1,001.048), 151 (1,001.249)
+
+Total NOK samples (from given_label) : 87
+---------- Samples in NOK bins ----------
+Bin 0 (-0.14680, -0.14176): 13 (1,001.088)
+Bin 3 (-0.13167, -0.12663): 148 (1,001.311)
+Bin 6 (-0.11655, -0.11150): 63 (1,001.353)
+Bin 10 (-0.09637, -0.09133): 108 (1,001.092)
+Bin 17 (-0.06107, -0.05603): 55 (1,001.273)
+Bin 18 (-0.05603, -0.05099): 44 (1,001.406)
+Bin 22 (-0.03586, -0.03082): 25 (1,001.182), 125 (1,001.398), 153 (1,001.229)
+Bin 24 (-0.02577, -0.02073): 127 (1,001.365), 146 (1,001.236)
+Bin 25 (-0.02073, -0.01569): 117 (1,001.042)
+Bin 27 (-0.01065, -0.00560): 85 (1,001.388), 138 (1,001.255)
+Bin 28 (-0.00560, -0.00056): 64 (1,001.407)
+Bin 29 (-0.00056, 0.00448): 6 (1,001.065), 47 (1,001.211), 71 (1,001.063), 74 (1,001.344), 77 (1,001.025)
+Bin 30 (0.00448, 0.00953): 28 (1,001.126), 31 (1,001.267), 107 (1,001.128), 116 (1,001.482)
+Bin 31 (0.00953, 0.01457): 97 (1,001.295), 157 (1,001.245)
+Bin 32 (0.01457, 0.01961): 30 (1,001.243), 33 (1,001.433), 92 (1,001.030), 141 (1,001.187), 152 (1,001.307)
+Bin 33 (0.01961, 0.02465): 1 (1,001.392), 36 (1,001.198), 57 (1,001.172), 69 (1,001.219)
+Bin 34 (0.02465, 0.02970): 19 (1,001.116), 26 (1,001.348), 46 (1,001.180), 61 (1,001.192)
+Bin 35 (0.02970, 0.03474): 86 (1,001.313)
+Bin 36 (0.03474, 0.03978): 34 (1,001.436), 101 (1,001.150)
+Bin 37 (0.03978, 0.04483): 58 (1,001.396), 79 (1,001.011), 84 (1,001.118), 88 (1,001.098), 89 (1,001.007), 103 (1,001.377), 131 (1,001.426), 132 (1,001.044)
+Bin 38 (0.04483, 0.04987): 17 (1,001.169), 22 (1,001.066), 49 (1,001.350), 59 (1,001.397), 99 (1,001.317), 145 (1,001.117), 156 (1,001.107)
+Bin 39 (0.04987, 0.05491): 40 (1,001.165), 51 (1,001.418), 81 (1,001.247), 135 (1,001.258)
+Bin 40 (0.05491, 0.05995): 9 (1,001.455), 11 (1,001.004), 12 (1,001.382), 14 (1,001.343), 48 (1,001.101), 66 (1,001.443), 68 (1,001.481), 72 (1,001.246), 75 (1,001.354), 95 (1,001.104), 98 (1,001.310), 104 (1,001.334), 114 (1,001.217), 119 (1,001.475)
+Bin 41 (0.05995, 0.06500): 3 (1,001.457), 5 (1,001.390), 20 (1,001.389), 96 (1,001.428), 121 (1,001.364), 129 (1,001.153), 133 (1,001.170), 155 (1,001.383)
+Bin 42 (0.06500, 0.07004): 4 (1,001.056), 8 (1,001.325), 93 (1,001.071)
+Bin 43 (0.07004, 0.07508): 139 (1,001.026)
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for (GN-gearbox-acc)-IF_fdet_15 / test...
+
+Pair plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\(gearbox)\acc\set_GN\IF\swp_2\(GN-gearbox-acc)-IF_fdet_15\test
+
+
+===========================================================================
+
+Fault detection model '(GN-gearbox-acc)-IF_fdet_15' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-28 23:39:37

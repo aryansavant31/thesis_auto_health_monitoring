@@ -24,15 +24,16 @@ from copy import deepcopy
 from data.config import DataConfig
 
 # local imports
-from .train_config import AnomalyDetectorTrainConfig, AnomalyDetectorTrainConfigSweep
+from .train_config import AnomalyDetectorTrainConfig, AnomalyDetectorTrainSweep
 from .infer_config import AnomalyDetectorInferConfig
 
 
 class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
-    def __init__(self, data_config:DataConfig, make_new_version=False):
+    def __init__(self, data_config:DataConfig, sweep_num=0, always_next_version=False):
         super().__init__(data_config)
         self.helper = HelperClass()
-        self.make_new_version = make_new_version
+        self.always_next_version = always_next_version
+        self.sweep_num = sweep_num
         
     def get_train_log_path(self, n_components, n_dim):
         """
@@ -55,12 +56,12 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                                 f'{self.data_config.scenario}')
 
         # add node name to path
-        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}', f'set={self.set_id}')
+        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}', f'set_{self.set_id}')
 
         # model name
         self.model_name = f"({self.set_id}-{self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"{self.model_name}_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"swp_{self.sweep_num}" , f"{self.model_name}_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -178,7 +179,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         """
         if os.path.isdir(self.train_log_path):
 
-            if self.make_new_version:
+            if self.always_next_version:
                 self.train_log_path = self._get_next_version()
                 return
             
@@ -321,12 +322,10 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
                 print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully   
 
-class AnomalyDetectorSweepManager(AnomalyDetectorTrainConfigSweep):
-    def __init__(self, data_config:DataConfig, make_model_num=False, current_model_num=1):
+class AnomalyDetectorSweepManager(AnomalyDetectorTrainSweep):
+    def __init__(self, data_config:DataConfig, make_model_num=False):
         super().__init__(data_config)
-        self.helper = HelperClass()
         self.make_model_num = make_model_num
-        self.current_model_num = current_model_num
 
     def get_sweep_configs(self):
         """
@@ -351,7 +350,7 @@ class AnomalyDetectorSweepManager(AnomalyDetectorTrainConfigSweep):
         train_configs = []
         for idx, combo in enumerate(combinations):
             # Create base train config
-            train_config = AnomalyDetectorTrainManager(self.data_config, make_new_version=True)
+            train_config = AnomalyDetectorTrainManager(self.data_config, sweep_num=self.sweep_num, always_next_version=True)
             
             # Update parameters based on current combination
             for param_name, param_value in zip(param_names, combo):

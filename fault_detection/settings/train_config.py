@@ -171,9 +171,12 @@ def get_anom_config(anom_type, **kwargs):
 
     return anom_config  
 
-class AnomalyDetectorTrainConfigSweep:
+class AnomalyDetectorTrainSweep:
     def __init__(self, data_config:DataConfig):
         self.data_config = data_config
+
+        self.sweep_num = 2
+        self.current_model_num = 4
 
     # 1: Training parameters
         # dataset parameters
@@ -183,12 +186,12 @@ class AnomalyDetectorTrainConfigSweep:
         self.num_workers = [1]
 
     # 2: Model parameters
-        self.anom_config = [get_anom_config('IF', n_estimators=100),
-                            get_anom_config('IF', n_estimators=200),]
+        self.anom_config = [get_anom_config('IF', n_estimators=1000),
+                            get_anom_config('IF', n_estimators=2000),]
 
         # run parameters
         self.domain_config = [get_domain_config('freq')]
-        self.raw_data_norm = [None]
+        self.raw_data_norm = [None, 'min_max', 'std']
         self.feat_configs = [[
             #get_freq_feat_config('first_n_modes', n_modes=6), 
         ]]
