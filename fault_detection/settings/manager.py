@@ -17,19 +17,22 @@ from rich.console import Console
 from rich.tree import Tree
 from rich import print
 import re
+import itertools
+from copy import deepcopy
 
 # global imports
 from data.config import DataConfig
 
 # local imports
-from .train_config import AnomalyDetectorTrainConfig
+from .train_config import AnomalyDetectorTrainConfig, AnomalyDetectorTrainConfigSweep
 from .infer_config import AnomalyDetectorInferConfig
 
 
 class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
-    def __init__(self, data_config:DataConfig):
+    def __init__(self, data_config:DataConfig, make_new_version=False):
         super().__init__(data_config)
         self.helper = HelperClass()
+        self.make_new_version = make_new_version
         
     def get_train_log_path(self, n_components, n_dim):
         """
@@ -44,6 +47,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         """
         self.node_type = f"{self.data_config.signal_types['node_group_name']}"
         self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        self.set_id = self.data_config.set_id
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -51,10 +55,12 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                                 f'{self.data_config.scenario}')
 
         # add node name to path
-        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}')
+        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}', f'set={self.set_id}')
 
+        # model name
+        self.model_name = f"({self.set_id}-{self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"{self.model_name}_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -131,7 +137,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         with open(config_path, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
-        model_path = os.path.join(self.train_log_path, f'({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}.txt')
+        model_path = os.path.join(self.train_log_path, f'{self.model_name}_{self.model_num}.txt')
         with open(model_path, 'w') as f:
             f.write(self.model_id)
 
@@ -158,10 +164,10 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             # Extract numbers and find the max
             max_model = max(int(f.split('_')[-1]) for f in model_folders)
             self.model_num = max_model + 1
-            new_model = f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_{self.model_num}"
+            new_model = f"{self.model_name}_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")
         else:
-            new_model = f"({self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet_1"
+            new_model = f"{self.model_name}_1"
 
         return os.path.join(parent_dir, new_model)
     
@@ -171,6 +177,11 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         Checks if the model_num already exists in the log path.
         """
         if os.path.isdir(self.train_log_path):
+
+            if self.make_new_version:
+                self.train_log_path = self._get_next_version()
+                return
+            
             print(f"'Version {self.model_num}' already exists in the log path '{self.train_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
@@ -194,7 +205,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
         self.node_type = self.log_config.node_type
         self.signal_group = self.log_config.signal_group
 
-        self.selected_model_num = f"({self.node_type}-{self.signal_group})-{self.log_config.anom_config['anom_type']}_fdet_{self.log_config.model_num}"
+        self.selected_model_num = os.path.basename(self.train_log_path)
     
     def get_infer_log_path(self):
         """
@@ -309,6 +320,86 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
             elif user_input.lower() == 'c':
                 print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully   
+
+class AnomalyDetectorSweepManager(AnomalyDetectorTrainConfigSweep):
+    def __init__(self, data_config:DataConfig, make_model_num=False, current_model_num=1):
+        super().__init__(data_config)
+        self.helper = HelperClass()
+        self.make_model_num = make_model_num
+        self.current_model_num = current_model_num
+
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+        """
+        # Convert sweep config to dictionary
+        sweep_dict = self._to_dict()
+        
+        # Get all parameter names and their values
+        param_names = list(sweep_dict.keys())
+        param_values = list(sweep_dict.values())
+        
+        # Generate all combinations using cartesian product
+        combinations = list(itertools.product(*param_values))
+        
+        # Create train configs for each combination
+        train_configs = []
+        for idx, combo in enumerate(combinations):
+            # Create base train config
+            train_config = AnomalyDetectorTrainManager(self.data_config, make_new_version=True)
+            
+            # Update parameters based on current combination
+            for param_name, param_value in zip(param_names, combo):
+                setattr(train_config, param_name, param_value)
+            
+            # Regenerate hyperparameters after updating parameters
+            train_config.hparams = train_config.get_hparams()
+
+            # Update model number if required
+            if self.make_model_num:
+                train_config.model_num = self.current_model_num + idx + 1
+            
+            train_configs.append(train_config)
+        
+        return train_configs
+    
+    def _to_dict(self):
+        """
+        Convert sweep config attributes to dictionary, excluding private methods and non-list attributes.
+        """
+        sweep_dict = {}
+        for attr_name in dir(self):
+            if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
+                attr_value = getattr(self, attr_name)
+                if isinstance(attr_value, list):
+                    sweep_dict[attr_name] = attr_value
+        return sweep_dict
+    
+    def get_total_combinations(self):
+        """
+        Get the total number of parameter combinations.
+        """
+        sweep_dict = self._to_dict()
+        total = 1
+        for values in sweep_dict.values():
+            total *= len(values)
+        return total
+    
+    def print_sweep_summary(self):
+        """
+        Print a summary of the parameter sweep.
+        """
+        sweep_dict = self._to_dict()
+        print(f"\nParameter Sweep Summary:")
+        print(f"Total combinations: {self.get_total_combinations()}")
+        print("\nParameters and their values:")
+        for param_name, param_values in sweep_dict.items():
+            print(f"  {param_name}: {len(param_values)} values -> {param_values}")
     
 
 class HelperClass:
@@ -555,26 +646,28 @@ class SelectFaultDetectionModel:
             label_map = {
                 0: "<node_name>",
                 1: "<signal_group>",
-                2: "<ds_type>",
-                3: "<ds_subtype>",
-                4: "<model>",
-                5: "<signal_types>",
-                6: "<timestep_id>",
-                7: "<domain>",
-                8: "<feat_type>",
-                9: "<shape_compatibility>",
-                10: "<version>"
+                2: "<set>",
+                3: "<ds_type>",
+                4: "<ds_subtype>",
+                5: "<model>",
+                6: "<signal_types>",
+                7: "<timestep_id>",
+                8: "<domain>",
+                9: "<feat_type>",
+                10: "<shape_compatibility>",
+                11: "<version>"
             }
         elif self.run_type in ['custom_test', 'predict']:
             label_map = {
                 0: "<node_name>",
                 1: "<signal_group>",
-                2: "<trained_model>",
-                3: "<model_id>",
-                4: "<ds_type>",
-                5: "<ds_subtype>",
-                6: "<timestep_id>",
-                7: "<versions>"
+                2: "<set>",
+                3: "<trained_model>",
+                4: "<model_id>",
+                5: "<ds_type>",
+                6: "<ds_subtype>",
+                7: "<timestep_id>",
+                8: "<versions>"
             }
                     
         added_labels = set()
@@ -588,15 +681,15 @@ class SelectFaultDetectionModel:
                 parent_node.add(f"[blue]{label_map[level]}[/blue]")
                 added_labels.add(label_map[level])
             # For directed graph, make the model folder under framework yellow
-            if self.run_type == "train" and level == 4:
-                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
-                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
-                continue
-            if self.run_type in ['custom_test', 'predict'] and level == 2:
+            if self.run_type == "train" and level == 5:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
             if self.run_type in ['custom_test', 'predict'] and level == 3:
+                branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
+                self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
+                continue
+            if self.run_type in ['custom_test', 'predict'] and level == 4:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue

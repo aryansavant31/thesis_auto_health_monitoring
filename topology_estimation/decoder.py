@@ -255,6 +255,11 @@ class Decoder(LightningModule):
         return ', '.join(config_strings) 
     
     def pairwise_op(self, node_emb, rec_rel, send_rel):
+        """
+        Returns
+        -------
+        edge_feature : torch.Tensor, (batch_size, num_edges, 2*msg_out_size)
+        """
         receivers = torch.matmul(rec_rel, node_emb)
         senders = torch.matmul(send_rel, node_emb)
         return torch.cat([senders, receivers], dim=-1)
@@ -289,8 +294,10 @@ class Decoder(LightningModule):
         hidden : torch.Tensor, shape (batch_size, n_nodes, msg_out_size)
             Hidden state for the next step, used for recurrent embedding.
         """
+        n_nodes = inputs.size(1)
+        
         # node2edge
-        pre_msg = self.pairwise_op(hidden, rec_rel, send_rel) 
+        pre_msg = self.pairwise_op(hidden, rec_rel, send_rel) # pre_msg is edge feature e_ij
 
         all_msgs = torch.zeros(pre_msg.size(0), pre_msg.size(1), self.msg_out_size, device=inputs.device)
 
@@ -303,8 +310,8 @@ class Decoder(LightningModule):
             msg = msg * rel_type[:, :, i:i + 1]
             all_msgs += msg / norm
 
-        agg_msgs = torch.matmul(all_msgs.transpose(-2, -1), rec_rel).transpose(-2, -1)    #### MSG (MeSsage aGgregation)
-        agg_msgs = agg_msgs.contiguous() / inputs.size(2)  # Average
+        agg_msgs = torch.matmul(all_msgs.transpose(-2, -1), rec_rel).transpose(-2, -1)  #### MSG (MeSsage aGgregation) (#Correct)
+        agg_msgs = agg_msgs.contiguous() / n_nodes  # Average
         # agg_msgs has shape (batch_size, n_nodes, msg_out_size)
 
         # Recurrent embedding function
@@ -414,7 +421,7 @@ class Decoder(LightningModule):
         pred_all = []
         var_all = []
 
-        for step in range(0, inputs.size(1) - 1):
+        for step in range(0, n_components - 1):
 
             if self.is_burn_in:
                 if step <= self.burn_in_steps:
@@ -422,11 +429,11 @@ class Decoder(LightningModule):
                 else:
                     ins = pred_all[step - 1]    # here, ins = last prediction wrt to current step
             else:
-                assert (self.pred_steps <= n_components) # if pred_Step is 100 and timesteps is 50, this will return error
-                # Use ground truth trajectory input vs. last prediction
-                if not step % self.pred_steps:
+                assert (self.pred_steps <= n_components) # if pred_Step is 100 and n_components is 50, this will return error
+                
+                if not step % self.pred_steps: # if step is multiple of pred_steps, use ground truth as input
                     ins = inputs[:, step, :, :]
-                else:
+                else:                           # else use last prediction as input
                     ins = pred_all[step - 1]
 
             if self.is_dynamic_graph and step >= self.burn_in_steps: 
@@ -604,7 +611,7 @@ class Decoder(LightningModule):
         Called at the end of each training epoch. Updates the training losses.
         """
         self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
-        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed")
+        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.global_step}")
         train_loss_str = f"train_loss: {self.train_losses['train_losses'][-1]:,.4f}"
 
         # make decoder output plot for training data
@@ -626,6 +633,7 @@ class Decoder(LightningModule):
         self.hyperparams.update({
             'model_id': self.model_id,
             'training_time': self.training_time,
+            'n_steps': self.global_step,
             'train_loss': self.train_losses['train_losses'][-1],
             'val_loss': self.train_losses['val_losses'][-1] if self.trainer.val_dataloaders else None,
         })
@@ -635,6 +643,7 @@ class Decoder(LightningModule):
         Called at the end of training. 
         """
         print(f"\nTraining completed in {self.training_time:.2f} seconds or {self.training_time / 60:.2f} minutes or {self.training_time / 60 / 60} hours.")
+        print(f"Total training steps: {self.global_step}")
         
         if self.logger:
             print(f"\nTraining completed for model '{self.model_id}'. Trained model saved at {os.path.join(self.logger.log_dir, 'checkpoints')}")
@@ -836,13 +845,15 @@ class Decoder(LightningModule):
                 timesteps = np.arange(n_comps)
                 gt = target[sample_idx, node, :, dim]  # ground truth
                 pred = x_pred[sample_idx, node, :, dim]  # predictions
-                conf_band_upper = pred + 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # upper confidence band
-                conf_band_lower = pred - 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # lower confidence band
+                std_dev = np.sqrt(x_var[sample_idx, node, :, dim])  # standard deviation
+
+                conf_band_upper = pred + (pred * 1.96 * std_dev)  # upper confidence band
+                conf_band_lower = pred - (pred * 1.96 * std_dev)  # lower confidence band
 
                 # plot ground truth, predictions, and confidence band
                 ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
                 ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
-                ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
+                ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="relative confidence")
 
                 # Add labels and legend
                 #if node == n_nodes - 1:

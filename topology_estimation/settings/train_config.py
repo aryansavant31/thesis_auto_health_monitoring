@@ -12,6 +12,35 @@ from feature_extraction.settings.feature_config import get_freq_feat_config, get
 
 class DecoderTrainConfig:
     def __init__(self, data_config:DataConfig):
+        """
+        1: Training Attributes
+        -----------------------
+
+        2: Decoder Attributes
+        -----------------------
+        - **_Pipeline parameters_**
+        msg_out_size : int
+            Size of the output layer of the message embedding function. 
+
+        - **_Embedding function parameters_**
+
+        - **_Run parameters_**
+
+        pred_steps : int   
+            Controls the frequency of ground truth injection during sequence prediction.
+    
+            - **pred_step = 1**: Use ground truth at every step (full teacher forcing)
+            - **pred_step = N, (N > 1)**: Use ground truth every **N** steps, predictions for intermediate steps
+            
+            Higher values increase autoregressive behavior, lower values provide more stability but can cause exposure bias.
+
+        is_burn_in : bool
+            - if True, then use first `burn_in_steps` steps as ground truth inputs. After `burn_in_steps`, use model predictions as inputs.
+            - if False, then control ground truth injection using `pred_steps` only.
+
+        burn_in_steps : int
+            Number of initial steps to use as ground truth inputs if `is_burn_in` is True.
+        """
         ext = ExtraSettings()
         self.data_config = data_config
 
@@ -50,7 +79,7 @@ class DecoderTrainConfig:
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
         
-        # Run parameters
+        # input processor parameters
         self.dec_domain_config = get_domain_config('time')
         self.dec_raw_data_norm = None
         self.dec_feat_configs = [
@@ -59,6 +88,7 @@ class DecoderTrainConfig:
         self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.dec_feat_norm = None
 
+        # run parameters
         self.skip_first_edge_type = False
         self.pred_steps = 1
         self.is_burn_in = False
@@ -145,7 +175,7 @@ class DecoderTrainConfig:
         for key, value in hyperparams.items():
             if isinstance(value, list):
                 hyperparams[key] = ', '.join(map(str, value))
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, (int, float, dict)):
                 hyperparams[key] = str(value)
             elif value is None:
                 hyperparams[key] = 'None'
@@ -270,7 +300,7 @@ class NRITrainConfig:
         # attention parameters
         self.attention_output_size = 5   
 
-        # Run parameters
+        # input processor parameters
         self.enc_domain_config = get_domain_config('time')
         self.enc_raw_data_norm = None  
         self.enc_feat_configs = []
@@ -299,7 +329,7 @@ class NRITrainConfig:
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
         
-        # Run parameters
+        # input processor parameters
         self.dec_domain_config = get_domain_config('time')
         self.dec_raw_data_norm = None 
         self.dec_feat_configs = [
@@ -308,6 +338,7 @@ class NRITrainConfig:
         self.dec_feat_norm = None
         self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         
+        # run parameters
         self.skip_first_edge_type = True 
         self.pred_steps = 1
         self.is_burn_in = False
@@ -410,7 +441,7 @@ class NRITrainConfig:
         for key, value in hyperparams.items():
             if isinstance(value, list):
                 hyperparams[key] = ', '.join(map(str, value))
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, (int, float, dict)):
                 hyperparams[key] = str(value)
             elif value is None:
                 hyperparams[key] = 'None'

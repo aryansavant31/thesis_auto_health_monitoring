@@ -53,7 +53,7 @@ class AnomalyDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 3
+        self.model_num = 1
         self.is_log = True
 
         # dataset parameters
@@ -111,7 +111,7 @@ class AnomalyDetectorTrainConfig:
         for key, value in hparams.items():
             if isinstance(value, list):
                 hparams[key] = ', '.join(map(str, value))
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, (int, float, dict)):
                 hparams[key] = str(value)
             elif value is None:
                 hparams[key] = 'None'
@@ -170,6 +170,31 @@ def get_anom_config(anom_type, **kwargs):
         # }
 
     return anom_config  
+
+class AnomalyDetectorTrainConfigSweep:
+    def __init__(self, data_config:DataConfig):
+        self.data_config = data_config
+
+    # 1: Training parameters
+        # dataset parameters
+        self.batch_size  = [100, 80]
+        self.train_rt    = [0.8]
+        self.test_rt     = [0.2]
+        self.num_workers = [1]
+
+    # 2: Model parameters
+        self.anom_config = [get_anom_config('IF', n_estimators=100),
+                            get_anom_config('IF', n_estimators=200),]
+
+        # run parameters
+        self.domain_config = [get_domain_config('freq')]
+        self.raw_data_norm = [None]
+        self.feat_configs = [[
+            #get_freq_feat_config('first_n_modes', n_modes=6), 
+        ]]
+        self.reduc_config = [None]
+        self.feat_norm = [None]
+
 
 if __name__ == "__main__":
     

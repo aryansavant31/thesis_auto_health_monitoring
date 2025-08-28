@@ -39,7 +39,7 @@ class AnomalyDetectorInferConfig:
         self.domain_config = self.log_config.domain_config
         print("domain config", self.domain_config)
 
-        self.new_hparams = self.get_new_hparams()
+        self.infer_hparams = self.get_infer_hparams()
 
         self.test_plots = {
             'confusion_matrix'      : [True, {}],
@@ -50,22 +50,22 @@ class AnomalyDetectorInferConfig:
         }
 
         
-    def get_new_hparams(self):
+    def get_infer_hparams(self):
 
         domain_str = self._get_config_str([self.domain_config])
-        new_hparams = {
+        hparams = {
             'domain': domain_str,
         }
 
-        for key, value in new_hparams.items():
+        for key, value in hparams.items():
             if isinstance(value, list):
-                new_hparams[key] = ', '.join(map(str, value))
-            elif isinstance(value, (int, float)):
-                new_hparams[key] = str(value)
+                hparams[key] = ', '.join(map(str, value))
+            elif isinstance(value, (int, float, dict)):
+                hparams[key] = str(value)
             elif value is None:
-                new_hparams[key] = 'None'
+                hparams[key] = 'None'
 
-        return new_hparams
+        return hparams
     
     def _get_config_str(self, configs:list):
         """

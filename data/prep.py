@@ -592,6 +592,8 @@ class DataPreprocessor:
                         # calcualte fs
                         fs = 1 / np.mean(np.diff(new_time, axis=1), axis=1)  # shape: (n_reps,)
                         node_fs_list.append(fs[0])  # assumes fs is consistent across reps for a dimension
+                    else:
+                        fs = [self.data_config.fs[0, 0]]
       
                     # Apply augmentations
                     if ds_type == 'OK':

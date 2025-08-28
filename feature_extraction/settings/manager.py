@@ -43,6 +43,7 @@ class FeatureRankingManager(FeatureRankingConfig):
         """
         self.node_type = f"{self.data_config.signal_types['node_group_name']}"
         self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        self.set_id = self.data_config.set_id
         
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
@@ -50,10 +51,12 @@ class FeatureRankingManager(FeatureRankingConfig):
                                 f'{self.data_config.scenario}')
         
         # add node type
-        self.perf_path = os.path.join(base_path, f'({self.node_type})', f'{self.signal_group}')
+        self.perf_path = os.path.join(base_path, f'({self.node_type})', f'{self.signal_group}', f'set={self.set_id}')
         
+        self.model_name = f"({self.set_id}-{self.node_type}-{self.signal_group})_perf"
+
         # add perf number
-        self.perf_log_path = os.path.join(self.perf_path, f"({self.node_type}-{self.signal_group})_perf_{self.perf_version}")
+        self.perf_log_path = os.path.join(self.perf_path, f"{self.model_name}_{self.perf_version}")
 
         if check_version:
             self.check_if_perf_version_exists()
@@ -79,7 +82,7 @@ class FeatureRankingManager(FeatureRankingConfig):
         ranking_path = os.path.join(ranking_path, f"{signal_types_str}")
         ranking_path = os.path.join(ranking_path, f"T{self.data_config.window_length}")
 
-        self.ranking_id = os.path.join(ranking_path, f"({self.node_type}-{self.signal_group})_perf_{self.perf_version}")
+        self.ranking_id = os.path.join(ranking_path, f"{self.model_name}_{self.perf_version}")
 
         if is_avail:
             if not os.path.exists(self.ranking_log_path):
@@ -105,29 +108,29 @@ class FeatureRankingManager(FeatureRankingConfig):
         Removes the performance version from the log path.
         """
         if os.path.exists(self.perf_log_path):
-            user_input = input(f"Are you sure you want to remove '({self.node_type}-{self.signal_group})_perf_{self.perf_version}' from the log path {self.perf_log_path}? (y/n): ")
+            user_input = input(f"Are you sure you want to remove '{self.model_name}_{self.perf_version}' from the log path {self.perf_log_path}? (y/n): ")
             if user_input.lower() == 'y':
                 shutil.rmtree(self.perf_log_path)
-                print(f"Overwrote exsiting '({self.node_type}-{self.signal_group})_perf_{self.perf_version}' from the log path {self.perf_log_path}.")
+                print(f"Overwrote exsiting '{self.model_name}_{self.perf_version}' from the log path {self.perf_log_path}.")
 
             else:
-                print(f"Operation cancelled. ({self.node_type}-{self.signal_group})_perf_{self.perf_version} still remains.")
+                print(f"Operation cancelled. {self.model_name}_{self.perf_version} still remains.")
                 sys.exit()  # Exit the program gracefully    
     
     def _get_next_perf_version(self):
         parent_dir = os.path.dirname(self.perf_log_path)
 
         # List all folders in parent_dir that match 'v<number>'
-        perf_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'({self.node_type}-{self.signal_group})_perf_')]
+        perf_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'{self.model_name}_')]
 
         if perf_folders:
             # Extract numbers and find the max
             max_perf_version = max(int(f.split('_')[-1]) for f in perf_folders)
             self.perf_version = max_perf_version + 1
-            new_feature_perf = f"({self.node_type}-{self.signal_group})_perf_{self.perf_version}"
+            new_feature_perf = f"{self.model_name}_{self.perf_version}"
             print(f"Next feature performance folder will be: {new_feature_perf}")
         else:
-            new_feature_perf = f"({self.node_type}-{self.signal_group})_perf_1"
+            new_feature_perf = f"{self.model_name}_1"
 
         return os.path.join(parent_dir, new_feature_perf)
     
@@ -144,7 +147,7 @@ class FeatureRankingManager(FeatureRankingConfig):
     
     def check_if_perf_version_exists(self):
         if os.path.isdir(self.perf_log_path):
-            print(f"'({self.node_type}-{self.signal_group})_perf_{self.perf_version}' already exists in the log path '{self.perf_log_path}'.")
+            print(f"'{self.model_name}_{self.perf_version}' already exists in the log path '{self.perf_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop operation (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
@@ -336,12 +339,13 @@ class ViewRankings():
         label_map = {
             0: "<node_name>",
             1: "<signal_group>",
-            2: "<ds_type>",
-            3: "<ds_subtype>",
-            4: "<signal_types>",
-            5: "<timestep_id>",
-            6: "<perf_version>",
-            7: "<rank_version>"
+            2: "<set>",
+            3: "<ds_type>",
+            4: "<ds_subtype>",
+            5: "<signal_types>",
+            6: "<timestep_id>",
+            7: "<perf_version>",
+            8: "<rank_version>"
         }
                     
         added_labels = set()

@@ -1,0 +1,172 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.infer.py
+Base Name: (m004-apv)-gru_dec_1.4/custom_test_1
+Start Time: 2025-08-26 20:00:36
+End Time: 2025-08-26 20:01:30
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model to custom_test...
+
+'Custom_test' type dataset selected:
+
+
+ds_subtype selections:
+
+(<ds_subtype_num>) <ds_subtype> : [<augments>]
+---------------------------------------------
+>> Healthy configs
+(1) series_tp    : [OG]
+
+>> Unhealthy configs
+
+>> Unknown configs
+
+
+Node and signal types are set as follows:
+
+(<node_num>) <node_type> : [<signal_types>]
+---------------------------------------------
+(1) mass_1   : [acc, pos, vel]
+(2) mass_2   : [acc, pos, vel]
+(3) mass_3   : [acc, pos, vel]
+(4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+For ds_type 'OK' and others....
+
+Maximum timesteps across all node types: 500,001
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 5000 
+Desired samples: 2000/2000 [OK=2000, NOK=0, UK=0],
+Remainder samples: 3000 [OK=3000, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 40
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Reciever relation matrix:
+tensor([[0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
+        [1., 0., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
+        [1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 0., 1.],
+        [1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.]]) 
+shape: torch.Size([12, 4])
+
+Sender relation matrix:
+tensor([[1., 0., 0., 0.],
+        [1., 0., 0., 0.],
+        [1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
+        [0., 0., 0., 1.],
+        [0., 0., 0., 1.]]) 
+shape: torch.Size([12, 4])
+
+---------------------------------------------------------------------------
+
+Decoder run parameters:
+---------------
+skip_first_edge_type: False
+pred_steps: 1
+is_burn_in: False
+burn_in_steps: 1
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Decoder model loaded for 'custom_test' from c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\checkpoints\epoch=4-step=400.ckpt
+
+Model type: Decoder, Model ID: (m004-apv)-gru_dec_1.4, No. of dimensions req.: 3
+
+---------------------------------------------------------------------------
+
+custom_test number 1 for already exists for (m004-apv)-gru_dec_1.4 in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop custom_test (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the version 1 from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1? (y/n): Overwrote version 1 from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1.
+Custom_test parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1.
+
+Custom_test environment set. Custom_test will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:420: Consider setting `persistent_workers=True` in 'test_dataloader' to speed up the dataloader worker initialization.
+Testing: |                                                 | 0/? [00:00<?, ?it/s]
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                            | 0/40 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                               | 0/40 [00:00<?, ?it/s]Testing DataLoader 0:   2%|5                      | 1/40 [00:00<00:18,  2.10it/s]Testing DataLoader 0:   5%|#1                     | 2/40 [00:00<00:13,  2.90it/s]Testing DataLoader 0:   8%|#7                     | 3/40 [00:00<00:10,  3.41it/s]Testing DataLoader 0:  10%|##3                    | 4/40 [00:01<00:09,  3.67it/s]Testing DataLoader 0:  12%|##8                    | 5/40 [00:01<00:08,  3.89it/s]Testing DataLoader 0:  15%|###4                   | 6/40 [00:01<00:08,  3.99it/s]Testing DataLoader 0:  18%|####                   | 7/40 [00:01<00:08,  4.04it/s]Testing DataLoader 0:  20%|####6                  | 8/40 [00:01<00:07,  4.11it/s]Testing DataLoader 0:  22%|#####1                 | 9/40 [00:02<00:07,  4.18it/s]Testing DataLoader 0:  25%|#####5                | 10/40 [00:02<00:07,  4.27it/s]Testing DataLoader 0:  28%|######                | 11/40 [00:02<00:06,  4.33it/s]Testing DataLoader 0:  30%|######6               | 12/40 [00:02<00:06,  4.40it/s]Testing DataLoader 0:  32%|#######1              | 13/40 [00:02<00:06,  4.45it/s]Testing DataLoader 0:  35%|#######7              | 14/40 [00:03<00:05,  4.47it/s]Testing DataLoader 0:  38%|########2             | 15/40 [00:03<00:05,  4.52it/s]Testing DataLoader 0:  40%|########8             | 16/40 [00:03<00:05,  4.57it/s]Testing DataLoader 0:  42%|#########3            | 17/40 [00:03<00:05,  4.58it/s]Testing DataLoader 0:  45%|#########9            | 18/40 [00:03<00:04,  4.62it/s]Testing DataLoader 0:  48%|##########4           | 19/40 [00:04<00:04,  4.66it/s]Testing DataLoader 0:  50%|###########           | 20/40 [00:04<00:04,  4.66it/s]Testing DataLoader 0:  52%|###########5          | 21/40 [00:04<00:04,  4.66it/s]Testing DataLoader 0:  55%|############1         | 22/40 [00:04<00:03,  4.67it/s]Testing DataLoader 0:  57%|############6         | 23/40 [00:04<00:03,  4.67it/s]Testing DataLoader 0:  60%|#############2        | 24/40 [00:05<00:03,  4.69it/s]Testing DataLoader 0:  62%|#############7        | 25/40 [00:05<00:03,  4.70it/s]Testing DataLoader 0:  65%|##############3       | 26/40 [00:05<00:02,  4.70it/s]Testing DataLoader 0:  68%|##############8       | 27/40 [00:05<00:02,  4.69it/s]Testing DataLoader 0:  70%|###############4      | 28/40 [00:05<00:02,  4.70it/s]Testing DataLoader 0:  72%|###############9      | 29/40 [00:06<00:02,  4.73it/s]Testing DataLoader 0:  75%|################5     | 30/40 [00:06<00:02,  4.73it/s]Testing DataLoader 0:  78%|#################     | 31/40 [00:06<00:01,  4.74it/s]Testing DataLoader 0:  80%|#################6    | 32/40 [00:06<00:01,  4.75it/s]Testing DataLoader 0:  82%|##################1   | 33/40 [00:06<00:01,  4.76it/s]Testing DataLoader 0:  85%|##################7   | 34/40 [00:07<00:01,  4.77it/s]Testing DataLoader 0:  88%|###################2  | 35/40 [00:07<00:01,  4.79it/s]Testing DataLoader 0:  90%|###################8  | 36/40 [00:07<00:00,  4.81it/s]Testing DataLoader 0:  92%|####################3 | 37/40 [00:07<00:00,  4.82it/s]Testing DataLoader 0:  95%|####################9 | 38/40 [00:07<00:00,  4.80it/s]Testing DataLoader 0:  98%|#####################4| 39/40 [00:08<00:00,  4.81it/s]Testing DataLoader 0: 100%|######################| 40/40 [00:08<00:00,  4.83it/s]
+test_loss: 223,392,272.0000
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (CUSTOM_TEST_1) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.399' for (m004-apv)-gru_dec_1.4...
+
+Decoder output plot for rep '1001.399' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\custom_test_1
+
+Testing DataLoader 0: 100%|######################| 40/40 [00:10<00:00,  3.86it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│         test_loss         │        223392272.0        │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Custom_test of decoder model '(m004-apv)-gru_dec_1.4/custom_test_1' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-08-26 20:01:30

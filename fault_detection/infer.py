@@ -83,12 +83,12 @@ class AnomalyDetectorInferMain:
         """
         anomaly_detector = AnomalyDetector.load_from_pickle(self.fdet_config.ckpt_path)
 
-        # update the model with custom data statistics
+        # update the model with custom data statistics and domain config
         anomaly_detector.data_stats = data_stats
         anomaly_detector.domain_config = fdet_config.domain_config
 
         # update hparams with new values
-        anomaly_detector.hparams.update(fdet_config.new_hparams)
+        anomaly_detector.hparams.update(fdet_config.infer_hparams)
 
         print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.ckpt_path}")
         print(f"\nModel type: {type(anomaly_detector.model).__name__}, Model ID: {anomaly_detector.hparams['model_id']}, No. of input features req.: {anomaly_detector.model.n_features_in_ if hasattr(anomaly_detector.model, 'n_features_in_') else 'Unknown'}")

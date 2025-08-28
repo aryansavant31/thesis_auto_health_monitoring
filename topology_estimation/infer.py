@@ -177,6 +177,9 @@ class NRIInferMain(TopologyEstimationInferHelper):
         """
         trained_nri_model = NRI.load_from_checkpoint(self.tp_config.ckpt_path)
 
+        # update model with infer hyperparams
+        trained_nri_model.hyperparams.update(self.tp_config.infer_hyperparams)
+
         # update the model with new run params and custom data statistics
         trained_nri_model.set_input_graph(rec_rel, send_rel)
 
@@ -189,7 +192,7 @@ class NRIInferMain(TopologyEstimationInferHelper):
             )
 
         print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
-        print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_comps}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
+        print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hyperparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_comps}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
         print('\n' + 75*'-')
 
         return trained_nri_model
@@ -261,6 +264,9 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         """
         trained_decoder_model = Decoder.load_from_checkpoint(self.tp_config.ckpt_path)
 
+        # update model with infer hyperparams
+        trained_decoder_model.hyperparams.update(self.tp_config.infer_hyperparams)
+
         # update the model with new run params and custom data statistics
         trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.custom_loader.batch_size)
 
@@ -271,7 +277,7 @@ class DecoderInferMain(TopologyEstimationInferHelper):
             )
 
         print(f"\nDecoder model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
-        print(f"\nModel type: {type(trained_decoder_model).__name__}, Model ID: {trained_decoder_model.hparams['model_id']}, No. of dimensions req.: {trained_decoder_model.n_dims}")
+        print(f"\nModel type: {type(trained_decoder_model).__name__}, Model ID: {trained_decoder_model.hyperparams['model_id']}, No. of dimensions req.: {trained_decoder_model.n_dims}")
         print('\n' + 75*'-')
 
         return trained_decoder_model
@@ -300,7 +306,11 @@ if __name__ == "__main__":
     with console_logger.capture_output():
         print(f"\nStarting {args.framework} model to {args.run_type}...")
 
-        infer_pipeline = NRIInferMain(data_config, tp_config)
+        if args.framework == 'nri':
+            infer_pipeline = NRIInferMain(data_config, tp_config)
+        elif args.framework == 'decoder':
+            infer_pipeline = DecoderInferMain(data_config, tp_config)
+
         if args.run_type == 'custom_test':
             infer_pipeline.infer()
 

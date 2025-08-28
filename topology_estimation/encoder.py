@@ -88,7 +88,7 @@ class MessagePassingLayers():
 
         return edge_feature
     
-    def aggregate(self, edge_emb, rel_rec, agg_type, layer_type):
+    def aggregate(self, edge_emb, rec_rel, agg_type, layer_type):
         """
         Aggregates edge embeddings or messages to form main message for each node
         
@@ -99,7 +99,7 @@ class MessagePassingLayers():
             - If prev edge_emd_fn_type == 'mlp': (batch_size, n_edges, n_features)
             - If prev edge_emd_fn_type == 'cnn': (batch_size * n_edges, n_chn_out)
 
-        rel_rec : torch.Tensor, shape (n_edges, n_nodes)
+        rec_rel : torch.Tensor, shape (n_edges, n_nodes)
             Receiver matrix, used to get node features using the reciver type edges
 
         agg_type : str
@@ -112,10 +112,10 @@ class MessagePassingLayers():
 
         """
         if agg_type == 'sum':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb)
+            node_feature = torch.matmul(rec_rel.t(), edge_emb)
         elif agg_type == 'mean':
-            node_feature = torch.matmul(rel_rec.t(), edge_emb)
-            n_edges_per_node = torch.sum(rel_rec, dim=0, keepdim=True).t() # shape (n_nodes, 1)
+            node_feature = torch.matmul(rec_rel.t(), edge_emb)
+            n_edges_per_node = torch.sum(rec_rel, dim=0, keepdim=True).t() # shape (n_nodes, 1)
             node_feature = node_feature / torch.clamp(n_edges_per_node, min=1)
             # torch.clamp is used to avoid division by zero if there are nodes with no incoming edges
             

@@ -12,6 +12,7 @@ import numpy as np
 
 from data.datasets.asml.groups import NXEGroupMaker
 from data.datasets.mass_sp_dm.groups import MSDGroupMaker
+from data.datasets.bearing.groups import BERGroupMaker
 
 class DataConfig:
     def __init__(self, run_type='train'):
@@ -53,18 +54,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'BER'
+        self.machine_type = 'cwru'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = BERGroupMaker().gb_acc  
         
-        self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 2000
-        self.stride             = 2000
+        self.window_length      = 1000
+        self.stride             = 500
 
         self.view = DatasetViewer(self)
 
@@ -76,14 +77,15 @@ class DataConfig:
             self.set_predict_dataset()
         
     def set_train_dataset(self):
+        self.set_id = 'GEN'
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
 
         self.healthy_configs   = {
-            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+            '0_N': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {
-            # '0_B-021': [get_augment_config('OG')],
+            '0_B-021': [get_augment_config('OG')],
             
         }
 
@@ -91,15 +93,17 @@ class DataConfig:
         }
     
     def set_custom_test_dataset(self):
-        self.amt = 1
+        self.set_id = 'E1'
+        # key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
+        self.amt = 0.4
         self.healthy_configs   = {
-            key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
+            'series_tp': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {
-            '(sim)_E1_set01_M=mAI26': [get_augment_config('glitch', prob=0.001, amp=0.05, add_next=True),
-                                       get_augment_config('gau', mean=0, std=0.0001, add_next=True),
-                                       get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])]
+        #     '(sim)_E1_set01_M=mAI26': [get_augment_config('glitch', prob=0.001, amp=0.05, add_next=True),
+        #                                get_augment_config('gau', mean=0, std=0.0001, add_next=True),
+        #                                get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])]
         }
 
         self.unknown_configs = {
@@ -107,14 +111,14 @@ class DataConfig:
         }
         
     def set_predict_dataset(self):
+        self.set_id = 'E1'
         self.amt = 0.8
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            'series_tp': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
+        #     '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
             # '0_IR-007': [get_augment_config('OG')],
             # '0_IR-021': [get_augment_config('OG')],

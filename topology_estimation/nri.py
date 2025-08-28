@@ -341,7 +341,7 @@ class NRI(LightningModule):
         if 'enc/train_edge_accuracy' in self.trainer.callback_metrics:
             self.train_accuracies['enc/train_edge_accuracy'].append(self.trainer.callback_metrics['enc/train_edge_accuracy'].item())
 
-        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed")
+        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.global_step}")
         print(
             f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:,.4f}, " 
             f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:,.4f}, "
@@ -376,6 +376,7 @@ class NRI(LightningModule):
         self.training_time = time.time() - self.start_time
         self.hyperparams.update({
             'model_id': self.model_id,
+            'n_steps': self.global_step,
 
             # log train data
             'training_time': self.training_time,
@@ -414,6 +415,7 @@ class NRI(LightningModule):
         Called at the end of training.
         """
         print(f"\nTraining completed in {self.training_time:.2f} seconds or {self.training_time / 60:.2f} minutes or {self.training_time / 60 / 60} hours.")
+        print(f"Total training steps: {self.global_step}")
 
         if self.logger:
             print(f"\nTraining completed for model '{self.model_id}'. Trained model saved at {os.path.join(self.logger.log_dir, 'checkpoints')}")
