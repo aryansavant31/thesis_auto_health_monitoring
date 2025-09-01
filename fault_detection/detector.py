@@ -322,9 +322,13 @@ class TrainerAnomalyDetector:
         training_time = time.time() - start_time
         print(f"\nModel fitted successfully in {training_time:.2f} seconds")
 
+        start_time = time.time()
         # training accuracy and scores
         self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
         self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+
+        infer_time = time.time() - start_time
+        print(f"\nTraining inference completed in {infer_time:.2f} seconds")
 
         # preprocess pred label to match the given label notations
         self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
@@ -391,6 +395,9 @@ class TrainerAnomalyDetector:
             - `reps`: torch.Tensor of shape (n_samples,) containing rep numbers for each sample
         
         """
+        start_time = time.time()
+        print("\nPredicting anomalies using the trained model...")
+
     # 1. Process the input data
         self.df = self.process_input_data(anomaly_detector, predict_loader)
 
@@ -399,6 +406,9 @@ class TrainerAnomalyDetector:
         self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
         self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
 
+        infer_time = time.time() - start_time
+        print(f"\nPrediction completed in {infer_time:.2f} seconds")
+        
         # preprocess pred label to match the given label notations
         self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
 
@@ -429,6 +439,7 @@ class TrainerAnomalyDetector:
         """
         Test the anomaly detection model on the provided data.
         """
+        start_time = time.time()
         print("\nTesting anomaly detection model...")
 
     # 1. Process the input data
@@ -438,6 +449,9 @@ class TrainerAnomalyDetector:
         # scores
         self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
         self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+
+        infer_time = time.time() - start_time
+        print(f"\nTest inference completed in {infer_time:.2f} seconds")
 
         # preprocess pred label to match the given label notations
         self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
@@ -476,6 +490,7 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['recall'] = recall
         anomaly_detector.hparams['f1_score'] = f1_score
         anomaly_detector.hparams['run_type'] = self.run_type
+        anomaly_detector.hparams['infer_time'] = infer_time
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/test_accuracy", accuracy)
