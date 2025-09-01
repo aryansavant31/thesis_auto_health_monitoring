@@ -621,11 +621,11 @@ class DataPreprocessor:
                     if time.size != 0:
                         # interpolate data with lesser timesteps to match global max_timesteps (if time is available)
                         if data.shape[1] < max_timesteps or data.shape[1] > max_timesteps:
-                            data, new_time = self._interpolate_data(data, time, max_timesteps)
+                            data, time = self._interpolate_data(data, time, max_timesteps)
                             is_interpolated = True
 
                         # calcualte fs
-                        fs = 1 / np.mean(np.diff(new_time, axis=1), axis=1)  # shape: (n_reps,)
+                        fs = 1 / np.mean(np.diff(time, axis=1), axis=1)  # shape: (n_reps,)
                         node_fs_list.append(fs[0])  # assumes fs is consistent across reps for a dimension
                     else:
                         fs = [self.data_config.fs[0, 0]]

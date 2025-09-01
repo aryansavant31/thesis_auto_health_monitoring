@@ -181,7 +181,7 @@ class AnomalyDetectorTrainSweep:
 
     # 1: Training parameters
         # dataset parameters
-        self.batch_size  = [100, 80]
+        self.batch_size  = [1]
         self.train_rt    = [0.8]
         self.test_rt     = [0.2]
         self.num_workers = [1]
@@ -191,7 +191,7 @@ class AnomalyDetectorTrainSweep:
                             get_anom_config('1SVM', nu=0.01)]
 
         # run parameters
-        self.domain_config = [get_domain_config('freq')]
+        self.domain_config = [get_domain_config('time')]
         self.raw_data_norm = [None]
         self.feat_configs = [[
             #get_freq_feat_config('first_n_modes', n_modes=6), 

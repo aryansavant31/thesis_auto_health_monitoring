@@ -55,18 +55,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'BER'
-        self.machine_type = 'cwru'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = BERGroupMaker().gb_acc2  
+        self.signal_types = NXEGroupMaker().ammf_acc
         
-        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
         self.window_length      = 1000
-        self.stride             = 250
+        self.stride             = 1000
 
         self.use_custom_max_timesteps = False
         self.custom_max_timesteps     = 10000
@@ -79,22 +79,23 @@ class DataConfig:
             self.set_custom_test_dataset()
         elif self.run_type == 'predict':
             self.set_predict_dataset()
+
+        self.set_id = self.get_set_id()
         
     def set_train_dataset(self):
-        self.set_id = 'GEN'
-        # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+        # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
 
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')]
+            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
         }
         
         self.unhealthy_configs = {
-            '0_B-021': [get_augment_config('OG')],
             
         }
 
         self.unknown_configs = {
         }
+
     
     def set_custom_test_dataset(self):
         self.set_id = 'G2'
@@ -130,6 +131,23 @@ class DataConfig:
 
         self.unknown_configs = {
         }
+    
+    def get_set_id(self):
+        try:
+            if self.healthy_configs != {}:   
+                set_id = list(self.healthy_configs.keys())[0].split('_')[0]
+            elif self.unhealthy_configs != {}:
+                set_id = list(self.unhealthy_configs.keys())[0].split('_')[0]
+            elif self.unknown_configs != {}:
+                set_id = list(self.unknown_configs.keys())[0].split('_')[0]
+
+            if set_id not in ['E1', 'E2']:
+                set_id = 'G'
+
+        except ValueError as e:
+            set_id = 'G'
+
+        return set_id
     
     def _process_ds_addresses(self, config:dict, ds_type):
         """
@@ -223,22 +241,25 @@ class DataConfig:
 class DataSweep:
     def __init__(self, run_type):
         self.run_type = run_type
+        self.view = DatasetViewer(DataConfig())
 
-        self.signal_types = [BERGroupMaker().gb_acc1, 
-                             BERGroupMaker().gb_acc2]
-        self.window_length = [500, 1000]
-        self.stride = [250]
+
+        self.signal_types = [NXEGroupMaker().ammf_acc]
+        self.window_length = [1000]
+        self.stride = [1000]
 
 
         if self.run_type == 'train':
-            self.set_id = ['G1', 'G2']
+            e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
+            e2_keys = [key for key in self.view.healthy_types if key.startswith('E2')][:50]
+
             self.healthy_configs = [
-                {'0_N': [get_augment_config('OG')]},
-                {'0_N': [get_augment_config('gau')]}
+                {key: [get_augment_config('OG')] for key in e1_keys},
+                {key: [get_augment_config('OG')] for key in e2_keys}
             ]
-            self.unhealthy_configs = [
-                {'0_B-021': [get_augment_config('OG')]},
-            ]
+            # self.unhealthy_configs = [
+            #     #{'0_B-021': [get_augment_config('OG')]},
+            # ]
 
 
         elif self.run_type == 'custom_test':
@@ -290,7 +311,8 @@ class DataSweep:
             for param_name, param_value in zip(param_names, combo):
                 setattr(data_config, param_name, param_value)
             
-            
+            # update set id
+            data_config.set_id = data_config.get_set_id()
             data_configs.append(data_config)
         
         return data_configs

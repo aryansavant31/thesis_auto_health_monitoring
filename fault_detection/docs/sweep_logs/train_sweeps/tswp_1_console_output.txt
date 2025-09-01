@@ -1,13 +1,12 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_train.py
 Base Name: tswp_1
-Start Time: 2025-09-01 18:21:24
-End Time: 2025-09-01 18:25:00
+Start Time: 2025-09-01 20:11:32
+End Time: 2025-09-01 20:13:31
 
-CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
-GPUs Detected: 1
-GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
-OS: Windows 11 (10.0.26100)
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
 
 Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
 ========================================================================================================================
@@ -15,28 +14,26 @@ Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58
 
 Starting fault detection model sweep...
 
-Processing 16 data groups
+Processing 2 data groups
 
 Data Config Sweep Summary:
 Run type: train
 ------------------------------
-Total combinations: 16
+Total combinations: 2
 
 Parameters and their values:
-  healthy_configs: 2 values -> [{'0_N': [{'type': 'OG', 'add_next': False}]}, {'0_N': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}]}]
-  set_id: 2 values -> ['G1', 'G2']
-  signal_types: 2 values -> [{'node_group_name': 'gearbox_1', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}, {'node_group_name': 'gearbox_2', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}]
-  stride: 1 values -> [250]
-  unhealthy_configs: 1 values -> [{'0_B-021': [{'type': 'OG', 'add_next': False}]}]
-  window_length: 2 values -> [500, 1000]
+  healthy_configs: 2 values -> [{'E1_set01_M=mAI26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAS23': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAU64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBH22': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBI93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBJ96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBK70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBU17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBW64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCD86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF56': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF78': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCG89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCO66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCQ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCX30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCZ47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDD00': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDH60': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI82': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDJ62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDL40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDM53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDN98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDR32': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDS38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEE75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEK25': [{'type': 'OG', 'add_next': False}]}, {'E2_set02_M=mAI26': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mAQ10': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mAQ87': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mAS23': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mAU64': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBF18': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBF38': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBF92': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBH22': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBI93': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBJ96': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBK70': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBN34': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBP09': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBP98': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBS36': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBS45': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBU17': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBW64': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBY13': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mBY93': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCD86': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCF56': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCF78': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCF96': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCG89': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCO66': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCQ94': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCX30': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mCZ47': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDD00': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDH60': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDI25': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDI82': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDJ62': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDK28': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDK50': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDL40': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDM53': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDN98': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDP98': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDR32': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDS38': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDT50': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDT62': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mDT74': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mED29': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mED66': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mEE75': [{'type': 'OG', 'add_next': False}], 'E2_set02_M=mEK25': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  window_length: 1 values -> [1000]
 
 Parameter Sweep Summary:
-Total combinations: 4
+Total combinations: 2
 
 Parameters and their values:
   anom_config: 2 values -> [{'anom_type': 'IF', 'n_estimators': 100, 'seed': 42, 'contam': 'auto', 'n_jobs': -1}, {'anom_type': '1SVM', 'kernel': 'rbf', 'gamma': 'scale', 'nu': 0.01}]
-  batch_size: 2 values -> [100, 80]
-  domain_config: 1 values -> [{'type': 'freq', 'cutoff_freq': 100}]
+  batch_size: 1 values -> [1]
+  domain_config: 1 values -> [{'type': 'time', 'cutoff_freq': 0}]
   feat_configs: 1 values -> [[]]
   feat_norm: 1 values -> [None]
   num_workers: 1 values -> [1]
@@ -44,78 +41,18 @@ Parameters and their values:
   reduc_config: 1 values -> [None]
   test_rt: 1 values -> [0.2]
   train_rt: 1 values -> [0.8]
-Parallelizing 64 fault detection configurations across 8 workers...
-  Completed config 3: [gearbox_1(acc+G1)]-1SVM_fdet_1
-  Completed config 7: [gearbox_1(acc+G1)]-1SVM_fdet_3
-  Completed config 4: [gearbox_1(acc+G1)]-1SVM_fdet_2
-  Completed config 1: [gearbox_1(acc+G1)]-IF_fdet_1
-  Completed config 2: [gearbox_1(acc+G1)]-IF_fdet_2
-  Completed config 8: [gearbox_1(acc+G1)]-1SVM_fdet_4
-  Completed config 5: [gearbox_1(acc+G1)]-IF_fdet_3
-  Completed config 6: [gearbox_1(acc+G1)]-IF_fdet_4
-  Completed config 13: [gearbox_2(acc+G1)]-IF_fdet_3
-  Completed config 12: [gearbox_2(acc+G1)]-1SVM_fdet_2
-  Completed config 11: [gearbox_2(acc+G1)]-1SVM_fdet_1
-  Completed config 15: [gearbox_2(acc+G1)]-1SVM_fdet_3
-  Completed config 16: [gearbox_2(acc+G1)]-1SVM_fdet_4
-  Completed config 9: [gearbox_2(acc+G1)]-IF_fdet_1
-  Completed config 14: [gearbox_2(acc+G1)]-IF_fdet_4
-  Completed config 10: [gearbox_2(acc+G1)]-IF_fdet_2
-  Completed config 18: [gearbox_1(acc+G2)]-IF_fdet_2
-  Completed config 19: [gearbox_1(acc+G2)]-1SVM_fdet_1
-  Completed config 21: [gearbox_1(acc+G2)]-IF_fdet_3
-  Completed config 20: [gearbox_1(acc+G2)]-1SVM_fdet_2
-  Completed config 23: [gearbox_1(acc+G2)]-1SVM_fdet_3
-  Completed config 24: [gearbox_1(acc+G2)]-1SVM_fdet_4
-  Completed config 22: [gearbox_1(acc+G2)]-IF_fdet_4
-  Completed config 17: [gearbox_1(acc+G2)]-IF_fdet_1
-  Completed config 27: [gearbox_2(acc+G2)]-1SVM_fdet_1
-  Completed config 25: [gearbox_2(acc+G2)]-IF_fdet_1
-  Completed config 26: [gearbox_2(acc+G2)]-IF_fdet_2
-  Completed config 28: [gearbox_2(acc+G2)]-1SVM_fdet_2
-  Completed config 31: [gearbox_2(acc+G2)]-1SVM_fdet_3
-  Completed config 29: [gearbox_2(acc+G2)]-IF_fdet_3
-  Completed config 30: [gearbox_2(acc+G2)]-IF_fdet_4
-  Completed config 32: [gearbox_2(acc+G2)]-1SVM_fdet_4
-  Completed config 35: [gearbox_1(acc+G1)]-1SVM_fdet_5
-  Completed config 36: [gearbox_1(acc+G1)]-1SVM_fdet_6
-  Completed config 37: [gearbox_1(acc+G1)]-IF_fdet_7
-  Completed config 39: [gearbox_1(acc+G1)]-1SVM_fdet_7
-  Completed config 38: [gearbox_1(acc+G1)]-IF_fdet_8
-  Completed config 33: [gearbox_1(acc+G1)]-IF_fdet_5
-  Completed config 34: [gearbox_1(acc+G1)]-IF_fdet_6
-  Completed config 40: [gearbox_1(acc+G1)]-1SVM_fdet_8
-  Completed config 41: [gearbox_2(acc+G1)]-IF_fdet_5
-  Completed config 42: [gearbox_2(acc+G1)]-IF_fdet_6
-  Completed config 43: [gearbox_2(acc+G1)]-1SVM_fdet_5
-  Completed config 44: [gearbox_2(acc+G1)]-1SVM_fdet_6
-  Completed config 45: [gearbox_2(acc+G1)]-IF_fdet_7
-  Completed config 46: [gearbox_2(acc+G1)]-IF_fdet_8
-  Completed config 47: [gearbox_2(acc+G1)]-1SVM_fdet_7
-  Completed config 48: [gearbox_2(acc+G1)]-1SVM_fdet_8
-  Completed config 51: [gearbox_1(acc+G2)]-1SVM_fdet_5
-  Completed config 50: [gearbox_1(acc+G2)]-IF_fdet_6
-  Completed config 52: [gearbox_1(acc+G2)]-1SVM_fdet_6
-  Completed config 53: [gearbox_1(acc+G2)]-IF_fdet_7
-  Completed config 49: [gearbox_1(acc+G2)]-IF_fdet_5
-  Completed config 55: [gearbox_1(acc+G2)]-1SVM_fdet_7
-  Completed config 56: [gearbox_1(acc+G2)]-1SVM_fdet_8
-  Completed config 61: [gearbox_2(acc+G2)]-IF_fdet_7
-  Completed config 54: [gearbox_1(acc+G2)]-IF_fdet_8
-  Completed config 59: [gearbox_2(acc+G2)]-1SVM_fdet_5
-  Completed config 57: [gearbox_2(acc+G2)]-IF_fdet_5
-  Completed config 58: [gearbox_2(acc+G2)]-IF_fdet_6
-  Completed config 60: [gearbox_2(acc+G2)]-1SVM_fdet_6
-  Completed config 62: [gearbox_2(acc+G2)]-IF_fdet_8
-  Completed config 63: [gearbox_2(acc+G2)]-1SVM_fdet_7
-  Completed config 64: [gearbox_2(acc+G2)]-1SVM_fdet_8
+Parallelizing 4 fault detection configurations across 8 workers...
+  Completed config 1: [ammf(acc+E1)]-IF_fdet_1
+  Completed config 3: [ammf(acc+E2)]-IF_fdet_1
+  Completed config 4: [ammf(acc+E2)]-1SVM_fdet_1
+  Completed config 2: [ammf(acc+E1)]-1SVM_fdet_1
 
 ===========================================================================
 
 ===========================================================================
 
-Fault detection model sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\train_sweeps\tswp_1_console_output.txt
+Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\train_sweeps\tswp_1_console_output.txt
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-01 18:25:00
+Log saved at: 2025-09-01 20:13:31

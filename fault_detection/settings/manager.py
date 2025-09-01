@@ -58,7 +58,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(base_path, 'train', f'{self.node_type}', f'{self.signal_group}', f'set_{self.set_id}')
 
         # model name
-        self.model_name = f"[{self.node_type}({self.signal_group}+{self.set_id})]-{self.anom_config['anom_type']}_fdet"
+        self.model_name = f"[{self.node_type}_({self.signal_group}+{self.set_id})]-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
         self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"tswp_{self.train_sweep_num}" , f"{self.model_name}_{self.model_num}")
 
