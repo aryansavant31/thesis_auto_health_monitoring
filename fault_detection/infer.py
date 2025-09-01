@@ -14,7 +14,7 @@ from .settings.manager import AnomalyDetectorInferManager, get_model_pickle_path
 from .detector import AnomalyDetector, TrainerAnomalyDetector
 
 
-class AnomalyDetectorInferMain:
+class AnomalyDetectorInferPipeline:
     def __init__(self, data_config:DataConfig, fdet_config:AnomalyDetectorInferManager):
         """
         Initialize the anomaly detector prediction main class.
@@ -36,8 +36,12 @@ class AnomalyDetectorInferMain:
 
         Returns
         -------
-        preds : torch.Tensor, shape (n_samples,)
-            Tensor containing the predicted labels for each sample (0 for normal, 1 for anomaly).
+        preds : dict, optional
+            A dictionary containing:
+            - `pred_labels`: torch.Tensor of shape (n_samples,) containing predicted classes (0 for normal, 1 for anomaly)
+            - `scores`: torch.Tensor of shape (n_samples,) containing anomaly scores for each sample
+            - `reps`: torch.Tensor of shape (n_samples,) containing rep numbers for each sample
+            
             (Only returned if run_type is 'predict').
         """
         # 1. Load data
@@ -61,11 +65,11 @@ class AnomalyDetectorInferMain:
                     getattr(tester, plot_name.split('-')[0])(**plot_config[1])
                 
         elif self.fdet_config.run_type == 'predict':
-            preds, scores = tester.predict(anomaly_detector, custom_loader)
+            preds = tester.predict(anomaly_detector, custom_loader)
             
             tester.anomaly_score_dist(is_pred=True, bins=100)
 
-            return preds, scores
+            return preds
 
     def _load_model(self, data_stats):
         """
@@ -81,16 +85,16 @@ class AnomalyDetectorInferMain:
         AnomalyDetector
             The loaded anomaly detector model.
         """
-        anomaly_detector = AnomalyDetector.load_from_pickle(self.fdet_config.ckpt_path)
+        anomaly_detector = AnomalyDetector.load_from_pickle(self.fdet_config.selected_model_path)
 
         # update the model with custom data statistics and domain config
         anomaly_detector.data_stats = data_stats
-        anomaly_detector.domain_config = fdet_config.domain_config
+        anomaly_detector.domain_config = self.fdet_config.domain_config
 
         # update hparams with new values
-        anomaly_detector.hparams.update(fdet_config.infer_hparams)
+        anomaly_detector.hparams.update(self.fdet_config.infer_hparams)
 
-        print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.ckpt_path}")
+        print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.selected_model_path}")
         print(f"\nModel type: {type(anomaly_detector.model).__name__}, Model ID: {anomaly_detector.hparams['model_id']}, No. of input features req.: {anomaly_detector.model.n_features_in_ if hasattr(anomaly_detector.model, 'n_features_in_') else 'Unknown'}")
         print('\n' + 75*'-')
         
@@ -107,8 +111,14 @@ class AnomalyDetectorInferMain:
             logger = SummaryWriter(log_dir=self.infer_log_path)
 
             # log all the attributes of train_config
-            formatted_params = "\n".join([f"{key}: {value}" for key, value in self.fdet_config.__dict__.items()])
-            logger.add_text(os.path.basename(self.infer_log_path), formatted_params)
+            # formatted_params = "\n".join([f"{key}: {value}" for key, value in self.fdet_config.__dict__.items()])
+            # logger.add_text(os.path.basename(self.infer_log_path), formatted_params)
+
+            # log dataset selected
+            data_text = self.data_preprocessor.get_data_selection_text()
+            base_name = f"{self.fdet_config.selected_model_num} + {os.path.basename(self.infer_log_path)}"
+            logger.add_text(base_name, data_text)
+
             print(f"\n{self.fdet_config.run_type.capitalize()} environment set. {self.fdet_config.run_type.capitalize()} will be logged at: {self.infer_log_path}")
 
         else:
@@ -137,12 +147,12 @@ if __name__ == "__main__":
     with console_logger.capture_output():
         print(f"\nStarting anomaly detector to {args.run_type}...")
 
-        infer_pipeline = AnomalyDetectorInferMain(data_config, fdet_config)
+        infer_pipeline = AnomalyDetectorInferPipeline(data_config, fdet_config)
         if args.run_type == 'custom_test':
             infer_pipeline.infer()
 
         elif args.run_type == 'predict':
-            preds, scores = infer_pipeline.infer()
+            preds = infer_pipeline.infer()
         
         base_name = f"{fdet_config.selected_model_num}/{os.path.basename(infer_pipeline.infer_log_path)}" if infer_pipeline.infer_log_path else f"{fdet_config.selected_model_num}/{args.run_type}"
         print('\n' + 75*'=')

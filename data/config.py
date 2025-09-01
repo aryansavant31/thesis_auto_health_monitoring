@@ -9,6 +9,7 @@ from rich.tree import Tree
 from rich.console import Console
 import glob
 import numpy as np
+import itertools
 
 from data.datasets.asml.groups import NXEGroupMaker
 from data.datasets.mass_sp_dm.groups import MSDGroupMaker
@@ -58,14 +59,17 @@ class DataConfig:
         self.machine_type = 'cwru'
         self.scenario = 'scene_1'
 
-        self.signal_types = BERGroupMaker().gb_acc  
+        self.signal_types = BERGroupMaker().gb_acc2  
         
         self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
         self.window_length      = 1000
-        self.stride             = 500
+        self.stride             = 250
+
+        self.use_custom_max_timesteps = False
+        self.custom_max_timesteps     = 10000
 
         self.view = DatasetViewer(self)
 
@@ -93,11 +97,11 @@ class DataConfig:
         }
     
     def set_custom_test_dataset(self):
-        self.set_id = 'E1'
+        self.set_id = 'G2'
         # key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
         self.amt = 0.4
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')]
+            '0_N': [get_augment_config('gau')]
         }
         
         self.unhealthy_configs = {
@@ -215,6 +219,118 @@ class DataConfig:
         node_ds_path_main['UK'], edge_ds_path_main['UK'] = self._process_ds_addresses(self.unknown_configs, 'unknown')
         
         return node_ds_path_main, edge_ds_path_main
+    
+class DataSweep:
+    def __init__(self, run_type):
+        self.run_type = run_type
+
+        self.signal_types = [BERGroupMaker().gb_acc1, 
+                             BERGroupMaker().gb_acc2]
+        self.window_length = [500, 1000]
+        self.stride = [250]
+
+
+        if self.run_type == 'train':
+            self.set_id = ['G1', 'G2']
+            self.healthy_configs = [
+                {'0_N': [get_augment_config('OG')]},
+                {'0_N': [get_augment_config('gau')]}
+            ]
+            self.unhealthy_configs = [
+                {'0_B-021': [get_augment_config('OG')]},
+            ]
+
+
+        elif self.run_type == 'custom_test':
+            self.set_id = ['G1', 'G2']
+            self.healthy_configs = [
+                {'0_N': [get_augment_config('OG')]},
+                {'0_N': [get_augment_config('gau')]}
+            ]
+            self.unhealthy_configs = [
+                {'0_B-021': [get_augment_config('OG')]},
+            ]
+
+
+        elif self.run_type == 'predict':
+            self.set_id = ['G']
+            self.healthy_configs = [
+                {'0_N': [get_augment_config('OG')]}
+            ]
+            self.unhealthy_configs = [
+                {'0_B-021': [get_augment_config('OG')]},
+            ]
+            
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of DataConfig objects with different parameter combinations
+        """
+        # Convert sweep config to dictionary
+        sweep_dict = self._to_dict()
+        
+        # Get all parameter names and their values
+        param_names = list(sweep_dict.keys())
+        param_values = list(sweep_dict.values())
+        
+        # Generate all combinations using cartesian product
+        combinations = list(itertools.product(*param_values))
+        
+        # Create train configs for each combination
+        data_configs = []
+        for idx, combo in enumerate(combinations):
+            # Create base train config
+            data_config = DataConfig(self.run_type)
+            
+            # Update parameters based on current combination
+            for param_name, param_value in zip(param_names, combo):
+                setattr(data_config, param_name, param_value)
+            
+            
+            data_configs.append(data_config)
+        
+        return data_configs
+    
+    def _to_dict(self):
+        """
+        Convert sweep config attributes to dictionary, excluding private methods and non-list attributes.
+        """
+        sweep_dict = {}
+        for attr_name in dir(self):
+            if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
+                attr_value = getattr(self, attr_name)
+                if isinstance(attr_value, list):
+                    sweep_dict[attr_name] = attr_value
+        return sweep_dict
+    
+    def get_total_combinations(self):
+        """
+        Get the total number of parameter combinations.
+        """
+        sweep_dict = self._to_dict()
+        total = 1
+        for values in sweep_dict.values():
+            total *= len(values)
+        return total
+    
+    def print_sweep_summary(self):
+        """
+        Print a summary of the parameter sweep.
+        """
+        sweep_dict = self._to_dict()
+        print(f"\nData Config Sweep Summary:")
+        print(f"Run type: {self.run_type}")
+        print(30*'-')
+        print(f"Total combinations: {self.get_total_combinations()}")
+        print("\nParameters and their values:")
+        for param_name, param_values in sweep_dict.items():
+            print(f"  {param_name}: {len(param_values)} values -> {param_values}")
+    
+
     
 def get_augment_config(augment_type, **kwargs):
         """

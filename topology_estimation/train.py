@@ -163,8 +163,13 @@ class TopologyEstimationTrainHelper:
             train_logger = TensorBoardLogger(os.path.dirname(self.train_log_path), name="", version=os.path.basename(self.train_log_path))
 
             # log all the attributes of train_config
-            formatted_params = "\n".join([f"{key}: {value}" for key, value in self.tp_config.__dict__.items()])
-            train_logger.experiment.add_text(os.path.basename(self.train_log_path), formatted_params)
+            # formatted_params = "\n".join([f"{key}: {value}" for key, value in self.tp_config.__dict__.items()])
+            # train_logger.experiment.add_text(os.path.basename(self.train_log_path), formatted_params)
+
+            # log dataset selected
+            data_text = self.data_preprocessor.get_data_selection_text()
+            train_logger.experiment.add_text(f"{os.path.basename(self.train_log_path)} + test", data_text)
+
             print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
 
         else:

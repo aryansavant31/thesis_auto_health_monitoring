@@ -343,6 +343,7 @@ class TrainerAnomalyDetector:
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else self.model_type
         self.run_type = 'train'
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
 
         # update hparams
         anomaly_detector.hparams['train_accuracy'] = accuracy
@@ -350,7 +351,7 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['training_time'] = training_time
 
         if self.logger:
-            self.logger.add_scalar(f"{self.model_type}/train_accuracy", accuracy)
+            self.logger.add_scalar(f"{self.tb_tag}/train_accuracy", accuracy)
 
             print(f"\nTraining hyperparameters logged for tensorboard at {self.logger.log_dir}")
 
@@ -383,8 +384,12 @@ class TrainerAnomalyDetector:
 
         Returns
         -------
-        preds : torch.Tensor, shape (n_samples,)
-            Tensor containing the predicted labels for each sample (0 for normal, 1 for anomaly).
+        dict
+            A dictionary containing:
+            - `pred_labels`: torch.Tensor of shape (n_samples,) containing predicted classes (0 for normal, 1 for anomaly)
+            - `scores`: torch.Tensor of shape (n_samples,) containing anomaly scores for each sample
+            - `reps`: torch.Tensor of shape (n_samples,) containing rep numbers for each sample
+        
         """
     # 1. Process the input data
         self.df = self.process_input_data(anomaly_detector, predict_loader)
@@ -401,19 +406,24 @@ class TrainerAnomalyDetector:
         print(self.df)
 
         # convert predictions to tensor
-        preds = torch.tensor(self.df['pred_label'].values, dtype=torch.int64)
+        pred_labels = torch.tensor(self.df['pred_label'].values, dtype=torch.int64)
         scores = torch.tensor(self.df['scores'].values, dtype=torch.float32)
-        print(f"\nPredictions: {preds}")
+        rep_nums = torch.tensor(self.df['rep_num'].values, dtype=torch.float32)
+
+        print(f"\nPredictions: {pred_labels}")
 
     # 3. Log model information
 
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
 
         print('\n' + 75*'-')
 
-        return preds, scores
+        return {'pred_labels': pred_labels, 
+                'scores': scores,
+                'reps': rep_nums}
     
     def test(self, anomaly_detector:AnomalyDetector, test_loader):
         """
@@ -458,6 +468,7 @@ class TrainerAnomalyDetector:
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
 
         # update hparams
         anomaly_detector.hparams['test_accuracy'] = accuracy
@@ -467,10 +478,10 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['run_type'] = self.run_type
 
         if self.logger:
-            self.logger.add_scalar(f"{self.model_type}/test_accuracy", accuracy)
-            self.logger.add_scalar(f"{self.model_type}/precision", precision)
-            self.logger.add_scalar(f"{self.model_type}/recall", recall)
-            self.logger.add_scalar(f"{self.model_type}/f1_score", f1_score)
+            self.logger.add_scalar(f"{self.tb_tag}/test_accuracy", accuracy)
+            self.logger.add_scalar(f"{self.tb_tag}/precision", precision)
+            self.logger.add_scalar(f"{self.tb_tag}/recall", recall)
+            self.logger.add_scalar(f"{self.tb_tag}/f1_score", f1_score)
 
             self.logger.add_hparams(anomaly_detector.hparams, {})
 
@@ -508,7 +519,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = pair_plot.figure
             fig.savefig(os.path.join(self.logger.log_dir, f'pair_plot_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/pair_plot", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/pair_plot", fig, close=True)
             print(f"\nPair plot logged at {self.logger.log_dir}\n")
         else:
             print("\nPair plot not logged as logging is disabled.\n")
@@ -551,8 +562,8 @@ class TrainerAnomalyDetector:
         # save the confusion matrix if logger is available
         if self.logger:
             fig = cm_plot.get_figure()
-            fig.savefig(os.path.join(self.logger.log_dir, f'confusion_matrix_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/confusion_matrix", fig, close=True)
+            fig.savefig(os.path.join(self.logger.log_dir, f'cm_({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.tb_tag}/confusion_matrix", fig, close=True)
             print(f"\nConfusion matrix logged at {self.logger.log_dir}\n")
         else:
             print("\nConfusion matrix not logged as logging is disabled.\n")
@@ -587,8 +598,8 @@ class TrainerAnomalyDetector:
         # save the ROC curve if logger is available
         if self.logger:
             fig = plt.gcf()
-            fig.savefig(os.path.join(self.logger.log_dir, f'roc_curve_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/roc_curve", fig, close=True)
+            fig.savefig(os.path.join(self.logger.log_dir, f'roc_({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.tb_tag}/roc_curve", fig, close=True)
             print(f"\nROC curve logged at {self.logger.log_dir}\n")
         else:
             print("\nROC curve not logged as logging is disabled.\n")
@@ -635,6 +646,10 @@ class TrainerAnomalyDetector:
         # calculate means
         mean_ok = np.mean(scores_ok)
         mean_nok = np.mean(scores_nok)
+        if not scores_ok.empty:
+            db_delta_ok = min(scores_ok) - shift
+        if not scores_nok.empty:
+            db_delta_nok = shift - max(scores_nok)
 
          # create bins and map sample indices to bins
         bins_edges = np.histogram_bin_edges(np.concatenate([scores_ok, scores_nok]), bins=bins)
@@ -659,9 +674,16 @@ class TrainerAnomalyDetector:
         counts_nok, _, _ = plt.hist(scores_nok, bins=bins_edges, color='orange', label='NOK (label=1)', alpha=0.5)
 
         # add vertical lines for means and boundary
-        plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1.5, label=f'Mean OK: {mean_ok:.4f}')
-        plt.axvline(mean_nok, color='orange', linestyle='--', linewidth=1.5, label=f'Mean NOK: {mean_nok:.4f}')
+        plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
+        plt.axvline(mean_nok, color='orange', linestyle='--', linewidth=1, label=f'Mean NOK: {mean_nok:.4f}')
         plt.axvline(shift, color='red', linestyle=':', linewidth=1.5, label=f'Boundary: {shift:.4f}')
+        
+        # db_delta_ok
+        if not scores_ok.empty:
+            plt.hlines(y=5, xmin=min(min(scores_ok), shift), xmax=max(min(scores_ok), shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK: {db_delta_ok:.4f}')
+        # db_delta_nok
+        if not scores_nok.empty:
+            plt.hlines(y=8, xmin=min(max(scores_nok), shift), xmax=max(max(scores_nok), shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK: {db_delta_nok:.4f}')
 
         # add bin indices on top of each bar
         for i in range(len(counts_ok)):
@@ -670,7 +692,7 @@ class TrainerAnomalyDetector:
             if counts_nok[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok[i], str(i), ha='center', va='bottom', fontsize=8, color='orange')
 
-        plt.xlabel('Anomaly Score (Shifted)')
+        plt.xlabel('Anomaly Score (log scale) (shifted)')
         plt.ylabel('Number of Samples (log scale)')
         plt.title(f'Anomaly Score Distribution ({label_col}) [{self.model_id} / {self.run_type}]')
         plt.legend()
@@ -678,28 +700,32 @@ class TrainerAnomalyDetector:
         plt.yscale('log')  
         plt.xscale('log')
 
-        # print sample indices for each bin
-        print(f"\nTotal OK samples (from {label_col}) : {len(scores_ok)}")
-        print(10*"-" + " Samples in OK bins " + 10*"-")
+        # write sample indices in each bin
+        text = f"\nTotal OK samples (from {label_col}) : {len(scores_ok)}\n"
+        text += 10*"-" + " Samples in OK bins " + 10*"-" + "\n"
         for bin_idx, samples in bin_samples_ok.items():
             if samples:  # Only print non-empty bins
                 low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
                 sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
-                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {sample_info}")
+                text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f})**: {sample_info}\n"
 
-        print(f"\nTotal NOK samples (from {label_col}) : {len(scores_nok)}")
-        print(10*"-" + " Samples in NOK bins " + 10*"-")
+        text += f"\nTotal NOK samples (from {label_col}) : {len(scores_nok)}\n"
+        text += 10*"-" + " Samples in NOK bins " + 10*"-" + "\n"
         for bin_idx, samples in bin_samples_nok.items():
             if samples:  # Only print non-empty bins
                 low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
                 sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
-                print(f"Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}): {sample_info}")
+                text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f})**: {sample_info}\n"
+        
+        # print sample indices for each bin
+        print(text)
 
         # save the distribution plot if logger is available
         if self.logger:
             fig = plt.gcf()
-            fig.savefig(os.path.join(self.logger.log_dir, f'anomaly_score_dist_{label_col}({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/anomaly_score_dist_{label_col}", fig, close=True)
+            fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_{label_col}({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.tb_tag}/anomaly_score_dist_{label_col}", fig, close=True)
+            self.logger.add_text(f"{self.model_id} + {self.run_type}", text)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
             print("\nAnomaly score distribution plot not logged as logging is disabled.\n")
@@ -735,7 +761,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'pred_plot_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.model_type}/pred_plot", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/pred_plot", fig, close=True)
             print(f"\nPrediction plot logged at {self.logger.log_dir}\n")
         else:
             print("\nPrediction plot not logged as logging is disabled.\n")

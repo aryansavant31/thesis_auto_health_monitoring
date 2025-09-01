@@ -152,36 +152,64 @@ class DataPreprocessor:
 
         return ', '.join(augment_strings)
     
-    def _print_data_selections(self):
+    def get_data_selection_text(self):
         """
-        - Print the data selections for healthy, unhealthy, and unknown configurations.
-        - Prints the node and signal types.
+        - the data selections for healthy, unhealthy, and unknown configurations.
+        - the node and signal types.
         """
-        # print the data selections
-        print(f"\n\nds_subtype selections:\n")
-        print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
-        print(45*'-')
-        print(">> Healthy configs")
+        text = "Dataset selections:\n"
+        text += 45*'-' + "\n"
+        text += "*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*\n\n"
+
+        text += "- **Healthy configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+            text += f"  ({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
 
-        print("\n>> Unhealthy configs")
+        text += "\n- **Unhealthy configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+            text += f"  ({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
 
-        print("\n>> Unknown configs")
+        text += "\n- **Unknown configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
-            print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+            text += f"  ({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
 
-        # print node and signal types
-        print("\n\nNode and signal types are set as follows:\n")
-        print("(<node_num>) <node_type> : [<signal_types>]")
-        print(45*'-')
-        for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
-            print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+        text += "\n\nNode and signal types:\n"
+        text += 45*'-' + "\n"
+        text += "*_(<node_num>) <node_type> : [<signal_types>]_*\n\n"
         
-        print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
-        print(f'Signal group name: {self.data_config.signal_types['signal_group_name']}')
+        for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
+            text += f"  ({node_num+1}) {node}   : [{', '.join(signals)}]\n"
+        
+        text += f"\nNode group name: {self.data_config.signal_types['node_group_name']}\n"
+        text += f"Signal group name: {self.data_config.signal_types['signal_group_name']}\n"
+
+        return text
+
+        # # print the data selections
+        # print(f"\n\nds_subtype selections:\n")
+        # print("(<ds_subtype_num>) <ds_subtype> : [<augments>]")
+        # print(45*'-')
+        # print(">> Healthy configs")
+        # for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
+        #     print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        # print("\n>> Unhealthy configs")
+        # for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
+        #     print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        # print("\n>> Unknown configs")
+        # for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
+        #     print(f"({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]")
+
+        # # print node and signal types
+        # print("\n\nNode and signal types are set as follows:\n")
+        # print("(<node_num>) <node_type> : [<signal_types>]")
+        # print(45*'-')
+        # for node_num, (node, signals) in enumerate(self.data_config.signal_types['group'].items()):
+        #     print(f"({node_num+1}) {node}   : [{', '.join(signals)}]")
+        
+        # print(f'\nNode group name: {self.data_config.signal_types['node_group_name']}')
+        # print(f'Signal group name: {self.data_config.signal_types['signal_group_name']}')
 
     def get_custom_data_package(self, data_config:DataConfig, batch_size=10, num_workers=1):
         """
@@ -208,7 +236,8 @@ class DataPreprocessor:
         self.data_config = data_config
         print(f"\n'{self.data_config.run_type.capitalize()}' type dataset selected:")
 
-        self._print_data_selections()        
+        data_select_text = self.get_data_selection_text()        
+        print("\n\n" + data_select_text)
 
         # load the dataset
         dataset = self._load_dataset()
@@ -281,7 +310,8 @@ class DataPreprocessor:
         else:
             raise ValueError(f"'{self.data_config.run_type}' is selected for training. Please set run_type to 'train' in the data config.")
         
-        self._print_data_selections()
+        data_select_text = self.get_data_selection_text()        
+        print("\n\n" + data_select_text)
 
         # load the dataset
         dataset = self._load_dataset()
@@ -558,8 +588,11 @@ class DataPreprocessor:
         rep_num_collect = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))  # to store rep numbers for each node and subtype
         fs_matrix = [] # to store fs values for each node
 
-        # get reference values for end time and timesteps
-        max_timesteps = self._get_max_timesteps(node_type_map)
+        # get reference values for timesteps
+        if self.data_config.use_custom_max_timesteps:
+            max_timesteps = self.data_config.custom_max_timesteps
+        else:
+            max_timesteps = self._get_max_timesteps(node_type_map)
 
         # process node data
         for node_type, ds_subtype_map in node_type_map.items():
@@ -587,7 +620,9 @@ class DataPreprocessor:
 
                     if time.size != 0:
                         # interpolate data with lesser timesteps to match global max_timesteps (if time is available)
-                        data, new_time = self._interpolate_data(data, time, max_timesteps)
+                        if data.shape[1] < max_timesteps or data.shape[1] > max_timesteps:
+                            data, new_time = self._interpolate_data(data, time, max_timesteps)
+                            is_interpolated = True
 
                         # calcualte fs
                         fs = 1 / np.mean(np.diff(new_time, axis=1), axis=1)  # shape: (n_reps,)
@@ -629,6 +664,11 @@ class DataPreprocessor:
         if ds_type == 'OK' or ds_type == 'UK':
             print(f"\n\nFor ds_type '{ds_type}' and others....")
             print(f"\nMaximum timesteps across all node types: {max_timesteps:,}")
+
+            if self.__dict__.get('is_interpolated', False):
+                print(f"\nData interpolation applied to match max_timesteps for node types with lesser timesteps.")
+            else:
+                print(f"\nNo data interpolation applied.")
             
             # save fs values to data_config for only OK type data
             if fs_matrix.size != 0:

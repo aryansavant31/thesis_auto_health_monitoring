@@ -95,8 +95,14 @@ class TopologyEstimationInferHelper:
             logger = TensorBoardLogger(os.path.dirname(self.infer_log_path), name="", version=os.path.basename(self.infer_log_path))
 
             # log all the attributes of train_config
-            formatted_params = "\n".join([f"{key}: {value}" for key, value in self.tp_config.__dict__.items()])
-            logger.experiment.add_text(os.path.basename(self.infer_log_path), formatted_params)
+            # formatted_params = "\n".join([f"{key}: {value}" for key, value in self.tp_config.__dict__.items()])
+            # logger.experiment.add_text(os.path.basename(self.infer_log_path), formatted_params)
+
+            # log dataset selected
+            data_text = self.data_preprocessor.get_data_selection_text()
+            base_name = f"{self.tp_config.selected_model_num} + {os.path.basename(self.infer_log_path)}"
+            logger.experiment.add_text(base_name, data_text)
+
             print(f"\n{self.tp_config.run_type.capitalize()} environment set. {self.tp_config.run_type.capitalize()} will be logged at: {self.infer_log_path}")
 
         else:

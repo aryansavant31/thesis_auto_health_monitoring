@@ -94,6 +94,7 @@ class AnomalyDetectorTrainConfig:
         reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
 
         init_hparams = {
+            'model_num': self.model_num,
             'batch_size': self.batch_size,
             'train_rt': self.train_rt,
             'test_rt': self.test_rt,
@@ -112,7 +113,8 @@ class AnomalyDetectorTrainConfig:
             if isinstance(value, list):
                 hparams[key] = ', '.join(map(str, value))
             elif isinstance(value, (int, float, dict)):
-                hparams[key] = str(value)
+                if key != 'model_num':  # keep model_num as int
+                    hparams[key] = str(value)
             elif value is None:
                 hparams[key] = 'None'
 
@@ -175,8 +177,7 @@ class AnomalyDetectorTrainSweep:
     def __init__(self, data_config:DataConfig):
         self.data_config = data_config
 
-        self.sweep_num = 2
-        self.current_model_num = 4
+        self.train_sweep_num = 1
 
     # 1: Training parameters
         # dataset parameters
@@ -186,12 +187,12 @@ class AnomalyDetectorTrainSweep:
         self.num_workers = [1]
 
     # 2: Model parameters
-        self.anom_config = [get_anom_config('IF', n_estimators=1000),
-                            get_anom_config('IF', n_estimators=2000),]
+        self.anom_config = [get_anom_config('IF', n_estimators=100),
+                            get_anom_config('1SVM', nu=0.01)]
 
         # run parameters
         self.domain_config = [get_domain_config('freq')]
-        self.raw_data_norm = [None, 'min_max', 'std']
+        self.raw_data_norm = [None]
         self.feat_configs = [[
             #get_freq_feat_config('first_n_modes', n_modes=6), 
         ]]

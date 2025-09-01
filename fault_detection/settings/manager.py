@@ -13,29 +13,26 @@ LOGS_DIR = os.path.join(FDET_DIR, "logs")
 import pickle
 import shutil
 from pathlib import Path
-from rich.console import Console
-from rich.tree import Tree
-from rich import print
 import re
 import itertools
 from copy import deepcopy
+from collections import defaultdict
 
 # global imports
-from data.config import DataConfig
+from data.config import DataConfig, DataSweep
 
 # local imports
 from .train_config import AnomalyDetectorTrainConfig, AnomalyDetectorTrainSweep
-from .infer_config import AnomalyDetectorInferConfig
+from .infer_config import AnomalyDetectorInferConfig, AnomalyDetectorInferSweep
 
 
 class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
-    def __init__(self, data_config:DataConfig, sweep_num=0, always_next_version=False):
+    def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
-        self.always_next_version = always_next_version
-        self.sweep_num = sweep_num
+        self.train_sweep_num = train_sweep_num
         
-    def get_train_log_path(self, n_components, n_dim):
+    def get_train_log_path(self, n_components, n_dim, always_next_version=False):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -46,6 +43,8 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         n_dim : int
             The number of dimensions in each component in the dataset
         """
+        self.always_next_version = always_next_version
+
         self.node_type = f"{self.data_config.signal_types['node_group_name']}"
         self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
         self.set_id = self.data_config.set_id
@@ -56,12 +55,12 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                                 f'{self.data_config.scenario}')
 
         # add node name to path
-        model_path = os.path.join(base_path, 'train', f'({self.node_type})', f'{self.signal_group}', f'set_{self.set_id}')
+        model_path = os.path.join(base_path, 'train', f'{self.node_type}', f'{self.signal_group}', f'set_{self.set_id}')
 
         # model name
-        self.model_name = f"({self.set_id}-{self.node_type}-{self.signal_group})-{self.anom_config['anom_type']}_fdet"
+        self.model_name = f"[{self.node_type}({self.signal_group}+{self.set_id})]-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"swp_{self.sweep_num}" , f"{self.model_name}_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"tswp_{self.train_sweep_num}" , f"{self.model_name}_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -156,10 +155,15 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 sys.exit()  # Exit the program gracefully   
 
     def _get_next_version(self):
-        parent_dir = os.path.dirname(self.train_log_path)
+        model_dir = os.path.dirname(self.train_log_path)
+        parent_dir = os.path.dirname(model_dir)
 
-        # List all folders in parent_dir that match 'v<number>'
-        model_folders = os.listdir(parent_dir)
+        model_folders = []
+        for root, dirs, files in os.walk(parent_dir):
+            # Only look at immediate subfolders of parent_dir
+            if os.path.dirname(root) == parent_dir:
+                for d in dirs:
+                    model_folders.append(d)
 
         if model_folders:
             # Extract numbers and find the max
@@ -168,20 +172,22 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             new_model = f"{self.model_name}_{self.model_num}"
             print(f"Next model number folder will be: {new_model}")
         else:
-            new_model = f"{self.model_name}_1"
+            self.model_num = 1
+            new_model = f"{self.model_name}_{self.model_num}"
 
-        return os.path.join(parent_dir, new_model)
+        return os.path.join(model_dir, new_model)
     
 
     def check_if_version_exists(self):
         """
         Checks if the model_num already exists in the log path.
+        
         """
+        if self.always_next_version:
+            self.train_log_path = self._get_next_version()
+            return
+        
         if os.path.isdir(self.train_log_path):
-
-            if self.always_next_version:
-                self.train_log_path = self._get_next_version()
-                return
             
             print(f"'Version {self.model_num}' already exists in the log path '{self.train_log_path}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
@@ -197,27 +203,84 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 sys.exit()  # Exit the program gracefully
 
 class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
-    def __init__(self, data_config:DataConfig, run_type):
-        super().__init__(data_config)
+    def __init__(self, data_config:DataConfig, run_type, infer_sweep_num=0, selected_model_path=None):
+        super().__init__(data_config, selected_model_path)
+
+        # check if data and model are compatible
+        if not self._is_data_model_match():
+            raise ValueError("Data and model configurations are not compatible. Please check the configurations.")
+
         self.helper = HelperClass()
         self.run_type = run_type
-
+        self.infer_sweep_num = infer_sweep_num
+        
         self.train_log_path = self.log_config.train_log_path
         self.node_type = self.log_config.node_type
         self.signal_group = self.log_config.signal_group
 
         self.selected_model_num = os.path.basename(self.train_log_path)
+
+    def _is_data_model_match(self):
+        #model_id = os.path.basename(os.path.dirname(model_path)).split('-')[0].strip('[]')
+
+        node_group_model = self.log_config.data_config.signal_types['node_group_name']
+        signal_group_model = self.log_config.data_config.signal_types['signal_group_name']
+        set_id_model = self.log_config.data_config.set_id
+        window_length_model = self.log_config.data_config.window_length
+        stride_model = self.log_config.data_config.stride
+
+        is_node_match = node_group_model == self.data_config.signal_types['node_group_name']
+        is_signal_match = signal_group_model == self.data_config.signal_types['signal_group_name']
+        is_setid_match = set_id_model == self.data_config.set_id
+        is_window_match = window_length_model == self.data_config.window_length
+        is_stride_match = stride_model == self.data_config.stride
+
+        if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match:
+            return True
+        else:
+            print(f"\n> Incompatible model found: {os.path.basename(os.path.dirname(self.selected_model_path))}")
+            print(f"Incompatible parameters:")
+            if not is_node_match:
+                print(f"  - Node group mismatch: Model({node_group_model}) != Data({self.data_config.signal_types['node_group_name']})")
+            if not is_signal_match:
+                print(f"  - Signal group mismatch: Model({signal_group_model}) != Data({self.data_config.signal_types['signal_group_name']})")
+            if not is_setid_match:
+                print(f"  - Set ID mismatch: Model({set_id_model}) != Data({self.data_config.set_id})")
+            if not is_window_match:
+                print(f"  - Window length mismatch: Model({window_length_model}) != Data({self.data_config.window_length})")
+            if not is_stride_match:
+                print(f"  - Stride mismatch: Model({stride_model}) != Data({self.data_config.stride})")
+            return False
     
-    def get_infer_log_path(self):
+    def get_infer_log_path(self, always_next_version=False):
         """
         Sets the log path for the run.
         """
+        self.always_next_version = always_next_version
 
-        infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
-        self.infer_log_path = os.path.join(infer_num_path, f'{self.run_type}_{self.version}')
+        parts = self.train_log_path.split(os.sep)
+        train_idx = parts.index('train')
+        node = parts[train_idx + 1]
+        signal_group = parts[train_idx + 2]
+        set_id = parts[train_idx + 3]
+        anom_type = parts[train_idx + 4]
+        model_name = parts[-1]
 
+        infer_num_path = os.path.join(
+            LOGS_DIR,
+            *parts[train_idx-3:train_idx],
+            self.run_type,
+            node, signal_group, set_id,
+            f'iswp_{self.infer_sweep_num}', 
+        )
+
+        self.infer_log_path = os.path.join(infer_num_path, anom_type, model_name, f'{self.run_type}_{self.version}')
+        
         # add healthy or healthy_unhealthy config to path
         infer_num_path = self.helper.set_ds_types_in_path(self.data_config, infer_num_path)
+
+        # add model type to path
+        infer_num_path = os.path.join(infer_num_path, f'[anom] {anom_type}', model_name)
 
         # add timestep_id to path
         self.infer_id = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
@@ -288,9 +351,17 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
     def _get_next_version(self):
         parent_dir = os.path.dirname(self.infer_log_path)
 
+        os.makedirs(parent_dir, exist_ok=True)
         # List all folders in parent_dir that match 'fault_detector_<number>'
-        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'.*{self.run_type}_\d+$', f)]
+        #folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
+        model_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'{self.run_type}_')]
+
+        # model_folders = []
+        # for root, dirs, files in os.walk(parent_dir):
+        #     # Only look at immediate subfolders of parent_dir
+        #     if os.path.dirname(root) == parent_dir:
+        #         for d in dirs:
+        #             model_folders.append(d)
 
         if model_folders:
             # Extract numbers and find the max
@@ -299,7 +370,8 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
             new_model = f'{self.run_type}_{self.version}'
             print(f"Next fault detection infer folder will be: {new_model}")
         else:
-            new_model = f'{self.run_type}_1'  # If no v folders exist
+            self.version = 1
+            new_model = f'{self.run_type}_{self.version}'  # If no v folders exist
 
         return os.path.join(parent_dir, new_model)
     
@@ -307,6 +379,9 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
         """
         Checks if the version already exists in the log path.
         """
+        if self.always_next_version:
+            self.infer_log_path = self._get_next_version()
+            return
  
         if os.path.isdir(self.infer_log_path):
             print(f"\n{self.run_type} number {self.version} for already exists for {self.selected_model_num} in the log path '{self.infer_log_path}'.")
@@ -320,12 +395,11 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
 
             elif user_input.lower() == 'c':
                 print("Stopped operation.")
-                sys.exit()  # Exit the program gracefully   
+                sys.exit()  # Exit the program gracefully  
 
-class AnomalyDetectorSweepManager(AnomalyDetectorTrainSweep):
-    def __init__(self, data_config:DataConfig, make_model_num=False):
-        super().__init__(data_config)
-        self.make_model_num = make_model_num
+class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
+    def __init__(self, data_configs:list):
+        self.data_configs = data_configs
 
     def get_sweep_configs(self):
         """
@@ -336,35 +410,75 @@ class AnomalyDetectorSweepManager(AnomalyDetectorTrainSweep):
         list
             List of AnomalyDetectorTrainConfig objects with different parameter combinations
         """
-        # Convert sweep config to dictionary
-        sweep_dict = self._to_dict()
-        
-        # Get all parameter names and their values
-        param_names = list(sweep_dict.keys())
-        param_values = list(sweep_dict.values())
-        
-        # Generate all combinations using cartesian product
-        combinations = list(itertools.product(*param_values))
-        
-        # Create train configs for each combination
         train_configs = []
-        for idx, combo in enumerate(combinations):
-            # Create base train config
-            train_config = AnomalyDetectorTrainManager(self.data_config, sweep_num=self.sweep_num, always_next_version=True)
-            
-            # Update parameters based on current combination
-            for param_name, param_value in zip(param_names, combo):
-                setattr(train_config, param_name, param_value)
-            
-            # Regenerate hyperparameters after updating parameters
-            train_config.hparams = train_config.get_hparams()
-
-            # Update model number if required
-            if self.make_model_num:
-                train_config.model_num = self.current_model_num + idx + 1
-            
-            train_configs.append(train_config)
+        idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        idx = -1
         
+        for data_config in self.data_configs: 
+
+            AnomalyDetectorTrainSweep.__init__(self, data_config)
+            
+            node_group_change = data_config.signal_types['node_group_name'] != train_configs[-1].data_config.signal_types['node_group_name'] if train_configs else False
+            signal_group_change = data_config.signal_types['signal_group_name'] != train_configs[-1].data_config.signal_types['signal_group_name'] if train_configs else False
+            set_id_change = data_config.set_id != train_configs[-1].data_config.set_id if train_configs else False
+
+            # # First level idx reset
+            # if signal_types_change or set_id_change:
+            #     idx = -1 
+            #     idx_dict = {}
+            
+            # Convert sweep config to dictionary
+            sweep_dict = self._to_dict()
+            
+            # Get all parameter names and their values
+            param_names = list(sweep_dict.keys())
+            param_values = list(sweep_dict.values())
+            
+            # Generate all combinations using cartesian product
+            combinations = list(itertools.product(*param_values))
+            
+            # Create configs for each combination
+            for combo in combinations:
+                anom_type_change = combo[param_names.index('anom_config')]['anom_type'] != train_configs[-1].anom_config['anom_type'] if train_configs else False
+
+                # # Second level reset idx
+                # if anom_type_change:
+                #     idx = idx_dict.get(combo[param_names.index('anom_config')]['anom_type'], -1)
+                if node_group_change or signal_group_change or set_id_change or anom_type_change:
+                    idx = (
+                        idx_dict.get(data_config.signal_types['node_group_name'], {})
+                                .get(data_config.signal_types['signal_group_name'], {})
+                                .get(data_config.set_id, {})
+                                .get(combo[param_names.index('anom_config')]['anom_type'], -1)
+                    )
+                idx += 1
+
+                # Create base config
+                train_config = AnomalyDetectorTrainManager(self.data_config, train_sweep_num=self.train_sweep_num)
+
+                # Update parameters based on current combination
+                for param_name, param_value in zip(param_names, combo):
+                    setattr(train_config, param_name, param_value)
+                
+                # Update model number 
+                _ = train_config.get_train_log_path(n_components=0, n_dim=0, always_next_version=True)  # Dummy values for n_components and n_dim
+                train_config.model_num = train_config.model_num + idx
+
+                idx_dict[
+                    data_config.signal_types['node_group_name']
+                ][
+                    data_config.signal_types['signal_group_name']
+                ][
+                    data_config.set_id
+                ][
+                    combo[param_names.index('anom_config')]['anom_type']
+                ] = idx
+
+                # Regenerate hyperparameters after updating parameters
+                train_config.hparams = train_config.get_hparams()
+
+                train_configs.append(train_config)
+                        
         return train_configs
     
     def _to_dict(self):
@@ -376,7 +490,8 @@ class AnomalyDetectorSweepManager(AnomalyDetectorTrainSweep):
             if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
                 attr_value = getattr(self, attr_name)
                 if isinstance(attr_value, list):
-                    sweep_dict[attr_name] = attr_value
+                    if attr_name != 'data_configs': 
+                        sweep_dict[attr_name] = attr_value
         return sweep_dict
     
     def get_total_combinations(self):
@@ -398,7 +513,177 @@ class AnomalyDetectorSweepManager(AnomalyDetectorTrainSweep):
         print(f"Total combinations: {self.get_total_combinations()}")
         print("\nParameters and their values:")
         for param_name, param_values in sweep_dict.items():
-            print(f"  {param_name}: {len(param_values)} values -> {param_values}")
+            print(f"  {param_name}: {len(param_values)} values -> {param_values}") 
+
+class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
+    def __init__(self, data_configs:list, run_type):
+        self.data_configs = data_configs
+        self.run_type = run_type
+
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+        """
+        infer_configs = []
+        idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        idx = -1
+        
+        for data_config in self.data_configs: 
+
+            AnomalyDetectorInferSweep.__init__(self, data_config)
+            
+            node_group_change = data_config.signal_types['node_group_name'] != infer_configs[-1].data_config.signal_types['node_group_name'] if infer_configs else False
+            signal_group_change = data_config.signal_types['signal_group_name'] != infer_configs[-1].data_config.signal_types['signal_group_name'] if infer_configs else False
+            set_id_change = data_config.set_id != infer_configs[-1].data_config.set_id if infer_configs else False
+
+            # # First level idx reset
+            # if signal_types_change or set_id_change:
+            #     idx = -1 
+            #     idx_dict = {}
+            
+            # Convert sweep config to dictionary
+            sweep_dict = self._to_dict()
+            
+            # Get all parameter names and their values
+            param_names = list(sweep_dict.keys())
+            param_values = list(sweep_dict.values())
+            
+            # Generate all combinations using cartesian product
+            combinations = list(itertools.product(*param_values))
+            
+            # Create configs for each combination
+            for combo in combinations:
+
+                # Create base config
+                try:
+                    infer_config = AnomalyDetectorInferManager(
+                        self.data_config, 
+                        run_type=self.run_type, 
+                        infer_sweep_num=self.infer_sweep_num,
+                        selected_model_path=combo[param_names.index('selected_model_path')]
+                    )
+                except ValueError as e:
+                    print(f"Since model {os.path.basename(os.path.dirname(combo[param_names.index('selected_model_path')]))} is incompatible, it is skipped...")
+                    continue
+    
+                # when model is approved, check if model path has changed
+                model_change = combo[param_names.index('selected_model_path')] != infer_configs[-1].selected_model_path if infer_configs else False
+
+                # Second level reset idx
+                if node_group_change or signal_group_change or set_id_change or model_change:
+                    idx = (
+                        idx_dict.get(data_config.signal_types['node_group_name'], {})
+                                .get(data_config.signal_types['signal_group_name'], {})
+                                .get(data_config.set_id, {})
+                                .get(combo[param_names.index('selected_model_path')], -1)
+                    )
+                
+                idx += 1
+
+                # Update parameters based on current combination
+                for param_name, param_value in zip(param_names, combo):
+                    setattr(infer_config, param_name, param_value)
+                
+                # Regenerate hyperparameters after updating parameters
+                infer_config.infer_hparams = infer_config.get_infer_hparams()
+
+                # Update version number 
+                _ = infer_config.get_infer_log_path(always_next_version=True)
+                infer_config.version = infer_config.version + idx
+
+                idx_dict[
+                    data_config.signal_types['node_group_name']
+                ][
+                    data_config.signal_types['signal_group_name']
+                ][
+                    data_config.set_id
+                ][
+                    infer_config.selected_model_path
+                ] = idx
+
+                infer_configs.append(infer_config)
+                        
+        return infer_configs
+    
+    # def _is_data_model_match(self, infer_config:AnomalyDetectorInferManager):
+    #     #model_id = os.path.basename(os.path.dirname(model_path)).split('-')[0].strip('[]')
+
+    #     node_group_model = infer_config.log_config.data_config.signal_types['node_group_name']
+    #     signal_group_model = infer_config.log_config.data_config.signal_types['signal_group_name']
+    #     set_id_model = infer_config.log_config.data_config.set_id
+    #     window_length_model = infer_config.log_config.data_config.window_length
+    #     stride_model = infer_config.log_config.data_config.stride
+
+    #     is_node_match = node_group_model == self.data_config.signal_types['node_group_name']
+    #     is_signal_match = signal_group_model == self.data_config.signal_types['signal_group_name']
+    #     is_setid_match = set_id_model == self.data_config.set_id
+    #     is_window_match = window_length_model == self.data_config.window_length
+    #     is_stride_match = stride_model == self.data_config.stride
+
+    #     if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match:
+    #         return True
+    #     else:
+    #         print(f"\nIncompatible model found: {os.path.basename(os.path.dirname(infer_config.selected_model_path))}. Hence skipping this model...")
+    #         print(f"Incompatible parameters:")
+    #         if not is_node_match:
+    #             print(f"  Node group mismatch: Model({node_group_model}) != Data({self.data_config.signal_types['node_group_name']})")
+    #         if not is_signal_match:
+    #             print(f"  Signal group mismatch: Model({signal_group_model}) != Data({self.data_config.signal_types['signal_group_name']})")
+    #         if not is_setid_match:
+    #             print(f"  Set ID mismatch: Model({set_id_model}) != Data({self.data_config.set_id})")
+    #         if not is_window_match:
+    #             print(f"  Window length mismatch: Model({window_length_model}) != Data({self.data_config.window_length})")
+    #         if not is_stride_match:
+    #             print(f"  Stride mismatch: Model({stride_model}) != Data({self.data_config.stride})")
+
+    
+    def _to_dict(self):
+        """
+        Convert sweep config attributes to dictionary, excluding private methods and non-list attributes.
+        """
+        sweep_dict = {}
+        for attr_name in dir(self):
+            if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
+                attr_value = getattr(self, attr_name)
+                if isinstance(attr_value, list):
+                    if attr_name != 'data_configs': 
+                        sweep_dict[attr_name] = attr_value
+
+        return sweep_dict
+    
+    def get_total_combinations(self):
+        """
+        Get the total number of parameter combinations.
+        """
+        sweep_dict = self._to_dict()
+        total = 1
+        for values in sweep_dict.values():
+            total *= len(values)
+        return total
+    
+    def print_sweep_summary(self):
+        """
+        Print a summary of the parameter sweep.
+        """
+        sweep_dict = self._to_dict()
+        print(f"\nParameter Sweep Summary:")
+        print(f"Total combinations: {self.get_total_combinations()}")
+        print("\nParameters and their values:")
+
+        for param_name, param_values in sweep_dict.items():
+            if param_name == 'selected_model_path':
+                print(f"\nNumber of models selected: {len(param_values)}")
+                print("Selected models are as follows:\n" + 30*'-')
+
+                for i, path in enumerate(param_values):
+                    print(f"  Model {i+1}: {os.path.basename(os.path.dirname(path))}")
+            else:
+                print(f"  {param_name}: {len(param_values)} values -> {param_values}")
     
 
 class HelperClass:
@@ -508,19 +793,38 @@ def get_param_pickle_path(log_path):
     
     return param_path
 
-def get_selected_model_path():
-    with open(os.path.join(SETTINGS_DIR, "selections", "loaded_model_path.txt"), "r") as f:
-        ckpt_path = f.read() 
-    return ckpt_path
+def get_selected_model_path(is_multi=False):
+    """
+    Returns the selected model path(s) from the settings directory.
+    
+    Parameters
+    ----------
+    is_multi : bool, optional
+        If True, returns a list of multiple model paths. If False, returns a single model path. Default is False.
+    
+    Returns
+    -------
+    str or list
+        The selected model path(s).
+    """
+    if is_multi:
+        with open(os.path.join(SETTINGS_DIR, "selections", "multi_model_paths.txt"), "r") as f:
+            model_paths = [(line.strip()) for line in f if line.strip()]
+        return model_paths
 
-def load_log_config():
+    else:
+        with open(os.path.join(SETTINGS_DIR, "selections", "single_model_path.txt"), "r") as f:
+            model_path = (f.read()) 
+        return model_path
+    
+
+def load_log_config(model_path):
     log_config = AnomalyDetectorTrainManager(DataConfig())
 
-    with open(os.path.join(SETTINGS_DIR, "selections", "loaded_config_path.txt"), "r") as f:
-        log_config_path = f.read()
+    log_config_path = os.path.join(os.path.dirname(model_path), 'train_config.pkl')
 
     if not os.path.exists(log_config_path):
-        raise ValueError(f"\nThe parameter file does not exists")
+        raise ValueError(f"\nThe parameter file does not exists in {log_config_path}")
     
     with open(log_config_path, 'rb') as f:
         log_config.__dict__.update(pickle.load(f))
@@ -529,6 +833,7 @@ def load_log_config():
 
 class SelectFaultDetectionModel:
     def __init__(self, application=None, machine=None, scenario=None, run_type='train', logs_dir=LOGS_DIR):
+
         data_config = DataConfig()
 
         self.logs_dir = Path(logs_dir)
@@ -618,6 +923,11 @@ class SelectFaultDetectionModel:
         self.structure = structure
 
     def print_tree(self):
+        from rich.tree import Tree
+        from rich.console import Console
+        from rich.console import Console
+        from rich import print
+
         console = Console()
         # Green up to and including framework
         tree = Tree(f"[green]{self.application}[/green]")
@@ -724,21 +1034,44 @@ class SelectFaultDetectionModel:
             return None
         
         if self.run_type == 'train':
-            idx = int(input("\nEnter the index number of the version path to select: "))
-            if idx < 0 or idx >= len(self.version_paths):
-                print("Invalid index.")
-                return None
-            selected_log_path = os.path.dirname(self.version_paths[idx])
-            # Use the directory containing model_x.txt as the log path
-        
-            model_file_path = get_model_pickle_path(selected_log_path)
-            config_file_path = get_param_pickle_path(selected_log_path)
+            
+            select_mode = input("\nSelection mode: single (s) or multi (m)? [s/m]: ").strip().lower()
 
-            with open(os.path.join(SETTINGS_DIR, "selections", "loaded_model_path.txt"), "w") as f:
-                f.write(model_file_path)
+            if select_mode == 'm':
+                idxs_str = input("\nEnter the index numbers of the models to select (comma separated): ")
+                try:
+                    idxs_str = idxs_str.replace(" ", "")
+                    idxs = [int(i.strip()) for i in idxs_str.split(',')]
+                except ValueError:
+                    print("Invalid input. Please enter comma separated integer indices.")
+                    return None
+                
+                # check for invalid indices
+                invalid_idxs = [i for i in idxs if i < 0 or i >= len(self.version_paths)]
+                if invalid_idxs:
+                    print(f"Invalid indices: {invalid_idxs}")
+                    return None
+                
+                selected_log_paths = [os.path.dirname(self.version_paths[i]) for i in idxs]
+                model_file_paths = [get_model_pickle_path(p) for p in selected_log_paths]
 
-            with open(os.path.join(SETTINGS_DIR, "selections", "loaded_config_path.txt"), "w") as f:
-                f.write(config_file_path)
+                with open(os.path.join(SETTINGS_DIR, "selections", "multi_model_paths.txt"), "w") as f:
+                    for path in model_file_paths:
+                        f.write(f"{path}\n")
+                
+                print(f"\nSelected model file paths saved to {os.path.join(SETTINGS_DIR, 'selections', 'multi_model_paths.txt')}\n")
 
-            print(f"\nSelected model file path: {model_file_path}")
-            print(f"\nSelected logged config file path: {config_file_path}\n")
+            elif select_mode == 's':
+                idx = int(input("\nEnter the index number of the version path to select: "))
+                if idx < 0 or idx >= len(self.version_paths):
+                    print("Invalid index.")
+                    return None
+                selected_log_path = os.path.dirname(self.version_paths[idx])
+                # Use the directory containing model_x.txt as the log path
+            
+                model_file_path = get_model_pickle_path(selected_log_path)
+
+                with open(os.path.join(SETTINGS_DIR, "selections", "single_model_path.txt"), "w") as f:
+                    f.write(model_file_path)
+
+                print(f"\nSelected model file path: {model_file_path}")

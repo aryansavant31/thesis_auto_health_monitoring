@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 from data.config import DataConfig
 
 class AnomalyDetectorInferConfig:
-    def __init__(self, data_config:DataConfig):
+    def __init__(self, data_config:DataConfig, selected_model_path=None):
         """
         Parameters
         ----------
@@ -26,8 +26,12 @@ class AnomalyDetectorInferConfig:
         from fault_detection.settings.manager import load_log_config, get_selected_model_path
 
         self.data_config = data_config
-        self.log_config = load_log_config()
-        self.ckpt_path = get_selected_model_path()
+        self.selected_model_path = selected_model_path
+
+        if self.selected_model_path is None:
+            self.selected_model_path = get_selected_model_path()
+
+        self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
         self.version = 1
@@ -35,9 +39,9 @@ class AnomalyDetectorInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
-        self.log_config.domain_config.update({'cutoff_freq' : 100})
+        self.cutoff_freq = 100
+        self.log_config.domain_config.update({'cutoff_freq' : self.cutoff_freq})
         self.domain_config = self.log_config.domain_config
-        print("domain config", self.domain_config)
 
         self.infer_hparams = self.get_infer_hparams()
 
@@ -82,6 +86,15 @@ class AnomalyDetectorInferConfig:
                 config_strings.append(f"{config['type']}")
 
         return ', '.join(config_strings)
+    
+class AnomalyDetectorInferSweep:
+    def __init__(self, data_config: DataConfig):
+        from fault_detection.settings.manager import get_selected_model_path
+
+        self.data_config = data_config
+        self.infer_sweep_num = 1
+
+        self.selected_model_path = get_selected_model_path(is_multi=True)
         
         
 if __name__ == "__main__":

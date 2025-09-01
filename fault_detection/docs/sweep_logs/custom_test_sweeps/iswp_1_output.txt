@@ -1,0 +1,550 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_infer.py
+Base Name: iswp_1
+Start Time: 2025-09-01 18:08:08
+End Time: 2025-09-01 18:09:08
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model inference sweep...
+
+Processing 16 data groups
+
+Data Config Sweep Summary:
+Run type: custom_test
+------------------------------
+Total combinations: 16
+
+Parameters and their values:
+  healthy_configs: 2 values -> [{'0_N': [{'type': 'OG', 'add_next': False}]}, {'0_N': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}]}]
+  set_id: 2 values -> ['G1', 'G2']
+  signal_types: 2 values -> [{'node_group_name': 'gearbox_1', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}, {'node_group_name': 'gearbox_2', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}]
+  stride: 1 values -> [250]
+  unhealthy_configs: 1 values -> [{'0_B-021': [{'type': 'OG', 'add_next': False}]}]
+  window_length: 2 values -> [500, 1000]
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G2) != Data(G1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
+Incompatible parameters:
+  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
+  - Set ID mismatch: Model(G1) != Data(G2)
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
+
+> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
+Incompatible parameters:
+  - Window length mismatch: Model(500) != Data(1000)
+Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+
+Parameter Sweep Summary:
+Total combinations: 6
+
+Parameters and their values:
+
+Number of models selected: 6
+Selected models are as follows:
+------------------------------
+  Model 1: [gearbox_1(acc+G1)]-1SVM_fdet_1
+  Model 2: [gearbox_1(acc+G1)]-1SVM_fdet_2
+  Model 3: [gearbox_1(acc+G1)]-IF_fdet_1
+  Model 4: [gearbox_1(acc+G1)]-IF_fdet_2
+  Model 5: [gearbox_2(acc+G2)]-1SVM_fdet_1
+  Model 6: [gearbox_2(acc+G2)]-IF_fdet_1
+
+Parallelizing 12 fault detection configurations across 8 workers...
+  Completed config 2: [gearbox_1(acc+G1)]-1SVM_fdet_2/custom_test_1
+  Completed config 5: [gearbox_2(acc+G2)]-1SVM_fdet_1/custom_test_1
+  Completed config 4: [gearbox_1(acc+G1)]-IF_fdet_2/custom_test_1
+  Completed config 1: [gearbox_1(acc+G1)]-1SVM_fdet_1/custom_test_1
+  Completed config 3: [gearbox_1(acc+G1)]-IF_fdet_1/custom_test_1
+  Completed config 7: [gearbox_1(acc+G1)]-1SVM_fdet_1/custom_test_2
+  Completed config 6: [gearbox_2(acc+G2)]-IF_fdet_1/custom_test_1
+  Completed config 8: [gearbox_1(acc+G1)]-1SVM_fdet_2/custom_test_2
+  Completed config 9: [gearbox_1(acc+G1)]-IF_fdet_1/custom_test_2
+  Completed config 10: [gearbox_1(acc+G1)]-IF_fdet_2/custom_test_2
+  Completed config 11: [gearbox_2(acc+G2)]-1SVM_fdet_1/custom_test_2
+  Completed config 12: [gearbox_2(acc+G2)]-IF_fdet_1/custom_test_2
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_1_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-01 18:09:08

@@ -1,0 +1,121 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_train.py
+Base Name: tswp_1
+Start Time: 2025-09-01 18:21:24
+End Time: 2025-09-01 18:25:00
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model sweep...
+
+Processing 16 data groups
+
+Data Config Sweep Summary:
+Run type: train
+------------------------------
+Total combinations: 16
+
+Parameters and their values:
+  healthy_configs: 2 values -> [{'0_N': [{'type': 'OG', 'add_next': False}]}, {'0_N': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}]}]
+  set_id: 2 values -> ['G1', 'G2']
+  signal_types: 2 values -> [{'node_group_name': 'gearbox_1', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}, {'node_group_name': 'gearbox_2', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}]
+  stride: 1 values -> [250]
+  unhealthy_configs: 1 values -> [{'0_B-021': [{'type': 'OG', 'add_next': False}]}]
+  window_length: 2 values -> [500, 1000]
+
+Parameter Sweep Summary:
+Total combinations: 4
+
+Parameters and their values:
+  anom_config: 2 values -> [{'anom_type': 'IF', 'n_estimators': 100, 'seed': 42, 'contam': 'auto', 'n_jobs': -1}, {'anom_type': '1SVM', 'kernel': 'rbf', 'gamma': 'scale', 'nu': 0.01}]
+  batch_size: 2 values -> [100, 80]
+  domain_config: 1 values -> [{'type': 'freq', 'cutoff_freq': 100}]
+  feat_configs: 1 values -> [[]]
+  feat_norm: 1 values -> [None]
+  num_workers: 1 values -> [1]
+  raw_data_norm: 1 values -> [None]
+  reduc_config: 1 values -> [None]
+  test_rt: 1 values -> [0.2]
+  train_rt: 1 values -> [0.8]
+Parallelizing 64 fault detection configurations across 8 workers...
+  Completed config 3: [gearbox_1(acc+G1)]-1SVM_fdet_1
+  Completed config 7: [gearbox_1(acc+G1)]-1SVM_fdet_3
+  Completed config 4: [gearbox_1(acc+G1)]-1SVM_fdet_2
+  Completed config 1: [gearbox_1(acc+G1)]-IF_fdet_1
+  Completed config 2: [gearbox_1(acc+G1)]-IF_fdet_2
+  Completed config 8: [gearbox_1(acc+G1)]-1SVM_fdet_4
+  Completed config 5: [gearbox_1(acc+G1)]-IF_fdet_3
+  Completed config 6: [gearbox_1(acc+G1)]-IF_fdet_4
+  Completed config 13: [gearbox_2(acc+G1)]-IF_fdet_3
+  Completed config 12: [gearbox_2(acc+G1)]-1SVM_fdet_2
+  Completed config 11: [gearbox_2(acc+G1)]-1SVM_fdet_1
+  Completed config 15: [gearbox_2(acc+G1)]-1SVM_fdet_3
+  Completed config 16: [gearbox_2(acc+G1)]-1SVM_fdet_4
+  Completed config 9: [gearbox_2(acc+G1)]-IF_fdet_1
+  Completed config 14: [gearbox_2(acc+G1)]-IF_fdet_4
+  Completed config 10: [gearbox_2(acc+G1)]-IF_fdet_2
+  Completed config 18: [gearbox_1(acc+G2)]-IF_fdet_2
+  Completed config 19: [gearbox_1(acc+G2)]-1SVM_fdet_1
+  Completed config 21: [gearbox_1(acc+G2)]-IF_fdet_3
+  Completed config 20: [gearbox_1(acc+G2)]-1SVM_fdet_2
+  Completed config 23: [gearbox_1(acc+G2)]-1SVM_fdet_3
+  Completed config 24: [gearbox_1(acc+G2)]-1SVM_fdet_4
+  Completed config 22: [gearbox_1(acc+G2)]-IF_fdet_4
+  Completed config 17: [gearbox_1(acc+G2)]-IF_fdet_1
+  Completed config 27: [gearbox_2(acc+G2)]-1SVM_fdet_1
+  Completed config 25: [gearbox_2(acc+G2)]-IF_fdet_1
+  Completed config 26: [gearbox_2(acc+G2)]-IF_fdet_2
+  Completed config 28: [gearbox_2(acc+G2)]-1SVM_fdet_2
+  Completed config 31: [gearbox_2(acc+G2)]-1SVM_fdet_3
+  Completed config 29: [gearbox_2(acc+G2)]-IF_fdet_3
+  Completed config 30: [gearbox_2(acc+G2)]-IF_fdet_4
+  Completed config 32: [gearbox_2(acc+G2)]-1SVM_fdet_4
+  Completed config 35: [gearbox_1(acc+G1)]-1SVM_fdet_5
+  Completed config 36: [gearbox_1(acc+G1)]-1SVM_fdet_6
+  Completed config 37: [gearbox_1(acc+G1)]-IF_fdet_7
+  Completed config 39: [gearbox_1(acc+G1)]-1SVM_fdet_7
+  Completed config 38: [gearbox_1(acc+G1)]-IF_fdet_8
+  Completed config 33: [gearbox_1(acc+G1)]-IF_fdet_5
+  Completed config 34: [gearbox_1(acc+G1)]-IF_fdet_6
+  Completed config 40: [gearbox_1(acc+G1)]-1SVM_fdet_8
+  Completed config 41: [gearbox_2(acc+G1)]-IF_fdet_5
+  Completed config 42: [gearbox_2(acc+G1)]-IF_fdet_6
+  Completed config 43: [gearbox_2(acc+G1)]-1SVM_fdet_5
+  Completed config 44: [gearbox_2(acc+G1)]-1SVM_fdet_6
+  Completed config 45: [gearbox_2(acc+G1)]-IF_fdet_7
+  Completed config 46: [gearbox_2(acc+G1)]-IF_fdet_8
+  Completed config 47: [gearbox_2(acc+G1)]-1SVM_fdet_7
+  Completed config 48: [gearbox_2(acc+G1)]-1SVM_fdet_8
+  Completed config 51: [gearbox_1(acc+G2)]-1SVM_fdet_5
+  Completed config 50: [gearbox_1(acc+G2)]-IF_fdet_6
+  Completed config 52: [gearbox_1(acc+G2)]-1SVM_fdet_6
+  Completed config 53: [gearbox_1(acc+G2)]-IF_fdet_7
+  Completed config 49: [gearbox_1(acc+G2)]-IF_fdet_5
+  Completed config 55: [gearbox_1(acc+G2)]-1SVM_fdet_7
+  Completed config 56: [gearbox_1(acc+G2)]-1SVM_fdet_8
+  Completed config 61: [gearbox_2(acc+G2)]-IF_fdet_7
+  Completed config 54: [gearbox_1(acc+G2)]-IF_fdet_8
+  Completed config 59: [gearbox_2(acc+G2)]-1SVM_fdet_5
+  Completed config 57: [gearbox_2(acc+G2)]-IF_fdet_5
+  Completed config 58: [gearbox_2(acc+G2)]-IF_fdet_6
+  Completed config 60: [gearbox_2(acc+G2)]-1SVM_fdet_6
+  Completed config 62: [gearbox_2(acc+G2)]-IF_fdet_8
+  Completed config 63: [gearbox_2(acc+G2)]-1SVM_fdet_7
+  Completed config 64: [gearbox_2(acc+G2)]-1SVM_fdet_8
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\train_sweeps\tswp_1_console_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-01 18:25:00

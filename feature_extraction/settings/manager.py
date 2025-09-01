@@ -53,7 +53,7 @@ class FeatureRankingManager(FeatureRankingConfig):
         # add node type
         self.perf_path = os.path.join(base_path, f'({self.node_type})', f'{self.signal_group}', f'set={self.set_id}')
         
-        self.model_name = f"({self.set_id}-{self.node_type}-{self.signal_group})_perf"
+        self.model_name = f"({self.node_type}-{self.signal_group}-{self.set_id})_perf"
 
         # add perf number
         self.perf_log_path = os.path.join(self.perf_path, f"{self.model_name}_{self.perf_version}")
