@@ -463,10 +463,18 @@ class TrainerAnomalyDetector:
         # calculate test accuracy
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
 
+        # calculate decison boundary deltas
+        scores_ok = filtered_df[filtered_df['pred_label'] == 0]['scores']
+        scores_nok = filtered_df[filtered_df['pred_label'] == 1]['scores']
+        
+        db_delta_ok = min(scores_ok) if not scores_ok.empty else np.nan
+        db_delta_nok = - max(scores_nok) if not scores_nok.empty else np.nan
+
         # calculate precison, recall, f1-score
         tp = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == 1))  # True Positives
         fp = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == 0))  # False Positives
         fn = np.sum((filtered_df['pred_label'] == 0) & (filtered_df['given_label'] == 1))  # False Negatives
+        tn = np.sum((filtered_df['pred_label'] == 0) & (filtered_df['given_label'] == 0))  # True Negatives
 
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
@@ -491,6 +499,12 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['f1_score'] = f1_score
         anomaly_detector.hparams['run_type'] = self.run_type
         anomaly_detector.hparams['infer_time'] = infer_time
+        anomaly_detector.hparams['m/tp'] = tp
+        anomaly_detector.hparams['m/fp'] = fp
+        anomaly_detector.hparams['m/tn'] = tn
+        anomaly_detector.hparams['m/fn'] = fn
+        anomaly_detector.hparams['db_delta_ok'] = db_delta_ok
+        anomaly_detector.hparams['db_delta_nok'] = db_delta_nok
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/test_accuracy", accuracy)
