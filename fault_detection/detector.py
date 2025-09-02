@@ -499,10 +499,10 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['f1_score'] = f1_score
         anomaly_detector.hparams['run_type'] = self.run_type
         anomaly_detector.hparams['infer_time'] = infer_time
-        anomaly_detector.hparams['m/tp'] = tp
-        anomaly_detector.hparams['m/fp'] = fp
-        anomaly_detector.hparams['m/tn'] = tn
-        anomaly_detector.hparams['m/fn'] = fn
+        anomaly_detector.hparams['tp'] = tp
+        anomaly_detector.hparams['fp'] = fp
+        anomaly_detector.hparams['tn'] = tn
+        anomaly_detector.hparams['fn'] = fn
         anomaly_detector.hparams['db_delta_ok'] = db_delta_ok
         anomaly_detector.hparams['db_delta_nok'] = db_delta_nok
 
