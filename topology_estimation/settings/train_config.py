@@ -41,7 +41,7 @@ class DecoderTrainConfig:
         burn_in_steps : int
             Number of initial steps to use as ground truth inputs if `is_burn_in` is True.
         """
-        ext = ExtraSettings()
+        self.ext = ExtraSettings()
         self.data_config = data_config
 
     # 1: Training parameters   
@@ -81,7 +81,7 @@ class DecoderTrainConfig:
         
         # input processor parameters
         self.dec_domain_config = get_domain_config('time')
-        self.dec_raw_data_norm = None
+        self.dec_raw_data_norm = 'min_max'
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
@@ -97,14 +97,13 @@ class DecoderTrainConfig:
 
         # if dynamic graph is true
         self.temp = 1.0    # temperature for Gumble Softmax
-        self.is_hard = True      
+        self.is_hard = True   
 
-        self.dec_edge_mlp_config = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
-        self.dec_out_mlp_config = ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.set_dec_emb_configs()   
 
     # 3: Sparsifier parameters
 
-        self.spf_config = get_spf_config('no_spf', is_expert=False)
+        self.spf_config = get_spf_config('vanilla', is_expert=True)
 
         self.spf_domain_config = get_domain_config('time')
         self.spf_raw_data_norm = None 
@@ -117,6 +116,12 @@ class DecoderTrainConfig:
     # 4: Hyperparameters and plots
         self.hyperparams = self.get_hyperparams()
 
+    def set_dec_emb_configs(self):
+        """
+        Sets the decoder embedding function configurations based on the provided config types.
+        """
+        self.dec_edge_mlp_config = self.ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        self.dec_out_mlp_config = self.ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
 
     def get_hyperparams(self):
         """
@@ -182,6 +187,79 @@ class DecoderTrainConfig:
 
         return hyperparams
     
+class DecoderTrainSweep:
+    def __init__(self, data_config:DataConfig):
+        self.data_config = data_config
+        self.train_sweep_num = 1
+
+    # 1: Training parameters   
+        # dataset parameters
+        self.batch_size = [50, 100]
+        self.train_rt = [0.8]
+        self.test_rt = [0.1]
+        self.val_rt = [0.1]
+
+        # optimization parameters
+        self.max_epochs = [5]
+        self.lr = [0.001]
+        self.optimizer = ['adam']
+        self.loss_type = ['nll']
+
+    # 2: Decoder parameters
+
+        self.msg_out_size = [64]
+    
+        # embedding function parameters 
+        self.edge_mlp_config = [
+            {'mlp': 'default'}
+            ]
+        self.out_mlp_config = [
+            {'mlp': 'default'}
+            ]
+
+        self.do_prob = [0]
+        self.is_batch_norm = [True]
+
+        # recurrent embedding parameters
+        self.recur_emb_type = ['gru']
+        
+        # input processor parameters
+        self.dec_domain_config = [get_domain_config('time')]
+        self.dec_raw_data_norm = ['min_max']
+        self.dec_feat_configs = [
+            []
+            # [get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10)]
+        ]
+        self.dec_reduc_config = [None] # get_reduc_config('PCA', n_components=10) # or None
+        self.dec_feat_norm = [None]
+
+        # run parameters
+        self.skip_first_edge_type = [False]
+        self.pred_steps = [1]
+        self.is_burn_in = [False]
+        self.burn_in_steps = [1]
+        self.is_dynamic_graph = [False]
+
+        # if dynamic graph is true
+        self.temp = [1.0]    # temperature for Gumble Softmax
+        self.is_hard = [True]   
+
+        # self.dec_edge_mlp_config = ext.get_dec_emb_config(config_type=self.edge_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+        # self.dec_out_mlp_config = ext.get_dec_emb_config(config_type=self.out_mlp_config, msg_out_size=self.msg_out_size)['mlp']
+
+    # 3: Sparsifier parameters
+
+        self.spf_config = [get_spf_config('vanilla', is_expert=True)]
+
+        # self.spf_domain_config = get_domain_config('time')
+        # self.spf_raw_data_norm = None 
+        # self.spf_feat_configs = [
+        #    # get_time_feat_config('first_n_modes', data_config=self.data_config),
+        # ]    
+        # self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        # self.spf_feat_norm = None
+
+
 
 class NRITrainConfig:
     def __init__(self, data_config:DataConfig):
@@ -244,7 +322,7 @@ class NRITrainConfig:
             Type of recurrent embedding to use in the decoder (`gru`, `mlp`) 
             ( if `mlp`, then only output mlp)
         """
-        ext = ExtraSettings()
+        self.ext = ExtraSettings()
         self.data_config = data_config
 
     # 1: Training parameters   
@@ -311,10 +389,6 @@ class NRITrainConfig:
         self.temp = 1.0       
         self.is_hard = True   
 
-        self.pipeline = ext.get_enc_pipeline(self.pipeline_type)  
-        self.enc_edge_emb_configs = ext.get_enc_emb_config(config_type=self.edge_emb_config)  
-        self.enc_node_emb_configs = ext.get_enc_emb_config(config_type=self.node_emb_config)
-
     # 3: Decoder parameters
 
         self.msg_out_size = 64
@@ -345,8 +419,7 @@ class NRITrainConfig:
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
 
-        self.dec_edge_mlp_config = ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
-        self.dec_out_mlp_config = ext.get_dec_emb_config(self.out_mlp_config, self.msg_out_size)['mlp']
+        self.set_nri_emb_configs()
 
     # 4: Sparsifier parameters
 
@@ -362,6 +435,20 @@ class NRITrainConfig:
         
     # 5: Hyperparameters and plots
         self.hyperparams = self.get_hyperparams()
+
+    def set_nri_emb_configs(self):
+        """
+        Sets the encoder and decoder embedding function configurations based on the provided config types.
+        """
+        # set encoder pipeline and embedding configs
+        self.pipeline = self.ext.get_enc_pipeline(self.pipeline_type)  
+        self.enc_edge_emb_configs = self.ext.get_enc_emb_config(config_type=self.edge_emb_config)  
+        self.enc_node_emb_configs = self.ext.get_enc_emb_config(config_type=self.node_emb_config)
+
+        # set decoder embedding configs
+        self.dec_edge_mlp_config = self.ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
+        self.dec_out_mlp_config = self.ext.get_dec_emb_config(self.out_mlp_config, self.msg_out_size)['mlp']
+
 
     def get_hyperparams(self):
         """
@@ -447,6 +534,109 @@ class NRITrainConfig:
                 hyperparams[key] = 'None'
 
         return hyperparams
+    
+class NRITrainSweep:
+    def __init__(self, data_config:DataConfig):
+        self.data_config = data_config
+        self.train_sweep_num = 1
+
+    # 1: Training parameters   
+        # dataset parameters
+        self.batch_size = [50]
+        self.train_rt = [0.8]
+        self.test_rt = [0.1]
+        self.val_rt = [0.1]
+
+        # optimization parameters
+        self.max_epochs = [5]
+        self.lr = [0.001]
+        self.optimizer = ['adam']
+
+        self.loss_type_enc = ['kld']
+        self.prior = [None]
+        self.add_const_kld = [True]  # this needs to be True, adds a constant term to the KL divergence
+
+        self.loss_type_dec = ['nll']
+
+    # 2: Encoder parameters
+
+        # pipeline parameters
+        self.pipeline_type = ['mlp_1'] 
+        self.is_residual_connection = [True] 
+
+        # embedding function parameters
+        self.edge_emb_config = [
+            {'mlp': 'default', 'cnn': 'default'}
+        ]
+        self.node_emb_config = [
+            {'mlp': 'default', 'cnn': 'default'}
+        ]
+
+        self.enc_do_prob = [
+            {'mlp': 0.0, 'cnn': 0.0}
+        ]
+        self.enc_is_batch_norm = [
+            {'mlp': True, 'cnn': False}
+        ]
+        # attention parameters
+        self.attention_output_size = [5]  
+
+        # input processor parameters
+        self.enc_domain_config = [get_domain_config('time')]
+        self.enc_raw_data_norm = [None] 
+        self.enc_feat_configs = [
+            []
+            ]
+        self.enc_reduc_config = [None] # get_reduc_config('PCA', n_components=10) # or None
+        self.enc_feat_norm = [None]
+
+        # gumble softmax parameters
+        self.temp = [1.0 ]     
+        self.is_hard = [True]   
+
+    # 3: Decoder parameters
+
+        self.msg_out_size = [64]
+    
+        # embedding function parameters 
+        self.edge_mlp_config = [{'mlp': 'default'}]
+        self.out_mlp_config = [{'mlp': 'default'}]
+
+        self.dec_do_prob = [0]
+        self.dec_is_batch_norm = [True]
+
+        # recurrent embedding parameters
+        self.recur_emb_type = ['gru']
+        
+        # input processor parameters
+        self.dec_domain_config = [get_domain_config('time')]
+        self.dec_raw_data_norm = [None]
+        self.dec_feat_configs = [
+            []
+            # [get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10)]
+        ]
+        self.dec_feat_norm = [None]
+        self.dec_reduc_config = [None] # get_reduc_config('PCA', n_components=10) # or None
+        
+        # run parameters
+        self.skip_first_edge_type = [True] 
+        self.pred_steps = [1]
+        self.is_burn_in = [False]
+        self.burn_in_steps = [1]
+        self.is_dynamic_graph = [False]
+
+    # 4: Sparsifier parameters
+
+        self.spf_config = [get_spf_config('vanilla', is_expert=True)]
+        
+        # self.spf_domain_config   = get_domain_config('time')
+        # self.spf_raw_data_norm = None 
+        # self.spf_feat_configs = [
+        #     # get_time_feat_config('first_n_modes'),
+        # ]    
+        # self.spf_feat_norm = None
+        # self.spf_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+    
         
 
 def get_config_str(configs:list):

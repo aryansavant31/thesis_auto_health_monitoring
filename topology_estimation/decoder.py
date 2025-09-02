@@ -527,6 +527,7 @@ class Decoder(LightningModule):
             'train_losses': [],
             'val_losses': [],
         }
+        self.start_time = time.time()
 
     
     def _forward_pass(self, batch, batch_idx):
@@ -568,8 +569,8 @@ class Decoder(LightningModule):
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
 
-        if self.current_epoch == 0 and batch_idx == 0:
-            self.start_time = time.time()
+        # if self.current_epoch == 0 and batch_idx == 0:
+        #     self.start_time = time.time()
 
         loss, self.decoder_plot_data_train = self._forward_pass(batch, batch_idx)
 
@@ -670,6 +671,8 @@ class Decoder(LightningModule):
         self.model_id = self.hyperparams.get('model_id', 'decoder')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
+        self.start_time = time.time()
+
     def test_step(self, batch, batch_idx):
         """
         Test step for the decoder.
@@ -698,9 +701,13 @@ class Decoder(LightningModule):
         """
         Called at the end of the test epoch. Updates the hyperparameters with test losses.
         """
+        self.infer_time = time.time() - self.start_time
+        print(f"\nTesting completed in {self.infer_time:.2f} seconds or {self.infer_time / 60:.2f} minutes or {self.infer_time / 60 / 60} hours.")
+
         # update hparams
         self.hyperparams.update({
             'test_loss': self.trainer.callback_metrics['test_loss'].item(),
+            'infer_time': self.infer_time,
             })
 
         # print stats after each epoch
@@ -728,6 +735,8 @@ class Decoder(LightningModule):
         self.model_id = self.hyperparams.get('model_id', 'decoder')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
 
+        self.start_time = time.time()
+
     def predict_step(self, batch, batch_idx):
         """
         Prediction step for the topology estimator.
@@ -743,6 +752,9 @@ class Decoder(LightningModule):
         """
         loss, self.decoder_plot_data_predict = self._forward_pass(batch, batch_idx)
 
+        infer_time = time.time() - self.start_time
+        print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
+        
         print(f"\nDecoder residuals: {loss.item():,.4f}")
         print('\n' + 75*'-')
 

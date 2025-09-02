@@ -1,553 +1,0 @@
-=== SCRIPT EXECUTION LOG ===
-Script: topology_estimation.train.py
-Base Name: (m004)-(E=mlp_1_D=gru)_edge_est_1.1
-Start Time: 2025-08-24 22:55:42
-End Time: 2025-08-24 22:56:54
-
-CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
-GPUs Detected: 1
-GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
-OS: Windows 11 (10.0.26100)
-
-Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
-========================================================================================================================
-
-
-Starting nri model training...
-
-'Train' type dataset selected:
-
-
-ds_subtype selections:
-
-(<ds_subtype_num>) <ds_subtype> : [<augments>]
----------------------------------------------
->> Healthy configs
-(1) series_tp_(fs=1000)    : [OG]
-
->> Unhealthy configs
-
->> Unknown configs
-
-
-Node and signal types are set as follows:
-
-(<node_num>) <node_type> : [<signal_types>]
----------------------------------------------
-(1) mass_1   : [acc, pos, vel]
-(2) mass_2   : [acc, pos, vel]
-(3) mass_3   : [acc, pos, vel]
-(4) mass_4   : [acc, pos, vel]
-
-Node group name: m004
-
-
-For ds_type 'OK' and others....
-
-Maximum timesteps across all node types: 100001
-
-'fs' is updated in data_config as given in loaded healthy (or unknown) data.
-New fs:
-[[1000., 1000., 1000.],
- [1000., 1000., 1000.],
- [1000., 1000., 1000.],
- [1000., 1000., 1000.]]
-
-No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
-
-
-[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
----------------------------------------------
-Total samples: 1000 
-Train: 800/800 [OK=800, NOK=0, UK=0], Test: 100/100 [OK=100, NOK=0, UK=0], Val: 100/100 [OK=100, NOK=0, UK=0],
-Remainder: 0 [OK=0, NOK=0, UK=0]
-
-train_data_loader statistics:
-Number of batches: 16
-torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
-
-test_data_loader statistics:
-Number of batches: 2
-torch.Size([50, 4, 100, 3]) 
-
-val_data_loader statistics:
-Number of batches: 2
-torch.Size([50, 4, 100, 3]) 
-
----------------------------------------------------------------------------
-
-Loading Relation Matrices...
-
-Reciever relation matrix:
-tensor([[0., 1., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [1., 0., 0., 0.],
-        [0., 0., 1., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 1., 0., 0.],
-        [0., 0., 0., 1.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 1., 0.]]) 
-shape: torch.Size([12, 4])
-
-Sender relation matrix:
-tensor([[1., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 1., 0., 0.],
-        [0., 1., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 1., 0.],
-        [0., 0., 1., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 0.],
-        [0., 0., 0., 1.]]) 
-shape: torch.Size([12, 4])
-
----------------------------------------------------------------------------
-
-<<<<<< ENCODER PARAMETERS >>>>>>
-Encoder model parameters:
--------------------------
-n_edge_types: 1
-is_residual_connection: True
-do_prob: {'mlp': 0.0, 'cnn': 0.0}
-is_batch_norm: {'mlp': True, 'cnn': False}
-attention_output_size: 5
-domain_config: {'type': 'time', 'cutoff_freq': 0}
-raw_data_norm: None
-feat_configs: []
-reduc_config: None
-feat_norm: None
-pipeline: [['1/node_emd.1', 'mlp'], ['1/node_emd.2', 'mlp'], ['1/pairwise_op', 'mean'], ['1/edge_emd.1.@', 'mlp'], ['2/aggregate', 'mean'], ['2/node_emd.1', 'mlp'], ['2/node_emd.2', 'mlp'], ['2/pairwise_op', 'concat'], ['2/edge_emd.1', 'mlp'], ['2/edge_emd.2', 'mlp']]
-edge_emb_configs: {'mlp': [[64, 'relu'], [32, 'relu'], [16, 'relu'], [8, None]], 'cnn': [[5, 2, 64], [8]]}
-node_emb_configs: {'mlp': [[64, 'relu'], [32, 'relu'], [16, 'relu'], [8, None]], 'cnn': [[5, 2, 64], [8]]}
-n_comps: 100
-n_dims: 3
-
-Encoder run parameters:
--------------------------
-
-<<<<<< DECODER PARAMETERS >>>>>>
-
-Decoder model parameters:
--------------------------
-n_edge_types: 1
-msg_out_size: 64
-edge_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
-out_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
-do_prob: 0
-is_batch_norm: True
-recur_emb_type: gru
-domain_config: {'type': 'time', 'cutoff_freq': 0}
-raw_data_norm: None
-feat_configs: []
-feat_norm: None
-reduc_config: None
-n_dims: 3
-
-Decoder run parameters:
--------------------------
-temp: 1.0
-is_hard: True
-skip_first_edge_type: True
-pred_steps: 1
-is_burn_in: False
-burn_in_steps: 1
-is_dynamic_graph: False
-
----------------------------------------------------------------------------
-
-NRI Model Initialized with the following configurations:
------ NRI Model Summary -----
--- Encoder Summary
-Encoder(
-  (emb_fn_dict): ModuleDict(
-    (1/node_emd1): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=300, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (1/node_emd2): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=8, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (1/edge_emd1@): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=8, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (2/node_emd1): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=8, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (2/node_emd2): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=8, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (2/edge_emd1): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=16, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-    (2/edge_emd2): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=16, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): ReLU()
-        (3): Dropout(p=0.0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): ReLU()
-        (7): Dropout(p=0.0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): ReLU()
-        (11): Dropout(p=0.0, inplace=False)
-        (12): Linear(in_features=16, out_features=8, bias=True)
-        (13): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-  )
-  (attention_layer_dict): ModuleDict()
-  (output_layer): Linear(in_features=8, out_features=1, bias=True)
-)
--- Decoder Summary
-Decoder(
-  (edge_mlp_fn): ModuleList(
-    (0): MLP(
-      (layers): ModuleList(
-        (0): Linear(in_features=128, out_features=64, bias=True)
-        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (2): Tanh()
-        (3): Dropout(p=0, inplace=False)
-        (4): Linear(in_features=64, out_features=32, bias=True)
-        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (6): Tanh()
-        (7): Dropout(p=0, inplace=False)
-        (8): Linear(in_features=32, out_features=16, bias=True)
-        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-        (10): Tanh()
-        (11): Dropout(p=0, inplace=False)
-        (12): Linear(in_features=16, out_features=64, bias=True)
-        (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      )
-    )
-  )
-  (recurrent_emb_fn): GRU(
-    (input_u): Linear(in_features=3, out_features=64, bias=True)
-    (hidden_u): Linear(in_features=64, out_features=64, bias=True)
-    (input_r): Linear(in_features=3, out_features=64, bias=True)
-    (hidden_r): Linear(in_features=64, out_features=64, bias=True)
-    (input_h): Linear(in_features=3, out_features=64, bias=True)
-    (hidden_h): Linear(in_features=64, out_features=64, bias=True)
-  )
-  (mean_mlp): MLP(
-    (layers): ModuleList(
-      (0): Linear(in_features=64, out_features=64, bias=True)
-      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): Tanh()
-      (3): Dropout(p=0, inplace=False)
-      (4): Linear(in_features=64, out_features=32, bias=True)
-      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (6): Tanh()
-      (7): Dropout(p=0, inplace=False)
-      (8): Linear(in_features=32, out_features=16, bias=True)
-      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (10): Tanh()
-      (11): Dropout(p=0, inplace=False)
-      (12): Linear(in_features=16, out_features=64, bias=True)
-      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-  )
-  (var_mlp): MLP(
-    (layers): ModuleList(
-      (0): Linear(in_features=64, out_features=64, bias=True)
-      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): Tanh()
-      (3): Dropout(p=0, inplace=False)
-      (4): Linear(in_features=64, out_features=32, bias=True)
-      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (6): Tanh()
-      (7): Dropout(p=0, inplace=False)
-      (8): Linear(in_features=32, out_features=16, bias=True)
-      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (10): Tanh()
-      (11): Dropout(p=0, inplace=False)
-      (12): Linear(in_features=16, out_features=64, bias=True)
-      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-  )
-  (mean_output_layer): Linear(in_features=64, out_features=3, bias=True)
-  (var_output_layer): Linear(in_features=64, out_features=3, bias=True)
-)
-
----------------------------------------------------------------------------
-
-'(m004)-(E=mlp_1_D=gru)_edge_est_1.1' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1'.
-(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the '(m004)-(E=mlp_1_D=gru)_edge_est_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1? (y/n): Overwrote '(m004)-(E=mlp_1_D=gru)_edge_est_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1.
-Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1.
-
-Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1
-
----------------------------------------------------------------------------
-
-Initializing input processors for encoder model...
-
->> Domain transformer initialized for 'time' domain
-
->> No raw data normalization is applied
-
->> No feature normalization is applied
-
->> No time feature extraction is applied
-
->> No feature reduction is applied
-
----------------------------------------------------------------------------
-
-Initializing input processors for decoder model...
-
->> Domain transformer initialized for 'time' domain
-
->> No raw data normalization is applied
-
->> No feature normalization is applied
-
->> No time feature extraction is applied
-
->> No feature reduction is applied
-
----------------------------------------------------------------------------
-C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
-C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
-Training: |                                                                                              | 0/? [00:00<?, ?it/s]Training:   0%|                                                                                         | 0/16 [00:00<?, ?it/s]Epoch 0:   0%|                                                                                          | 0/16 [00:00<?, ?it/s]Epoch 0:   6%|#####1                                                                            | 1/16 [00:00<00:11,  1.28it/s]Epoch 0:   6%|####3                                                                 | 1/16 [00:00<00:11,  1.28it/s, v_num=_1.1]Epoch 0:  12%|########7                                                             | 2/16 [00:01<00:10,  1.36it/s, v_num=_1.1]Epoch 0:  12%|########7                                                             | 2/16 [00:01<00:10,  1.36it/s, v_num=_1.1]Epoch 0:  19%|#############1                                                        | 3/16 [00:01<00:08,  1.53it/s, v_num=_1.1]Epoch 0:  19%|#############1                                                        | 3/16 [00:01<00:08,  1.53it/s, v_num=_1.1]Epoch 0:  25%|#################5                                                    | 4/16 [00:02<00:07,  1.68it/s, v_num=_1.1]Epoch 0:  25%|#################5                                                    | 4/16 [00:02<00:07,  1.68it/s, v_num=_1.1]Epoch 0:  31%|#####################8                                                | 5/16 [00:02<00:06,  1.73it/s, v_num=_1.1]Epoch 0:  31%|#####################8                                                | 5/16 [00:02<00:06,  1.73it/s, v_num=_1.1]Epoch 0:  38%|##########################2                                           | 6/16 [00:03<00:05,  1.75it/s, v_num=_1.1]Epoch 0:  38%|##########################2                                           | 6/16 [00:03<00:05,  1.75it/s, v_num=_1.1]Epoch 0:  44%|##############################6                                       | 7/16 [00:03<00:05,  1.77it/s, v_num=_1.1]Epoch 0:  44%|##############################6                                       | 7/16 [00:03<00:05,  1.77it/s, v_num=_1.1]Epoch 0:  50%|###################################                                   | 8/16 [00:04<00:04,  1.82it/s, v_num=_1.1]Epoch 0:  50%|###################################                                   | 8/16 [00:04<00:04,  1.82it/s, v_num=_1.1]Epoch 0:  56%|#######################################3                              | 9/16 [00:04<00:03,  1.85it/s, v_num=_1.1]Epoch 0:  56%|#######################################3                              | 9/16 [00:04<00:03,  1.85it/s, v_num=_1.1]Epoch 0:  62%|###########################################1                         | 10/16 [00:05<00:03,  1.89it/s, v_num=_1.1]Epoch 0:  62%|###########################################1                         | 10/16 [00:05<00:03,  1.89it/s, v_num=_1.1]Epoch 0:  69%|###############################################4                     | 11/16 [00:05<00:02,  1.91it/s, v_num=_1.1]Epoch 0:  69%|###############################################4                     | 11/16 [00:05<00:02,  1.91it/s, v_num=_1.1]Epoch 0:  75%|###################################################7                 | 12/16 [00:06<00:02,  1.94it/s, v_num=_1.1]Epoch 0:  75%|###################################################7                 | 12/16 [00:06<00:02,  1.94it/s, v_num=_1.1]Epoch 0:  81%|########################################################             | 13/16 [00:06<00:01,  1.96it/s, v_num=_1.1]Epoch 0:  81%|########################################################             | 13/16 [00:06<00:01,  1.96it/s, v_num=_1.1]Epoch 0:  88%|############################################################3        | 14/16 [00:07<00:01,  1.99it/s, v_num=_1.1]Epoch 0:  88%|############################################################3        | 14/16 [00:07<00:01,  1.99it/s, v_num=_1.1]Epoch 0:  94%|################################################################6    | 15/16 [00:07<00:00,  2.01it/s, v_num=_1.1]Epoch 0:  94%|################################################################6    | 15/16 [00:07<00:00,  2.01it/s, v_num=_1.1]Epoch 0: 100%|#####################################################################| 16/16 [00:07<00:00,  2.02it/s, v_num=_1.1]Epoch 0: 100%|#####################################################################| 16/16 [00:07<00:00,  2.02it/s, v_num=_1.1]
-Validation: |                                                                                            | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                                                        | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                                                           | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:  50%|#################################5                                 | 1/2 [00:00<00:00,  4.51it/s][A
-Validation DataLoader 0: 100%|###################################################################| 2/2 [00:00<00:00,  4.80it/s][A
-                                                                                                                               [AEpoch 0: 100%|#####################################################################| 16/16 [00:08<00:00,  1.92it/s, v_num=_1.1]Epoch 0: 100%|#####################################################################| 16/16 [00:08<00:00,  1.92it/s, v_num=_1.1]
-Epoch 1/5 completed
-nri_train_loss: 214.3718, enc_train_loss: 0.0000, dec_train_loss: 214.3718, enc_train_edge_accuracy: 0.5000
-nri_val_loss: 193.2936, enc_val_loss: 0.0000, dec_val_loss: 193.2936, enc_val_edge_accuracy: 0.5000
-Epoch 0:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 1:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 1:   6%|####3                                                                 | 1/16 [00:00<00:08,  1.79it/s, v_num=_1.1]Epoch 1:   6%|####3                                                                 | 1/16 [00:00<00:08,  1.79it/s, v_num=_1.1]Epoch 1:  12%|########7                                                             | 2/16 [00:01<00:07,  1.84it/s, v_num=_1.1]Epoch 1:  12%|########7                                                             | 2/16 [00:01<00:07,  1.84it/s, v_num=_1.1]Epoch 1:  19%|#############1                                                        | 3/16 [00:01<00:07,  1.84it/s, v_num=_1.1]Epoch 1:  19%|#############1                                                        | 3/16 [00:01<00:07,  1.84it/s, v_num=_1.1]Epoch 1:  25%|#################5                                                    | 4/16 [00:02<00:06,  1.83it/s, v_num=_1.1]Epoch 1:  25%|#################5                                                    | 4/16 [00:02<00:06,  1.83it/s, v_num=_1.1]Epoch 1:  31%|#####################8                                                | 5/16 [00:02<00:05,  1.87it/s, v_num=_1.1]Epoch 1:  31%|#####################8                                                | 5/16 [00:02<00:05,  1.87it/s, v_num=_1.1]Epoch 1:  38%|##########################2                                           | 6/16 [00:03<00:05,  1.90it/s, v_num=_1.1]Epoch 1:  38%|##########################2                                           | 6/16 [00:03<00:05,  1.90it/s, v_num=_1.1]Epoch 1:  44%|##############################6                                       | 7/16 [00:03<00:04,  1.93it/s, v_num=_1.1]Epoch 1:  44%|##############################6                                       | 7/16 [00:03<00:04,  1.93it/s, v_num=_1.1]Epoch 1:  50%|###################################                                   | 8/16 [00:04<00:04,  1.92it/s, v_num=_1.1]Epoch 1:  50%|###################################                                   | 8/16 [00:04<00:04,  1.92it/s, v_num=_1.1]Epoch 1:  56%|#######################################3                              | 9/16 [00:04<00:03,  1.95it/s, v_num=_1.1]Epoch 1:  56%|#######################################3                              | 9/16 [00:04<00:03,  1.95it/s, v_num=_1.1]Epoch 1:  62%|###########################################1                         | 10/16 [00:05<00:03,  1.93it/s, v_num=_1.1]Epoch 1:  62%|###########################################1                         | 10/16 [00:05<00:03,  1.93it/s, v_num=_1.1]Epoch 1:  69%|###############################################4                     | 11/16 [00:05<00:02,  1.95it/s, v_num=_1.1]Epoch 1:  69%|###############################################4                     | 11/16 [00:05<00:02,  1.95it/s, v_num=_1.1]Epoch 1:  75%|###################################################7                 | 12/16 [00:06<00:02,  1.94it/s, v_num=_1.1]Epoch 1:  75%|###################################################7                 | 12/16 [00:06<00:02,  1.94it/s, v_num=_1.1]Epoch 1:  81%|########################################################             | 13/16 [00:06<00:01,  1.93it/s, v_num=_1.1]Epoch 1:  81%|########################################################             | 13/16 [00:06<00:01,  1.93it/s, v_num=_1.1]Epoch 1:  88%|############################################################3        | 14/16 [00:07<00:01,  1.92it/s, v_num=_1.1]Epoch 1:  88%|############################################################3        | 14/16 [00:07<00:01,  1.92it/s, v_num=_1.1]Epoch 1:  94%|################################################################6    | 15/16 [00:07<00:00,  1.94it/s, v_num=_1.1]Epoch 1:  94%|################################################################6    | 15/16 [00:07<00:00,  1.94it/s, v_num=_1.1]Epoch 1: 100%|#####################################################################| 16/16 [00:08<00:00,  1.95it/s, v_num=_1.1]Epoch 1: 100%|#####################################################################| 16/16 [00:08<00:00,  1.95it/s, v_num=_1.1]
-Validation: |                                                                                            | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                                                        | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                                                           | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:  50%|#################################5                                 | 1/2 [00:00<00:00,  5.67it/s][A
-Validation DataLoader 0: 100%|###################################################################| 2/2 [00:00<00:00,  5.61it/s][A
-                                                                                                                               [AEpoch 1: 100%|#####################################################################| 16/16 [00:08<00:00,  1.87it/s, v_num=_1.1]Epoch 1: 100%|#####################################################################| 16/16 [00:08<00:00,  1.87it/s, v_num=_1.1]
-Epoch 2/5 completed
-nri_train_loss: 167.7942, enc_train_loss: 0.0000, dec_train_loss: 167.7942, enc_train_edge_accuracy: 0.5000
-nri_val_loss: 132.3978, enc_val_loss: 0.0000, dec_val_loss: 132.3978, enc_val_edge_accuracy: 0.5000
-Epoch 1:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 2:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 2:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.23it/s, v_num=_1.1]Epoch 2:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.23it/s, v_num=_1.1]Epoch 2:  12%|########7                                                             | 2/16 [00:01<00:07,  1.98it/s, v_num=_1.1]Epoch 2:  12%|########7                                                             | 2/16 [00:01<00:07,  1.98it/s, v_num=_1.1]Epoch 2:  19%|#############1                                                        | 3/16 [00:01<00:06,  2.00it/s, v_num=_1.1]Epoch 2:  19%|#############1                                                        | 3/16 [00:01<00:06,  2.00it/s, v_num=_1.1]Epoch 2:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.07it/s, v_num=_1.1]Epoch 2:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.07it/s, v_num=_1.1]Epoch 2:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.05it/s, v_num=_1.1]Epoch 2:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.05it/s, v_num=_1.1]Epoch 2:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.10it/s, v_num=_1.1]Epoch 2:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.10it/s, v_num=_1.1]Epoch 2:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.10it/s, v_num=_1.1]Epoch 2:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.10it/s, v_num=_1.1]Epoch 2:  50%|###################################                                   | 8/16 [00:03<00:03,  2.16it/s, v_num=_1.1]Epoch 2:  50%|###################################                                   | 8/16 [00:03<00:03,  2.16it/s, v_num=_1.1]Epoch 2:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.10it/s, v_num=_1.1]Epoch 2:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.10it/s, v_num=_1.1]Epoch 2:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.12it/s, v_num=_1.1]Epoch 2:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.12it/s, v_num=_1.1]Epoch 2:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.12it/s, v_num=_1.1]Epoch 2:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.12it/s, v_num=_1.1]Epoch 2:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.13it/s, v_num=_1.1]Epoch 2:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.13it/s, v_num=_1.1]Epoch 2:  81%|########################################################             | 13/16 [00:06<00:01,  2.15it/s, v_num=_1.1]Epoch 2:  81%|########################################################             | 13/16 [00:06<00:01,  2.15it/s, v_num=_1.1]Epoch 2:  88%|############################################################3        | 14/16 [00:06<00:00,  2.14it/s, v_num=_1.1]Epoch 2:  88%|############################################################3        | 14/16 [00:06<00:00,  2.14it/s, v_num=_1.1]Epoch 2:  94%|################################################################6    | 15/16 [00:06<00:00,  2.15it/s, v_num=_1.1]Epoch 2:  94%|################################################################6    | 15/16 [00:06<00:00,  2.15it/s, v_num=_1.1]Epoch 2: 100%|#####################################################################| 16/16 [00:07<00:00,  2.15it/s, v_num=_1.1]Epoch 2: 100%|#####################################################################| 16/16 [00:07<00:00,  2.15it/s, v_num=_1.1]
-Validation: |                                                                                            | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                                                        | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                                                           | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:  50%|#################################5                                 | 1/2 [00:00<00:00,  5.26it/s][A
-Validation DataLoader 0: 100%|###################################################################| 2/2 [00:00<00:00,  5.13it/s][A
-                                                                                                                               [AEpoch 2: 100%|#####################################################################| 16/16 [00:07<00:00,  2.04it/s, v_num=_1.1]Epoch 2: 100%|#####################################################################| 16/16 [00:07<00:00,  2.04it/s, v_num=_1.1]
-Epoch 3/5 completed
-nri_train_loss: 109.3689, enc_train_loss: 0.0000, dec_train_loss: 109.3689, enc_train_edge_accuracy: 0.5000
-nri_val_loss: 70.6973, enc_val_loss: 0.0000, dec_val_loss: 70.6973, enc_val_edge_accuracy: 0.5000
-Epoch 2:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 3:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 3:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.23it/s, v_num=_1.1]Epoch 3:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.22it/s, v_num=_1.1]Epoch 3:  12%|########7                                                             | 2/16 [00:00<00:06,  2.15it/s, v_num=_1.1]Epoch 3:  12%|########7                                                             | 2/16 [00:00<00:06,  2.15it/s, v_num=_1.1]Epoch 3:  19%|#############1                                                        | 3/16 [00:01<00:05,  2.18it/s, v_num=_1.1]Epoch 3:  19%|#############1                                                        | 3/16 [00:01<00:05,  2.18it/s, v_num=_1.1]Epoch 3:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.18it/s, v_num=_1.1]Epoch 3:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.18it/s, v_num=_1.1]Epoch 3:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.17it/s, v_num=_1.1]Epoch 3:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.16it/s, v_num=_1.1]Epoch 3:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.17it/s, v_num=_1.1]Epoch 3:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.17it/s, v_num=_1.1]Epoch 3:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.18it/s, v_num=_1.1]Epoch 3:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.18it/s, v_num=_1.1]Epoch 3:  50%|###################################                                   | 8/16 [00:03<00:03,  2.19it/s, v_num=_1.1]Epoch 3:  50%|###################################                                   | 8/16 [00:03<00:03,  2.19it/s, v_num=_1.1]Epoch 3:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.18it/s, v_num=_1.1]Epoch 3:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.18it/s, v_num=_1.1]Epoch 3:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.17it/s, v_num=_1.1]Epoch 3:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.17it/s, v_num=_1.1]Epoch 3:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.18it/s, v_num=_1.1]Epoch 3:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.18it/s, v_num=_1.1]Epoch 3:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.17it/s, v_num=_1.1]Epoch 3:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.17it/s, v_num=_1.1]Epoch 3:  81%|########################################################             | 13/16 [00:05<00:01,  2.17it/s, v_num=_1.1]Epoch 3:  81%|########################################################             | 13/16 [00:05<00:01,  2.17it/s, v_num=_1.1]Epoch 3:  88%|############################################################3        | 14/16 [00:06<00:00,  2.18it/s, v_num=_1.1]Epoch 3:  88%|############################################################3        | 14/16 [00:06<00:00,  2.18it/s, v_num=_1.1]Epoch 3:  94%|################################################################6    | 15/16 [00:06<00:00,  2.19it/s, v_num=_1.1]Epoch 3:  94%|################################################################6    | 15/16 [00:06<00:00,  2.19it/s, v_num=_1.1]Epoch 3: 100%|#####################################################################| 16/16 [00:07<00:00,  2.18it/s, v_num=_1.1]Epoch 3: 100%|#####################################################################| 16/16 [00:07<00:00,  2.18it/s, v_num=_1.1]
-Validation: |                                                                                            | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                                                        | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                                                           | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:  50%|#################################5                                 | 1/2 [00:00<00:00,  5.68it/s][A
-Validation DataLoader 0: 100%|###################################################################| 2/2 [00:00<00:00,  5.53it/s][A
-                                                                                                                               [AEpoch 3: 100%|#####################################################################| 16/16 [00:07<00:00,  2.08it/s, v_num=_1.1]Epoch 3: 100%|#####################################################################| 16/16 [00:07<00:00,  2.08it/s, v_num=_1.1]
-Epoch 4/5 completed
-nri_train_loss: 49.2435, enc_train_loss: 0.0000, dec_train_loss: 49.2435, enc_train_edge_accuracy: 0.5000
-nri_val_loss: 60.0020, enc_val_loss: 0.0000, dec_val_loss: 60.0020, enc_val_edge_accuracy: 0.5000
-Epoch 3:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 4:   0%|                                                                              | 0/16 [00:00<?, ?it/s, v_num=_1.1]Epoch 4:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.20it/s, v_num=_1.1]Epoch 4:   6%|####3                                                                 | 1/16 [00:00<00:06,  2.20it/s, v_num=_1.1]Epoch 4:  12%|########7                                                             | 2/16 [00:00<00:06,  2.24it/s, v_num=_1.1]Epoch 4:  12%|########7                                                             | 2/16 [00:00<00:06,  2.24it/s, v_num=_1.1]Epoch 4:  19%|#############1                                                        | 3/16 [00:01<00:06,  2.14it/s, v_num=_1.1]Epoch 4:  19%|#############1                                                        | 3/16 [00:01<00:06,  2.14it/s, v_num=_1.1]Epoch 4:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.12it/s, v_num=_1.1]Epoch 4:  25%|#################5                                                    | 4/16 [00:01<00:05,  2.12it/s, v_num=_1.1]Epoch 4:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.14it/s, v_num=_1.1]Epoch 4:  31%|#####################8                                                | 5/16 [00:02<00:05,  2.14it/s, v_num=_1.1]Epoch 4:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.17it/s, v_num=_1.1]Epoch 4:  38%|##########################2                                           | 6/16 [00:02<00:04,  2.17it/s, v_num=_1.1]Epoch 4:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.17it/s, v_num=_1.1]Epoch 4:  44%|##############################6                                       | 7/16 [00:03<00:04,  2.17it/s, v_num=_1.1]Epoch 4:  50%|###################################                                   | 8/16 [00:03<00:03,  2.18it/s, v_num=_1.1]Epoch 4:  50%|###################################                                   | 8/16 [00:03<00:03,  2.18it/s, v_num=_1.1]Epoch 4:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.18it/s, v_num=_1.1]Epoch 4:  56%|#######################################3                              | 9/16 [00:04<00:03,  2.18it/s, v_num=_1.1]Epoch 4:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.18it/s, v_num=_1.1]Epoch 4:  62%|###########################################1                         | 10/16 [00:04<00:02,  2.18it/s, v_num=_1.1]Epoch 4:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.18it/s, v_num=_1.1]Epoch 4:  69%|###############################################4                     | 11/16 [00:05<00:02,  2.18it/s, v_num=_1.1]Epoch 4:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.18it/s, v_num=_1.1]Epoch 4:  75%|###################################################7                 | 12/16 [00:05<00:01,  2.18it/s, v_num=_1.1]Epoch 4:  81%|########################################################             | 13/16 [00:05<00:01,  2.19it/s, v_num=_1.1]Epoch 4:  81%|########################################################             | 13/16 [00:05<00:01,  2.19it/s, v_num=_1.1]Epoch 4:  88%|############################################################3        | 14/16 [00:06<00:00,  2.19it/s, v_num=_1.1]Epoch 4:  88%|############################################################3        | 14/16 [00:06<00:00,  2.19it/s, v_num=_1.1]Epoch 4:  94%|################################################################6    | 15/16 [00:06<00:00,  2.18it/s, v_num=_1.1]Epoch 4:  94%|################################################################6    | 15/16 [00:06<00:00,  2.18it/s, v_num=_1.1]Epoch 4: 100%|#####################################################################| 16/16 [00:07<00:00,  2.19it/s, v_num=_1.1]Epoch 4: 100%|#####################################################################| 16/16 [00:07<00:00,  2.19it/s, v_num=_1.1]
-Validation: |                                                                                            | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                                                        | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                                                           | 0/2 [00:00<?, ?it/s][A
-Validation DataLoader 0:  50%|#################################5                                 | 1/2 [00:00<00:00,  6.13it/s][A
-Validation DataLoader 0: 100%|###################################################################| 2/2 [00:00<00:00,  6.12it/s][A
-                                                                                                                               [AEpoch 4: 100%|#####################################################################| 16/16 [00:07<00:00,  2.09it/s, v_num=_1.1]Epoch 4: 100%|#####################################################################| 16/16 [00:07<00:00,  2.09it/s, v_num=_1.1]
-Epoch 5/5 completed
-nri_train_loss: 4.2001, enc_train_loss: 0.0000, dec_train_loss: 4.2001, enc_train_edge_accuracy: 0.5000
-nri_val_loss: -37.6736, enc_val_loss: 0.0000, dec_val_loss: -37.6736, enc_val_edge_accuracy: 0.5000
-Epoch 4: 100%|#####################################################################| 16/16 [00:07<00:00,  2.08it/s, v_num=_1.1]
-
-Training completed in 44.23 seconds or 0.74 minutes or 0.012287023795975578 hours.
-
-Training completed for model '(m004)-(E=mlp_1_D=gru)_edge_est_1.1'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1\checkpoints
-
----------------------------------------------------------------------------
-
-<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
-
-Creating training loss plot for (m004)-(E=mlp_1_D=gru)_edge_est_1.1...
-
-Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1
-
-
-<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
-
-Creating decoder output plot for rep '1,001.780' for (m004)-(E=mlp_1_D=gru)_edge_est_1.1...
-
-Decoder output plot for rep '1001.78' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1
-
-
-<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
-
-Creating decoder output plot for rep '1,001.790' for (m004)-(E=mlp_1_D=gru)_edge_est_1.1...
-
-Decoder output plot for rep '1001.79' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1
-
-
-.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1\checkpoints:
-
-['epoch=4-step=80.ckpt']
-
-Trained NRI Model Loaded for testing.
-
-Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1\test
-C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
-Testing: |                                                                                               | 0/? [00:00<?, ?it/s]
-Initializing input processors for encoder model...
-
->> Domain transformer initialized for 'time' domain
-
->> No raw data normalization is applied
-
->> No feature normalization is applied
-
->> No time feature extraction is applied
-
->> No feature reduction is applied
-
----------------------------------------------------------------------------
-
-Initializing input processors for decoder model...
-
->> Domain transformer initialized for 'time' domain
-
->> No raw data normalization is applied
-
->> No feature normalization is applied
-
->> No time feature extraction is applied
-
->> No feature reduction is applied
-
----------------------------------------------------------------------------
-Testing:   0%|                                                                                           | 0/2 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                                                              | 0/2 [00:00<?, ?it/s]Testing DataLoader 0:  50%|###################################                                   | 1/2 [00:00<00:00,  4.48it/s]Testing DataLoader 0: 100%|######################################################################| 2/2 [00:00<00:00,  4.40it/s]
-nri_test_loss: -56.9385, enc_test_loss: 0.0000, dec_test_loss: -56.9385, enc_test_edge_accuracy: 0.5000
-
-Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1\test
-
----------------------------------------------------------------------------
-
-<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
-
-Creating decoder output plot for rep '1,001.701' for (m004)-(E=mlp_1_D=gru)_edge_est_1.1...
-
-Decoder output plot for rep '1001.701' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=1\grp=m004\E=mlp_1_D=gru\(m004)-(E=mlp_1_D=gru)_edge_est_1.1\test
-
-Testing DataLoader 0: 100%|######################################################################| 2/2 [00:02<00:00,  0.82it/s]
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃        Test metric        ┃       DataLoader 0        ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│       dec/test_loss       │    -56.93849563598633     │
-│  enc/test_edge_accuracy   │            0.5            │
-│       enc/test_loss       │            0.0            │
-│       nri/test_loss       │    -56.93849563598633     │
-└───────────────────────────┴───────────────────────────┘
-
-===========================================================================
-
-Nri model '(m004)-(E=mlp_1_D=gru)_edge_est_1.1' training completed.
-
-
-=== EXECUTION COMPLETED ===
-Log saved at: 2025-08-24 22:56:54

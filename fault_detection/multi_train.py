@@ -119,11 +119,11 @@ def multi_trainer_main(parallel_execution, max_workers=None):
         data_sweep.print_sweep_summary()
 
         # get all training configurations
-        fdet_sweep = AnomalyDetectorTrainSweepManager(data_configs)
-        fdet_configs = fdet_sweep.get_sweep_configs()
-        fdet_sweep.print_sweep_summary()
+        sweep_manager = AnomalyDetectorTrainSweepManager(data_configs)
+        fdet_configs = sweep_manager.get_sweep_configs()
+        sweep_manager.print_sweep_summary()
 
-        train_sweep_num = fdet_sweep.train_sweep_num
+        train_sweep_num = sweep_manager.train_sweep_num
 
         config_args = [(idx, fdet_config, len(fdet_configs)) 
                         for idx, fdet_config in enumerate(fdet_configs)]
@@ -183,7 +183,7 @@ def multi_trainer_main(parallel_execution, max_workers=None):
         
         else:
             # No parallelization - original sequential code
-            print("Running sequentially (no parallelization)...")
+            print(f"Running {len(fdet_configs)} sequentially (no parallelization)...")
 
             for arg in config_args:
                 result = train_single_config(arg)

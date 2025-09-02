@@ -42,6 +42,8 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             The number of components in each datapoint/sample in the dataset
         n_dim : int
             The number of dimensions in each component in the dataset
+        always_next_version : bool, optional
+            Whether to always create the next version if a version already exists, by default False
         """
         self.always_next_version = always_next_version
 
@@ -60,7 +62,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         # model name
         self.model_name = f"[{self.node_type}_({self.signal_group}+{self.set_id})]-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"tswp_{self.train_sweep_num}" , f"{self.model_name}_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"tswp_{self.train_sweep_num}", f"{self.model_name}_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -98,6 +100,8 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
 
         model_path = os.path.join(model_path, f"(anom) [{' + '.join(feat_types)}] [{reduc_type}]")
         
+        # add train sweep number to path
+        model_path = os.path.join(model_path, f'tswp_{self.train_sweep_num}')
 
         # add model shape compatibility stats to path
         self.model_id = os.path.join(model_path, f'anom (comps = {n_components*n_dim})')
@@ -155,8 +159,8 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 sys.exit()  # Exit the program gracefully   
 
     def _get_next_version(self):
-        model_dir = os.path.dirname(self.train_log_path)
-        parent_dir = os.path.dirname(model_dir)
+        sweep_dir = os.path.dirname(self.train_log_path)
+        parent_dir = os.path.dirname(sweep_dir)
 
         model_folders = []
         for root, dirs, files in os.walk(parent_dir):
@@ -175,7 +179,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             self.model_num = 1
             new_model = f"{self.model_name}_{self.model_num}"
 
-        return os.path.join(model_dir, new_model)
+        return os.path.join(sweep_dir, new_model)
     
 
     def check_if_version_exists(self):
@@ -204,7 +208,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
 
 class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
     def __init__(self, data_config:DataConfig, run_type, infer_sweep_num=0, selected_model_path=None):
-        super().__init__(data_config, selected_model_path)
+        super().__init__(data_config, run_type, selected_model_path)
 
         # check if data and model are compatible
         if not self._is_data_model_match():
@@ -963,20 +967,22 @@ class SelectFaultDetectionModel:
                 7: "<timestep_id>",
                 8: "<domain>",
                 9: "<feat_type>",
-                10: "<shape_compatibility>",
-                11: "<version>"
+                10: "<tswp_id>",
+                11: "<shape_compatibility>",
+                12: "<version>"
             }
         elif self.run_type in ['custom_test', 'predict']:
             label_map = {
                 0: "<node_name>",
                 1: "<signal_group>",
                 2: "<set>",
-                3: "<trained_model>",
-                4: "<model_id>",
-                5: "<ds_type>",
-                6: "<ds_subtype>",
-                7: "<timestep_id>",
-                8: "<versions>"
+                3: "<iswp_id>",
+                4: "<ds_type>",
+                5: "<ds_subtype>",
+                6: "<trained_model>",
+                7: "<model_id>",
+                8: "<timestep_id>",
+                9: "<versions>"
             }
                     
         added_labels = set()
@@ -994,11 +1000,11 @@ class SelectFaultDetectionModel:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
-            if self.run_type in ['custom_test', 'predict'] and level == 3:
+            if self.run_type in ['custom_test', 'predict'] and level == 6:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
-            if self.run_type in ['custom_test', 'predict'] and level == 4:
+            if self.run_type in ['custom_test', 'predict'] and level == 7:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue

@@ -18,20 +18,23 @@ from rich.console import Console
 from data.config import DataConfig
 import pickle
 import glob
+from collections import defaultdict
+import itertools
 
 # global imports
 from data.config import DataConfig
 
 # local imports
-from .train_config import NRITrainConfig, DecoderTrainConfig
+from .train_config import NRITrainConfig, NRITrainSweep, DecoderTrainConfig, DecoderTrainSweep
 from .infer_config import NRIInferConfig, DecoderInferConfig
 
 class NRITrainManager(NRITrainConfig):
-    def __init__(self, data_config:DataConfig):
+    def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
+        self.train_sweep_num = train_sweep_num
 
-    def get_train_log_path(self, n_dim, n_comps):
+    def get_train_log_path(self, n_dim, n_comps, always_next_version=False):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -41,8 +44,15 @@ class NRITrainManager(NRITrainConfig):
             The number of components in each sample in the dataset
         n_dim : int
             The number of dimensions in each sample in the dataset
+        always_next_version : bool, optional
+            Whether to always create the next version if a version already exists, by default False
         """
+        self.always_next_version = always_next_version
         
+        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
+        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        self.set_id = self.data_config.set_id
+
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
                                 f'{self.data_config.machine_type}',
@@ -52,15 +62,11 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(base_path, 'nri',)  # add framework type
 
         # add num of edge types and node types to path
-        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
-        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
-        self.set_id = self.data_config.set_id
-
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"({self.node_group})", self.signal_group, f"set={self.set_id}")
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"{self.node_group}", self.signal_group, f"set_{self.set_id}")
 
         # get train log path
-        self.model_name = f"({self.set_id}-{self.node_group}-{self.signal_group})-[E={self.pipeline_type}_D={self.recur_emb_type}]_edge_est_{self.n_edge_types}"
-        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}", f"{self.model_name}.{self.model_num}")
+        self.model_name = f"[{self.node_group}_({self.signal_group}+{self.set_id})]-(E={self.pipeline_type}_D={self.recur_emb_type})_edge_est_{self.n_edge_types}"
+        self.train_log_path = os.path.join(model_path, f"E={self.pipeline_type}_D={self.recur_emb_type}", f"tswp_{self.train_sweep_num}", f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -74,6 +80,7 @@ class NRITrainManager(NRITrainConfig):
         )
         model_path = os.path.join(model_path, f"{signal_types_str}")
 
+        # add timestep id to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
 
         # add sparsifier type to path
@@ -90,7 +97,10 @@ class NRITrainManager(NRITrainConfig):
         dec_reduc_type = self.dec_reduc_config['type'] if self.dec_reduc_config else 'no_reduc'
 
         model_path = os.path.join(model_path, f"(E) [{' + '.join(enc_feat_types)}] [{enc_reduc_type}], (D) [{' + '.join(dec_feat_types)}] [{dec_reduc_type}]")
-  
+
+        # add train sweep number to path
+        model_path = os.path.join(model_path, f'tswp_{self.train_sweep_num}')
+
         # add model shape compatibility stats to path
         self.model_id = os.path.join(model_path, f'(E) (comps = {n_comps}), (D) (dims = {n_dim})')
 
@@ -137,11 +147,15 @@ class NRITrainManager(NRITrainConfig):
 
     
     def _get_next_version(self):
-        parent_dir = os.path.dirname(self.train_log_path)
+        sweep_dir = os.path.dirname(self.train_log_path)
+        parent_dir = os.path.dirname(sweep_dir)
 
-        # List all folders in parent_dir that match 'edge_estimator_<number>'
-        #folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = os.listdir(parent_dir)
+        model_folders = []
+        for root, dirs, files in os.walk(parent_dir):
+            # Only look at immediate subfolders of parent_dir
+            if os.path.dirname(root) == parent_dir:
+                for d in dirs:
+                    model_folders.append(d)
 
         if model_folders:
             # Extract numbers and find the max
@@ -150,9 +164,10 @@ class NRITrainManager(NRITrainConfig):
             new_model = f"{self.model_name}.{self.model_num}"
             print(f"Next edge estimator folder will be: {new_model}")
         else:
-            new_model = f"{self.model_name}.1"  # If no v folders exist
+            self.model_num = 1
+            new_model = f"{self.model_name}.{self.model_num}"  # If no v folders exist
 
-        return os.path.join(parent_dir, new_model)
+        return os.path.join(sweep_dir, new_model)
     
     def save_params(self):
         """
@@ -181,6 +196,10 @@ class NRITrainManager(NRITrainConfig):
         log_path : str
             The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
+        if self.always_next_version:
+            self.train_log_path = self._get_next_version()
+            return
+
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
                 print(f"\nContinuing training from '{self.model_name}.{self.model_num}' in the log path '{self.train_log_path}'.")
@@ -202,12 +221,14 @@ class NRITrainManager(NRITrainConfig):
                     print("Stopped training.")
                     sys.exit()  # Exit the program gracefully
 
+
 class DecoderTrainManager(DecoderTrainConfig):
-    def __init__(self, data_config:DataConfig):
+    def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
+        self.train_sweep_num = train_sweep_num
 
-    def get_train_log_path(self, n_dim, **kwargs):
+    def get_train_log_path(self, n_dim, always_next_version=False, **kwargs):
         """
         Returns the path to store the logs based on data and topology config
 
@@ -216,7 +237,12 @@ class DecoderTrainManager(DecoderTrainConfig):
         n_dim : int
             The number of dimensions in each sample in the dataset
         """
-        
+        self.always_next_version = always_next_version
+
+        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
+        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
+        self.set_id = self.data_config.set_id
+
         base_path = os.path.join(LOGS_DIR, 
                                 f'{self.data_config.application_map[self.data_config.application]}', 
                                 f'{self.data_config.machine_type}',
@@ -226,15 +252,11 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(base_path, 'decoder',)  # add framework type
 
         # add num of edge types and node types to path
-        self.node_group = f"{self.data_config.signal_types['node_group_name']}"
-        self.signal_group = f"{self.data_config.signal_types['signal_group_name']}"
-        self.set_id = self.data_config.set_id
-
-        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"({self.node_group})", self.signal_group, f"set={self.set_id}")
+        model_path = os.path.join(model_path, 'train', f'etypes={self.n_edge_types}', f"{self.node_group}", self.signal_group, f"set_{self.set_id}")
 
         # get train log path
-        self.model_name = f"({self.set_id}-{self.node_group}-{self.signal_group})-{self.recur_emb_type}_dec_{self.n_edge_types}"
-        self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}" , f"{self.model_name}.{self.model_num}")
+        self.model_name = f"[{self.node_group}_({self.signal_group}+{self.set_id})]-{self.recur_emb_type}_dec_{self.n_edge_types}"
+        self.train_log_path = os.path.join(model_path, f"D={self.recur_emb_type}", f"tswp_{self.train_sweep_num}", f"{self.model_name}.{self.model_num}")
                        
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
@@ -248,6 +270,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         )
         model_path = os.path.join(model_path, f"{signal_types_str}")
 
+        # add timestep id to path
         model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
 
         # add sparsifier type to path
@@ -261,6 +284,9 @@ class DecoderTrainManager(DecoderTrainConfig):
         dec_reduc_type = self.dec_reduc_config['type'] if self.dec_reduc_config else 'no_reduc'
 
         model_path = os.path.join(model_path, f"(D) [{' + '.join(dec_feat_types)}] [{dec_reduc_type}]")
+
+        # add train sweep number to path
+        model_path = os.path.join(model_path, f'tswp_{self.train_sweep_num}')
   
         # add model shape compatibility stats to path
         self.model_id = os.path.join(model_path, f'(D) (dims = {n_dim})')
@@ -308,10 +334,15 @@ class DecoderTrainManager(DecoderTrainConfig):
 
     
     def _get_next_version(self):
-        parent_dir = os.path.dirname(self.train_log_path)
+        sweep_dir = os.path.dirname(self.train_log_path)
+        parent_dir = os.path.dirname(sweep_dir)
 
-        # List all folders in parent_dir that match 'decoder_<number>'
-        model_folders = os.listdir(parent_dir)
+        model_folders = []
+        for root, dirs, files in os.walk(parent_dir):
+            # Only look at immediate subfolders of parent_dir
+            if os.path.dirname(root) == parent_dir:
+                for d in dirs:
+                    model_folders.append(d)
 
         if model_folders:
             # Extract numbers and find the max
@@ -320,9 +351,10 @@ class DecoderTrainManager(DecoderTrainConfig):
             new_model = f'{self.model_name}.{self.model_num}'
             print(f"Next decoder folder will be: {new_model}")
         else:
-            new_model = f'{self.model_name}.1'  # If no v folders exist
+            self.model_num = 1
+            new_model = f'{self.model_name}.{self.model_num}'  # If no v folders exist
 
-        return os.path.join(parent_dir, new_model)
+        return os.path.join(sweep_dir, new_model)
     
     def save_params(self):
         """
@@ -351,6 +383,10 @@ class DecoderTrainManager(DecoderTrainConfig):
         log_path : str
             The path where the logs are stored. It can be for nri model or skeleton graph model.
         """
+        if self.always_next_version:
+            self.train_log_path = self._get_next_version()
+            return
+
         if self.continue_training:
             if os.path.isdir(self.train_log_path):
                 print(f"\nContinuing training from '{self.model_name}.{self.model_num}' in the log path '{self.train_log_path}'.")
@@ -371,6 +407,216 @@ class DecoderTrainManager(DecoderTrainConfig):
                 elif user_input.lower() == 'c':
                     print("Stopped training.")
                     sys.exit()  # Exit the program gracefully
+
+
+class TopologyEstimationTrainSweepManager(NRITrainSweep, DecoderTrainSweep):
+    def __init__(self, data_config:DataConfig, framework):
+        self.framework = framework
+
+        if self.framework == 'nri':
+            NRITrainSweep.__init__(self, data_config)
+        elif self.framework == 'decoder':
+            DecoderTrainSweep.__init__(self, data_config)
+
+    def _to_dict(self):
+        """
+        Convert sweep config attributes to dictionary, excluding private methods and non-list attributes.
+        """
+        sweep_dict = {}
+        for attr_name in dir(self):
+            if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
+                attr_value = getattr(self, attr_name)
+                if isinstance(attr_value, list):
+                    if attr_name != 'data_configs': 
+                        sweep_dict[attr_name] = attr_value
+        return sweep_dict
+    
+    def get_total_combinations(self):
+        """
+        Get the total number of parameter combinations.
+        """
+        sweep_dict = self._to_dict()
+        total = 1
+        for values in sweep_dict.values():
+            total *= len(values)
+        return total
+    
+    def print_sweep_summary(self):
+        """
+        Print a summary of the parameter sweep.
+        """
+        sweep_dict = self._to_dict()
+        print(f"\n{self.framework.capitalize()} Parameter Sweep Summary:")
+        print(f"Total combinations: {self.get_total_combinations()}")
+        print("\nParameters and their values:")
+        for param_name, param_values in sweep_dict.items():
+            print(f"  {param_name}: {len(param_values)} values -> {param_values}") 
+    
+
+class NRITrainSweepManager(TopologyEstimationTrainSweepManager):
+    framework = 'nri'
+
+    def __init__(self, data_configs:list):
+        self.data_configs = data_configs
+
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+        """
+        train_configs = []
+        idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(dict))))
+        idx = -1
+        
+        for data_config in self.data_configs: 
+
+            TopologyEstimationTrainSweepManager.__init__(self, data_config, framework=NRITrainSweepManager.framework)
+
+            node_group_change = data_config.signal_types['node_group_name'] != train_configs[-1].data_config.signal_types['node_group_name'] if train_configs else False
+            signal_group_change = data_config.signal_types['signal_group_name'] != train_configs[-1].data_config.signal_types['signal_group_name'] if train_configs else False
+            set_id_change = data_config.set_id != train_configs[-1].data_config.set_id if train_configs else False
+
+            # Convert sweep config to dictionary
+            sweep_dict = self._to_dict()
+            
+            # Get all parameter names and their values
+            param_names = list(sweep_dict.keys())
+            param_values = list(sweep_dict.values())
+            
+            # Generate all combinations using cartesian product
+            combinations = list(itertools.product(*param_values))
+            
+            # Create configs for each combination
+            for combo in combinations:
+                pipeline_change = combo[param_names.index('pipeline_type')] != train_configs[-1].pipeline_type if train_configs else False
+                recur_emb_change = combo[param_names.index('recur_emb_type')] != train_configs[-1].recur_emb_type if train_configs else False
+
+                if node_group_change or signal_group_change or set_id_change or pipeline_change or recur_emb_change:
+                    idx = (
+                        idx_dict.get(data_config.signal_types['node_group_name'], {})
+                                .get(data_config.signal_types['signal_group_name'], {})
+                                .get(data_config.set_id, {})
+                                .get(combo[param_names.index('pipeline_type')], {})
+                                .get(combo[param_names.index('recur_emb_type')], -1)
+                    )
+                idx += 1
+
+                # Create base config
+                train_config = NRITrainManager(self.data_config, train_sweep_num=self.train_sweep_num)
+
+                # Update parameters based on current combination
+                for param_name, param_value in zip(param_names, combo):
+                    setattr(train_config, param_name, param_value)
+
+                # Update model number
+                _ = train_config.get_train_log_path(n_dim=0, n_comps=0, always_next_version=True) # Dummy values for n_dim and n_comps
+                train_config.model_num = train_config.model_num + idx
+
+                # Update idx dictionary
+                idx_dict[
+                    data_config.signal_types['node_group_name']
+                ][
+                    data_config.signal_types['signal_group_name']
+                ][
+                    data_config.set_id
+                ][
+                    combo[param_names.index('pipeline_type')]
+                ][
+                    combo[param_names.index('recur_emb_type')]
+                ] = idx
+
+                # Regenerate emb configs and hyperparams
+                train_config.set_nri_emb_configs()
+                train_config.hyperparams = train_config.get_hyperparams()
+
+                train_configs.append(train_config)
+        
+        return train_configs
+    
+class DecoderTrainSweepManager(TopologyEstimationTrainSweepManager):
+    framework = 'decoder'
+
+    def __init__(self, data_configs:list):
+        self.data_configs = data_configs
+
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+        """
+        train_configs = []
+        idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        idx = -1
+        
+        for data_config in self.data_configs: 
+
+            TopologyEstimationTrainSweepManager.__init__(self, data_config, framework=DecoderTrainSweepManager.framework)
+
+            node_group_change = data_config.signal_types['node_group_name'] != train_configs[-1].data_config.signal_types['node_group_name'] if train_configs else False
+            signal_group_change = data_config.signal_types['signal_group_name'] != train_configs[-1].data_config.signal_types['signal_group_name'] if train_configs else False
+            set_id_change = data_config.set_id != train_configs[-1].data_config.set_id if train_configs else False
+
+            # Convert sweep config to dictionary
+            sweep_dict = self._to_dict()
+            
+            # Get all parameter names and their values
+            param_names = list(sweep_dict.keys())
+            param_values = list(sweep_dict.values())
+            
+            # Generate all combinations using cartesian product
+            combinations = list(itertools.product(*param_values))
+            
+            # Create configs for each combination
+            for combo in combinations:
+                recur_emb_change = combo[param_names.index('recur_emb_type')] != train_configs[-1].recur_emb_type if train_configs else False
+
+                if node_group_change or signal_group_change or set_id_change or recur_emb_change:
+                    idx = (
+                        idx_dict.get(data_config.signal_types['node_group_name'], {})
+                                .get(data_config.signal_types['signal_group_name'], {})
+                                .get(data_config.set_id, {})
+                                .get(combo[param_names.index('recur_emb_type')], -1)
+                    )
+                idx += 1
+
+                # Create base config
+                train_config = DecoderTrainManager(self.data_config, train_sweep_num=self.train_sweep_num)
+
+                # Update parameters based on current combination
+                for param_name, param_value in zip(param_names, combo):
+                    setattr(train_config, param_name, param_value)
+
+                # Update model number
+                _ = train_config.get_train_log_path(n_dim=0, always_next_version=True) # Dummy values for n_dim
+                train_config.model_num = train_config.model_num + idx
+
+                # Update idx dictionary
+                idx_dict[
+                    data_config.signal_types['node_group_name']
+                ][
+                    data_config.signal_types['signal_group_name']
+                ][
+                    data_config.set_id
+                ][
+                    combo[param_names.index('recur_emb_type')]
+                ] = idx
+
+                # Regenerate emb configs and hyperparams
+                train_config.set_dec_emb_configs()
+                train_config.hyperparams = train_config.get_hyperparams()
+
+                train_configs.append(train_config)
+        
+        return train_configs
+    
 
 
 class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):

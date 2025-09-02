@@ -205,6 +205,7 @@ class NRI(LightningModule):
             'enc/val_edge_accuracy': [],
         }
 
+        self.start_time = time.time()
         
     def _forward_pass(self, batch, batch_idx):
         """
@@ -268,8 +269,8 @@ class NRI(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        if self.current_epoch == 0 and batch_idx == 0:
-            self.start_time = time.time()
+        # if self.current_epoch == 0 and batch_idx == 0:
+        #     self.start_time = time.time()
 
         log_data, self.decoder_plot_data_train, _ = self._forward_pass(batch, batch_idx)
 
@@ -444,6 +445,8 @@ class NRI(LightningModule):
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
+
+        self.start_time = time.time()
   
     def test_step(self, batch, batch_idx):
         """
@@ -490,8 +493,12 @@ class NRI(LightningModule):
         """
         Called at the end of the test epoch. Updates the hyperparameters with test losses and accuracies.
         """
+        self.infer_time = time.time() - self.start_time
+        print(f"\nTesting completed in {self.infer_time:.2f} seconds or {self.infer_time / 60:.2f} minutes or {self.infer_time / 60 / 60} hours.")
+
         # update hyperparams
         self.hyperparams.update({
+            'infer_time': self.infer_time,
             'nri/test_loss': self.trainer.callback_metrics['nri/test_loss'].item(),
             'enc/test_loss': self.trainer.callback_metrics['enc/test_loss'].item(),
             'dec/test_loss': self.trainer.callback_metrics['dec/test_loss'].item(),
@@ -547,6 +554,7 @@ class NRI(LightningModule):
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         
+        self.start_time = time.time()
 
     def predict_step(self, batch, batch_idx):
         """
@@ -574,6 +582,9 @@ class NRI(LightningModule):
 
         # convert edge predictions to adjacency matrix
         adj_matrix = self.edge_pred_to_adjacency_matrix(edge_pred, num_nodes)
+
+        infer_time = time.time() - self.start_time
+        print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
 
         print(f"\n Adjacency matrix (shape {adj_matrix.shape})")
         print(adj_matrix)

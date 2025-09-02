@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 from data.config import DataConfig
 
 class AnomalyDetectorInferConfig:
-    def __init__(self, data_config:DataConfig, selected_model_path=None):
+    def __init__(self, data_config:DataConfig, run_type, selected_model_path=None):
         """
         Parameters
         ----------
@@ -26,6 +26,7 @@ class AnomalyDetectorInferConfig:
         from fault_detection.settings.manager import load_log_config, get_selected_model_path
 
         self.data_config = data_config
+        self.run_type = run_type
         self.selected_model_path = selected_model_path
 
         if self.selected_model_path is None:
@@ -59,6 +60,8 @@ class AnomalyDetectorInferConfig:
         domain_str = self._get_config_str([self.domain_config])
         hparams = {
             'domain': domain_str,
+            f'{self.run_type}_version': self.version,
+            f'batch_size_{self.run_type}': self.batch_size,
         }
 
         for key, value in hparams.items():

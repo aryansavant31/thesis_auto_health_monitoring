@@ -16,7 +16,7 @@ from data.datasets.mass_sp_dm.groups import MSDGroupMaker
 from data.datasets.bearing.groups import BERGroupMaker
 
 class DataConfig:
-    def __init__(self, run_type='train'):
+    def __init__(self, run_type='train', view_dataset=False):
         """
         Data structure:
 
@@ -55,21 +55,22 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'MSD'
+        self.machine_type = 'M004'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = MSDGroupMaker().m004_all
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 1000
-        self.stride             = 1000
+        self.window_length      = 100
+        self.stride             = 100
 
         self.use_custom_max_timesteps = False
         self.custom_max_timesteps     = 10000
+
 
         self.view = DatasetViewer(self)
 
@@ -80,13 +81,14 @@ class DataConfig:
         elif self.run_type == 'predict':
             self.set_predict_dataset()
 
-        self.set_id = self.get_set_id()
+        if not view_dataset:
+            self.set_id = self.get_set_id()
         
     def set_train_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
 
         self.healthy_configs   = {
-            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+            'series_tp': [get_augment_config('OG')]  
         }
         
         self.unhealthy_configs = {
@@ -244,18 +246,19 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [NXEGroupMaker().ammf_acc]
-        self.window_length = [1000]
-        self.stride = [1000]
+        self.signal_types = [MSDGroupMaker().m004_all]
+        self.window_length = [100]
+        self.stride = [100]
 
 
         if self.run_type == 'train':
-            e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
-            e2_keys = [key for key in self.view.healthy_types if key.startswith('E2')][:50]
+            # e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
+            # e2_keys = [key for key in self.view.healthy_types if key.startswith('E2')][:50]
 
-            self.healthy_configs = [
-                {key: [get_augment_config('OG')] for key in e1_keys},
-            ]
+            # self.healthy_configs = [
+            #     {key: [get_augment_config('OG')] for key in e1_keys},
+            # ]
+            pass
 
             # self.unhealthy_configs = [
             #     #{'0_B-021': [get_augment_config('OG')]},
@@ -708,7 +711,8 @@ class DatasetViewer:
     
 if __name__ == "__main__":
     # data_config.set_train_valid_dataset()
-    data_config = DataConfig()
+    data_config = DataConfig(view_dataset=True)
+    
     data_viewer = DatasetViewer(data_config)
 
     data_viewer.view_dataset_tree()

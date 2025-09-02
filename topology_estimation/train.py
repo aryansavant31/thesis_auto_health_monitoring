@@ -197,7 +197,7 @@ class TopologyEstimationTrainHelper:
         
         return test_logger
 
-class NRITrainMain(TopologyEstimationTrainHelper):
+class NRITrainPipeline(TopologyEstimationTrainHelper):
     def __init__(self, data_config:DataConfig, nri_config:NRITrainManager):
         """
         Initialize the NRI training main class.
@@ -211,7 +211,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         """
         super().__init__(data_config, nri_config)
 
-    def train(self):
+    def train(self, device='auto'):
         """
         Main method to train the NRI model.
         """
@@ -234,6 +234,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
     # 3. Train the NRI model
         train_logger, ckpt_path = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
         trainer = Trainer(
+            accelerator=device,
             logger=train_logger,
             max_epochs=self.tp_config.max_epochs,
             enable_progress_bar=True,
@@ -252,7 +253,10 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         
         test_logger = self._prep_for_testing()
 
-        tester = Trainer(logger=test_logger)
+        tester = Trainer(
+            accelerator=device,
+            logger=test_logger)
+        
         tester.test(model=trained_nri_model, dataloaders=self.test_loader)
 
 
@@ -324,7 +328,7 @@ class NRITrainMain(TopologyEstimationTrainHelper):
         return trained_nri_model
     
     
-class DecoderTrainMain(TopologyEstimationTrainHelper):
+class DecoderTrainPipeline(TopologyEstimationTrainHelper):
     def __init__(self, data_config:DataConfig, decoder_config:DecoderTrainManager):
         """
         Initialize the Decoder training main class.
@@ -338,7 +342,7 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         """
         super().__init__(data_config, decoder_config)
 
-    def train(self):
+    def train(self, device='auto'):
         """
         Main method to train the Decoder model.
         """
@@ -358,6 +362,7 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
     # 3. Train the Decoder model
         train_logger, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
         trainer = Trainer(
+            accelerator=device,
             logger=train_logger,
             max_epochs=self.tp_config.max_epochs,
             enable_progress_bar=True,
@@ -374,7 +379,10 @@ class DecoderTrainMain(TopologyEstimationTrainHelper):
         trained_decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats)
 
         test_logger = self._prep_for_testing()
-        tester = Trainer(logger=test_logger)
+        tester = Trainer(
+            accelerator=device,
+            logger=test_logger)
+        
         tester.test(model=trained_decoder_model, dataloaders=self.test_loader)
 
 
@@ -461,9 +469,9 @@ if __name__ == "__main__":
         print(f"\nStarting {args.framework} model training...")
 
         if args.framework == 'nri':
-            train_pipeline = NRITrainMain(data_config, nri_config)
+            train_pipeline = NRITrainPipeline(data_config, nri_config)
         elif args.framework == 'decoder':
-            train_pipeline = DecoderTrainMain(data_config, decoder_config)
+            train_pipeline = DecoderTrainPipeline(data_config, decoder_config)
         else:
             raise ValueError(f"Invalid framework: {args.framework}. Choose 'nri' or 'decoder'.")
         

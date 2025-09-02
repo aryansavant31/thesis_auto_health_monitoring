@@ -97,11 +97,11 @@ def multi_inferer_main(run_type, parallel_execution, max_workers=None):
         data_sweep.print_sweep_summary()
 
         # get all inference configurations
-        fdet_sweep = AnomalyDetectorInferSweepManager(data_configs=data_configs, run_type=run_type)
-        fdet_configs = fdet_sweep.get_sweep_configs()
-        fdet_sweep.print_sweep_summary()
+        sweep_manager = AnomalyDetectorInferSweepManager(data_configs=data_configs, run_type=run_type)
+        fdet_configs = sweep_manager.get_sweep_configs()
+        sweep_manager.print_sweep_summary()
 
-        infer_sweep_num = fdet_sweep.infer_sweep_num
+        infer_sweep_num = sweep_manager.infer_sweep_num
 
         config_args = [(idx, fdet_config, len(fdet_configs), run_type) 
                               for idx, fdet_config in enumerate(fdet_configs)]

@@ -1,0 +1,77 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.multi_train.py
+Base Name: tswp_1
+Start Time: 2025-09-02 19:00:19
+End Time: 2025-09-02 19:10:33
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model sweep...
+
+Processing 1 data groups
+
+Data Config Sweep Summary:
+Run type: train
+------------------------------
+Total combinations: 1
+
+Parameters and their values:
+  signal_types: 1 values -> [{'node_group_name': 'm004', 'signal_group_name': 'apv', 'group': {'mass_1': ['acc', 'pos', 'vel'], 'mass_2': ['acc', 'pos', 'vel'], 'mass_3': ['acc', 'pos', 'vel'], 'mass_4': ['acc', 'pos', 'vel']}}]
+  stride: 1 values -> [100]
+  window_length: 1 values -> [100]
+Next decoder folder will be: [m004_(apv+G)]-gru_dec_1.3
+Next decoder folder will be: [m004_(apv+G)]-gru_dec_1.3
+
+Decoder Parameter Sweep Summary:
+Total combinations: 2
+
+Parameters and their values:
+  batch_size: 2 values -> [50, 100]
+  burn_in_steps: 1 values -> [1]
+  dec_domain_config: 1 values -> [{'type': 'time', 'cutoff_freq': 0}]
+  dec_feat_configs: 1 values -> [[]]
+  dec_feat_norm: 1 values -> [None]
+  dec_raw_data_norm: 1 values -> ['min_max']
+  dec_reduc_config: 1 values -> [None]
+  do_prob: 1 values -> [0]
+  edge_mlp_config: 1 values -> [{'mlp': 'default'}]
+  is_batch_norm: 1 values -> [True]
+  is_burn_in: 1 values -> [False]
+  is_dynamic_graph: 1 values -> [False]
+  is_hard: 1 values -> [True]
+  loss_type: 1 values -> ['nll']
+  lr: 1 values -> [0.001]
+  max_epochs: 1 values -> [5]
+  msg_out_size: 1 values -> [64]
+  optimizer: 1 values -> ['adam']
+  out_mlp_config: 1 values -> [{'mlp': 'default'}]
+  pred_steps: 1 values -> [1]
+  recur_emb_type: 1 values -> ['gru']
+  skip_first_edge_type: 1 values -> [False]
+  spf_config: 1 values -> [{'type': 'vanilla', 'is_expert': True}]
+  temp: 1 values -> [1.0]
+  test_rt: 1 values -> [0.1]
+  train_rt: 1 values -> [0.8]
+  val_rt: 1 values -> [0.1]
+Parallelizing 2 decoder configurations across 8 workers...
+
+Since running configs sequenctially, using device: cpu
+  Completed decoder config 2: [m004_(apv+G)]-gru_dec_1.4
+  Completed decoder config 1: [m004_(apv+G)]-gru_dec_1.3
+
+===========================================================================
+
+===========================================================================
+
+Decoder model sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\docs\sweep_logs\decoder\train_sweeps\tswp_1_console_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-02 19:10:33
