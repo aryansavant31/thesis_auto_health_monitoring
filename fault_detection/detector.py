@@ -286,7 +286,7 @@ class TrainerAnomalyDetector:
             if anomaly_detector.feat_reducer:
                 print(f"\nReduced feature names: {self.comp_cols}")
             else:
-                print(f"\nNo seperate features extracted, so using components as features: [{', '.join(self.comp_cols[:4])}...{', '.join(self.comp_cols[-4:])}]")
+                print(f"\nUsing components as features: [{', '.join(self.comp_cols[:4])}...{', '.join(self.comp_cols[-4:])}]")
 
         df = pd.DataFrame(data_np_all, columns=self.comp_cols)
         df['given_label'] = label_np_all
@@ -467,8 +467,8 @@ class TrainerAnomalyDetector:
         scores_ok = filtered_df[filtered_df['pred_label'] == 0]['scores']
         scores_nok = filtered_df[filtered_df['pred_label'] == 1]['scores']
         
-        db_delta_ok = min(scores_ok) if not scores_ok.empty else np.nan
-        db_delta_nok = - max(scores_nok) if not scores_nok.empty else np.nan
+        db_delta_ok = np.min(scores_ok) if not scores_ok.empty else -1
+        db_delta_nok = - np.max(scores_nok) if not scores_nok.empty else -1
 
         # calculate precison, recall, f1-score
         tp = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == 1))  # True Positives
@@ -499,10 +499,10 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['f1_score'] = f1_score
         anomaly_detector.hparams['run_type'] = self.run_type
         anomaly_detector.hparams['infer_time'] = infer_time
-        anomaly_detector.hparams['tp'] = tp
-        anomaly_detector.hparams['fp'] = fp
-        anomaly_detector.hparams['tn'] = tn
-        anomaly_detector.hparams['fn'] = fn
+        anomaly_detector.hparams['tp'] = int(tp)
+        anomaly_detector.hparams['fp'] = int(fp)
+        anomaly_detector.hparams['tn'] = int(tn)
+        anomaly_detector.hparams['fn'] = int(fn)
         anomaly_detector.hparams['db_delta_ok'] = db_delta_ok
         anomaly_detector.hparams['db_delta_nok'] = db_delta_nok
 

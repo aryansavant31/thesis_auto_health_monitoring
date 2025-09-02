@@ -89,6 +89,9 @@ class AnomalyDetectorInferConfig:
     
 class AnomalyDetectorInferSweep:
     def __init__(self, data_config: DataConfig):
+        """
+        Infer sweep 1 - feature robustness agaisnt noise
+        """
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config

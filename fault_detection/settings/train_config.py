@@ -63,7 +63,7 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('1SVM', nu=0.01)
+        self.anom_config = get_anom_config('IF', n_estimators=100)
 
         # run parameters
         self.domain_config = get_domain_config('freq')
@@ -175,27 +175,38 @@ def get_anom_config(anom_type, **kwargs):
 
 class AnomalyDetectorTrainSweep:
     def __init__(self, data_config:DataConfig):
+        """
+        Train Sweep 1: Obj is to evalaute consistency of results when using same models and data. (Does model interpret same data differently)
+        Train Sweep 2: Obj is to evaluate different time feature performance
+        """
         self.data_config = data_config
 
-        self.train_sweep_num = 1
+        self.train_sweep_num = 2
 
     # 1: Training parameters
         # dataset parameters
-        self.batch_size  = [1]
+        self.batch_size  = [50]
         self.train_rt    = [0.8]
         self.test_rt     = [0.2]
         self.num_workers = [1]
 
     # 2: Model parameters
-        self.anom_config = [get_anom_config('IF', n_estimators=100),
-                            get_anom_config('1SVM', nu=0.01)]
+        self.anom_config = [get_anom_config('IF', n_estimators=1000, contam=0.001)
+                            ]
 
         # run parameters
         self.domain_config = [get_domain_config('time')]
         self.raw_data_norm = [None]
-        self.feat_configs = [[
-            #get_freq_feat_config('first_n_modes', n_modes=6), 
-        ]]
+        self.feat_configs = [
+            [],
+            [get_time_feat_config('mean')], 
+            [get_time_feat_config('kurtosis')], 
+            [get_time_feat_config('std')], 
+            [get_time_feat_config('max')],
+            [get_time_feat_config('peak_to_peak')], 
+            [get_time_feat_config('skewness')]
+
+        ]
         self.reduc_config = [None]
         self.feat_norm = [None]
 

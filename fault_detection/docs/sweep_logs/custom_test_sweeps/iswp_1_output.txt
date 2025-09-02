@@ -1,13 +1,12 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_infer.py
 Base Name: iswp_1
-Start Time: 2025-09-01 18:08:08
-End Time: 2025-09-01 18:09:08
+Start Time: 2025-09-02 07:54:08
+End Time: 2025-09-02 08:18:08
 
-CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
-GPUs Detected: 1
-GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
-OS: Windows 11 (10.0.26100)
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
 
 Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
 ========================================================================================================================
@@ -15,536 +14,93 @@ Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58
 
 Starting fault detection model inference sweep...
 
-Processing 16 data groups
+Processing 7 data groups
 
 Data Config Sweep Summary:
 Run type: custom_test
 ------------------------------
-Total combinations: 16
+Total combinations: 7
 
 Parameters and their values:
-  healthy_configs: 2 values -> [{'0_N': [{'type': 'OG', 'add_next': False}]}, {'0_N': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}]}]
-  set_id: 2 values -> ['G1', 'G2']
-  signal_types: 2 values -> [{'node_group_name': 'gearbox_1', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}, {'node_group_name': 'gearbox_2', 'signal_group_name': 'acc', 'group': {'gearbox': ['acc']}}]
-  stride: 1 values -> [250]
-  unhealthy_configs: 1 values -> [{'0_B-021': [{'type': 'OG', 'add_next': False}]}]
-  window_length: 2 values -> [500, 1000]
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G2) != Data(G1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_2) != Data(gearbox_1)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-1SVM_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-1SVM_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_1
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_1(acc+G1)]-IF_fdet_2
-Incompatible parameters:
-  - Node group mismatch: Model(gearbox_1) != Data(gearbox_2)
-  - Set ID mismatch: Model(G1) != Data(G2)
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_1(acc+G1)]-IF_fdet_2 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-1SVM_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-1SVM_fdet_1 is incompatible, it is skipped...
-
-> Incompatible model found: [gearbox_2(acc+G2)]-IF_fdet_1
-Incompatible parameters:
-  - Window length mismatch: Model(500) != Data(1000)
-Since model [gearbox_2(acc+G2)]-IF_fdet_1 is incompatible, it is skipped...
+  healthy_configs: 7 values -> [{'E1_set01_M=mEK83': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mat': [{'type': 'OG', 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.001, 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.01, 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.1, 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.3, 'add_next': False}]}, {'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.8, 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  unhealthy_configs: 1 values -> [{'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.01, 'amp': 0.05, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.01, 'add_next': True}, {'type': 'sine', 'freqs': [10, 15], 'amps': [1, 0.5], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.01, 'amp': 0.05, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.01, 'add_next': True}, {'type': 'sine', 'freqs': [1, 5, 10], 'amps': [1, 0.5, 0.5], 'add_next': False}]}]
+  window_length: 1 values -> [1000]
 
 Parameter Sweep Summary:
-Total combinations: 6
+Total combinations: 7
 
 Parameters and their values:
 
-Number of models selected: 6
+Number of models selected: 7
 Selected models are as follows:
 ------------------------------
-  Model 1: [gearbox_1(acc+G1)]-1SVM_fdet_1
-  Model 2: [gearbox_1(acc+G1)]-1SVM_fdet_2
-  Model 3: [gearbox_1(acc+G1)]-IF_fdet_1
-  Model 4: [gearbox_1(acc+G1)]-IF_fdet_2
-  Model 5: [gearbox_2(acc+G2)]-1SVM_fdet_1
-  Model 6: [gearbox_2(acc+G2)]-IF_fdet_1
+  Model 1: [ammf_(acc+E1)]-IF_fdet_5
+  Model 2: [ammf_(acc+E1)]-IF_fdet_10
+  Model 3: [ammf_(acc+E1)]-IF_fdet_11
+  Model 4: [ammf_(acc+E1)]-IF_fdet_6
+  Model 5: [ammf_(acc+E1)]-IF_fdet_7
+  Model 6: [ammf_(acc+E1)]-IF_fdet_8
+  Model 7: [ammf_(acc+E1)]-IF_fdet_9
 
-Parallelizing 12 fault detection configurations across 8 workers...
-  Completed config 2: [gearbox_1(acc+G1)]-1SVM_fdet_2/custom_test_1
-  Completed config 5: [gearbox_2(acc+G2)]-1SVM_fdet_1/custom_test_1
-  Completed config 4: [gearbox_1(acc+G1)]-IF_fdet_2/custom_test_1
-  Completed config 1: [gearbox_1(acc+G1)]-1SVM_fdet_1/custom_test_1
-  Completed config 3: [gearbox_1(acc+G1)]-IF_fdet_1/custom_test_1
-  Completed config 7: [gearbox_1(acc+G1)]-1SVM_fdet_1/custom_test_2
-  Completed config 6: [gearbox_2(acc+G2)]-IF_fdet_1/custom_test_1
-  Completed config 8: [gearbox_1(acc+G1)]-1SVM_fdet_2/custom_test_2
-  Completed config 9: [gearbox_1(acc+G1)]-IF_fdet_1/custom_test_2
-  Completed config 10: [gearbox_1(acc+G1)]-IF_fdet_2/custom_test_2
-  Completed config 11: [gearbox_2(acc+G2)]-1SVM_fdet_1/custom_test_2
-  Completed config 12: [gearbox_2(acc+G2)]-IF_fdet_1/custom_test_2
+Parallelizing 49 fault detection configurations across 8 workers...
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_6/custom_test_1
+  Completed config 6: [ammf_(acc+E1)]-IF_fdet_8/custom_test_1
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_11/custom_test_1
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_7/custom_test_1
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_5/custom_test_1
+  Completed config 8: [ammf_(acc+E1)]-IF_fdet_5/custom_test_2
+  Completed config 7: [ammf_(acc+E1)]-IF_fdet_9/custom_test_1
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_10/custom_test_1
+  Completed config 11: [ammf_(acc+E1)]-IF_fdet_6/custom_test_2
+  Completed config 12: [ammf_(acc+E1)]-IF_fdet_7/custom_test_2
+  Completed config 10: [ammf_(acc+E1)]-IF_fdet_11/custom_test_2
+  Completed config 13: [ammf_(acc+E1)]-IF_fdet_8/custom_test_2
+  Completed config 9: [ammf_(acc+E1)]-IF_fdet_10/custom_test_2
+  Completed config 14: [ammf_(acc+E1)]-IF_fdet_9/custom_test_2
+  Completed config 15: [ammf_(acc+E1)]-IF_fdet_5/custom_test_3
+  Completed config 16: [ammf_(acc+E1)]-IF_fdet_10/custom_test_3
+  Completed config 17: [ammf_(acc+E1)]-IF_fdet_11/custom_test_3
+  Completed config 18: [ammf_(acc+E1)]-IF_fdet_6/custom_test_3
+  Completed config 19: [ammf_(acc+E1)]-IF_fdet_7/custom_test_3
+  Completed config 20: [ammf_(acc+E1)]-IF_fdet_8/custom_test_3
+  Completed config 21: [ammf_(acc+E1)]-IF_fdet_9/custom_test_3
+  Completed config 22: [ammf_(acc+E1)]-IF_fdet_5/custom_test_4
+  Completed config 23: [ammf_(acc+E1)]-IF_fdet_10/custom_test_4
+  Completed config 24: [ammf_(acc+E1)]-IF_fdet_11/custom_test_4
+  Completed config 25: [ammf_(acc+E1)]-IF_fdet_6/custom_test_4
+  Completed config 26: [ammf_(acc+E1)]-IF_fdet_7/custom_test_4
+  Completed config 27: [ammf_(acc+E1)]-IF_fdet_8/custom_test_4
+  Completed config 28: [ammf_(acc+E1)]-IF_fdet_9/custom_test_4
+  Completed config 29: [ammf_(acc+E1)]-IF_fdet_5/custom_test_5
+  Completed config 30: [ammf_(acc+E1)]-IF_fdet_10/custom_test_5
+  Completed config 32: [ammf_(acc+E1)]-IF_fdet_6/custom_test_5
+  Completed config 31: [ammf_(acc+E1)]-IF_fdet_11/custom_test_5
+  Completed config 33: [ammf_(acc+E1)]-IF_fdet_7/custom_test_5
+  Completed config 34: [ammf_(acc+E1)]-IF_fdet_8/custom_test_5
+  Completed config 35: [ammf_(acc+E1)]-IF_fdet_9/custom_test_5
+  Completed config 36: [ammf_(acc+E1)]-IF_fdet_5/custom_test_6
+  Completed config 37: [ammf_(acc+E1)]-IF_fdet_10/custom_test_6
+  Completed config 38: [ammf_(acc+E1)]-IF_fdet_11/custom_test_6
+  Completed config 39: [ammf_(acc+E1)]-IF_fdet_6/custom_test_6
+  Completed config 40: [ammf_(acc+E1)]-IF_fdet_7/custom_test_6
+  Completed config 41: [ammf_(acc+E1)]-IF_fdet_8/custom_test_6
+  Completed config 42: [ammf_(acc+E1)]-IF_fdet_9/custom_test_6
+  Completed config 43: [ammf_(acc+E1)]-IF_fdet_5/custom_test_7
+  Completed config 44: [ammf_(acc+E1)]-IF_fdet_10/custom_test_7
+  Completed config 45: [ammf_(acc+E1)]-IF_fdet_11/custom_test_7
+  Completed config 46: [ammf_(acc+E1)]-IF_fdet_6/custom_test_7
+  Completed config 48: [ammf_(acc+E1)]-IF_fdet_8/custom_test_7
+  Completed config 47: [ammf_(acc+E1)]-IF_fdet_7/custom_test_7
+  Completed config 49: [ammf_(acc+E1)]-IF_fdet_9/custom_test_7
 
 ===========================================================================
 
 ===========================================================================
 
-Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_1_output.txt
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_1_output.txt
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-01 18:09:08
+Log saved at: 2025-09-02 08:18:08
