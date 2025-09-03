@@ -196,6 +196,8 @@ class DecoderInferConfig:
         self.num_workers = 1
         self.batch_size = 50
 
+        self.residual_thresh = 0.1
+
     # Input processor parameters
         self.dec_cutoff_freq = 100
 
@@ -241,6 +243,7 @@ class DecoderInferConfig:
 
         hyperparams = {
             f'{self.run_type}_version': self.version,
+            f'threshold/{self.run_type}': self.threshold,
             f'batch_size/{self.run_type}': self.batch_size,
             f'dec/domain/{self.run_type}': domain_dec_str,
             f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,

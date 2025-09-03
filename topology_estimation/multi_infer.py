@@ -60,11 +60,11 @@ def infer_single_config(args):
             print('\n' + 75*'=')
             print(f"\n{run_type.capitalize()} of decoder model '{base_name}' completed.")
 
-            if preds['dec/residual'] > 0.1:
-                print(f"\nDecoder residual {preds['dec/residual']:,.4f} > 0.1. Hence using NRI model for topology prediction.")
+            if preds['dec/residual'] > decoder_config.residual_thresh:
+                print(f"\nDecoder residual {preds['dec/residual']:,.4f} > {decoder_config.residual_thresh}. Hence using NRI model for topology prediction.")
                 use_nri = True
             else:
-                print(f"\nDecoder residual {preds['dec/residual']:,.4f} <= 0.1. Hence given topology to decoder is correct.")
+                print(f"\nDecoder residual {preds['dec/residual']:,.4f} <= {decoder_config.residual_thresh}. Hence given topology to decoder is correct.")
                 use_nri = False
 
             if decoder_config.is_log:
