@@ -41,8 +41,7 @@ class AnomalyDetectorInferConfig:
         self.batch_size = 1
 
         self.cutoff_freq = 100
-        self.log_config.domain_config.update({'cutoff_freq' : self.cutoff_freq})
-        self.domain_config = self.log_config.domain_config
+        self.set_domain_config()
 
         self.infer_hparams = self.get_infer_hparams()
 
@@ -54,14 +53,17 @@ class AnomalyDetectorInferConfig:
             'pair_plot'             : [True, {}],
         }
 
-        
+    def set_domain_config(self):
+        self.log_config.domain_config.update({'cutoff_freq' : self.cutoff_freq})
+        self.domain_config = self.log_config.domain_config
+
     def get_infer_hparams(self):
 
         domain_str = self._get_config_str([self.domain_config])
         hparams = {
-            f'domain_{self.run_type}': domain_str,
+            f'domain/{self.run_type}': domain_str,
             f'{self.run_type}_version': self.version,
-            f'batch_size_{self.run_type}': self.batch_size,
+            f'batch_size/{self.run_type}': self.batch_size,
         }
 
         for key, value in hparams.items():
@@ -100,7 +102,7 @@ class AnomalyDetectorInferSweep:
         self.data_config = data_config
         self.infer_sweep_num = 1
 
-        self.cutoff_freqs = [0]
+        self.cutoff_freq = [0]
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
         

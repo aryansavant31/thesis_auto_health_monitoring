@@ -593,8 +593,8 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
                 for param_name, param_value in zip(param_names, combo):
                     setattr(infer_config, param_name, param_value)
                 
-                # Regenerate hyperparameters after updating parameters
-                infer_config.infer_hparams = infer_config.get_infer_hparams()
+                # update domain config
+                infer_config.set_domain_config()
 
                 # Update version number 
                 _ = infer_config.get_infer_log_path(always_next_version=True)
@@ -609,6 +609,9 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
                 ][
                     infer_config.selected_model_path
                 ] = idx
+
+                # Regenerate hyperparameters after updating parameters
+                infer_config.infer_hparams = infer_config.get_infer_hparams()
 
                 infer_configs.append(infer_config)
                         

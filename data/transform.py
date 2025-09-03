@@ -63,18 +63,14 @@ class DomainTransformer:
         - If `domain` is 'freq', both `freq_mag` and `freq_bins` are returned as a tuple.
         
         """
-        # transfer varaibles to time_data device
-        self.fs = torch.tensor(self.fs, device=time_data.device)
-        cutoff_freq = torch.tensor(self.domain_config['cutoff_freq'], device=time_data.device)
-
         if self.domain == 'time':
             if self.domain_config['cutoff_freq'] > 0:
-                time_data = high_pass_filter(time_data, cutoff_freq, self.fs)
+                time_data = high_pass_filter(time_data, self.domain_config['cutoff_freq'], self.fs)
             return time_data
 
         elif self.domain == 'freq':
             if self.domain_config['cutoff_freq'] > 0:
-                time_data = high_pass_filter(time_data, cutoff_freq, self.fs)
+                time_data = high_pass_filter(time_data, self.domain_config['cutoff_freq'], self.fs)
    
             freq_mag, freq_bin = to_freq_domain(time_data, self.fs)
             return freq_mag, freq_bin

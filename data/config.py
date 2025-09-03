@@ -55,18 +55,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M004'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = MSDGroupMaker().m004_all
+        self.signal_types = NXEGroupMaker().ammf_acc
         
         self.fs = None # np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 100
-        self.stride             = 100
+        self.window_length      = 1000
+        self.stride             = 1000
 
         self.use_custom_max_timesteps = False
         self.custom_max_timesteps     = 10000
@@ -88,7 +88,8 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
 
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')]  
+            #'series_tp': [get_augment_config('OG')]  
+             key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
         }
         
         self.unhealthy_configs = {
@@ -246,9 +247,9 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [MSDGroupMaker().m004_all]
-        self.window_length = [100]
-        self.stride = [100]
+        self.signal_types = [NXEGroupMaker().ammf_acc]
+        self.window_length = [1000]
+        self.stride = [1000]
 
 
         if self.run_type == 'train':

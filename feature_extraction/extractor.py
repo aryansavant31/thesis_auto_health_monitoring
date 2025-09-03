@@ -47,9 +47,6 @@ class TimeFeatureExtractor:
         final_tensor : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
             Tensor with extracted features based on the specified configurations.
         """
-        # transfer varaibles to time_data device
-        self.fs = torch.from_numpy(self.fs).to(time_data.device)
-        
         features_list = []
 
         # loop through each feature extraction configuration
