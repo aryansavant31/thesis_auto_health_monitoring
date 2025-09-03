@@ -1,1 +1,0 @@
-c:\AFD\topology_estimation\logs\bearing\cwru\scene_1\directed_graph\train\etypes=2\edge_estimator_2.1\checkpoints\epoch=4-step=25.ckpt

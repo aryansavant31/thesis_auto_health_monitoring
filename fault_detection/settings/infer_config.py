@@ -59,7 +59,7 @@ class AnomalyDetectorInferConfig:
 
         domain_str = self._get_config_str([self.domain_config])
         hparams = {
-            'domain': domain_str,
+            f'domain_{self.run_type}': domain_str,
             f'{self.run_type}_version': self.version,
             f'batch_size_{self.run_type}': self.batch_size,
         }
@@ -99,6 +99,8 @@ class AnomalyDetectorInferSweep:
 
         self.data_config = data_config
         self.infer_sweep_num = 1
+
+        self.cutoff_freqs = [0]
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
         

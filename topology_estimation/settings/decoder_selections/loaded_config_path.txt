@@ -1,1 +1,0 @@
-c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\(m004)\apv\D=gru\(m004-apv)-gru_dec_1.4\train_config.pkl

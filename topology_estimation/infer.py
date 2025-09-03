@@ -181,7 +181,11 @@ class NRIInferMain(TopologyEstimationInferHelper):
         trained_nri_model : NRI
             The loaded NRI model.
         """
-        trained_nri_model = NRI.load_from_checkpoint(self.tp_config.ckpt_path)
+        trained_nri_model = NRI.load_from_checkpoint(self.tp_config.selected_model_path)
+
+        # update model with domain config
+        trained_nri_model.encoder.domain_config = self.tp_config.enc_domain_config
+        trained_nri_model.decoder.domain_config = self.tp_config.dec_domain_config
 
         # update model with infer hyperparams
         trained_nri_model.hyperparams.update(self.tp_config.infer_hyperparams)
@@ -268,8 +272,11 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         Decoder
             The loaded Decoder model.
         """
-        trained_decoder_model = Decoder.load_from_checkpoint(self.tp_config.ckpt_path)
+        trained_decoder_model = Decoder.load_from_checkpoint(self.tp_config.selected_model_path)
 
+        # update model with domain config
+        trained_decoder_model.domain_config = self.tp_config.dec_domain_config
+        
         # update model with infer hyperparams
         trained_decoder_model.hyperparams.update(self.tp_config.infer_hyperparams)
 

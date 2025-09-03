@@ -996,25 +996,50 @@ class SelectTopologyEstimatorModel:
             return None
         
         if self.run_type == 'train':
-            idx = int(input("\nEnter the index number of the version path to select: "))
-            if idx < 0 or idx >= len(self.version_paths):
-                print("Invalid index.")
-                return None
-            selected_log_path = os.path.dirname(self.version_paths[idx])
-            # Use the directory containing model_x.txt as the log path
 
-            ckpt_file_path = get_checkpoint_path(selected_log_path)
-            config_file_path = get_param_pickle_path(selected_log_path)
+            select_mode = input("\nSelection mode: single (s) or multi (m)? [s/m]: ").strip().lower()
 
-            with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "loaded_ckpt_path.txt"), "w") as f:
-                f.write(ckpt_file_path)
+            if select_mode == 'm':
+                idxs_str = input("\nEnter the index numbers of the models to select (comma separated): ")
+                try:
+                    idxs_str = idxs_str.replace(" ", "")
+                    idxs = [int(i.strip()) for i in idxs_str.split(',')]
+                except ValueError:
+                    print("Invalid input. Please enter comma separated integer indices.")
+                    return None
+                
+                # check for invalid indices
+                invalid_idxs = [i for i in idxs if i < 0 or i >= len(self.version_paths)]
+                if invalid_idxs:
+                    print(f"Invalid indices: {invalid_idxs}")
+                    return None
+                
+                selected_log_paths = [os.path.dirname(self.version_paths[i]) for i in idxs]
+                model_file_paths = [get_model_ckpt_path(p) for p in selected_log_paths]
 
-            with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "loaded_config_path.txt"), "w") as f:
-                f.write(config_file_path)
+                with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "multi_model_paths.txt"), "w") as f:
+                    for path in model_file_paths:
+                        f.write(f"{path}\n")
+                
+                print(f"\nSelected model file paths saved to {os.path.join(SETTINGS_DIR, 'selections', 'multi_model_paths.txt')}\n")
 
-            print(f"\nSelected .ckpt file path: {ckpt_file_path}")
-            print(f"\nSelected logged config file path: {config_file_path}\n")
+            elif select_mode == 's':
 
+                idx = int(input("\nEnter the index number of the version path to select: "))
+                if idx < 0 or idx >= len(self.version_paths):
+                    print("Invalid index.")
+                    return None
+                selected_log_path = os.path.dirname(self.version_paths[idx])
+                # Use the directory containing model_x.txt as the log path
+
+                model_file_path = get_model_ckpt_path(selected_log_path)
+      
+
+                with open(os.path.join(SETTINGS_DIR, f"{self.framework}_selections", "single_model_path.txt"), "w") as f:
+                    f.write(model_file_path)
+
+                print(f"\nSelected .ckpt file path: {model_file_path}")
+           
 
 class SparsifierConfig:
     def __init__(self):
@@ -1220,28 +1245,34 @@ class HelperClass:
 
 # Functions to load checkpoint files
 
-def get_checkpoint_path(log_path):
-    ckpt_path = os.path.join(log_path, 'checkpoints')
+def get_model_ckpt_path(log_path, always_highest_version=False):
+    ckpt_dir = os.path.join(log_path, 'checkpoints')
 
-    contents = os.listdir(ckpt_path)
-    print(f"\n.ckpt_files available in {ckpt_path}:\n")
-    print(contents)
+    contents = os.listdir(ckpt_dir)
 
-    if len(contents) > 1:
-        user_input = input("\nEnter the ckpt file to load (e.g., 'epoch=1-step=1000.ckpt'): ").strip("'\"")
+    if len(contents) == 0:
+        raise ValueError(f"No .ckpt files found in {ckpt_dir}. Please check the directory.")
 
-        if user_input not in contents:
-            raise ValueError(f"Invalid ckpt file name: {user_input}. Available files: {contents}")
-        
-        ckpt_path = os.path.join(ckpt_path, f"{user_input}")
-
-    elif len(contents) == 1:
-        ckpt_path = os.path.join(ckpt_path, f"{contents[0]}")
-
-    else:
-        raise ValueError(f"No .ckpt files found in {ckpt_path}. Please check the directory.")
+    if always_highest_version:
+        contents = sorted(contents, key=lambda x: int(x.split('-step=')[1].split('.ckpt')[0]))
+        model_path = os.path.join(ckpt_dir, f"{contents[-1]}")
     
-    return ckpt_path
+    else:
+        print(f"\n.ckpt_files available in {ckpt_dir}:\n")
+        print(contents)
+
+        if len(contents) > 1:
+            user_input = input("\nEnter the ckpt file to load (e.g., 'epoch=1-step=1000.ckpt'): ").strip("'\"")
+
+            if user_input not in contents:
+                raise ValueError(f"Invalid ckpt file name: {user_input}. Available files: {contents}")
+            
+            model_path = os.path.join(ckpt_dir, f"{user_input}")
+
+        elif len(contents) == 1:
+            model_path = os.path.join(ckpt_dir, f"{contents[0]}")
+    
+    return model_path
 
 def get_param_pickle_path(log_path):
     """
@@ -1256,21 +1287,28 @@ def get_param_pickle_path(log_path):
 
 # Functions to load from selection folders
 
-def get_selected_ckpt_path(framework):
+def get_selected_model_path(framework, is_multi=False):
     """
-    Returns the path to the selected checkpoint file for the given framework.
+    Returns the path to the selected checkpoint (model) file for the given framework.
     The path is read from a text file in the settings directory.
 
     Parameters
     ----------
     framework : str
         The framework for which to load the checkpoint path (e.g., 'nri', 'decoder').
+    is_multi : bool, optional
+        If True, returns a list of multiple model paths. If False, returns a single model path. Default is False.
     """
-    with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "loaded_ckpt_path.txt"), "r") as f:
-        ckpt_path = f.read() 
-    return ckpt_path
+    if is_multi:
+        with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "multi_model_paths.txt"), "r") as f:
+            model_paths = [(line.strip()) for line in f if line.strip()]
+        return model_paths
+    else:
+        with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "single_model_path.txt"), "r") as f:
+            model_path = f.read() 
+        return model_path
 
-def load_selected_config(framework):
+def load_log_config(framework, model_path):
     """
     Loads the training config class from a pickle file for the given framework.
     The path to the pickle file is read from a text file in the settings directory.
@@ -1285,8 +1323,7 @@ def load_selected_config(framework):
     elif framework == 'decoder':
         log_config = DecoderTrainManager(DataConfig())
 
-    with open(os.path.join(SETTINGS_DIR, f"{framework}_selections", "loaded_config_path.txt"), "r") as f:
-        log_config_path = f.read()
+    log_config_path = os.path.join(os.path.dirname(model_path), 'train_config.pkl')
 
     if not os.path.exists(log_config_path):
         raise ValueError(f"\nThe parameter file does not exists")
