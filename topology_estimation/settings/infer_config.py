@@ -45,17 +45,12 @@ class NRIInferConfig:
     # Encoder run parameters
         # input processor parameters
         self.enc_cutoff_freq = 100
-        self.log_config.enc_domain_config.update({'cutoff_freq' : self.enc_cutoff_freq})
-        self.enc_domain_config = self.log_config.enc_domain_config
-
         self.temp = 0.1
         self.is_hard = False
 
     # Decoder 
         # input processor parameters
         self.dec_cutoff_freq = 100
-        self.log_config.dec_domain_config.update({'cutoff_freq' : self.dec_cutoff_freq})
-        self.dec_domain_config = self.log_config.dec_domain_config
 
         # run parameters
         self.skip_first_edge_type = False
@@ -75,9 +70,22 @@ class NRIInferConfig:
         self.spf_feat_norm = None
         self.spf_reduc_config = None
 
+        self.update_infer_configs()
+
     # Hyperparameters for logging
         self.infer_hyperparams = self.get_infer_hyperarams()
 
+    def update_infer_configs(self):
+        """
+        Update the model parameters with the current infer settings.
+        """
+        # update encoder domain config
+        self.log_config.enc_domain_config.update({'cutoff_freq' : self.enc_cutoff_freq})
+        self.enc_domain_config = self.log_config.enc_domain_config
+
+        # update decoder domain config
+        self.log_config.dec_domain_config.update({'cutoff_freq' : self.dec_cutoff_freq})
+        self.dec_domain_config = self.log_config.dec_domain_config
 
     def get_infer_hyperarams(self):
         domain_dec_str = get_config_str([self.dec_domain_config])
@@ -88,25 +96,25 @@ class NRIInferConfig:
 
         hyperparams = {
             f'{self.run_type}_version': self.version,
-            f'batch_size_{self.run_type}': self.batch_size,
-            f'dec/domain_{self.run_type}': domain_dec_str,
-            f'dec/skip_first_edge_{self.run_type}': self.skip_first_edge_type,
-            f'dec/pred_steps_{self.run_type}': self.pred_steps,
-            f'dec/is_burn_in_{self.run_type}': self.is_burn_in,
-            f'dec/burn_in_steps_{self.run_type}': self.burn_in_steps,
-            f'dec/is_dynamic_graph_{self.run_type}': self.is_dynamic_graph,
+            f'batch_size/{self.run_type}': self.batch_size,
+            f'dec/domain/{self.run_type}': domain_dec_str,
+            f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,
+            f'dec/pred_steps/{self.run_type}': self.pred_steps,
+            f'dec/is_burn_in/{self.run_type}': self.is_burn_in,
+            f'dec/burn_in_steps/{self.run_type}': self.burn_in_steps,
+            f'dec/is_dynamic_graph/{self.run_type}': self.is_dynamic_graph,
 
-            f'enc/domain_{self.run_type}': domain_enc_str,
-            f'enc/temp_{self.run_type}': self.temp,
-            f'enc/is_hard_{self.run_type}': self.is_hard,
+            f'enc/domain/{self.run_type}': domain_enc_str,
+            f'enc/temp/{self.run_type}': self.temp,
+            f'enc/is_hard/{self.run_type}': self.is_hard,
 
             # sparsifier parameters
-            f'spf/config_{self.run_type}': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            f'spf/domain_{self.run_type}': spf_domain_str,
-            f'spf/raw_data_norm_{self.run_type}': self.spf_raw_data_norm,
-            f'spf/feats_{self.run_type}': f"[{spf_feat_str}]",
-            f'spf/reduc_{self.run_type}': spf_reduc_str,
-            f'spf/feat_norm_{self.run_type}': self.spf_feat_norm
+            f'spf/config/{self.run_type}': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            f'spf/domain/{self.run_type}': spf_domain_str,
+            f'spf/raw_data_norm/{self.run_type}': self.spf_raw_data_norm,
+            f'spf/feats/{self.run_type}': f"[{spf_feat_str}]",
+            f'spf/reduc/{self.run_type}': spf_reduc_str,
+            f'spf/feat_norm/{self.run_type}': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():
@@ -121,7 +129,43 @@ class NRIInferConfig:
 
 class NRIInferSweep:
     def __init__(self, data_config:DataConfig):
-        pass
+        from topology_estimation.settings.manager import get_selected_model_path
+
+        self.data_config = data_config
+        self.infer_sweep_num = 1
+
+        self.selected_model_path = get_selected_model_path(framework=NRIInferConfig.framework, is_multi=True)
+        
+        self.batch_size = [1]
+
+    # Encoder run parameters
+        # input processor parameters
+        self.enc_cutoff_freq = [100]
+        self.temp = [0.1]
+        self.is_hard = [False]
+
+    # Decoder 
+        # input processor parameters
+        self.dec_cutoff_freq = [100]
+
+        # run parameters
+        self.skip_first_edge_type = [False]
+        self.pred_steps = [1]
+        self.is_burn_in = [False]
+        self.burn_in_steps = [1]
+        self.is_dynamic_graph = [False]
+
+    # Sparsifier parameters
+        self.spf_config = [get_spf_config('no_spf', is_expert=True)]
+        
+        # self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        # self.spf_raw_data_norm = None 
+        # self.spf_feat_configs = [
+        #     # get_time_feat_config('first_n_modes', data_config=self.data_config),
+        # ]    
+        # self.spf_feat_norm = None
+        # self.spf_reduc_config = None
+
 
 class DecoderInferConfig:
     framework = 'decoder'
@@ -146,7 +190,6 @@ class DecoderInferConfig:
 
         self.log_config = load_log_config(framework=DecoderInferConfig.framework, model_path=self.selected_model_path)
 
-
         self.is_log = False
         self.version = 1
         
@@ -155,8 +198,6 @@ class DecoderInferConfig:
 
     # Input processor parameters
         self.dec_cutoff_freq = 100
-        self.log_config.dec_domain_config.update({'cutoff_freq' : self.dec_cutoff_freq})
-        self.dec_domain_config = self.log_config.dec_domain_config
 
     # Decoder run parameters
         self.skip_first_edge_type = False
@@ -180,9 +221,17 @@ class DecoderInferConfig:
         self.spf_feat_norm = None
         self.spf_reduc_config = None
 
+        self.update_infer_configs()
+
     # Hyperparameters for logging
         self.infer_hyperparams = self.get_infer_hyperparams()
 
+    def update_infer_configs(self):
+        """
+        Update the model parameters with the current infer settings.
+        """
+        self.log_config.dec_domain_config.update({'cutoff_freq' : self.dec_cutoff_freq})
+        self.dec_domain_config = self.log_config.dec_domain_config
 
     def get_infer_hyperparams(self):
         domain_dec_str = get_config_str([self.dec_domain_config])
@@ -192,23 +241,23 @@ class DecoderInferConfig:
 
         hyperparams = {
             f'{self.run_type}_version': self.version,
-            f'batch_size_{self.run_type}': self.batch_size,
-            f'dec/domain_{self.run_type}': domain_dec_str,
-            f'dec/skip_first_edge_{self.run_type}': self.skip_first_edge_type,
-            f'dec/pred_steps_{self.run_type}': self.pred_steps,
-            f'dec/is_burn_in_{self.run_type}': self.is_burn_in,
-            f'dec/burn_in_steps_{self.run_type}': self.burn_in_steps,
-            f'dec/is_dynamic_graph_{self.run_type}': self.is_dynamic_graph,
-            f'enc/temp_{self.run_type}': self.temp,
-            f'enc/is_hard_{self.run_type}': self.is_hard,
+            f'batch_size/{self.run_type}': self.batch_size,
+            f'dec/domain/{self.run_type}': domain_dec_str,
+            f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,
+            f'dec/pred_steps/{self.run_type}': self.pred_steps,
+            f'dec/is_burn_in/{self.run_type}': self.is_burn_in,
+            f'dec/burn_in_steps/{self.run_type}': self.burn_in_steps,
+            f'dec/is_dynamic_graph/{self.run_type}': self.is_dynamic_graph,
+            f'enc/temp/{self.run_type}': self.temp,
+            f'enc/is_hard/{self.run_type}': self.is_hard,
 
             # sparsifier parameters
-            f'spf/config_{self.run_type}': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
-            f'spf/domain_{self.run_type}': spf_domain_str,
-            f'spf/raw_data_norm_{self.run_type}': self.spf_raw_data_norm,
-            f'spf/feats_{self.run_type}': f"[{spf_feat_str}]",
-            f'spf/reduc_{self.run_type}': spf_reduc_str,
-            f'spf/feat_norm_{self.run_type}': self.spf_feat_norm
+            f'spf/config/{self.run_type}': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            f'spf/domain/{self.run_type}': spf_domain_str,
+            f'spf/raw_data_norm/{self.run_type}': self.spf_raw_data_norm,
+            f'spf/feats/{self.run_type}': f"[{spf_feat_str}]",
+            f'spf/reduc/{self.run_type}': spf_reduc_str,
+            f'spf/feat_norm/{self.run_type}': self.spf_feat_norm
         }
 
         for key, value in hyperparams.items():
@@ -220,6 +269,42 @@ class DecoderInferConfig:
                 hyperparams[key] = 'None'
 
         return hyperparams
+
+class DecoderInferSweep:
+    def __init__(self, data_config:DataConfig):
+        from topology_estimation.settings.manager import get_selected_model_path
+
+        self.data_config = data_config
+        self.infer_sweep_num = 1
+
+        self.selected_model_path = get_selected_model_path(framework=DecoderInferConfig.framework, is_multi=True)
+        
+        self.batch_size = [50]
+
+    # Input processor parameters
+        self.dec_cutoff_freq = [100]
+
+    # Decoder run parameters
+        self.skip_first_edge_type = [False]
+        self.pred_steps = [1]
+        self.is_burn_in = [False]
+        self.burn_in_steps = [1]
+        self.is_dynamic_graph = [False]
+
+        # if dynamic graph is true
+        self.temp = [1.0 ]       # temperature for Gumble Softmax
+        self.is_hard = [True]
+
+    # Sparsifier parameters 
+        self.spf_config = [get_spf_config('no_spf', is_expert=True)]
+        
+        # self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
+        # self.spf_raw_data_norm = None 
+        # self.spf_feat_configs = [
+        #     # get_time_feat_config('first_n_modes', data_config=self.data_config),
+        # ]    
+        # self.spf_feat_norm = None
+        # self.spf_reduc_config = None
 
 
 def get_config_str(configs:list):

@@ -755,15 +755,15 @@ class Decoder(LightningModule):
         infer_time = time.time() - self.start_time
         print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
         
-        print(f"\nDecoder residuals: {loss.item():,.4f}")
+        print(f"\nDecoder residual: {loss.item():,.4f}")
         print('\n' + 75*'-')
 
         # make decoder output plot
         self.decoder_output_plot(**self.decoder_plot_data_predict, type=self.run_type)
 
         return {
-            'residuals': loss.item(),
-            'x_pred': self.decoder_plot_data_predict['x_pred'],
+            'dec/residual': loss.item(),
+            'dec/x_pred': self.decoder_plot_data_predict['x_pred'],
         }
     
     

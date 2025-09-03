@@ -12,7 +12,7 @@ from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
 
 # local imports
-from .settings.manager import TopologyEstimationInferManager, get_checkpoint_path
+from .settings.manager import TopologyEstimationInferManager
 from .relations import RelationMatrixMaker
 from .utils.custom_loader import CombinedDataLoader
 from .nri import NRI
@@ -114,7 +114,7 @@ class TopologyEstimationInferHelper:
         return logger
     
 
-class NRIInferMain(TopologyEstimationInferHelper):
+class NRIInferPipeline(TopologyEstimationInferHelper):
     """
     Main class for NRI inference.
     """
@@ -131,7 +131,7 @@ class NRIInferMain(TopologyEstimationInferHelper):
         """
         super().__init__(data_config, nri_config)
 
-    def infer(self):
+    def infer(self, device='auto'):
         """
         Perform inference using the NRI model.
         """
@@ -152,13 +152,18 @@ class NRIInferMain(TopologyEstimationInferHelper):
         # infer using the nri model
         logger = self._prep_for_inference()
 
-        tester = Trainer(logger=logger)
+        tester = Trainer(
+            accelerator=device,
+            logger=logger
+            )
+        
         if self.tp_config.run_type == 'custom_test':
-            tester.test(nri_model, self.custom_loader)
+            preds = tester.test(nri_model, self.custom_loader)
 
         elif self.tp_config.run_type == 'predict':
             preds = tester.predict(nri_model, self.custom_loader)
-            return preds
+
+        return preds
 
     
     def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
@@ -207,7 +212,7 @@ class NRIInferMain(TopologyEstimationInferHelper):
 
         return trained_nri_model
     
-class DecoderInferMain(TopologyEstimationInferHelper):
+class DecoderInferPipeline(TopologyEstimationInferHelper):
     """
     Main class for Decoder inference.
     """
@@ -224,7 +229,7 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         """
         super().__init__(data_config, decoder_config)
 
-    def infer(self):
+    def infer(self, device='auto'):
         """
         Perform inference using the Decoder model.
         """
@@ -244,13 +249,18 @@ class DecoderInferMain(TopologyEstimationInferHelper):
         # infer using the decoder model
         logger = self._prep_for_inference()
 
-        tester = Trainer(logger=logger)
+        tester = Trainer(
+            accelerator=device,
+            logger=logger)
+
         if self.tp_config.run_type == 'custom_test':
-            tester.test(decoder_model, self.custom_loader)
+            preds = tester.test(decoder_model, self.custom_loader)
 
         elif self.tp_config.run_type == 'predict':
             preds = tester.predict(decoder_model, self.custom_loader)
-            return preds
+        
+        preds['adj_matrix_label'] = send_rel.T @ rec_rel
+        return preds
         
     def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
         """
@@ -302,9 +312,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Infer NRI or Decoder models.")
 
     parser.add_argument('--framework', type=str, 
-                        choices=['nri', 'decoder'],
+                        choices=['nri', 'decoder', 'full_tp'],
                         default='nri',
-                        required=True, help="Framework to infer: nri or decoder")
+                        required=True, help="Framework to infer: nri, decoder or full_tp")
     
     parser.add_argument('--run-type', type=str, 
                         choices=['custom_test', 'predict'],
@@ -314,28 +324,48 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data_config = DataConfig(run_type=args.run_type)
-    tp_config = TopologyEstimationInferManager(data_config, args.framework, args.run_type)
+
+    if args.framework in ['decoder', 'full_tp']:
+        decoder_config = TopologyEstimationInferManager(data_config, 'decoder', args.run_type)
+    if args.framework in ['nri', 'full_tp']:
+        nri_config = TopologyEstimationInferManager(data_config, 'nri', args.run_type)
+    
+    use_nri = False
 
     with console_logger.capture_output():
         print(f"\nStarting {args.framework} model to {args.run_type}...")
 
-        if args.framework == 'nri':
-            infer_pipeline = NRIInferMain(data_config, tp_config)
-        elif args.framework == 'decoder':
-            infer_pipeline = DecoderInferMain(data_config, tp_config)
+        if args.framework == 'decoder' or args.framework == 'full_tp':
+            decoder_infer_pipeline = DecoderInferPipeline(data_config, decoder_config)
+            preds_dec = decoder_infer_pipeline.infer()
+            base_name = f"{decoder_config.selected_model_num}/{os.path.basename(decoder_infer_pipeline.infer_log_path)}" if decoder_infer_pipeline.infer_log_path else f"{decoder_config.selected_model_num}/{args.run_type}"
+            
+            print('\n' + 75*'=')
+            print(f"\n{args.run_type.capitalize()} of decoder model '{base_name}' completed.")
 
-        if args.run_type == 'custom_test':
-            infer_pipeline.infer()
+            if preds_dec['dec/residual'] > 0.1:
+                print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} > 0.1. Hence using NRI model for topology prediction.")
+                use_nri = True
+            else:
+                print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} <= 0.1. Hence given topology to decoder is correct.")
+                use_nri = False
 
-        elif args.run_type == 'predict':
-            preds = infer_pipeline.infer()
+            if decoder_config.is_log:
+                # save the captured output to a file
+                file_path = os.path.join(decoder_infer_pipeline.infer_log_path, "console_output.txt")
+                console_logger.save_to_file(file_path, script_name="topology_estimation.infer.py", base_name=base_name)
 
-        base_name = f"{tp_config.selected_model_num}/{os.path.basename(infer_pipeline.infer_log_path)}" if infer_pipeline.infer_log_path else f"{tp_config.selected_model_num}/{args.run_type}"
-        print('\n' + 75*'=')
-        print(f"\n{args.run_type.capitalize()} of {args.framework} model '{base_name}' completed.")
 
-    if tp_config.is_log:
-        # save the captured output to a file
-        file_path = os.path.join(infer_pipeline.infer_log_path, "console_output.txt")
-        console_logger.save_to_file(file_path, script_name="topology_estimation.infer.py", base_name=base_name)
+        if args.framework == 'nri' or (args.framework == 'full_tp' and use_nri):
+            nri_infer_pipeline = NRIInferPipeline(data_config, nri_config)
+            preds_enc = nri_infer_pipeline.infer()
+            base_name = f"{nri_config.selected_model_num}/{os.path.basename(nri_infer_pipeline.infer_log_path)}" if nri_infer_pipeline.infer_log_path else f"{nri_config.selected_model_num}/{args.run_type}"
+            
+            print('\n' + 75*'=')
+            print(f"\n{args.run_type.capitalize()} of nri model '{base_name}' completed.")
+
+            if nri_config.is_log:
+                # save the captured output to a file
+                file_path = os.path.join(nri_infer_pipeline.infer_log_path, "console_output.txt")
+                console_logger.save_to_file(file_path, script_name="topology_estimation.infer.py", base_name=base_name)
         

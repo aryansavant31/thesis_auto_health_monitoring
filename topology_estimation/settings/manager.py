@@ -26,7 +26,7 @@ from data.config import DataConfig
 
 # local imports
 from .train_config import NRITrainConfig, NRITrainSweep, DecoderTrainConfig, DecoderTrainSweep
-from .infer_config import NRIInferConfig, DecoderInferConfig
+from .infer_config import NRIInferConfig, NRIInferSweep, DecoderInferConfig, DecoderInferSweep
 
 class NRITrainManager(NRITrainConfig):
     def __init__(self, data_config:DataConfig, train_sweep_num=0):
@@ -620,7 +620,7 @@ class DecoderTrainSweepManager(TopologyEstimationTrainSweepManager):
 
 
 class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
-    def __init__(self, data_config, framework, run_type):
+    def __init__(self, data_config, framework, run_type, infer_sweep_num=0, selected_model_path=None):
         """
         Initializes the infer manager for topology estimation.
 
@@ -634,29 +634,93 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
             The type of run ('train', 'custom_test', or 'predict').
         """
         if framework == 'nri':
-            NRIInferConfig.__init__(self, data_config)
+            NRIInferConfig.__init__(self, data_config, run_type, selected_model_path)
         elif framework == 'decoder':
-            DecoderInferConfig.__init__(self, data_config)
+            DecoderInferConfig.__init__(self, data_config, run_type, selected_model_path)
+
+        # check if data and model are compatible
+        if not self._is_data_model_match():
+            raise ValueError("Data and model configurations are not compatible. Please check the configurations.")
 
         self.helper = HelperClass()
-        self.run_type = run_type
         self.framework = framework
-
+        self.infer_sweep_num = infer_sweep_num
+        
         self.train_log_path = self.log_config.train_log_path
         self.n_edge_types = self.log_config.n_edge_types
 
         self.selected_model_num = os.path.basename(self.train_log_path)
 
-    def get_infer_log_path(self):
+    def _is_data_model_match(self):
+        #model_id = os.path.basename(os.path.dirname(model_path)).split('-')[0].strip('[]')
+
+        node_group_model = self.log_config.data_config.signal_types['node_group_name']
+        signal_group_model = self.log_config.data_config.signal_types['signal_group_name']
+        set_id_model = self.log_config.data_config.set_id
+        window_length_model = self.log_config.data_config.window_length
+        stride_model = self.log_config.data_config.stride
+        custom_max_timesteps_model = self.log_config.data_config.custom_max_timesteps
+
+
+        is_node_match = node_group_model == self.data_config.signal_types['node_group_name']
+        is_signal_match = signal_group_model == self.data_config.signal_types['signal_group_name']
+        is_setid_match = set_id_model == self.data_config.set_id
+        is_window_match = window_length_model == self.data_config.window_length
+        is_stride_match = stride_model == self.data_config.stride
+        is_custom_max_timesteps_match = custom_max_timesteps_model == self.data_config.custom_max_timesteps if self.data_config.use_custom_max_timesteps else True
+
+
+        if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match and is_custom_max_timesteps_match:
+            return True
+        else:
+            print(f"\n> Incompatible model found: {os.path.basename(os.path.dirname(self.selected_model_path))}")
+            print(f"Incompatible parameters:")
+            if not is_node_match:
+                print(f"  - Node group mismatch: Model({node_group_model}) != Data({self.data_config.signal_types['node_group_name']})")
+            if not is_signal_match:
+                print(f"  - Signal group mismatch: Model({signal_group_model}) != Data({self.data_config.signal_types['signal_group_name']})")
+            if not is_setid_match:
+                print(f"  - Set ID mismatch: Model({set_id_model}) != Data({self.data_config.set_id})")
+            if not is_window_match:
+                print(f"  - Window length mismatch: Model({window_length_model}) != Data({self.data_config.window_length})")
+            if not is_stride_match:
+                print(f"  - Stride mismatch: Model({stride_model}) != Data({self.data_config.stride})")
+            if not is_custom_max_timesteps_match:
+                print(f"  - Custom max timesteps mismatch: Model({custom_max_timesteps_model}) != Data({self.data_config.custom_max_timesteps})")
+            return False
+
+    def get_infer_log_path(self, always_next_version=False):
         """
         Sets the log path for the run.
         """
+        self.always_next_version = always_next_version
 
-        infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
-        self.infer_log_path = os.path.join(infer_num_path, f'{self.run_type}_{self.version}')
+        # infer_num_path = self.train_log_path.replace(f"{os.sep}train{os.sep}", f"{os.sep}{self.run_type}{os.sep}")
+
+        parts = self.train_log_path.split(os.sep)
+        train_idx = parts.index('train')
+        etypes = parts[train_idx + 1]
+        node = parts[train_idx + 2]
+        signal_group = parts[train_idx + 3]
+        set_id = parts[train_idx + 4]
+        model_type = parts[train_idx + 5]
+        model_name = parts[-1]
+
+        infer_num_path = os.path.join(
+            LOGS_DIR,
+            *parts[train_idx-4:train_idx],
+            self.run_type,
+            etypes, node, signal_group, set_id,
+            f'iswp_{self.infer_sweep_num}', 
+        )
+
+        self.infer_log_path = os.path.join(infer_num_path, model_type, model_name, f'{self.run_type}_{self.version}')
 
         # add healthy or healthy_unhealthy config to path
         infer_num_path = self.helper.set_ds_types_in_path(self.data_config, infer_num_path)
+
+        # add model type to path
+        infer_num_path = os.path.join(infer_num_path, model_type, model_name)
 
         # add timestep_id to path
         infer_num_path = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
@@ -707,27 +771,33 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
 
     def _get_next_version(self):
         parent_dir = os.path.dirname(self.infer_log_path)
+        os.makedirs(parent_dir, exist_ok=True)
 
         # List all folders in parent_dir that match 'fault_detector_<number>'
-        folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
-        model_folders = [f for f in folders if re.match(fr'.*{self.run_type}_\d+$', f)]
+        # folders = [f for f in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, f))]
+        model_folders = [f for f in os.listdir(parent_dir) if f.startswith(f'{self.run_type}_')]
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[-1]) for f in model_folders)
-            self.version = max_model + 1
-            new_model = f'{self.run_type}_{self.version}'
-            print(f"Next {self.framework} infer folder will be: {new_model}")
+            max_version = max(int(f.split('_')[-1]) for f in model_folders)
+            self.version = max_version + 1
+            new_infer_folder = f'{self.run_type}_{self.version}'
+            print(f"Next {self.framework} infer folder will be: {new_infer_folder}")
         else:
-            new_model = f'{self.run_type}_1'  # If no v folders exist
+            self.version = 1
+            new_infer_folder = f'{self.run_type}_{self.version}'  # If no v folders exist
 
-        return os.path.join(parent_dir, new_model)
+        return os.path.join(parent_dir, new_infer_folder)
     
     
     def check_if_version_exists(self):
         """
         Checks if the version already exists in the log path.
         """
+        if self.always_next_version:
+            self.infer_log_path = self._get_next_version()
+            return
+
         if os.path.isdir(self.infer_log_path):
             print(f"\n{self.run_type} number {self.version} for already exists for {self.selected_model_num} in the log path '{self.infer_log_path}'.")
             user_input = input(f"(a) Overwrite exsiting version, (b) create new version, (c) stop {self.run_type} (Choose 'a', 'b' or 'c'):  ")
@@ -742,7 +812,147 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
                 print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully   
 
+class TopologyEstimationInferSweepManager(NRIInferSweep, DecoderInferSweep):
+    def __init__(self, data_configs:list, framework, run_type):
+        self.data_configs = data_configs
+        self.framework = framework
+        self.run_type = run_type
 
+    def get_sweep_configs(self):
+        """
+        Generate all possible combinations of parameters for sweeping.
+            
+        Returns
+        -------
+        list
+            List of TopologyEstimationInferConfig (NRIInfer or DecoderInfer) objects with different parameter combinations
+        """
+        infer_configs = []
+        idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        idx = -1
+
+        for data_config in self.data_configs:
+
+            if self.framework == 'nri':
+                NRIInferSweep.__init__(self, data_config)
+            elif self.framework == 'decoder':
+                DecoderInferSweep.__init__(self, data_config)
+
+            node_group_change = data_config.signal_types['node_group_name'] != infer_configs[-1].data_config.signal_types['node_group_name'] if infer_configs else False
+            signal_group_change = data_config.signal_types['signal_group_name'] != infer_configs[-1].data_config.signal_types['signal_group_name'] if infer_configs else False
+            set_id_change = data_config.set_id != infer_configs[-1].data_config.set_id if infer_configs else False
+
+            # Convert sweep config to dictionary
+            sweep_dict = self._to_dict()
+            
+            # Get all parameter names and their values
+            param_names = list(sweep_dict.keys())
+            param_values = list(sweep_dict.values())
+            
+            # Generate all combinations using cartesian product
+            combinations = list(itertools.product(*param_values))
+            
+            # Create configs for each combination
+            for combo in combinations:
+
+                # Create base config
+                try:
+                    infer_config = TopologyEstimationInferManager(
+                        self.data_config,
+                        framework=self.framework,
+                        run_type=self.run_type,
+                        infer_sweep_num=self.infer_sweep_num,
+                        selected_model_path=combo[param_names.index('selected_model_path')]
+                    )
+                except ValueError as e:
+                    print(f"Since model {os.path.basename(os.path.dirname(combo[param_names.index('selected_model_path')]))} is incompatible, it is skipped...")
+                    continue
+
+                # when model is approved, check if model path has changed
+                model_change = combo[param_names.index('selected_model_path')] != infer_configs[-1].selected_model_path if infer_configs else False
+
+                # Second level reset idx
+                if node_group_change or signal_group_change or set_id_change or model_change:
+                    idx = (
+                        idx_dict.get(data_config.signal_types['node_group_name'], {})
+                                .get(data_config.signal_types['signal_group_name'], {})
+                                .get(data_config.set_id, {})
+                                .get(combo[param_names.index('selected_model_path')], -1)
+                    )
+                
+                idx += 1
+
+                # Update parameters based on current combination
+                for param_name, param_value in zip(param_names, combo):
+                    setattr(infer_config, param_name, param_value)
+                
+                # update domain config
+                infer_config.update_infer_configs()
+
+                # Update version number 
+                _ = infer_config.get_infer_log_path(always_next_version=True)
+                infer_config.version = infer_config.version + idx
+
+                idx_dict[
+                    data_config.signal_types['node_group_name']
+                ][
+                    data_config.signal_types['signal_group_name']
+                ][
+                    data_config.set_id
+                ][
+                    infer_config.selected_model_path
+                ] = idx
+
+                # Regenerate hyperparameters after updating parameters
+                infer_config.infer_hyperparams = infer_config.get_infer_hyperparams()
+
+                infer_configs.append(infer_config)
+                        
+        return infer_configs
+    
+    def _to_dict(self):
+        """
+        Convert sweep config attributes to dictionary, excluding private methods and non-list attributes.
+        """
+        sweep_dict = {}
+        for attr_name in dir(self):
+            if not attr_name.startswith('_') and not callable(getattr(self, attr_name)):
+                attr_value = getattr(self, attr_name)
+                if isinstance(attr_value, list):
+                    if attr_name != 'data_configs': 
+                        sweep_dict[attr_name] = attr_value
+
+        return sweep_dict
+    
+    def get_total_combinations(self):
+        """
+        Get the total number of parameter combinations.
+        """
+        sweep_dict = self._to_dict()
+        total = 1
+        for values in sweep_dict.values():
+            total *= len(values)
+        return total
+    
+    def print_sweep_summary(self):
+        """
+        Print a summary of the parameter sweep.
+        """
+        sweep_dict = self._to_dict()
+        print(f"\nParameter Sweep Summary:")
+        print(f"Total combinations: {self.get_total_combinations()}")
+        print("\nParameters and their values:")
+
+        for param_name, param_values in sweep_dict.items():
+            if param_name == 'selected_model_path':
+                print(f"\nNumber of models selected: {len(param_values)}")
+                print("Selected models are as follows:\n" + 30*'-')
+
+                for i, path in enumerate(param_values):
+                    print(f"  Model {i+1}: {os.path.basename(os.path.dirname(path))}")
+            else:
+                print(f"  {param_name}: {len(param_values)} values -> {param_values}")
+        
     
 class SelectTopologyEstimatorModel:
     def __init__(self, framework, application=None, machine=None, scenario=None, run_type='train', logs_dir=LOGS_DIR):
@@ -887,9 +1097,10 @@ class SelectTopologyEstimatorModel:
                     8: "<timestep_id>",
                     9: "<sparsif_type>",
                     10: "<domain>",
-                    11: "<nri_fex_type>",
-                    12: "<shape_compatibility>",
-                    13: "<versions>"
+                    11: "<nri_feat_type>",
+                    12: "<tswp_id>",
+                    13: "<shape_compatibility>",
+                    14: "<versions>"
                 }
             else:
                 label_map = {
@@ -906,8 +1117,9 @@ class SelectTopologyEstimatorModel:
                     10: "<sparsif_fex_type>",
                     11: "<domain>",
                     12: "<nri_fex_type>",
-                    13: "<shape_compatibility>",
-                    14: "<versions>"
+                    13: "<tswp_id>",
+                    14: "<shape_compatibility>",
+                    15: "<versions>"
                 }
         elif self.run_type in ['custom_test', 'predict']:
             if is_no_sparsif:
@@ -916,12 +1128,14 @@ class SelectTopologyEstimatorModel:
                     1: "<node_group>",
                     2: "<signal_group>",
                     3: "<set>",
-                    4: "<trained_model>",
+                    4: "<iswp_id>",
                     5: "<ds_type>",
                     6: "<ds_subtype>",
-                    7: "ds_stats",
-                    8: "<sparsif_type>",
-                    9: "<versions>"
+                    7: "<trained_model>",
+                    8: "<model_id>",
+                    9: "<timestep_id>",
+                    10: "<sparsif_type>",
+                    11: "<versions>"
                 }
             else:
                 label_map = {
@@ -929,13 +1143,15 @@ class SelectTopologyEstimatorModel:
                     1: "<node_group>",
                     2: "<signal_group>",
                     3: "<set>",
-                    4: "<trained_model>",
+                    4: "<iswp_id>",
                     5: "<ds_type>",
                     6: "<ds_subtype>",
-                    7: "<ds_stats>",
-                    8: "<sparsif_type>",
-                    9: "<sparsif_fex_type>",
-                    10: "<versions>"
+                    7: "<trained_model>",
+                    8: "<model_id>",
+                    9: "<timestep_id>",
+                    10: "<sparsif_type>",
+                    11: "<sparsif_fex_type>",
+                    12: "<versions>"
                 }
                     
         added_labels = set()
@@ -953,7 +1169,7 @@ class SelectTopologyEstimatorModel:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue
-            if self.run_type in ['custom_test', 'predict'] and level == 4:
+            if self.run_type in ['custom_test', 'predict'] and level == 8:
                 branch = parent_node.add(f"[bright_yellow]{safe_key}[/bright_yellow]")
                 self._build_rich_tree(branch, value, level + 1, parent_keys + [key])
                 continue

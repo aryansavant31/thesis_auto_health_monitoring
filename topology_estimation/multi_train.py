@@ -18,7 +18,7 @@ def train_single_config(args):
     Parameters
     ----------
     args : tuple
-        (idx, fdet_config, total_configs)
+        (idx, tp_config, total_configs, framework, device)
     """
     idx, tp_config, total_configs, framework, device = args
 
@@ -78,7 +78,7 @@ def multi_train(framework, parallel_execution, max_workers=None):
     console_logger_sweep = ConsoleLogger()
     
     with console_logger_sweep.capture_output():
-        print(f"\nStarting {framework} model sweep...")
+        print(f"\nStarting {framework} model train sweep...")
 
         # get all data configuration groups
         data_sweep = DataSweep(run_type='train')

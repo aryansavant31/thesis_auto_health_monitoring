@@ -589,16 +589,16 @@ class NRI(LightningModule):
         print(f"\n Adjacency matrix (shape {adj_matrix.shape})")
         print(adj_matrix)
 
-        print(f"\nDecoder residuals: {log_data['loss_decoder'].item():,.4f}")
+        print(f"\nDecoder residual: {log_data['loss_decoder'].item():,.4f}")
         print('\n' + 75*'-')
 
         # make decoder output plot
         self.decoder_output_plot(**self.decoder_plot_data_predict, type=self.run_type)
 
         return {
-            'edge_pred': edge_pred,
-            'adj_matrix': adj_matrix,
-            'residuals': log_data['loss_decoder']
+            'nri/edge_pred': edge_pred,
+            'nri/adj_matrix': adj_matrix,
+            'nri/residual': log_data['loss_decoder']
         }
     
     def edge_pred_to_adjacency_matrix(edge_pred, n_nodes):

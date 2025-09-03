@@ -215,7 +215,6 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
             raise ValueError("Data and model configurations are not compatible. Please check the configurations.")
 
         self.helper = HelperClass()
-        self.run_type = run_type
         self.infer_sweep_num = infer_sweep_num
         
         self.train_log_path = self.log_config.train_log_path
@@ -232,14 +231,16 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
         set_id_model = self.log_config.data_config.set_id
         window_length_model = self.log_config.data_config.window_length
         stride_model = self.log_config.data_config.stride
+        custom_max_timesteps_model = self.log_config.data_config.custom_max_timesteps
 
         is_node_match = node_group_model == self.data_config.signal_types['node_group_name']
         is_signal_match = signal_group_model == self.data_config.signal_types['signal_group_name']
         is_setid_match = set_id_model == self.data_config.set_id
         is_window_match = window_length_model == self.data_config.window_length
         is_stride_match = stride_model == self.data_config.stride
+        is_custom_max_timesteps_match = custom_max_timesteps_model == self.data_config.custom_max_timesteps if self.data_config.use_custom_max_timesteps else True
 
-        if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match:
+        if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match and is_custom_max_timesteps_match:
             return True
         else:
             print(f"\n> Incompatible model found: {os.path.basename(os.path.dirname(self.selected_model_path))}")
@@ -254,6 +255,8 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
                 print(f"  - Window length mismatch: Model({window_length_model}) != Data({self.data_config.window_length})")
             if not is_stride_match:
                 print(f"  - Stride mismatch: Model({stride_model}) != Data({self.data_config.stride})")
+            if not is_custom_max_timesteps_match:
+                print(f"  - Custom max timesteps mismatch: Model({custom_max_timesteps_model}) != Data({self.data_config.custom_max_timesteps})")
             return False
     
     def get_infer_log_path(self, always_next_version=False):
@@ -369,15 +372,15 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
 
         if model_folders:
             # Extract numbers and find the max
-            max_model = max(int(f.split('_')[-1]) for f in model_folders)
-            self.version = max_model + 1
-            new_model = f'{self.run_type}_{self.version}'
-            print(f"Next fault detection infer folder will be: {new_model}")
+            max_version = max(int(f.split('_')[-1]) for f in model_folders)
+            self.version = max_version + 1
+            new_infer_folder = f'{self.run_type}_{self.version}'
+            print(f"Next fault detection infer folder will be: {new_infer_folder}")
         else:
             self.version = 1
-            new_model = f'{self.run_type}_{self.version}'  # If no v folders exist
+            new_infer_folder = f'{self.run_type}_{self.version}'  # If no v folders exist
 
-        return os.path.join(parent_dir, new_model)
+        return os.path.join(parent_dir, new_infer_folder)
     
     def check_if_version_exists(self):
         """
@@ -594,7 +597,7 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
                     setattr(infer_config, param_name, param_value)
                 
                 # update domain config
-                infer_config.set_domain_config()
+                infer_config.update_infer_configs()
 
                 # Update version number 
                 _ = infer_config.get_infer_log_path(always_next_version=True)
