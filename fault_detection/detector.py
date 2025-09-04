@@ -542,7 +542,7 @@ class TrainerAnomalyDetector:
             palette = ['#1f77b4', '#ff7f0e']
 
         pair_plot = sns.pairplot(self.df, vars=feat_cols, hue='pred_label', palette=palette)
-        pair_plot.figure.suptitle(f"Pair Plot of Features [{self.model_id} / {self.run_type}]", y=1.02)
+        pair_plot.figure.suptitle(f"Pair Plot of Features : [{self.model_id} / {self.run_type}]", y=1.02)
 
         # save the pair plot if logger is available
         if self.logger:
@@ -574,13 +574,6 @@ class TrainerAnomalyDetector:
             rownames=['Actual'], colnames=['Predicted'], dropna=False
             ).reindex(index=[1, -1], columns=[1, -1], fill_value=0)
         
-        # update font settings for plots
-        plt.rcParams.update({
-            "text.usetex": False,   # No external LaTeX
-            "font.family": "serif",
-            "mathtext.fontset": "cm",  # Computer Modern math
-        })
-
         plt.figure(figsize=(8, 6), dpi=100)
         cm_plot = sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=x_label, yticklabels=y_label)
 
@@ -593,7 +586,7 @@ class TrainerAnomalyDetector:
                 cm_plot.text(j + 0.5, i + 0.3, cell_labels[i][j],
                         ha='center', va='center', color='grey', fontsize=10)
                 
-        plt.title(f'Confusion Matrix [{self.model_id} / {self.run_type}]')
+        plt.title(f'Confusion Matrix : [{self.model_id} / {self.run_type}]')
 
         # save the confusion matrix if logger is available
         if self.logger:
@@ -617,13 +610,6 @@ class TrainerAnomalyDetector:
         # calculate the ROC curve
         fpr, tpr, thresholds = roc_curve(self.df['given_label'], self.df['scores'], pos_label=1)
         
-        # update font settings for plots
-        plt.rcParams.update({
-            "text.usetex": False,   # No external LaTeX
-            "font.family": "serif",
-            "mathtext.fontset": "cm",  # Computer Modern math
-        })
-
         plt.figure(figsize=(8, 6), dpi=100)
         plt.plot(fpr, tpr, color='blue', label='ROC curve')
         plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random guess')
@@ -635,7 +621,7 @@ class TrainerAnomalyDetector:
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title(f'ROC Curve with Thresholds [{self.model_id} / {self.run_type}]')
+        plt.title(f'ROC Curve with Thresholds : [{self.model_id} / {self.run_type}]')
         plt.legend()
 
         # save the ROC curve if logger is available
@@ -711,13 +697,6 @@ class TrainerAnomalyDetector:
             if 0 <= bin_idx < len(bins_edges) - 1:
                 bin_samples_nok[bin_idx].append(idx)
 
-        # update font settings for plots
-        plt.rcParams.update({
-            "text.usetex": False,   # No external LaTeX
-            "font.family": "serif",
-            "mathtext.fontset": "cm",  # Computer Modern math
-        })
-
         # create the histogram
         plt.figure(figsize=(10, 6), dpi=100)
         counts_ok, _, _ = plt.hist(scores_ok, bins=bins_edges, color='blue', label='OK (label=0)', alpha=0.5)
@@ -744,7 +723,7 @@ class TrainerAnomalyDetector:
 
         plt.xlabel('Anomaly Score (log scale) (shifted)')
         plt.ylabel('Number of Samples (log scale)')
-        plt.title(f'Anomaly Score Distribution ({label_col}) [{self.model_id} / {self.run_type}]')
+        plt.title(f'Anomaly Score Distribution ({label_col}) : [{self.model_id} / {self.run_type}]')
         plt.legend()
         plt.grid(True)
         plt.yscale('log')  
@@ -797,14 +776,6 @@ class TrainerAnomalyDetector:
         # create the bar chart
         categories = ['OK', 'NOK']
         counts = [len(ok_samples), len(nok_samples)]
-
-        # update font settings for plots
-        plt.rcParams.update({
-            "text.usetex": False,   # No external LaTeX
-            "font.family": "serif",
-            "mathtext.fontset": "cm",  # Computer Modern math
-        })
-        
         plt.bar(categories, counts, color=['blue', 'orange'], alpha=0.7)
 
         # annotate the bar chart with sample indices
@@ -812,7 +783,7 @@ class TrainerAnomalyDetector:
             plt.text(i, counts[i] / 2, f"Samples: {', '.join(map(str, samples))}", 
                     ha='center', va='center', fontsize=10, color='grey', wrap=True)
 
-        plt.title(f"Predictions OK v/s NOK [{self.model_id} / {self.run_type}]")
+        plt.title(f"Predictions OK v/s NOK : [{self.model_id} / {self.run_type}]")
         plt.ylabel("Number of Samples")
 
         # save the bar plot if logger is available

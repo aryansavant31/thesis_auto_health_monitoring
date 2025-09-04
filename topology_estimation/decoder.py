@@ -794,7 +794,7 @@ class Decoder(LightningModule):
         # plot nri losses
         plt.plot(epochs, self.train_losses[f'train_losses'], label='train loss', color='blue')
         plt.plot(epochs, self.train_losses[f'val_losses'], label='val loss', color='orange', linestyle='--')
-        plt.title(F"Train and Validation Losses [{self.model_id}]")
+        plt.title(F"Train and Validation Losses : [{self.model_id}]")
         plt.ylabel('Loss')
         plt.xlabel('Epochs')
         plt.yscale('log')
@@ -859,7 +859,7 @@ class Decoder(LightningModule):
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} : [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
             dim_names = self.data_config.signal_types['group'][node_names[node]]

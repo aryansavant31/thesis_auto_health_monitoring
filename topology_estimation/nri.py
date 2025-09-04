@@ -684,7 +684,7 @@ class NRI(LightningModule):
         axes[2].legend()
         axes[2].grid(True)
 
-        fig.suptitle(f"Train and Validation Losses [{self.model_id}]", fontsize=12)
+        fig.suptitle(f"Train and Validation Losses : [{self.model_id}]", fontsize=12)
 
         # save loss plot if logger is avaialble
         if self.logger:
@@ -744,7 +744,7 @@ class NRI(LightningModule):
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} : [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
             dim_names = self.data_config.signal_types['group'][node_names[node]]

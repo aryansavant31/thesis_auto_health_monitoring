@@ -194,6 +194,10 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
 
         # update model with infer hyperparams
         trained_nri_model.hyperparams.update(self.tp_config.infer_hyperparams)
+        trained_nri_model.hyperparams.update({
+            f"max_timesteps/{self.tp_config.run_type}" : f"{int(self.data_config.max_timesteps):,}"
+        })
+        
 
         # update the model with new run params and custom data statistics
         trained_nri_model.set_input_graph(rec_rel, send_rel)
@@ -289,6 +293,9 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
         
         # update model with infer hyperparams
         trained_decoder_model.hyperparams.update(self.tp_config.infer_hyperparams)
+        trained_decoder_model.hyperparams.update({
+            f"max_timesteps/{self.tp_config.run_type}" : f"{int(self.data_config.max_timesteps):,}"
+        })
 
         # update the model with new run params and custom data statistics
         trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.custom_loader.batch_size)

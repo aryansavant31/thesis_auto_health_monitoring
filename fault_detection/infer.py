@@ -93,6 +93,9 @@ class AnomalyDetectorInferPipeline:
 
         # update hparams with new values
         anomaly_detector.hparams.update(self.fdet_config.infer_hparams)
+        anomaly_detector.hparams.update({
+            f"max_timesteps/{self.fdet_config.run_type}" : f"{int(self.data_config.max_timesteps):,}"
+            })
 
         print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.selected_model_path}")
         print(f"\nModel type: {type(anomaly_detector.model).__name__}, Model ID: {anomaly_detector.hparams['model_id']}, No. of input features req.: {anomaly_detector.model.n_features_in_ if hasattr(anomaly_detector.model, 'n_features_in_') else 'Unknown'}")
