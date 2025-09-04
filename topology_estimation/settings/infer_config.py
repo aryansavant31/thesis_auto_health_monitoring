@@ -59,6 +59,9 @@ class NRIInferConfig:
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
 
+        # plotting parameters
+        self.show_conf_band = False
+
     # Sparsifier parameters
         self.spf_config = get_spf_config('no_spf', is_expert=True)
         
@@ -211,6 +214,9 @@ class DecoderInferConfig:
         # if dynamic graph is true
         self.temp = 1.0        # temperature for Gumble Softmax
         self.is_hard = True 
+
+        # plotting parameters
+        self.show_conf_band = False
 
     # Sparsifier parameters 
         self.spf_config = get_spf_config('no_spf', is_expert=True)

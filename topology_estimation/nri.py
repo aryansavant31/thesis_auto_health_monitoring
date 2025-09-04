@@ -30,11 +30,12 @@ class NRI(LightningModule):
         self.hyperparams = hyperparams
 
     def set_training_params(
-        self, lr=0.001, optimizer='adam', 
+        self, lr=0.001, optimizer='adam', add_const_kld=True,
         loss_type_enc='kld', loss_type_dec='nll', prior=None
     ):
         self.lr = lr
         self.optimizer = optimizer
+        self.add_const_kld = add_const_kld
         self.prior = prior
         self.loss_type_encoder = loss_type_enc
         self.loss_type_decoder = loss_type_dec
@@ -188,7 +189,8 @@ class NRI(LightningModule):
         super().on_fit_start()
 
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
-
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        
         self.encoder.init_input_processors()
         self.decoder.init_input_processors()
 
@@ -225,7 +227,10 @@ class NRI(LightningModule):
             if self.prior:
                 loss_encoder = kl_categorical(edge_pred, self.prior, num_nodes)
             else:
-                loss_encoder = kl_categorical_uniform(edge_pred, num_nodes)
+                loss_encoder = kl_categorical_uniform(
+                    edge_pred, num_nodes,
+                    add_const=self.add_const_kld
+                    )
 
         # decoder loss
         if self.loss_type_decoder == 'nll':
@@ -444,6 +449,7 @@ class NRI(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
@@ -552,6 +558,7 @@ class NRI(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         
         self.start_time = time.time()
@@ -689,7 +696,7 @@ class NRI(LightningModule):
         # save loss plot if logger is avaialble
         if self.logger:
             fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.model_id}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/training_loss_plot", fig, global_step=self.global_step, close=True)
             print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
@@ -782,7 +789,7 @@ class NRI(LightningModule):
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.model_id}/{type}/decoder_output_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
 
             if is_end:
                 fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)

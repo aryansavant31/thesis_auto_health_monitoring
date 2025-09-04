@@ -73,6 +73,10 @@ class RelationMatrixMaker:
         print(f"\nSender relation matrix:")
         print(send_rel, f"\nshape: {send_rel.shape}")
 
+        print(f"\nAdjacency matrix for input:")
+        adj_mat = torch.matmul(send_rel.t(), rec_rel)
+        print(adj_mat, f"\nshape: {adj_mat.shape}")
+
         print("\n" + 75*'-')
 
         return rec_rel, send_rel

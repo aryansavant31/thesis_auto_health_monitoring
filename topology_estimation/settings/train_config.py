@@ -60,10 +60,10 @@ class DecoderTrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 1
+        self.max_epochs = 10
         self.lr = 0.001
         self.optimizer = 'adam'
-        self.loss_type = 'nll'
+        self.loss_type = 'mse'
 
     # 2: Decoder parameters
 
@@ -90,7 +90,7 @@ class DecoderTrainConfig:
 
         # run parameters
         self.skip_first_edge_type = False
-        self.pred_steps = 1
+        self.pred_steps = 20
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
@@ -98,6 +98,9 @@ class DecoderTrainConfig:
         # if dynamic graph is true
         self.temp = 1.0    # temperature for Gumble Softmax
         self.is_hard = True   
+
+        # plotting parameters
+        self.show_conf_band = False
 
         self.set_dec_emb_configs()   
 
@@ -418,6 +421,9 @@ class NRITrainConfig:
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
+
+        # plotting parameters
+        self.show_conf_band = False
 
         self.set_nri_emb_configs()
 

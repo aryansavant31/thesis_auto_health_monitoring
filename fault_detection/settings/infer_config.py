@@ -46,11 +46,13 @@ class AnomalyDetectorInferConfig:
         self.infer_hparams = self.get_infer_hparams()
 
         self.test_plots = {
-            'confusion_matrix'      : [True, {}],
-            'roc_curve'             : [False, {}],
-            'anomaly_score_dist-1'  : [True, {'is_pred':True}],
-            'anomaly_score_dist-2'  : [True, {'is_pred':False}],
-            'pair_plot'             : [True, {}],
+            'confusion_matrix'              : [True, {}],
+            'roc_curve'                     : [False, {}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True}],
+            'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
+            'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
+            'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
+            'pair_plot'                     : [True, {}],
         }
 
     def update_infer_configs(self):

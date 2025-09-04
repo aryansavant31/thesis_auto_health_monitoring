@@ -296,6 +296,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         nri_model.set_training_params(
             lr=self.tp_config.lr, 
             optimizer=self.tp_config.optimizer,
+            add_const_kld=self.tp_config.add_const_kld,
             loss_type_enc=self.tp_config.loss_type_enc,
             loss_type_dec=self.tp_config.loss_type_dec,
             prior = self.tp_config.prior

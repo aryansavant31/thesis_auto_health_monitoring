@@ -100,7 +100,7 @@ class Decoder(LightningModule):
         self, data_config:DataConfig, data_stats, 
         skip_first_edge_type=False, pred_steps=1,
         is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
-        encoder=None, temp=None, is_hard=False
+        encoder=None, temp=None, is_hard=False, show_conf_band=True
     ):
         """
         Parameters
@@ -125,6 +125,7 @@ class Decoder(LightningModule):
         self.is_dynamic_graph = is_dynamic_graph
         self.encoder = encoder
         self.temp = temp
+        self.show_conf_band = show_conf_band
    
         self.domain = self.domain_config['type']
         self.feat_names = self._get_feature_names() if self.feat_configs else None
@@ -521,6 +522,8 @@ class Decoder(LightningModule):
         super().on_fit_start()
 
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'decoder'
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+
         self.init_input_processors()
 
         self.train_losses = {
@@ -546,6 +549,8 @@ class Decoder(LightningModule):
         # Loss calculation
         if self.loss_type == 'nll':
             loss = nll_gaussian(x_pred, target, x_var)
+        if self.loss_type == 'mse':
+            loss = F.mse_loss(x_pred, target)
 
         decoder_plot_data = {
             'x_pred': x_pred,
@@ -669,6 +674,7 @@ class Decoder(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
@@ -733,6 +739,7 @@ class Decoder(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
 
         self.start_time = time.time()
@@ -805,7 +812,7 @@ class Decoder(LightningModule):
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.model_id}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/training_loss_plot", fig, global_step=self.global_step, close=True)
             print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
@@ -879,7 +886,8 @@ class Decoder(LightningModule):
                 # plot ground truth, predictions, and confidence band
                 ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
                 ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
-                ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="relative confidence")
+                if self.show_conf_band:
+                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="relative confidence")
 
                 # Add labels and legend
                 #if node == n_nodes - 1:
@@ -899,7 +907,7 @@ class Decoder(LightningModule):
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.model_id}/{type}/decoder_output_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
 
             if is_end:
                 fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)
