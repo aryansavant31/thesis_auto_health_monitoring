@@ -574,6 +574,13 @@ class TrainerAnomalyDetector:
             rownames=['Actual'], colnames=['Predicted'], dropna=False
             ).reindex(index=[1, -1], columns=[1, -1], fill_value=0)
         
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+        
         plt.figure(figsize=(8, 6), dpi=100)
         cm_plot = sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=x_label, yticklabels=y_label)
 
@@ -610,6 +617,13 @@ class TrainerAnomalyDetector:
         # calculate the ROC curve
         fpr, tpr, thresholds = roc_curve(self.df['given_label'], self.df['scores'], pos_label=1)
         
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+
         plt.figure(figsize=(8, 6), dpi=100)
         plt.plot(fpr, tpr, color='blue', label='ROC curve')
         plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random guess')
@@ -697,6 +711,13 @@ class TrainerAnomalyDetector:
             if 0 <= bin_idx < len(bins_edges) - 1:
                 bin_samples_nok[bin_idx].append(idx)
 
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+
         # create the histogram
         plt.figure(figsize=(10, 6), dpi=100)
         counts_ok, _, _ = plt.hist(scores_ok, bins=bins_edges, color='blue', label='OK (label=0)', alpha=0.5)
@@ -776,6 +797,14 @@ class TrainerAnomalyDetector:
         # create the bar chart
         categories = ['OK', 'NOK']
         counts = [len(ok_samples), len(nok_samples)]
+
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+        
         plt.bar(categories, counts, color=['blue', 'orange'], alpha=0.7)
 
         # annotate the bar chart with sample indices
