@@ -781,6 +781,13 @@ class Decoder(LightningModule):
 
         epochs = range(1, len(self.train_losses[f'train_losses']) + 1)
 
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+
         # create a figure with 3 subplots in a vertical grid
         plt.figure(figsize=(8, 6), dpi=100)
 
@@ -838,6 +845,13 @@ class Decoder(LightningModule):
 
         node_names = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
 
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+        
         # create figure with subplots for each node and dimension
         fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=80)
         if n_nodes == 1:

@@ -134,6 +134,11 @@ class AnomalyDetectorTrainPipeline:
         """
         Load the anomaly detector model and set the requried run params.
         """
+        # prep hyperparams
+        self.fdet_config.hparams.update({
+            'max_timesteps': f"{int(self.data_config.max_timesteps):,}", 
+            })
+        
         anomaly_detector = AnomalyDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
         
         req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()

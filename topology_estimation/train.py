@@ -12,7 +12,7 @@ from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
 
 # local imports
-from .settings.manager import NRITrainManager, DecoderTrainManager, get_checkpoint_path
+from .settings.manager import NRITrainManager, DecoderTrainManager, get_model_ckpt_path
 from .relations import RelationMatrixMaker
 from .utils.custom_loader import CombinedDataLoader
 from .nri import NRI
@@ -155,7 +155,7 @@ class TopologyEstimationTrainHelper:
 
             # if continue training, load ckpt path of untrained model 
             if self.tp_config.continue_training:
-                ckpt_path = get_checkpoint_path(self.train_log_path)
+                ckpt_path = get_model_ckpt_path(self.train_log_path)
             else:
                 ckpt_path = None
 
@@ -272,7 +272,8 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         self.tp_config.hyperparams.update({
             'n_comps': str(int(enc_model_params['n_comps'])),
             'n_dims': str(int(dec_model_params['n_dims'])),
-            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1]))   
+            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1])),
+            'max_timesteps': f"{int(self.data_config.max_timesteps):,}"  
             })
             
         nri_model = NRI()
@@ -312,7 +313,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         """
         Load the trained NRI model from the checkpoint path.
         """
-        trained_nri_model = NRI.load_from_checkpoint(get_checkpoint_path(self.train_log_path))
+        trained_nri_model = NRI.load_from_checkpoint(get_model_ckpt_path(self.train_log_path))
 
         trained_nri_model.set_input_graph(rec_rel, send_rel)
 
@@ -396,7 +397,8 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         # prep hyperparams
         self.tp_config.hyperparams.update({
             'n_dims': str(int(dec_model_params['n_dims'])),
-            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1] ))  
+            'n_nodes': str(int(next(iter(self.train_loader))[0].shape[1])),
+            'max_timesteps': f"{int(self.data_config.max_timesteps):,}"  
         })
 
         # initialize decoder model
@@ -435,7 +437,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         """
         Load the trained Decoder model from the checkpoint path.
         """
-        trained_decoder_model = Decoder.load_from_checkpoint(get_checkpoint_path(self.train_log_path))
+        trained_decoder_model = Decoder.load_from_checkpoint(get_model_ckpt_path(self.train_log_path))
 
         trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.train_loader.batch_size)
 

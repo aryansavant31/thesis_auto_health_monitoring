@@ -81,7 +81,7 @@ class NRITrainManager(NRITrainConfig):
         model_path = os.path.join(model_path, f"{signal_types_str}")
 
         # add timestep id to path
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}")
 
         # add sparsifier type to path
         model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
@@ -271,7 +271,7 @@ class DecoderTrainManager(DecoderTrainConfig):
         model_path = os.path.join(model_path, f"{signal_types_str}")
 
         # add timestep id to path
-        model_path = os.path.join(model_path, f"T{self.data_config.window_length}")
+        model_path = os.path.join(model_path, f"T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}")
 
         # add sparsifier type to path
         model_path = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, model_path)
@@ -723,7 +723,7 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
         infer_num_path = os.path.join(infer_num_path, model_type, model_name)
 
         # add timestep_id to path
-        infer_num_path = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
+        infer_num_path = os.path.join(infer_num_path, f'T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}')
 
         # add sparsifier type to path
         self.infer_id = self.helper.set_sparsifier_in_path(self.spf_config, self.spf_domain_config['type'], self.spf_feat_configs, self.spf_reduc_config, infer_num_path)

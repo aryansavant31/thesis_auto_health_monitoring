@@ -80,7 +80,7 @@ class FeatureRankingManager(FeatureRankingConfig):
             f"{node_type}: ({', '.join(signal_types_list)})" for node_type, signal_types_list in self.data_config.signal_types['group'].items()
         )
         ranking_path = os.path.join(ranking_path, f"{signal_types_str}")
-        ranking_path = os.path.join(ranking_path, f"T{self.data_config.window_length}")
+        ranking_path = os.path.join(ranking_path, f"T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}")
 
         self.ranking_id = os.path.join(ranking_path, f"{self.model_name}_{self.perf_version}")
 

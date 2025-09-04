@@ -589,10 +589,8 @@ class DataPreprocessor:
         fs_matrix = [] # to store fs values for each node
 
         # get reference values for timesteps
-        if self.data_config.use_custom_max_timesteps:
-            max_timesteps = self.data_config.custom_max_timesteps
-        else:
-            max_timesteps = self._get_max_timesteps(node_type_map)
+        if not self.data_config.use_custom_max_timesteps:
+            self.data_config.max_timesteps = self._get_max_timesteps(node_type_map)
 
         # process node data
         for node_type, ds_subtype_map in node_type_map.items():
@@ -620,8 +618,8 @@ class DataPreprocessor:
 
                     if time.size != 0:
                         # interpolate data with lesser timesteps to match global max_timesteps (if time is available)
-                        if data.shape[1] < max_timesteps or data.shape[1] > max_timesteps:
-                            data, time = self._interpolate_data(data, time, max_timesteps)
+                        if data.shape[1] < self.data_config.max_timesteps or data.shape[1] > self.data_config.max_timesteps:
+                            data, time = self._interpolate_data(data, time, self.data_config.max_timesteps)
                             is_interpolated = True
 
                         # calcualte fs
@@ -663,7 +661,7 @@ class DataPreprocessor:
         # verbose output
         if ds_type == 'OK' or ds_type == 'UK':
             print(f"\n\nFor ds_type '{ds_type}' and others....")
-            print(f"\nMaximum timesteps across all node types: {max_timesteps:,}")
+            print(f"\nMaximum timesteps across all node types: {self.data_config.max_timesteps:,}")
 
             if self.__dict__.get('is_interpolated', False):
                 print(f"\nData interpolation applied to match max_timesteps for node types with lesser timesteps.")

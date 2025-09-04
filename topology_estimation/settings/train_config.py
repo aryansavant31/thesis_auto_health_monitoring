@@ -60,7 +60,7 @@ class DecoderTrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 5
+        self.max_epochs = 1
         self.lr = 0.001
         self.optimizer = 'adam'
         self.loss_type = 'nll'

@@ -1,0 +1,349 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m004_(apv+G)]-gru_dec_1.1
+Start Time: 2025-09-04 12:22:18
+End Time: 2025-09-04 12:23:59
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) series_tp    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+
+For ds_type 'OK' and others....
+
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 500/500 [OK=500, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Reciever relation matrix:
+tensor([[0., 1., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [1., 0., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 0., 1.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 1., 0.]]) 
+shape: torch.Size([12, 4])
+
+Sender relation matrix:
+tensor([[1., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 0.],
+        [0., 0., 0., 1.]]) 
+shape: torch.Size([12, 4])
+
+---------------------------------------------------------------------------
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 1
+msg_out_size: 64
+edge_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
+out_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
+do_prob: 0
+is_batch_norm: True
+recur_emb_type: gru
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+reduc_config: None
+feat_norm: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+skip_first_edge_type: False
+pred_steps: 1
+is_burn_in: False
+burn_in_steps: 1
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+
+Edge matrix is created from relation matrices and set to decoder.
+
+---------------------------------------------------------------------------
+
+Decoder Model Initialized with the following configurations:
+
+Decoder Model Summary:
+Decoder(
+  (edge_mlp_fn): ModuleList(
+    (0): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=128, out_features=64, bias=True)
+        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): Tanh()
+        (3): Dropout(p=0, inplace=False)
+        (4): Linear(in_features=64, out_features=32, bias=True)
+        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): Tanh()
+        (7): Dropout(p=0, inplace=False)
+        (8): Linear(in_features=32, out_features=16, bias=True)
+        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): Tanh()
+        (11): Dropout(p=0, inplace=False)
+        (12): Linear(in_features=16, out_features=64, bias=True)
+        (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+  )
+  (recurrent_emb_fn): GRU(
+    (input_u): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_u): Linear(in_features=64, out_features=64, bias=True)
+    (input_r): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_r): Linear(in_features=64, out_features=64, bias=True)
+    (input_h): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_h): Linear(in_features=64, out_features=64, bias=True)
+  )
+  (mean_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): Tanh()
+      (3): Dropout(p=0, inplace=False)
+      (4): Linear(in_features=64, out_features=32, bias=True)
+      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): Tanh()
+      (7): Dropout(p=0, inplace=False)
+      (8): Linear(in_features=32, out_features=16, bias=True)
+      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (10): Tanh()
+      (11): Dropout(p=0, inplace=False)
+      (12): Linear(in_features=16, out_features=64, bias=True)
+      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+  )
+  (var_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): Tanh()
+      (3): Dropout(p=0, inplace=False)
+      (4): Linear(in_features=64, out_features=32, bias=True)
+      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): Tanh()
+      (7): Dropout(p=0, inplace=False)
+      (8): Linear(in_features=32, out_features=16, bias=True)
+      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (10): Tanh()
+      (11): Dropout(p=0, inplace=False)
+      (12): Linear(in_features=16, out_features=64, bias=True)
+      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+  )
+  (mean_output_layer): Linear(in_features=64, out_features=3, bias=True)
+  (var_output_layer): Linear(in_features=64, out_features=3, bias=True)
+)
+
+---------------------------------------------------------------------------
+
+'[m004_(apv+G)]-gru_dec_1.1' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the '[m004_(apv+G)]-gru_dec_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1? (y/n): Overwrote '[m004_(apv+G)]-gru_dec_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1.
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Training: |                                                                               | 0/? [00:00<?, ?it/s]Training:   0%|                                                                          | 0/80 [00:00<?, ?it/s]Epoch 0:   0%|                                                                           | 0/80 [00:00<?, ?it/s]Epoch 0:   1%|8                                                                  | 1/80 [00:00<01:00,  1.30it/s]Epoch 0:   1%|6                                                      | 1/80 [00:00<01:00,  1.30it/s, v_num=_1.1]Epoch 0:   2%|#3                                                     | 2/80 [00:01<00:58,  1.33it/s, v_num=_1.1]Epoch 0:   2%|#3                                                     | 2/80 [00:01<00:58,  1.33it/s, v_num=_1.1]Epoch 0:   4%|##                                                     | 3/80 [00:02<00:54,  1.41it/s, v_num=_1.1]Epoch 0:   4%|##                                                     | 3/80 [00:02<00:54,  1.41it/s, v_num=_1.1]Epoch 0:   5%|##7                                                    | 4/80 [00:02<00:53,  1.42it/s, v_num=_1.1]Epoch 0:   5%|##7                                                    | 4/80 [00:02<00:53,  1.42it/s, v_num=_1.1]Epoch 0:   6%|###4                                                   | 5/80 [00:03<00:51,  1.47it/s, v_num=_1.1]Epoch 0:   6%|###4                                                   | 5/80 [00:03<00:51,  1.47it/s, v_num=_1.1]Epoch 0:   8%|####1                                                  | 6/80 [00:04<00:49,  1.50it/s, v_num=_1.1]Epoch 0:   8%|####1                                                  | 6/80 [00:04<00:49,  1.50it/s, v_num=_1.1]Epoch 0:   9%|####8                                                  | 7/80 [00:04<00:47,  1.52it/s, v_num=_1.1]Epoch 0:   9%|####8                                                  | 7/80 [00:04<00:47,  1.52it/s, v_num=_1.1]Epoch 0:  10%|#####5                                                 | 8/80 [00:05<00:46,  1.55it/s, v_num=_1.1]Epoch 0:  10%|#####5                                                 | 8/80 [00:05<00:46,  1.55it/s, v_num=_1.1]Epoch 0:  11%|######1                                                | 9/80 [00:05<00:45,  1.56it/s, v_num=_1.1]Epoch 0:  11%|######1                                                | 9/80 [00:05<00:45,  1.56it/s, v_num=_1.1]Epoch 0:  12%|######7                                               | 10/80 [00:06<00:44,  1.58it/s, v_num=_1.1]Epoch 0:  12%|######7                                               | 10/80 [00:06<00:44,  1.58it/s, v_num=_1.1]Epoch 0:  14%|#######4                                              | 11/80 [00:06<00:43,  1.58it/s, v_num=_1.1]Epoch 0:  14%|#######4                                              | 11/80 [00:06<00:43,  1.58it/s, v_num=_1.1]Epoch 0:  15%|########1                                             | 12/80 [00:07<00:42,  1.59it/s, v_num=_1.1]Epoch 0:  15%|########1                                             | 12/80 [00:07<00:42,  1.59it/s, v_num=_1.1]Epoch 0:  16%|########7                                             | 13/80 [00:08<00:41,  1.60it/s, v_num=_1.1]Epoch 0:  16%|########7                                             | 13/80 [00:08<00:41,  1.60it/s, v_num=_1.1]Epoch 0:  18%|#########4                                            | 14/80 [00:08<00:41,  1.59it/s, v_num=_1.1]Epoch 0:  18%|#########4                                            | 14/80 [00:08<00:41,  1.59it/s, v_num=_1.1]Epoch 0:  19%|##########1                                           | 15/80 [00:09<00:40,  1.60it/s, v_num=_1.1]Epoch 0:  19%|##########1                                           | 15/80 [00:09<00:40,  1.60it/s, v_num=_1.1]Epoch 0:  20%|##########8                                           | 16/80 [00:09<00:39,  1.61it/s, v_num=_1.1]Epoch 0:  20%|##########8                                           | 16/80 [00:09<00:39,  1.61it/s, v_num=_1.1]Epoch 0:  21%|###########4                                          | 17/80 [00:10<00:39,  1.61it/s, v_num=_1.1]Epoch 0:  21%|###########4                                          | 17/80 [00:10<00:39,  1.61it/s, v_num=_1.1]Epoch 0:  22%|############1                                         | 18/80 [00:11<00:38,  1.62it/s, v_num=_1.1]Epoch 0:  22%|############1                                         | 18/80 [00:11<00:38,  1.62it/s, v_num=_1.1]Epoch 0:  24%|############8                                         | 19/80 [00:11<00:37,  1.62it/s, v_num=_1.1]Epoch 0:  24%|############8                                         | 19/80 [00:11<00:37,  1.62it/s, v_num=_1.1]Epoch 0:  25%|#############5                                        | 20/80 [00:12<00:36,  1.63it/s, v_num=_1.1]Epoch 0:  25%|#############5                                        | 20/80 [00:12<00:36,  1.63it/s, v_num=_1.1]Epoch 0:  26%|##############1                                       | 21/80 [00:12<00:36,  1.63it/s, v_num=_1.1]Epoch 0:  26%|##############1                                       | 21/80 [00:12<00:36,  1.62it/s, v_num=_1.1]Epoch 0:  28%|##############8                                       | 22/80 [00:13<00:35,  1.63it/s, v_num=_1.1]Epoch 0:  28%|##############8                                       | 22/80 [00:13<00:35,  1.63it/s, v_num=_1.1]Epoch 0:  29%|###############5                                      | 23/80 [00:14<00:34,  1.63it/s, v_num=_1.1]Epoch 0:  29%|###############5                                      | 23/80 [00:14<00:34,  1.63it/s, v_num=_1.1]Epoch 0:  30%|################2                                     | 24/80 [00:14<00:34,  1.64it/s, v_num=_1.1]Epoch 0:  30%|################2                                     | 24/80 [00:14<00:34,  1.64it/s, v_num=_1.1]Epoch 0:  31%|################8                                     | 25/80 [00:15<00:33,  1.64it/s, v_num=_1.1]Epoch 0:  31%|################8                                     | 25/80 [00:15<00:33,  1.64it/s, v_num=_1.1]Epoch 0:  32%|#################5                                    | 26/80 [00:15<00:32,  1.64it/s, v_num=_1.1]Epoch 0:  32%|#################5                                    | 26/80 [00:15<00:32,  1.64it/s, v_num=_1.1]Epoch 0:  34%|##################2                                   | 27/80 [00:16<00:32,  1.65it/s, v_num=_1.1]Epoch 0:  34%|##################2                                   | 27/80 [00:16<00:32,  1.64it/s, v_num=_1.1]Epoch 0:  35%|##################9                                   | 28/80 [00:16<00:31,  1.65it/s, v_num=_1.1]Epoch 0:  35%|##################9                                   | 28/80 [00:16<00:31,  1.65it/s, v_num=_1.1]Epoch 0:  36%|###################5                                  | 29/80 [00:17<00:30,  1.65it/s, v_num=_1.1]Epoch 0:  36%|###################5                                  | 29/80 [00:17<00:30,  1.65it/s, v_num=_1.1]Epoch 0:  38%|####################2                                 | 30/80 [00:18<00:30,  1.65it/s, v_num=_1.1]Epoch 0:  38%|####################2                                 | 30/80 [00:18<00:30,  1.65it/s, v_num=_1.1]Epoch 0:  39%|####################9                                 | 31/80 [00:18<00:29,  1.65it/s, v_num=_1.1]Epoch 0:  39%|####################9                                 | 31/80 [00:18<00:29,  1.65it/s, v_num=_1.1]Epoch 0:  40%|#####################6                                | 32/80 [00:19<00:28,  1.66it/s, v_num=_1.1]Epoch 0:  40%|#####################6                                | 32/80 [00:19<00:28,  1.66it/s, v_num=_1.1]Epoch 0:  41%|######################2                               | 33/80 [00:19<00:28,  1.66it/s, v_num=_1.1]Epoch 0:  41%|######################2                               | 33/80 [00:19<00:28,  1.66it/s, v_num=_1.1]Epoch 0:  42%|######################9                               | 34/80 [00:20<00:27,  1.66it/s, v_num=_1.1]Epoch 0:  42%|######################9                               | 34/80 [00:20<00:27,  1.66it/s, v_num=_1.1]Epoch 0:  44%|#######################6                              | 35/80 [00:21<00:27,  1.66it/s, v_num=_1.1]Epoch 0:  44%|#######################6                              | 35/80 [00:21<00:27,  1.66it/s, v_num=_1.1]Epoch 0:  45%|########################3                             | 36/80 [00:21<00:26,  1.66it/s, v_num=_1.1]Epoch 0:  45%|########################3                             | 36/80 [00:21<00:26,  1.66it/s, v_num=_1.1]Epoch 0:  46%|########################9                             | 37/80 [00:22<00:25,  1.66it/s, v_num=_1.1]Epoch 0:  46%|########################9                             | 37/80 [00:22<00:25,  1.66it/s, v_num=_1.1]Epoch 0:  48%|#########################6                            | 38/80 [00:22<00:25,  1.66it/s, v_num=_1.1]Epoch 0:  48%|#########################6                            | 38/80 [00:22<00:25,  1.66it/s, v_num=_1.1]Epoch 0:  49%|##########################3                           | 39/80 [00:23<00:24,  1.67it/s, v_num=_1.1]Epoch 0:  49%|##########################3                           | 39/80 [00:23<00:24,  1.67it/s, v_num=_1.1]Epoch 0:  50%|###########################                           | 40/80 [00:23<00:23,  1.67it/s, v_num=_1.1]Epoch 0:  50%|###########################                           | 40/80 [00:23<00:23,  1.67it/s, v_num=_1.1]Epoch 0:  51%|###########################6                          | 41/80 [00:24<00:23,  1.66it/s, v_num=_1.1]Epoch 0:  51%|###########################6                          | 41/80 [00:24<00:23,  1.66it/s, v_num=_1.1]Epoch 0:  52%|############################3                         | 42/80 [00:25<00:22,  1.66it/s, v_num=_1.1]Epoch 0:  52%|############################3                         | 42/80 [00:25<00:22,  1.66it/s, v_num=_1.1]Epoch 0:  54%|#############################                         | 43/80 [00:25<00:22,  1.67it/s, v_num=_1.1]Epoch 0:  54%|#############################                         | 43/80 [00:25<00:22,  1.67it/s, v_num=_1.1]Epoch 0:  55%|#############################7                        | 44/80 [00:26<00:21,  1.67it/s, v_num=_1.1]Epoch 0:  55%|#############################7                        | 44/80 [00:26<00:21,  1.67it/s, v_num=_1.1]Epoch 0:  56%|##############################3                       | 45/80 [00:27<00:21,  1.66it/s, v_num=_1.1]Epoch 0:  56%|##############################3                       | 45/80 [00:27<00:21,  1.66it/s, v_num=_1.1]Epoch 0:  57%|###############################                       | 46/80 [00:27<00:20,  1.67it/s, v_num=_1.1]Epoch 0:  57%|###############################                       | 46/80 [00:27<00:20,  1.66it/s, v_num=_1.1]Epoch 0:  59%|###############################7                      | 47/80 [00:28<00:19,  1.66it/s, v_num=_1.1]Epoch 0:  59%|###############################7                      | 47/80 [00:28<00:19,  1.66it/s, v_num=_1.1]Epoch 0:  60%|################################4                     | 48/80 [00:28<00:19,  1.66it/s, v_num=_1.1]Epoch 0:  60%|################################4                     | 48/80 [00:28<00:19,  1.66it/s, v_num=_1.1]Epoch 0:  61%|#################################                     | 49/80 [00:29<00:18,  1.67it/s, v_num=_1.1]Epoch 0:  61%|#################################                     | 49/80 [00:29<00:18,  1.67it/s, v_num=_1.1]Epoch 0:  62%|#################################7                    | 50/80 [00:30<00:18,  1.66it/s, v_num=_1.1]Epoch 0:  62%|#################################7                    | 50/80 [00:30<00:18,  1.66it/s, v_num=_1.1]Epoch 0:  64%|##################################4                   | 51/80 [00:30<00:17,  1.66it/s, v_num=_1.1]Epoch 0:  64%|##################################4                   | 51/80 [00:30<00:17,  1.66it/s, v_num=_1.1]Epoch 0:  65%|###################################1                  | 52/80 [00:31<00:16,  1.67it/s, v_num=_1.1]Epoch 0:  65%|###################################1                  | 52/80 [00:31<00:16,  1.67it/s, v_num=_1.1]Epoch 0:  66%|###################################7                  | 53/80 [00:31<00:16,  1.66it/s, v_num=_1.1]Epoch 0:  66%|###################################7                  | 53/80 [00:31<00:16,  1.66it/s, v_num=_1.1]Epoch 0:  68%|####################################4                 | 54/80 [00:32<00:15,  1.67it/s, v_num=_1.1]Epoch 0:  68%|####################################4                 | 54/80 [00:32<00:15,  1.67it/s, v_num=_1.1]Epoch 0:  69%|#####################################1                | 55/80 [00:33<00:15,  1.67it/s, v_num=_1.1]Epoch 0:  69%|#####################################1                | 55/80 [00:33<00:15,  1.67it/s, v_num=_1.1]Epoch 0:  70%|#####################################8                | 56/80 [00:33<00:14,  1.66it/s, v_num=_1.1]Epoch 0:  70%|#####################################8                | 56/80 [00:33<00:14,  1.66it/s, v_num=_1.1]Epoch 0:  71%|######################################4               | 57/80 [00:34<00:13,  1.67it/s, v_num=_1.1]Epoch 0:  71%|######################################4               | 57/80 [00:34<00:13,  1.67it/s, v_num=_1.1]Epoch 0:  72%|#######################################1              | 58/80 [00:34<00:13,  1.67it/s, v_num=_1.1]Epoch 0:  72%|#######################################1              | 58/80 [00:34<00:13,  1.67it/s, v_num=_1.1]Epoch 0:  74%|#######################################8              | 59/80 [00:35<00:12,  1.67it/s, v_num=_1.1]Epoch 0:  74%|#######################################8              | 59/80 [00:35<00:12,  1.67it/s, v_num=_1.1]Epoch 0:  75%|########################################5             | 60/80 [00:36<00:12,  1.66it/s, v_num=_1.1]Epoch 0:  75%|########################################5             | 60/80 [00:36<00:12,  1.66it/s, v_num=_1.1]Epoch 0:  76%|#########################################1            | 61/80 [00:36<00:11,  1.66it/s, v_num=_1.1]Epoch 0:  76%|#########################################1            | 61/80 [00:36<00:11,  1.66it/s, v_num=_1.1]Epoch 0:  78%|#########################################8            | 62/80 [00:37<00:10,  1.66it/s, v_num=_1.1]Epoch 0:  78%|#########################################8            | 62/80 [00:37<00:10,  1.66it/s, v_num=_1.1]Epoch 0:  79%|##########################################5           | 63/80 [00:38<00:10,  1.65it/s, v_num=_1.1]Epoch 0:  79%|##########################################5           | 63/80 [00:38<00:10,  1.65it/s, v_num=_1.1]Epoch 0:  80%|###########################################2          | 64/80 [00:38<00:09,  1.65it/s, v_num=_1.1]Epoch 0:  80%|###########################################2          | 64/80 [00:38<00:09,  1.65it/s, v_num=_1.1]Epoch 0:  81%|###########################################8          | 65/80 [00:39<00:09,  1.65it/s, v_num=_1.1]Epoch 0:  81%|###########################################8          | 65/80 [00:39<00:09,  1.65it/s, v_num=_1.1]Epoch 0:  82%|############################################5         | 66/80 [00:40<00:08,  1.64it/s, v_num=_1.1]Epoch 0:  82%|############################################5         | 66/80 [00:40<00:08,  1.64it/s, v_num=_1.1]Epoch 0:  84%|#############################################2        | 67/80 [00:40<00:07,  1.65it/s, v_num=_1.1]Epoch 0:  84%|#############################################2        | 67/80 [00:40<00:07,  1.65it/s, v_num=_1.1]Epoch 0:  85%|#############################################9        | 68/80 [00:41<00:07,  1.65it/s, v_num=_1.1]Epoch 0:  85%|#############################################9        | 68/80 [00:41<00:07,  1.65it/s, v_num=_1.1]Epoch 0:  86%|##############################################5       | 69/80 [00:41<00:06,  1.65it/s, v_num=_1.1]Epoch 0:  86%|##############################################5       | 69/80 [00:41<00:06,  1.65it/s, v_num=_1.1]Epoch 0:  88%|###############################################2      | 70/80 [00:42<00:06,  1.65it/s, v_num=_1.1]Epoch 0:  88%|###############################################2      | 70/80 [00:42<00:06,  1.65it/s, v_num=_1.1]Epoch 0:  89%|###############################################9      | 71/80 [00:43<00:05,  1.64it/s, v_num=_1.1]Epoch 0:  89%|###############################################9      | 71/80 [00:43<00:05,  1.64it/s, v_num=_1.1]Epoch 0:  90%|################################################6     | 72/80 [00:43<00:04,  1.64it/s, v_num=_1.1]Epoch 0:  90%|################################################6     | 72/80 [00:43<00:04,  1.64it/s, v_num=_1.1]Epoch 0:  91%|#################################################2    | 73/80 [00:44<00:04,  1.64it/s, v_num=_1.1]Epoch 0:  91%|#################################################2    | 73/80 [00:44<00:04,  1.64it/s, v_num=_1.1]Epoch 0:  92%|#################################################9    | 74/80 [00:44<00:03,  1.65it/s, v_num=_1.1]Epoch 0:  92%|#################################################9    | 74/80 [00:44<00:03,  1.65it/s, v_num=_1.1]Epoch 0:  94%|##################################################6   | 75/80 [00:45<00:03,  1.65it/s, v_num=_1.1]Epoch 0:  94%|##################################################6   | 75/80 [00:45<00:03,  1.65it/s, v_num=_1.1]Epoch 0:  95%|###################################################3  | 76/80 [00:46<00:02,  1.65it/s, v_num=_1.1]Epoch 0:  95%|###################################################3  | 76/80 [00:46<00:02,  1.65it/s, v_num=_1.1]Epoch 0:  96%|###################################################9  | 77/80 [00:46<00:01,  1.65it/s, v_num=_1.1]Epoch 0:  96%|###################################################9  | 77/80 [00:46<00:01,  1.65it/s, v_num=_1.1]Epoch 0:  98%|####################################################6 | 78/80 [00:47<00:01,  1.64it/s, v_num=_1.1]Epoch 0:  98%|####################################################6 | 78/80 [00:47<00:01,  1.64it/s, v_num=_1.1]Epoch 0:  99%|#####################################################3| 79/80 [00:48<00:00,  1.64it/s, v_num=_1.1]Epoch 0:  99%|#####################################################3| 79/80 [00:48<00:00,  1.64it/s, v_num=_1.1]Epoch 0: 100%|######################################################| 80/80 [00:48<00:00,  1.64it/s, v_num=_1.1]Epoch 0: 100%|######################################################| 80/80 [00:48<00:00,  1.64it/s, v_num=_1.1]
+Validation: |                                                                             | 0/? [00:00<?, ?it/s][A
+Validation:   0%|                                                                        | 0/10 [00:00<?, ?it/s][A
+Validation DataLoader 0:   0%|                                                           | 0/10 [00:00<?, ?it/s][A
+Validation DataLoader 0:  10%|#####1                                             | 1/10 [00:00<00:02,  3.87it/s][A
+Validation DataLoader 0:  20%|##########2                                        | 2/10 [00:00<00:02,  3.96it/s][A
+Validation DataLoader 0:  30%|###############3                                   | 3/10 [00:00<00:01,  4.06it/s][A
+Validation DataLoader 0:  40%|####################4                              | 4/10 [00:00<00:01,  4.07it/s][A
+Validation DataLoader 0:  50%|#########################5                         | 5/10 [00:01<00:01,  4.06it/s][A
+Validation DataLoader 0:  60%|##############################6                    | 6/10 [00:01<00:00,  4.13it/s][A
+Validation DataLoader 0:  70%|###################################6               | 7/10 [00:01<00:00,  4.20it/s][A
+Validation DataLoader 0:  80%|########################################8          | 8/10 [00:01<00:00,  4.20it/s][A
+Validation DataLoader 0:  90%|#############################################9     | 9/10 [00:02<00:00,  4.23it/s][A
+Validation DataLoader 0: 100%|##################################################| 10/10 [00:02<00:00,  4.25it/s][A
+                                                                                                                [AEpoch 0: 100%|######################################################| 80/80 [00:51<00:00,  1.57it/s, v_num=_1.1]Epoch 0: 100%|######################################################| 80/80 [00:51<00:00,  1.57it/s, v_num=_1.1]
+Epoch 1/1 completed, Global Step: 80
+train_loss: 100.4726, val_loss: -82.3291
+Epoch 0: 100%|######################################################| 80/80 [00:51<00:00,  1.57it/s, v_num=_1.1]
+
+Training completed in 51.06 seconds or 0.85 minutes or 0.014182091686460707 hours.
+Total training steps: 80
+
+Training completed for model '[m004_(apv+G)]-gru_dec_1.1'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m004_(apv+G)]-gru_dec_1.1...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.282' for [m004_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for rep '1001.2824' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.194' for [m004_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for rep '1001.1937' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1
+
+
+---------------------------------------------------------------------------
+
+TESTING TRAINED DECODER MODEL...
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\checkpoints:
+
+['epoch=0-step=80.ckpt']
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Trained Decoder Model Loaded for testing.
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\test
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Testing: |                                                                                | 0/? [00:00<?, ?it/s]
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                                           | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                                              | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:  10%|#####4                                                | 1/10 [00:00<00:01,  5.31it/s]Testing DataLoader 0:  20%|##########8                                           | 2/10 [00:00<00:01,  5.30it/s]Testing DataLoader 0:  30%|################2                                     | 3/10 [00:00<00:01,  5.25it/s]Testing DataLoader 0:  40%|#####################6                                | 4/10 [00:00<00:01,  4.74it/s]Testing DataLoader 0:  50%|###########################                           | 5/10 [00:01<00:01,  4.57it/s]Testing DataLoader 0:  60%|################################4                     | 6/10 [00:01<00:00,  4.52it/s]Testing DataLoader 0:  70%|#####################################8                | 7/10 [00:01<00:00,  4.53it/s]Testing DataLoader 0:  80%|###########################################2          | 8/10 [00:01<00:00,  4.49it/s]Testing DataLoader 0:  90%|################################################6     | 9/10 [00:01<00:00,  4.51it/s]Testing DataLoader 0: 100%|#####################################################| 10/10 [00:02<00:00,  4.54it/s]
+Testing completed in 2.20 seconds or 0.04 minutes or 0.0006124132209353977 hours.
+
+test_loss: -84.4739
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.291' for [m004_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for rep '1001.2907' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\test
+
+Testing DataLoader 0: 100%|#####################################################| 10/10 [00:04<00:00,  2.35it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│         test_loss         │    -84.47386169433594     │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Decoder model '[m004_(apv+G)]-gru_dec_1.1' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-04 12:23:59

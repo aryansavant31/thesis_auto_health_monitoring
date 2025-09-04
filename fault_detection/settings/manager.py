@@ -77,7 +77,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(model_path, f"{signal_types_str}")
 
         # add timestepp id to path
-        model_path = os.path.join(model_path, f'T{self.data_config.window_length}')
+        model_path = os.path.join(model_path, f'T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}')
 
         # add model hparams to path
         # model_path = os.path.join(model_path, f"[{self.anom_config['anom_type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
@@ -290,7 +290,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
         infer_num_path = os.path.join(infer_num_path, f'[anom] {anom_type}', model_name)
 
         # add timestep_id to path
-        self.infer_id = os.path.join(infer_num_path, f'T{self.data_config.window_length}')
+        self.infer_id = os.path.join(infer_num_path, f'T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}')
 
         # # add version
         # self.infer_id = os.path.join(infer_num_path, f'infer_num_{self.version}')
