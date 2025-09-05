@@ -38,7 +38,7 @@ class AnomalyDetectorInferConfig:
         self.version = 1
         
         self.num_workers = 1
-        self.batch_size = 1
+        self.batch_size = 50
 
         self.cutoff_freq = 100
         self.update_infer_configs()
@@ -109,7 +109,7 @@ class AnomalyDetectorInferSweep:
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 
-        self.batch_size = [1]
+        self.batch_size = [20]
         self.cutoff_freq = [0]
         
         
