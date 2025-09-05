@@ -276,7 +276,7 @@ class Decoder(LightningModule):
         return start_idx, norm
     
     def single_step_forward(self, inputs, rec_rel, send_rel,
-                            rel_type, hidden):
+                            rel_type, hidden, step):
         """
         Parameters
         ----------
@@ -321,7 +321,8 @@ class Decoder(LightningModule):
         
         elif self.recur_emb_type in ['mlp']:
             hidden = self.mlp_emb_fn(agg_msgs)
-            
+            hidden = F.relu(hidden)
+
         # Predict mean delta of signal
         x_m = self.mean_mlp(hidden)  
         mean = self.mean_output_layer(x_m)       #### fout(h_tilde_j^t+1)
@@ -443,7 +444,7 @@ class Decoder(LightningModule):
                 self.edge_matrix = self.get_edge_matrix(ins, self.encoder, self.rec_rel, self.send_rel, self.temp, self.is_hard)
 
             pred, var, hidden = self.single_step_forward(ins, self.rec_rel, self.send_rel,
-                                                    self.edge_matrix, hidden)
+                                                    self.edge_matrix, hidden, step)
             pred_all.append(pred)
             var_all.append(var)
 
@@ -520,9 +521,9 @@ class Decoder(LightningModule):
         Called at the start of training.
         """
         super().on_fit_start()
-
+        
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'decoder'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = "train"
 
         self.init_input_processors()
@@ -675,7 +676,7 @@ class Decoder(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
@@ -740,7 +741,7 @@ class Decoder(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
 
         self.start_time = time.time()
@@ -805,7 +806,7 @@ class Decoder(LightningModule):
         plt.title(F"Train and Validation Losses : [{self.model_id}]")
         plt.ylabel('Loss')
         plt.xlabel('Epochs')
-        plt.yscale('log')
+        # plt.yscale('log')
         plt.legend()
         plt.grid(True)
 
@@ -861,7 +862,7 @@ class Decoder(LightningModule):
         })
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=80)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:

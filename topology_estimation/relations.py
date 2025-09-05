@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
+import pandas as pd
 
 # class FullyConnectedGraph:
 #     def __init__(self, n_nodes, batch_size):
@@ -61,25 +62,80 @@ class RelationMatrixMaker:
         self.spf_config = spf_config
 
     def get_relation_matrix(self, data_loader: DataLoader):
-        n_nodes = next(iter(data_loader))[0].shape[1]
+        self.n_nodes = next(iter(data_loader))[0].shape[1]
         y_edges = next(iter(data_loader))[1][0]
 
-        rec_rel, send_rel = self.make_relation_matrix(y_edges, n_nodes)
-
         print(f"\nLoading Relation Matrices...")
-        print(f"\nReciever relation matrix:")
-        print(rec_rel, f"\nshape: {rec_rel.shape}")
 
-        print(f"\nSender relation matrix:")
-        print(send_rel, f"\nshape: {send_rel.shape}")
+        self.rec_rel, self.send_rel = self.make_relation_matrix(y_edges, self.n_nodes)
 
-        print(f"\nAdjacency matrix for input:")
-        adj_mat = torch.matmul(send_rel.t(), rec_rel)
-        print(adj_mat, f"\nshape: {adj_mat.shape}")
+        print(f"\nRelation Matrices loaded successfully.")
 
+        print(self.get_relation_matrices_summary())
         print("\n" + 75*'-')
 
-        return rec_rel, send_rel
+        return self.rec_rel, self.send_rel
+
+    def get_relation_matrices_summary(self):
+        """
+        Returns a summary of the relation matrices including their shapes and contents.
+        """
+        text = "\n## Relation Matrices Summary \n"
+
+        # Ensure full printing
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+
+        text = "\n## Relation Matrices Summary \n"
+
+        # Adjacency matrix 
+        adj_mat = torch.matmul(self.send_rel.t(), self.rec_rel)
+
+        node_labels = [f"n{i+1}" for i in range(self.n_nodes)]
+        adj_df = pd.DataFrame(adj_mat.cpu().numpy(), index=node_labels, columns=node_labels)
+        
+        text += f"\n**Adjacency matrix for input** => shape: {adj_df.shape}\n"
+        text += adj_df.to_string() + "\n\n"
+
+        # rec_rel and send_rel edge labels
+        n_edges = self.rec_rel.shape[0]
+        edge_labels = []
+        for sender in range(self.n_nodes):
+            for receiver in range(self.n_nodes):
+                if sender != receiver:
+                    edge_labels.append(f"e{sender+1}{receiver+1}")
+
+        # Receiver relation matrix 
+        rec_df = pd.DataFrame(self.rec_rel.cpu().numpy(), index=edge_labels, columns=node_labels)
+        text += f"\n**Receiver relation matrix** => shape: {rec_df.shape}\n"
+        text += rec_df.to_string() + "\n\n"
+
+        # Sender relation matrix 
+        send_df = pd.DataFrame(self.send_rel.cpu().numpy(), index=edge_labels, columns=node_labels)
+        text += f"\n**Sender relation matrix:** => shape: {send_df.shape}\n"
+        text += send_df.to_string() + "\n"
+
+        # reset pandas options to default
+        pd.reset_option('display.max_rows')
+        pd.reset_option('display.max_columns')
+
+        return text
+
+        # adj_mat = torch.matmul(self.send_rel.t(), self.rec_rel)
+        # text += f"\n**Adjacency matrix for input**\n"
+        # text += np.array2string(adj_mat.cpu().numpy(), max_line_width=120, precision=2, suppress_small=True, separator=', ')
+        # text += f", shape: {adj_mat.shape}\n"
+
+        # text += f"\n**Reciever relation matrix:**\n"
+        # text += np.array2string(self.rec_rel.cpu().numpy(), max_line_width=120, precision=2, suppress_small=True, separator=', ')
+        # text += f", shape: {self.rec_rel.shape}\n"
+
+        # text += f"\n**Sender relation matrix**\n"
+        # text += np.array2string(self.send_rel.cpu().numpy(), max_line_width=120, precision=2, suppress_small=True, separator=', ')
+        # text += f", shape: {self.send_rel.shape}\n"
+
+
+        # return text
 
     def make_relation_matrix(self, y_edges, n_nodes):
         """

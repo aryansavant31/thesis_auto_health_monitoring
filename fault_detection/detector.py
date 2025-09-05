@@ -347,7 +347,7 @@ class TrainerAnomalyDetector:
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else self.model_type
         self.run_type = 'train'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
         # update hparams
         anomaly_detector.hparams['train_accuracy'] = accuracy
@@ -431,7 +431,7 @@ class TrainerAnomalyDetector:
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
         if self.logger:
             # save dataframe
@@ -499,7 +499,7 @@ class TrainerAnomalyDetector:
         self.model_type = type(anomaly_detector.model).__name__
         self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
         # update hparams
         anomaly_detector.hparams['test_accuracy'] = accuracy

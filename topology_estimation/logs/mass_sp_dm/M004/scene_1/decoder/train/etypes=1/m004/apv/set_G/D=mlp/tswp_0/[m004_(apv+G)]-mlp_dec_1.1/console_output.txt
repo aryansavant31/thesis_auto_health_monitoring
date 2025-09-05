@@ -1,0 +1,302 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m004_(apv+G)]-mlp_dec_1.1
+Start Time: 2025-09-05 13:40:42
+End Time: 2025-09-05 13:41:08
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) series_tp    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+
+For ds_type 'OK' and others....
+
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 500/500 [OK=500, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (4, 4)
+     n1   n2   n3   n4
+n1  0.0  1.0  0.0  0.0
+n2  1.0  0.0  1.0  0.0
+n3  0.0  1.0  0.0  1.0
+n4  0.0  0.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  0.0  1.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  1.0  0.0  0.0  0.0
+e23  0.0  0.0  1.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  1.0  0.0  0.0
+e34  0.0  0.0  0.0  1.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  1.0  0.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  0.0  1.0  0.0  0.0
+e23  0.0  1.0  0.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  0.0  1.0  0.0
+e34  0.0  0.0  1.0  0.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 1
+msg_out_size: 64
+edge_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
+out_mlp_config: [[64, 'tanh'], [32, 'tanh'], [16, 'tanh'], [64, None]]
+do_prob: 0
+is_batch_norm: True
+recur_emb_type: mlp
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+reduc_config: None
+feat_norm: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+skip_first_edge_type: False
+pred_steps: 1
+is_burn_in: False
+burn_in_steps: 1
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+show_conf_band: False
+
+Edge matrix is created from relation matrices and set to decoder.
+
+---------------------------------------------------------------------------
+
+Decoder Model Initialized with the following configurations:
+
+Decoder Model Summary:
+Decoder(
+  (edge_mlp_fn): ModuleList(
+    (0): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=128, out_features=64, bias=True)
+        (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): Tanh()
+        (3): Dropout(p=0, inplace=False)
+        (4): Linear(in_features=64, out_features=32, bias=True)
+        (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): Tanh()
+        (7): Dropout(p=0, inplace=False)
+        (8): Linear(in_features=32, out_features=16, bias=True)
+        (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (10): Tanh()
+        (11): Dropout(p=0, inplace=False)
+        (12): Linear(in_features=16, out_features=64, bias=True)
+        (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+  )
+  (mlp_emb_fn): Linear(in_features=64, out_features=64, bias=True)
+  (mean_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): Tanh()
+      (3): Dropout(p=0, inplace=False)
+      (4): Linear(in_features=64, out_features=32, bias=True)
+      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): Tanh()
+      (7): Dropout(p=0, inplace=False)
+      (8): Linear(in_features=32, out_features=16, bias=True)
+      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (10): Tanh()
+      (11): Dropout(p=0, inplace=False)
+      (12): Linear(in_features=16, out_features=64, bias=True)
+      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+  )
+  (var_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): Tanh()
+      (3): Dropout(p=0, inplace=False)
+      (4): Linear(in_features=64, out_features=32, bias=True)
+      (5): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): Tanh()
+      (7): Dropout(p=0, inplace=False)
+      (8): Linear(in_features=32, out_features=16, bias=True)
+      (9): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (10): Tanh()
+      (11): Dropout(p=0, inplace=False)
+      (12): Linear(in_features=16, out_features=64, bias=True)
+      (13): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+  )
+  (mean_output_layer): Linear(in_features=64, out_features=3, bias=True)
+  (var_output_layer): Linear(in_features=64, out_features=3, bias=True)
+)
+
+---------------------------------------------------------------------------
+
+'[m004_(apv+G)]-mlp_dec_1.1' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the '[m004_(apv+G)]-mlp_dec_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1? (y/n): Overwrote '[m004_(apv+G)]-mlp_dec_1.1' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1.
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Training: |                                                       | 0/? [00:00<?, ?it/s]Training:   0%|                                                   | 0/1 [00:00<?, ?it/s]Epoch 0:   0%|                                                    | 0/1 [00:00<?, ?it/s]Epoch 0: 100%|############################################| 1/1 [00:00<00:00,  1.66it/s]Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.65it/s, v_num=_1.1]
+Validation: |                                                     | 0/? [00:00<?, ?it/s][A
+Validation:   0%|                                                 | 0/1 [00:00<?, ?it/s][A
+Validation DataLoader 0:   0%|                                    | 0/1 [00:00<?, ?it/s][A
+Validation DataLoader 0: 100%|############################| 1/1 [00:00<00:00,  5.87it/s][A
+                                                                                        [AEpoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]
+Epoch 1/1 completed, Global Step: 1
+train_loss: 0.2433, val_loss: nan
+Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.25it/s, v_num=_1.1]
+
+Training completed in 0.82 seconds or 0.01 minutes or 0.00022669778929816352 hours.
+Total training steps: 1
+
+Training completed for model '[m004_(apv+G)]-mlp_dec_1.1'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m004_(apv+G)]-mlp_dec_1.1...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.285' for [m004_(apv+G)]-mlp_dec_1.1...
+
+Decoder output plot for rep '1001.2848' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.173' for [m004_(apv+G)]-mlp_dec_1.1...
+
+Decoder output plot for rep '1001.1732' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=mlp\tswp_0\[m004_(apv+G)]-mlp_dec_1.1
+
+
+---------------------------------------------------------------------------
+
+Fast dev run completed. Exiting without testing.
+
+===========================================================================
+
+Decoder model '[m004_(apv+G)]-mlp_dec_1.1' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-05 13:41:08

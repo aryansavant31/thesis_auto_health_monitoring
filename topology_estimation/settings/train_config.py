@@ -90,7 +90,7 @@ class DecoderTrainConfig:
 
         # run parameters
         self.skip_first_edge_type = False
-        self.pred_steps = 20
+        self.pred_steps = 5
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False

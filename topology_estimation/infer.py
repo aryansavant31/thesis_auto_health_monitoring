@@ -100,6 +100,9 @@ class TopologyEstimationInferHelper:
 
             # log dataset selected
             data_text = self.data_preprocessor.get_data_selection_text()
+            rel_text = self.rm.get_relation_matrices_summary()
+            data_text += rel_text
+            
             base_name = f"{self.tp_config.selected_model_num} + {os.path.basename(self.infer_log_path)}"
             logger.experiment.add_text(base_name, data_text)
 

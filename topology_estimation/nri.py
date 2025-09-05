@@ -13,6 +13,7 @@ from torch.optim import Adam, SGD
 import matplotlib.pyplot as plt
 import time
 import numpy as np
+import pandas as pd
 
 # local imports
 from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
@@ -189,7 +190,7 @@ class NRI(LightningModule):
         super().on_fit_start()
 
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
         self.run_type = "train"
         
         self.encoder.init_input_processors()
@@ -450,7 +451,7 @@ class NRI(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
@@ -559,7 +560,7 @@ class NRI(LightningModule):
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'nri_model')
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         
         self.start_time = time.time()
@@ -594,10 +595,19 @@ class NRI(LightningModule):
         infer_time = time.time() - self.start_time
         print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
 
+        node_labels = [f"{node_name}" for node_name in self.decoder.data_config.signal_types['group'].keys()]
+        adj_df = pd.DataFrame(adj_matrix.cpu().numpy(), index=node_labels, columns=node_labels)
+
         print(f"\n Adjacency matrix (shape {adj_matrix.shape})")
-        print(adj_matrix)
+        print(adj_df)
 
         print(f"\nDecoder residual: {log_data['loss_decoder'].item():,.4f}")
+
+        if self.logger:
+            adj_mat_text = "##Predicted Adjacency Matrix\n"
+            adj_mat_text += adj_df.to_markdown() + '\n'
+            self.logger.experiment.add_text(f"{self.model_id} + {self.run_type}", adj_mat_text, global_step=self.global_step)
+
         print('\n' + 75*'-')
 
         # make decoder output plot
@@ -678,7 +688,7 @@ class NRI(LightningModule):
         axes[1].plot(epochs, self.train_losses[f'dec/val_losses'], label='val loss', color='cyan', linestyle='--')
         axes[1].set_title('Decoder Losses')
         axes[1].set_ylabel('Loss')
-        axes[1].set_yscale('log')
+        # axes[1].set_yscale('log')
         axes[1].legend()
         axes[1].grid(True)
 
@@ -688,7 +698,7 @@ class NRI(LightningModule):
         axes[2].set_title('NRI Losses (Encoder + Decoder)')
         axes[2].set_ylabel('Loss')
         axes[2].set_xlabel('Epochs')
-        axes[2].set_yscale('log')
+        # axes[2].set_yscale('log')
         axes[2].legend()
         axes[2].grid(True)
 
@@ -736,7 +746,7 @@ class NRI(LightningModule):
 
         batch_size, n_nodes, n_comps, n_dims = x_pred.shape
 
-        node_names = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
+        node_names = [f"{node_name}" for node_name in self.decoder.data_config.signal_types['group'].keys()]
 
         # update font settings for plots
         plt.rcParams.update({
@@ -746,7 +756,7 @@ class NRI(LightningModule):
         })
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=80)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
@@ -755,7 +765,7 @@ class NRI(LightningModule):
         fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} : [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
-            dim_names = self.data_config.signal_types['group'][node_names[node]]
+            dim_names = self.decoder.data_config.signal_types['group'][node_names[node]]
 
             for dim in range(n_dims):
                 ax = axes[node, dim]

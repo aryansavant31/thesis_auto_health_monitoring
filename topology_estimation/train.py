@@ -168,6 +168,9 @@ class TopologyEstimationTrainHelper:
 
             # log dataset selected
             data_text = self.data_preprocessor.get_data_selection_text()
+            rel_text = self.rm.get_relation_matrices_summary()
+            data_text += rel_text
+
             train_logger.experiment.add_text(f"{os.path.basename(self.train_log_path)} + train", data_text)
 
             print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
@@ -211,7 +214,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         """
         super().__init__(data_config, nri_config)
 
-    def train(self, device='auto'):
+    def train(self, device='auto', fast_dev_run=False):
         """
         Main method to train the NRI model.
         """
@@ -236,16 +239,22 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         trainer = Trainer(
             accelerator=device,
             logger=train_logger,
-            max_epochs=self.tp_config.max_epochs,
+            max_epochs=1 if fast_dev_run else self.tp_config.max_epochs,
             enable_progress_bar=True,
             log_every_n_steps=1,
-            num_sanity_val_steps=0
+            num_sanity_val_steps=0,
+            limit_train_batches=1 if fast_dev_run else None,
+            limit_val_batches=1 if fast_dev_run else None
             )
 
         trainer.fit(model=nri_model, train_dataloaders=self.train_loader, 
                     val_dataloaders=self.val_loader, ckpt_path=ckpt_path)
         
         print('\n' + 75*'-')
+
+        if fast_dev_run:
+            print("\nFast dev run completed. Exiting without testing.")
+            return
 
     # 4. Test the trained NRI model
         print("\nTESTING TRAINED NRI MODEL...")
@@ -344,7 +353,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         """
         super().__init__(data_config, decoder_config)
 
-    def train(self, device='auto'):
+    def train(self, device='auto', fast_dev_run=False):
         """
         Main method to train the Decoder model.
         """
@@ -366,15 +375,21 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         trainer = Trainer(
             accelerator=device,
             logger=train_logger,
-            max_epochs=self.tp_config.max_epochs,
+            max_epochs=1 if fast_dev_run else self.tp_config.max_epochs, 
             enable_progress_bar=True,
             log_every_n_steps=1,
-            num_sanity_val_steps=0
+            num_sanity_val_steps=0,
+            limit_train_batches=1 if fast_dev_run else None,
+            limit_val_batches=1 if fast_dev_run else None 
             )
         trainer.fit(model=decoder_model, train_dataloaders=self.train_loader,
                     val_dataloaders=self.val_loader, ckpt_path=ckpt_path)
         
         print('\n' + 75*'-')
+
+        if fast_dev_run:
+            print("\nFast dev run completed. Exiting without testing.")
+            return
 
     # 4. Test the trained Decoder model
         print("\nTESTING TRAINED DECODER MODEL...")
@@ -462,6 +477,9 @@ if __name__ == "__main__":
                     default='nri',
                     required=True, help="Framework to train: nri or decoder")
     
+    parser.add_argument('--fast-dev-run', action='store_true',
+                    help="If set, runs a single batch through training and validation to quickly check for any errors.")
+    
     args = parser.parse_args()
     
     data_config = DataConfig(run_type='train')
@@ -478,7 +496,7 @@ if __name__ == "__main__":
         else:
             raise ValueError(f"Invalid framework: {args.framework}. Choose 'nri' or 'decoder'.")
         
-        train_pipeline.train()
+        train_pipeline.train(fast_dev_run=args.fast_dev_run)
         
         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else f"{args.framework}_model"
         print('\n' + 75*'=')
