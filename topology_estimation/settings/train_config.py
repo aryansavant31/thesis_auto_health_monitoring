@@ -63,7 +63,7 @@ class DecoderTrainConfig:
         self.max_epochs = 10
         self.lr = 0.001
         self.optimizer = 'adam'
-        self.loss_type = 'mse'
+        self.loss_type = 'nll'
 
     # 2: Decoder parameters
 

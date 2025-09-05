@@ -144,6 +144,8 @@ class Decoder(LightningModule):
         self.optimizer = optimizer
         self.loss_type = loss_type
 
+        print(f"\nTraining parameters set to: \nlr={self.lr}, \noptimizer={self.optimizer}, \nloss_type={self.loss_type}")
+
     def build_model(self):
         # Make MLPs for each edge type
         self.edge_mlp_fn = nn.ModuleList(MLP(2*self.msg_out_size, 

@@ -40,6 +40,8 @@ class NRI(LightningModule):
         self.prior = prior
         self.loss_type_encoder = loss_type_enc
         self.loss_type_decoder = loss_type_dec
+
+        print(f"\nTraining parameters set to: \nlr={self.lr}, \noptimizer={self.optimizer}, \nloss_type_encoder={self.loss_type_encoder}, \nloss_type_decoder={self.loss_type_decoder}, \nprior={self.prior}, \nadd_const_kld={self.add_const_kld}")
         
     def set_input_example_for_graph(self, n_nodes):
         self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_comps, self.encoder.n_dims))
