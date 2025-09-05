@@ -660,7 +660,7 @@ class DataPreprocessor:
 
         # verbose output
         if ds_type == 'OK' or ds_type == 'UK':
-            print(f"\n\nFor ds_type '{ds_type}' and others....")
+            print(f"\nFor ds_type '{ds_type}' and others....")
             print(f"\nMaximum timesteps across all node types: {self.data_config.max_timesteps:,}")
 
             if self.__dict__.get('is_interpolated', False):

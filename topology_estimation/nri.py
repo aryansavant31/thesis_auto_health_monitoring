@@ -155,6 +155,7 @@ class NRI(LightningModule):
         self.prior = checkpoint['prior']
         self.loss_type_encoder = checkpoint['loss_type_encoder']
         self.loss_type_decoder = checkpoint['loss_type_decoder']
+        self.add_const_kld = checkpoint['add_const_kld']
 
         # rebuild model
         self.build_model()
@@ -171,6 +172,7 @@ class NRI(LightningModule):
         checkpoint['prior'] = self.prior
         checkpoint['loss_type_encoder'] = self.loss_type_encoder
         checkpoint['loss_type_decoder'] = self.loss_type_decoder
+        checkpoint['add_const_kld'] = self.add_const_kld
     
     def configure_optimizers(self):
         # get params from encoder and decoder

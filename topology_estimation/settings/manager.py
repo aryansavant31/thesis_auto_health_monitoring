@@ -419,8 +419,13 @@ class DecoderTrainManager(DecoderTrainConfig):
         if self.continue_training:
             if os.path.basename(self.train_log_path) in model_folders:
                 path_idx = model_folders.index(os.path.basename(self.train_log_path))
-                print(f"\nContinuing training from '{self.model_name}.{self.model_num}' in the log path '{os.path.join(model_paths[path_idx], model_folders[path_idx])}'.")
-                
+                user_input = input(f"\nContinue training from '{self.model_name}.{self.model_num}' in the log path '{os.path.join(model_paths[path_idx], model_folders[path_idx])}'? (y/n):")
+                if user_input.lower() == 'y':
+                    print(f"\nContinuing training from '{self.model_name}.{self.model_num}'")
+                elif user_input.lower() == 'n':
+                    print("Stopped training.")
+                    sys.exit()  # Exit the program gracefully
+                          
             else:
                 print(f"\nWith continue training enabled, there is no existing version to continue train in the log path '{self.train_log_path}'.")       
         else:
@@ -1510,7 +1515,7 @@ def get_model_ckpt_path(log_path, always_highest_version=False):
         print(contents)
 
         if len(contents) > 1:
-            user_input = input("\nEnter the ckpt file to load (e.g., 'epoch=1-step=1000.ckpt'): ").strip("'\"")
+            user_input = input("\nEnter the ckpt file to load (include the quotes) (e.g., 'epoch=1-step=1000.ckpt'): ").strip("'\"")
 
             if user_input not in contents:
                 raise ValueError(f"Invalid ckpt file name: {user_input}. Available files: {contents}")

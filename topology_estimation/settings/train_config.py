@@ -46,8 +46,8 @@ class DecoderTrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 1
-        self.continue_training = False
+        self.model_num = 5
+        self.continue_training = True
         self.is_log = True
         
         self.n_edge_types = 1
@@ -60,7 +60,7 @@ class DecoderTrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 10
+        self.max_epochs = 20
         self.lr = 0.001
         self.optimizer = 'adam'
         self.loss_type = 'nll'

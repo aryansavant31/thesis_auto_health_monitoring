@@ -372,6 +372,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
 
     # 3. Train the Decoder model
         train_logger, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
+        
         trainer = Trainer(
             accelerator=device,
             logger=train_logger,
