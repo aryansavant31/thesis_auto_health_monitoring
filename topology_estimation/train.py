@@ -168,7 +168,7 @@ class TopologyEstimationTrainHelper:
 
             # log dataset selected
             data_text = self.data_preprocessor.get_data_selection_text()
-            train_logger.experiment.add_text(f"{os.path.basename(self.train_log_path)} + test", data_text)
+            train_logger.experiment.add_text(f"{os.path.basename(self.train_log_path)} + train", data_text)
 
             print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
 

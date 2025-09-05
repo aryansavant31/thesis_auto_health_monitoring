@@ -1,8 +1,8 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_train.py
 Base Name: tswp_2
-Start Time: 2025-09-02 07:26:43
-End Time: 2025-09-02 07:28:36
+Start Time: 2025-09-05 10:46:28
+End Time: 2025-09-05 10:49:28
 
 CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
 GPU: None detected
@@ -12,7 +12,7 @@ Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58
 ========================================================================================================================
 
 
-Starting fault detection model sweep...
+Starting fault detection model training sweep...
 
 Processing 1 data groups
 
@@ -49,12 +49,12 @@ Parameters and their values:
   test_rt: 1 values -> [0.2]
   train_rt: 1 values -> [0.8]
 Parallelizing 7 fault detection configurations across 8 workers...
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_6
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_8
   Completed config 5: [ammf_(acc+E1)]-IF_fdet_9
   Completed config 6: [ammf_(acc+E1)]-IF_fdet_10
-  Completed config 4: [ammf_(acc+E1)]-IF_fdet_8
-  Completed config 2: [ammf_(acc+E1)]-IF_fdet_6
-  Completed config 3: [ammf_(acc+E1)]-IF_fdet_7
   Completed config 7: [ammf_(acc+E1)]-IF_fdet_11
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_7
   Completed config 1: [ammf_(acc+E1)]-IF_fdet_5
 
 ===========================================================================
@@ -65,4 +65,4 @@ Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detectio
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-02 07:28:36
+Log saved at: 2025-09-05 10:49:28

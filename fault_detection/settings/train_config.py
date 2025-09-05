@@ -57,25 +57,35 @@ class AnomalyDetectorTrainConfig:
         self.is_log = True
 
         # dataset parameters
-        self.batch_size  = 1
+        self.batch_size  = 50
         self.train_rt    = 0.8
         self.test_rt     = 0.2
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=100)
+        self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.001)
 
         # run parameters
-        self.domain_config = get_domain_config('freq')
+        self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            #get_freq_feat_config('first_n_modes', n_modes=6), 
+            get_time_feat_config('kurtosis')
         ]  
         self.reduc_config = None
         self.feat_norm = None
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
+
+        self.train_plots = {
+            'confusion_matrix'              : [True, {}],
+            'roc_curve'                     : [False, {}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True}],
+            'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
+            'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
+            'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
+            'pair_plot'                     : [False, {}],
+        }
 
         self.test_plots = {
             'confusion_matrix'              : [True, {}],

@@ -190,6 +190,7 @@ class NRI(LightningModule):
 
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('(', " (").replace('+', " + ")
+        self.run_type = "train"
         
         self.encoder.init_input_processors()
         self.decoder.init_input_processors()
@@ -696,7 +697,7 @@ class NRI(LightningModule):
         # save loss plot if logger is avaialble
         if self.logger:
             fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.tb_tag}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/training_loss_plot", fig, global_step=self.global_step, close=True)
             print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
@@ -789,7 +790,7 @@ class NRI(LightningModule):
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.tb_tag}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
 
             if is_end:
                 fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)

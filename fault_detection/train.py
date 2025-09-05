@@ -64,7 +64,10 @@ class AnomalyDetectorTrainPipeline:
         trainer = TrainerAnomalyDetector(logger=train_logger)
         trained_anomaly_detector = trainer.fit(anomaly_detector, train_loader)
 
-        # [TODO] add train ploting code here
+        # plot the train results
+        for plot_name, plot_config in self.fdet_config.train_plots.items():
+            if plot_config[0]:
+                getattr(trainer, plot_name.split('-')[0])(**plot_config[1])
 
     # 4. Test the trained anomaly detector model
         # update its data stats
@@ -101,7 +104,7 @@ class AnomalyDetectorTrainPipeline:
 
             # log dataset selected
             data_text = self.data_preprocessor.get_data_selection_text()   
-            train_logger.add_text(f"{os.path.basename(self.train_log_path)} + test", data_text)     
+            train_logger.add_text(f"{os.path.basename(self.train_log_path)} + train", data_text)     
 
             print(f"\nTraining environment set. Training will be logged at: {self.train_log_path}")
         

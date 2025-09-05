@@ -191,9 +191,23 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
             self.train_log_path = self._get_next_version()
             return
         
-        if os.path.isdir(self.train_log_path):
-            
-            print(f"'Version {self.model_num}' already exists in the log path '{self.train_log_path}'.")
+
+        sweep_dir = os.path.dirname(self.train_log_path)
+        parent_dir = os.path.dirname(sweep_dir)
+
+        model_folders = []
+        model_paths = []
+
+        for root, dirs, files in os.walk(parent_dir):
+            # Only look at immediate subfolders of parent_dir
+            if os.path.dirname(root) == parent_dir:
+                for d in dirs:
+                    model_folders.append(d)
+                    model_paths.append(root)
+
+        if os.path.basename(self.train_log_path) in model_folders:
+            path_idx = model_folders.index(os.path.basename(self.train_log_path))
+            print(f"'Version {self.model_num}' already exists in the log path '{os.path.join(model_paths[path_idx], model_folders[path_idx])}'.")
             user_input = input("(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  ")
 
             if user_input.lower() == 'a':
@@ -231,14 +245,14 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
         set_id_model = self.log_config.data_config.set_id
         window_length_model = self.log_config.data_config.window_length
         stride_model = self.log_config.data_config.stride
-        custom_max_timesteps_model = self.log_config.data_config.custom_max_timesteps
+        custom_max_timesteps_model = self.log_config.data_config.max_timesteps
 
         is_node_match = node_group_model == self.data_config.signal_types['node_group_name']
         is_signal_match = signal_group_model == self.data_config.signal_types['signal_group_name']
         is_setid_match = set_id_model == self.data_config.set_id
         is_window_match = window_length_model == self.data_config.window_length
         is_stride_match = stride_model == self.data_config.stride
-        is_custom_max_timesteps_match = custom_max_timesteps_model == self.data_config.custom_max_timesteps if self.data_config.use_custom_max_timesteps else True
+        is_custom_max_timesteps_match = custom_max_timesteps_model == self.data_config.max_timesteps if self.data_config.use_custom_max_timesteps else True
 
         if is_node_match and is_signal_match and is_setid_match and is_window_match and is_stride_match and is_custom_max_timesteps_match:
             return True

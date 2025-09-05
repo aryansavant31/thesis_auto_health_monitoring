@@ -90,7 +90,7 @@ class DataConfig:
         self.healthy_configs   = {
             #'0_N': [get_augment_config('OG')],
             #'series_tp': [get_augment_config('OG')]  
-            key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith('E1')
+            key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
         }
         
         self.unhealthy_configs = {
@@ -255,12 +255,12 @@ class DataSweep:
 
 
         if self.run_type == 'train':
-            # e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
+            e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
             # e2_keys = [key for key in self.view.healthy_types if key.startswith('E2')][:50]
 
-            # self.healthy_configs = [
-            #     {key: [get_augment_config('OG')] for key in e1_keys},
-            # ]
+            self.healthy_configs = [
+                {key: [get_augment_config('OG')] for key in e1_keys},
+            ]
             pass
 
             # self.unhealthy_configs = [

@@ -561,7 +561,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = pair_plot.figure
             fig.savefig(os.path.join(self.logger.log_dir, f'pair_plot_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/pair_plot", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/pair_plot", fig, close=True)
             print(f"\nPair plot logged at {self.logger.log_dir}\n")
         else:
             print("\nPair plot not logged as logging is disabled.\n")
@@ -612,7 +612,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = cm_plot.get_figure()
             fig.savefig(os.path.join(self.logger.log_dir, f'cm_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/confusion_matrix", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/confusion_matrix", fig, close=True)
             print(f"\nConfusion matrix logged at {self.logger.log_dir}\n")
         else:
             print("\nConfusion matrix not logged as logging is disabled.\n")
@@ -655,7 +655,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'roc_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/roc_curve", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/roc_curve", fig, close=True)
             print(f"\nROC curve logged at {self.logger.log_dir}\n")
         else:
             print("\nROC curve not logged as logging is disabled.\n")
@@ -764,7 +764,9 @@ class TrainerAnomalyDetector:
         plt.xscale('log')
 
         # write sample indices in each bin
-        text = f"\nTotal OK samples (from {label_col}) : {len(scores_ok)}\n"
+        text = f"## Bin details for Anomaly Score Distribution Simple ({label_col})\n"
+        text += 25 * "-"
+        text += f"\n### Total OK samples (from {label_col}) : {len(scores_ok)}\n"
         text += 10*"-" + " Samples in OK bins " + 10*"-" + "\n"
         for bin_idx, samples in bin_samples_ok.items():
             if samples:  # Only print non-empty bins
@@ -772,7 +774,7 @@ class TrainerAnomalyDetector:
                 sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
                 text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [blue]**: {sample_info}\n"
 
-        text += f"\nTotal NOK samples (from {label_col}) : {len(scores_nok)}\n"
+        text += f"\n### Total NOK samples (from {label_col}) : {len(scores_nok)}\n"
         text += 10*"-" + " Samples in NOK bins " + 10*"-" + "\n"
         for bin_idx, samples in bin_samples_nok.items():
             if samples:  # Only print non-empty bins
@@ -787,7 +789,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_simple_{label_col.split('_')[0]}({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/anomaly_score_dist_simple_{label_col}", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_simple_{label_col}", fig, close=True)
             self.logger.add_text(f"{self.model_id} + {self.run_type}", text)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
@@ -947,7 +949,8 @@ class TrainerAnomalyDetector:
         plt.xscale('log')
 
         # Write sample indices for each bin and category
-        text = ""
+        text = f"## Bin details for Anomaly Score Distribution Advance {num} (perc_ok = {percentile_ok}%, perc_nok = {percentile_nok}%) \n"
+        text += 25 * "-"
         def write_bin_samples(indices, scores, bins_edges, label, color):
             nonlocal text
             bin_indices = np.digitize(scores, bins_edges) - 1
@@ -955,7 +958,7 @@ class TrainerAnomalyDetector:
             for idx, bin_idx in zip(indices, bin_indices):
                 if 0 <= bin_idx < len(bins_edges) - 1:
                     bin_samples[bin_idx].append(idx)
-            text += f"\nTotal {label} samples: {sum(len(samples) for samples in bin_samples.values())}\n"
+            text += f"\n### Total {label} samples: {sum(len(samples) for samples in bin_samples.values())}\n"
             text += 10*"-" + f" Samples in {label} bins " + 10*"-" + "\n"
             for bin_idx, samples in bin_samples.items():
                 if samples:
@@ -969,8 +972,8 @@ class TrainerAnomalyDetector:
         write_bin_samples(indices_fn, scores_fn, bins_edges, "False Negative (NOK, misclassified)", "purple")
 
         # Print db_delta values
-        text += f"\nDB delta OK ({percentile_ok}%): {db_delta_ok:.4f} (DB = {shift:.4f})"
-        text += f"\nDB delta NOK ({percentile_nok}%): {db_delta_nok:.4f} (DB = {shift:.4f})\n"
+        text += f"\nDB delta OK ({percentile_ok}%): {db_delta_ok:.4f} (DB = {shift:.4f})" if db_delta_ok is not None else "No DB delta OK"
+        text += f"\nDB delta NOK ({percentile_nok}%): {db_delta_nok:.4f} (DB = {shift:.4f})\n" if db_delta_nok is not None else "No DB delta NOK"
 
         print(text)
 
@@ -978,7 +981,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_advance_{num}({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/anomaly_score_dist_advance", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_advance", fig, close=True)
             self.logger.add_text(f"{self.model_id} + {self.run_type}", text)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
@@ -1024,7 +1027,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'pred_plot_({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/pred_plot", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/pred_plot", fig, close=True)
             print(f"\nPrediction plot logged at {self.logger.log_dir}\n")
         else:
             print("\nPrediction plot not logged as logging is disabled.\n")

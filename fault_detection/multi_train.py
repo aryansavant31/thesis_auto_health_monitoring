@@ -109,7 +109,7 @@ def multi_trainer_main(parallel_execution, max_workers=None):
     console_logger_sweep = ConsoleLogger()
     
     with console_logger_sweep.capture_output():
-        print("\nStarting fault detection model sweep...")
+        print("\nStarting fault detection model training sweep...")
 
         # get all data configuration groups
         data_sweep = DataSweep(run_type='train')
