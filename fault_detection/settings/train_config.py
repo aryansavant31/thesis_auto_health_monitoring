@@ -57,7 +57,7 @@ class AnomalyDetectorTrainConfig:
         self.is_log = True
 
         # dataset parameters
-        self.batch_size  = 50
+        self.batch_size  = 1
         self.train_rt    = 0.8
         self.test_rt     = 0.2
         self.num_workers = 1
@@ -197,7 +197,7 @@ class AnomalyDetectorTrainSweep:
 
     # 1: Training parameters
         # dataset parameters
-        self.batch_size  = [50]
+        self.batch_size  = [1]
         self.train_rt    = [0.8]
         self.test_rt     = [0.2]
         self.num_workers = [1]

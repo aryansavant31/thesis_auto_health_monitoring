@@ -105,15 +105,23 @@ class DataConfig:
     
     def set_custom_test_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
-        self.amt = 0.4
+        self.amt = 1
+        e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][50:]
         self.healthy_configs   = {
-            key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
+            key: [get_augment_config('OG')] for key in e1_keys
         }
         
         self.unhealthy_configs = {
-        #     '(sim)_E1_set01_M=mAI26': [get_augment_config('glitch', prob=0.001, amp=0.05, add_next=True),
-        #                                get_augment_config('gau', mean=0, std=0.0001, add_next=True),
-        #                                get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])]
+            '(sim)_E1_set01_M=mAI26': [
+                get_augment_config('glitch', prob=0.01, amp=0.05, add_next=True),
+                get_augment_config('gau', mean=0, std=0.01, add_next=True),
+                get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])
+                ], 
+            '(sim)_E1_set01_M=mAQ10': [
+                get_augment_config('glitch', prob=0.01, amp=0.05, add_next=True),
+                get_augment_config('gau', mean=0, std=0.01, add_next=True),
+                get_augment_config('sine', freqs=[1, 5, 10], amps=[1, 0.5, 0.5])
+                ], 
         }
 
         self.unknown_configs = {
@@ -121,8 +129,7 @@ class DataConfig:
         }
         
     def set_predict_dataset(self):
-        self.set_id = 'E1'
-        self.amt = 0.8
+        self.amt = 1
         self.healthy_configs   = {
             'series_tp': [get_augment_config('OG')]
         }
