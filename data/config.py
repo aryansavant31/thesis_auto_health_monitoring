@@ -55,13 +55,13 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M004'
+        self.application = 'BER'
+        self.machine_type = 'cwru'
         self.scenario = 'scene_1'
 
-        self.signal_types = MSDGroupMaker().m004_all
+        self.signal_types = BERGroupMaker().gb_acc1
         
-        self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
@@ -88,13 +88,13 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
 
         self.healthy_configs   = {
-            #'0_N': [get_augment_config('OG')],
-            'series_tp': [get_augment_config('OG')]  
+            '0_N': [get_augment_config('OG')],
+            #'series_tp': [get_augment_config('OG')]  
             #key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
         }
         
         self.unhealthy_configs = {
-            #'0_B-007': [get_augment_config('OG')],
+            '0_B-007': [get_augment_config('OG')],
             
             
         }

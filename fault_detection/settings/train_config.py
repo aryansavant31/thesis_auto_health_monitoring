@@ -69,7 +69,7 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_time_feat_config('kurtosis')
+            
         ]  
         self.reduc_config = None
         self.feat_norm = None
@@ -158,23 +158,56 @@ def get_anom_config(anom_type, **kwargs):
         - `IF`: Isolation Forest)
     **kwargs : dict
         For all options of `anom_type`:
-        - `1SVM`: **kernel**, **nu**, **gamma**
-        - `IF`: **n_estimators**, **seed**, **contam**, **n_jobs**
 
+        `1SVM`: 
+                - **kernel** ('linear', 'poly', 'rbf' *_(default)_*, 'sigmoid'), 
+                - **gamma** ('scale' *_(default)_*, 'auto', float), 
+                - **nu** (float, default=0.5), 
+                - **is_shrinking** (bool, default=True), 
+                - **tol** (float, default=1e-3), 
+                - **cache_size** (float, default=200), 
+                - **is_verbose** (bool, default=False), 
+                - **max_iter** (int, default=-1), 
+                - **coef0** (float, default=0.0, for 'poly' and 'sigmoid' kernels), 
+                - **degree** (int, default=3, for 'poly' kernel)
+
+        `IF`: 
+                - **n_estimators** (int, default=100), 
+                - **seed** (int, default=42), 
+                - **contam** ('auto' *_(default)_*, float), 
+                - **n_jobs** (int, default=-1), 
+                - **verbose** (int, default=0), 
+                - **max_samples** ('auto' *_(default)_*, int, float), 
+                - **bootstrap** (bool, default=False), 
+                - **warm_start** (bool, default=False), 
+                - **max_features** (float, default=1.0)
+        
     """
     anom_config = {}
-    anom_config['anom_type'] = anom_type
+    anom_config['anom/type'] = anom_type
 
     if anom_type == '1SVM':
-        anom_config['kernel'] = kwargs.get('kernel', 'rbf')
-        anom_config['gamma'] = kwargs.get('gamma', 'scale')
-        anom_config['nu'] = kwargs.get('nu', 0.5)
+        anom_config['anom/kernel'] = kwargs.get('kernel', 'rbf')
+        anom_config['anom/gamma'] = kwargs.get('gamma', 'scale')
+        anom_config['anom/nu'] = kwargs.get('nu', 0.5)
+        anom_config['anom/is_shrinking'] = kwargs.get('is_shrinking', True)
+        anom_config['anom/tol'] = kwargs.get('tol', 1e-3)
+        anom_config['anom/cache_size'] = kwargs.get('cache_size', 200)
+        anom_config['anom/is_verbose'] = kwargs.get('is_verbose', False)
+        anom_config['anom/max_iter'] = kwargs.get('max_iter', -1)
+        anom_config['anom/coef0'] = kwargs.get('coef0', 0.0)  # for 'poly' and 'sigmoid' kernels
+        anom_config['anom/degree'] = kwargs.get('degree', 3)  # for 'poly' kernel
 
     elif anom_type == 'IF':
-        anom_config['n_estimators'] = kwargs.get('n_estimators', 100)
-        anom_config['seed'] = kwargs.get('seed', 42)
-        anom_config['contam'] = kwargs.get('contam', 'auto')
-        anom_config['n_jobs'] = kwargs.get('n_jobs', -1)
+        anom_config['anom/n_estimators'] = kwargs.get('n_estimators', 100)
+        anom_config['anom/seed'] = kwargs.get('seed', 42)
+        anom_config['anom/contam'] = kwargs.get('contam', 'auto')
+        anom_config['anom/n_jobs'] = kwargs.get('n_jobs', -1)
+        anom_config['anom/verbose'] = kwargs.get('verbose', 1)
+        anom_config['anom/max_samples'] = kwargs.get('max_samples', 'auto')
+        anom_config['anom/bootstrap'] = kwargs.get('bootstrap', False)
+        anom_config['anom/warm_start'] = kwargs.get('warm_start', False)
+        anom_config['anom/max_features'] = kwargs.get('max_features', 1.0)
 
         # hyperparameters for isolation forest
 

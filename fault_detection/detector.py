@@ -30,16 +30,28 @@ class AnomalyDetector:
         self.anom_config = anom_config
         self.hparams = hparams
 
-        if anom_config['anom_type'] == 'IF':
-            self.model = IsolationForest(contamination=anom_config['contam'], 
-                                         random_state=anom_config['seed'],
-                                         n_jobs=anom_config['n_jobs'], 
-                                         n_estimators=anom_config['n_estimators'],)
+        if anom_config['anom/type'] == 'IF':
+            self.model = IsolationForest(contamination=anom_config['anom/contam'], 
+                                         random_state=anom_config['anom/seed'],
+                                         n_jobs=anom_config['anom/n_jobs'], 
+                                         n_estimators=anom_config['anom/n_estimators'],
+                                         verbose=anom_config['anom/verbose'],
+                                         max_samples=anom_config['anom/max_samples'],
+                                         bootstrap=anom_config['anom/bootstrap'],
+                                         warm_start=anom_config['anom/warm_start'],
+                                         max_features=anom_config['anom/max_features'])
             
-        elif anom_config['anom_type'] == '1SVM':
-            self.model = OneClassSVM(kernel=anom_config['kernel'],  
-                                     gamma=anom_config['gamma'],
-                                     nu=anom_config['nu'])
+        elif anom_config['anom/type'] == '1SVM':
+            self.model = OneClassSVM(kernel=anom_config['anom/kernel'],  
+                                     gamma=anom_config['anom/gamma'],
+                                     nu=anom_config['anom/nu'],
+                                     shrinking=anom_config['anom/is_shrinking'],
+                                     tol=anom_config['anom/tol'],
+                                     cache_size=anom_config['anom/cache_size'],
+                                     verbose=anom_config['anom/is_verbose'],
+                                     max_iter=anom_config['anom/max_iter'],
+                                     coef0=anom_config['anom/coef0'],
+                                     degree=anom_config['anom/degree'])
             
     def set_run_params(self, data_config, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
@@ -70,10 +82,27 @@ class AnomalyDetector:
         """
         Get the names of the features that will be used in the anomaly detection model.
         """
-        # non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] != 'from_ranks']
-        rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), None)
+        # non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] not in ['from_ranks', 'first_n_modes', 'full_spectrum']]
+        # first_n_freq_feats = [f"freq{freq_bin+1}" for feat_config in self._feat_configs if feat_config['type'] == 'first_n_modes' for freq_bin in range(feat_config['n_modes'])] 
+        # first_n_modes_feats = [f"mode{mode+1}" for feat_config in self._feat_configs if feat_config['type'] == 'first_n_modes' for mode in range(feat_config['n_modes'])]
 
-        return rank_feats
+        # rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
+
+        # Order the feature names according to the order in self._feat_configs
+        feat_names = []
+
+        for feat_config in self._feat_configs:
+            if feat_config['type'] not in ['from_ranks', 'first_n_modes', 'full_spectrum']:
+                feat_names.append(feat_config['type'])
+
+            elif feat_config['type'] == 'first_n_modes':
+                feat_names.extend([f"freq{freq_bin+1}" for freq_bin in range(feat_config['n_modes'])])
+                feat_names.extend([f"mode{mode+1}" for mode in range(feat_config['n_modes'])])
+
+            elif feat_config['type'] == 'from_ranks':
+                feat_names.extend(feat_config['feat_list'])
+
+        return feat_names
             
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
@@ -154,11 +183,11 @@ class AnomalyDetector:
         """
         print("Model type:", type(self.model).__name__)
         
-        if self.anom_config['anom_type'] == 'IF':
+        if self.anom_config['anom/type'] == 'IF':
             print("Number of trees in the forest:", self.model.n_estimators)
             print("Contamination:", self.model.contamination)
         
-        elif self.anom_config['anom_type'] == '1SVM':
+        elif self.anom_config['anom/type'] == '1SVM':
             # print("Number of support vectors:", self.model.n_support_)
             # print("Support vectors shape:", self.model.support_vectors_.shape)
             print("Kernel:", self.model.kernel)
@@ -280,7 +309,13 @@ class TrainerAnomalyDetector:
         # convert np data into pd dataframe
         if anomaly_detector._feat_names and anomaly_detector.feat_reducer is None:
             self.comp_cols = [f"{feat}_{dim}" for feat in anomaly_detector._feat_names for dim in range(n_dims)]
+
+            if len(self.comp_cols) != n_comps * n_dims:
+                n_remaining_feats = n_comps * n_dims - len(self.comp_cols)
+                self.comp_cols.extend([f"ext_feat{idx+1}_dim{dim}" for idx in range(n_remaining_feats) for dim in range(n_dims)])
+
             print(f"\nFeature names: {self.comp_cols}")
+
         else:
             self.comp_cols = [f"comp{comp}_dim{dim}" for comp in range(n_comps) for dim in range(n_dims)]
             if anomaly_detector.feat_reducer:
@@ -338,6 +373,7 @@ class TrainerAnomalyDetector:
         filtered_df = self.df[valid_rows]
 
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
+
         print(f"\nDataframe is as follows:")
         print(self.df)
 
@@ -546,16 +582,24 @@ class TrainerAnomalyDetector:
         print(f"\n> Creating pair plot for {self.model_id} / {self.run_type}...")
 
         feat_cols = self.comp_cols[:5] if feat_cols is None else feat_cols
+        n_feats = len(feat_cols)
 
-        if self.df[self.df['pred_label'] == 0].empty:
-            palette = ['#ff7f0e']
-        elif self.df[self.df['pred_label'] == 1].empty:
-            palette = ['#1f77b4']
-        else:
-            palette = ['#1f77b4', '#ff7f0e']
+        df_sns = self.df.copy()
+        df_sns['pred_label'] = df_sns['pred_label'].map({0: 'OK', 1: 'NOK'})
+        # Dynamically set height (default is 2.5, you can adjust as needed)
+        #height = max(2.5, min(2.5 + 0.5 * (n_feats - 2), 5.0))
 
-        pair_plot = sns.pairplot(self.df, vars=feat_cols, hue='pred_label', palette=palette)
-        pair_plot.figure.suptitle(f"Pair Plot of Features : [{self.model_id} / {self.run_type}]", y=1.02)
+        # if self.df[self.df['pred_label'] == 0].empty:
+        #     palette = ['#ff7f0e']
+        # elif self.df[self.df['pred_label'] == 1].empty:
+        #     palette = ['#1f77b4']
+        # else:
+        palette = ['#1f77b4', '#ff7f0e']
+
+        pair_plot = sns.pairplot(df_sns, vars=feat_cols, hue='pred_label', hue_order=['OK', 'NOK'], palette=palette, height=2.5)
+        pair_plot.figure.suptitle(f"Pair Plot of Features : [{self.model_id} / {self.run_type}]", y=0.99, fontsize=13)
+        plt.tight_layout(rect=[0, 0, 0.93, 0.99])  # Reserve space for the title
+        # plt.subplots_adjust(right=0.94)
 
         # save the pair plot if logger is available
         if self.logger:
