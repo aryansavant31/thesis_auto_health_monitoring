@@ -60,15 +60,15 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(base_path, 'train', f'{self.node_type}', f'{self.signal_group}', f'set_{self.set_id}')
 
         # model name
-        self.model_name = f"[{self.node_type}_({self.signal_group}+{self.set_id})]-{self.anom_config['anom/type']}_fdet"
+        self.model_name = f"[{self.node_type}_({self.signal_group}+{self.set_id})]-{self.anom_config['anom_type']}_fdet"
         # get train_log_path
-        self.train_log_path = os.path.join(model_path, self.anom_config['anom/type'], f"tswp_{self.train_sweep_num}", f"{self.model_name}_{self.model_num}")
+        self.train_log_path = os.path.join(model_path, self.anom_config['anom_type'], f"tswp_{self.train_sweep_num}", f"{self.model_name}_{self.model_num}")
 
         # add healthy or healthy_unhealthy config to path
         model_path = self.helper.set_ds_types_in_path(self.data_config, model_path)
 
         # add model type to path
-        model_path = os.path.join(model_path, f'[anom] {self.anom_config['anom/type']}')
+        model_path = os.path.join(model_path, f'[anom] {self.anom_config['anom_type']}')
 
         # add datastats to path
         signal_types_str = ', '.join(
@@ -80,7 +80,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
         model_path = os.path.join(model_path, f'T{self.data_config.window_length}, Tmax = {self.data_config.max_timesteps:,}')
 
         # add model hparams to path
-        # model_path = os.path.join(model_path, f"[{self.anom_config['anom/type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
+        # model_path = os.path.join(model_path, f"[{self.anom_config['anom_type']}] ({', '.join([f'{key}={value}' for key, value in self.anom_config.items() if key != 'type'])})")
 
         # add domain type to path
         model_path = os.path.join(model_path, f'{self.domain_config['type']}')
@@ -460,17 +460,17 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
             
             # Create configs for each combination
             for combo in combinations:
-                anom_type_change = combo[param_names.index('anom_config')]['anom/type'] != train_configs[-1].anom_config['anom/type'] if train_configs else False
+                anom_type_change = combo[param_names.index('anom_config')]['anom_type'] != train_configs[-1].anom_config['anom_type'] if train_configs else False
 
                 # # Second level reset idx
                 # if anom_type_change:
-                #     idx = idx_dict.get(combo[param_names.index('anom_config')]['anom/type'], -1)
+                #     idx = idx_dict.get(combo[param_names.index('anom_config')]['anom_type'], -1)
                 if node_group_change or signal_group_change or set_id_change or anom_type_change:
                     idx = (
                         idx_dict.get(data_config.signal_types['node_group_name'], {})
                                 .get(data_config.signal_types['signal_group_name'], {})
                                 .get(data_config.set_id, {})
-                                .get(combo[param_names.index('anom_config')]['anom/type'], -1)
+                                .get(combo[param_names.index('anom_config')]['anom_type'], -1)
                     )
                 idx += 1
 
@@ -492,7 +492,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
                 ][
                     data_config.set_id
                 ][
-                    combo[param_names.index('anom_config')]['anom/type']
+                    combo[param_names.index('anom_config')]['anom_type']
                 ] = idx
 
                 # Regenerate hyperparameters after updating parameters

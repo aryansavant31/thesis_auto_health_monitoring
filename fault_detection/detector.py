@@ -30,28 +30,28 @@ class AnomalyDetector:
         self.anom_config = anom_config
         self.hparams = hparams
 
-        if anom_config['anom/type'] == 'IF':
-            self.model = IsolationForest(contamination=anom_config['anom/contam'], 
-                                         random_state=anom_config['anom/seed'],
-                                         n_jobs=anom_config['anom/n_jobs'], 
-                                         n_estimators=anom_config['anom/n_estimators'],
-                                         verbose=anom_config['anom/verbose'],
-                                         max_samples=anom_config['anom/max_samples'],
-                                         bootstrap=anom_config['anom/bootstrap'],
-                                         warm_start=anom_config['anom/warm_start'],
-                                         max_features=anom_config['anom/max_features'])
+        if anom_config['anom_type'] == 'IF':
+            self.model = IsolationForest(contamination=anom_config['IF/contam'], 
+                                         random_state=anom_config['IF/seed'],
+                                         n_jobs=anom_config['IF/n_jobs'], 
+                                         n_estimators=anom_config['IF/n_estimators'],
+                                         verbose=anom_config['IF/verbose'],
+                                         max_samples=anom_config['IF/max_samples'],
+                                         bootstrap=anom_config['IF/bootstrap'],
+                                         warm_start=anom_config['IF/warm_start'],
+                                         max_features=anom_config['IF/max_features'])
             
-        elif anom_config['anom/type'] == '1SVM':
-            self.model = OneClassSVM(kernel=anom_config['anom/kernel'],  
-                                     gamma=anom_config['anom/gamma'],
-                                     nu=anom_config['anom/nu'],
-                                     shrinking=anom_config['anom/is_shrinking'],
-                                     tol=anom_config['anom/tol'],
-                                     cache_size=anom_config['anom/cache_size'],
-                                     verbose=anom_config['anom/is_verbose'],
-                                     max_iter=anom_config['anom/max_iter'],
-                                     coef0=anom_config['anom/coef0'],
-                                     degree=anom_config['anom/degree'])
+        elif anom_config['anom_type'] == '1SVM':
+            self.model = OneClassSVM(kernel=anom_config['1SVM/kernel'],  
+                                     gamma=anom_config['1SVM/gamma'],
+                                     nu=anom_config['1SVM/nu'],
+                                     shrinking=anom_config['1SVM/is_shrinking'],
+                                     tol=anom_config['1SVM/tol'],
+                                     cache_size=anom_config['1SVM/cache_size'],
+                                     verbose=anom_config['1SVM/is_verbose'],
+                                     max_iter=anom_config['1SVM/max_iter'],
+                                     coef0=anom_config['1SVM/coef0'],
+                                     degree=anom_config['1SVM/degree'])
             
     def set_run_params(self, data_config, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
@@ -183,11 +183,11 @@ class AnomalyDetector:
         """
         print("Model type:", type(self.model).__name__)
         
-        if self.anom_config['anom/type'] == 'IF':
+        if self.anom_config['anom_type'] == 'IF':
             print("Number of trees in the forest:", self.model.n_estimators)
             print("Contamination:", self.model.contamination)
         
-        elif self.anom_config['anom/type'] == '1SVM':
+        elif self.anom_config['anom_type'] == '1SVM':
             # print("Number of support vectors:", self.model.n_support_)
             # print("Support vectors shape:", self.model.support_vectors_.shape)
             print("Kernel:", self.model.kernel)

@@ -69,7 +69,7 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            
+            get_time_feat_config('kurtosis')
         ]  
         self.reduc_config = None
         self.feat_norm = None
@@ -84,7 +84,7 @@ class AnomalyDetectorTrainConfig:
             'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
             'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
             'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
-            'pair_plot'                     : [False, {}],
+            'pair_plot'                     : [True, {}],
         }
 
         self.test_plots = {
@@ -184,30 +184,30 @@ def get_anom_config(anom_type, **kwargs):
         
     """
     anom_config = {}
-    anom_config['anom/type'] = anom_type
+    anom_config['anom_type'] = anom_type
 
     if anom_type == '1SVM':
-        anom_config['anom/kernel'] = kwargs.get('kernel', 'rbf')
-        anom_config['anom/gamma'] = kwargs.get('gamma', 'scale')
-        anom_config['anom/nu'] = kwargs.get('nu', 0.5)
-        anom_config['anom/is_shrinking'] = kwargs.get('is_shrinking', True)
-        anom_config['anom/tol'] = kwargs.get('tol', 1e-3)
-        anom_config['anom/cache_size'] = kwargs.get('cache_size', 200)
-        anom_config['anom/is_verbose'] = kwargs.get('is_verbose', False)
-        anom_config['anom/max_iter'] = kwargs.get('max_iter', -1)
-        anom_config['anom/coef0'] = kwargs.get('coef0', 0.0)  # for 'poly' and 'sigmoid' kernels
-        anom_config['anom/degree'] = kwargs.get('degree', 3)  # for 'poly' kernel
+        anom_config['1SVM/kernel'] = kwargs.get('kernel', 'rbf')
+        anom_config['1SVM/gamma'] = kwargs.get('gamma', 'scale')
+        anom_config['1SVM/nu'] = kwargs.get('nu', 0.5)
+        anom_config['1SVM/is_shrinking'] = kwargs.get('is_shrinking', True)
+        anom_config['1SVM/tol'] = kwargs.get('tol', 1e-3)
+        anom_config['1SVM/cache_size'] = kwargs.get('cache_size', 200)
+        anom_config['1SVM/is_verbose'] = kwargs.get('is_verbose', False)
+        anom_config['1SVM/max_iter'] = kwargs.get('max_iter', -1)
+        anom_config['1SVM/coef0'] = kwargs.get('coef0', 0.0)  # for 'poly' and 'sigmoid' kernels
+        anom_config['1SVM/degree'] = kwargs.get('degree', 3)  # for 'poly' kernel
 
     elif anom_type == 'IF':
-        anom_config['anom/n_estimators'] = kwargs.get('n_estimators', 100)
-        anom_config['anom/seed'] = kwargs.get('seed', 42)
-        anom_config['anom/contam'] = kwargs.get('contam', 'auto')
-        anom_config['anom/n_jobs'] = kwargs.get('n_jobs', -1)
-        anom_config['anom/verbose'] = kwargs.get('verbose', 1)
-        anom_config['anom/max_samples'] = kwargs.get('max_samples', 'auto')
-        anom_config['anom/bootstrap'] = kwargs.get('bootstrap', False)
-        anom_config['anom/warm_start'] = kwargs.get('warm_start', False)
-        anom_config['anom/max_features'] = kwargs.get('max_features', 1.0)
+        anom_config['IF/n_estimators'] = kwargs.get('n_estimators', 100)
+        anom_config['IF/seed'] = kwargs.get('seed', 42)
+        anom_config['IF/contam'] = kwargs.get('contam', 'auto')
+        anom_config['IF/n_jobs'] = kwargs.get('n_jobs', -1)
+        anom_config['IF/verbose'] = kwargs.get('verbose', 0)
+        anom_config['IF/max_samples'] = kwargs.get('max_samples', 'auto')
+        anom_config['IF/bootstrap'] = kwargs.get('bootstrap', False)
+        anom_config['IF/warm_start'] = kwargs.get('warm_start', False)
+        anom_config['IF/max_features'] = kwargs.get('max_features', 1.0)
 
         # hyperparameters for isolation forest
 

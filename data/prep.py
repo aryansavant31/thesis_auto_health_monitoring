@@ -375,7 +375,7 @@ class DataPreprocessor:
             rem_label_counts = {0: 0, 1: 0, -1: 0}
 
         print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
-        print(45*'-')
+        print(60*'-')
         print(f"Total samples: {total_samples}", f"\nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
 
         # print loader statistics
@@ -661,7 +661,8 @@ class DataPreprocessor:
         # verbose output
         if ds_type == 'OK' or ds_type == 'UK':
             print(f"\nFor ds_type '{ds_type}' and others....")
-            print(f"\nMaximum timesteps across all node types: {self.data_config.max_timesteps:,}")
+            print(45*'-')
+            print(f"Maximum timesteps across all node types: {self.data_config.max_timesteps:,}")
 
             if self.__dict__.get('is_interpolated', False):
                 print(f"\nData interpolation applied to match max_timesteps for node types with lesser timesteps.")

@@ -37,7 +37,7 @@ def train_single_config(args):
         train_pipeline = AnomalyDetectorTrainPipeline(fdet_config.data_config, fdet_config)
         train_pipeline.train()
 
-        base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom/type']
+        base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']
         print('\n' + 75*'=')
         print(f"\nFault detection model '{base_name}' training completed.")
 
@@ -205,7 +205,7 @@ def multi_trainer_main(parallel_execution, max_workers=None):
             #         train_pipeline = AnomalyDetectorTrainPipeline(fdet_config.data_config, fdet_config)
             #         train_pipeline.train()
 
-            #         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom/type']
+            #         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']
             #         print('\n' + 75*'=')
             #         print(f"\nFault detection model '{base_name}' training completed.")
 
