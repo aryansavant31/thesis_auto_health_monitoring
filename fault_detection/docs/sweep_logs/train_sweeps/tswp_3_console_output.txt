@@ -1,0 +1,116 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_train.py
+Base Name: tswp_3
+Start Time: 2025-09-09 13:00:47
+End Time: 2025-09-09 13:08:42
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model training sweep...
+
+Processing 1 data groups
+
+Data Config Sweep Summary:
+Run type: train
+------------------------------
+Total combinations: 1
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{'E1_set01_M=mAI26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAS23': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAU64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBH22': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBI93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBJ96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBK70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBU17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBW64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCD86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF56': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF78': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCG89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCO66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCQ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCX30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCZ47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDD00': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDH60': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI82': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDJ62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDL40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDM53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDN98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDR32': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDS38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEE75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEK25': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  window_length: 1 values -> [1000]
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_64
+
+Parameter Sweep Summary:
+Total combinations: 30
+
+Parameters and their values:
+  anom_type: 1 values -> ['IF']
+  batch_size: 1 values -> [1]
+  contam: 6 values -> [1e-07, 1e-05, 0.001, 0.01, 0.1, 0.3]
+  domain_config: 1 values -> [{'type': 'time', 'cutoff_freq': 0}]
+  feat_configs: 1 values -> [[{'type': 'skewness'}]]
+  feat_norm: 1 values -> [None]
+  n_estimators: 5 values -> [10, 100, 1000, 5000, 10000]
+  num_workers: 1 values -> [1]
+  raw_data_norm: 1 values -> [None]
+  reduc_config: 1 values -> [None]
+  test_rt: 1 values -> [0.2]
+  train_rt: 1 values -> [0.8]
+Parallelizing 30 fault detection configurations across 8 workers...
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_64
+  Completed config 7: [ammf_(acc+E1)]-IF_fdet_70
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_65
+  Completed config 6: [ammf_(acc+E1)]-IF_fdet_69
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_66
+  Completed config 8: [ammf_(acc+E1)]-IF_fdet_71
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_67
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_68
+  Completed config 11: [ammf_(acc+E1)]-IF_fdet_74
+  Completed config 12: [ammf_(acc+E1)]-IF_fdet_75
+  Completed config 13: [ammf_(acc+E1)]-IF_fdet_76
+  Completed config 9: [ammf_(acc+E1)]-IF_fdet_72
+  Completed config 14: [ammf_(acc+E1)]-IF_fdet_77
+  Completed config 16: [ammf_(acc+E1)]-IF_fdet_79
+  Completed config 10: [ammf_(acc+E1)]-IF_fdet_73
+  Completed config 15: [ammf_(acc+E1)]-IF_fdet_78
+  Completed config 18: [ammf_(acc+E1)]-IF_fdet_81
+  Completed config 17: [ammf_(acc+E1)]-IF_fdet_80
+  Completed config 21: [ammf_(acc+E1)]-IF_fdet_84
+  Completed config 19: [ammf_(acc+E1)]-IF_fdet_82
+  Completed config 22: [ammf_(acc+E1)]-IF_fdet_85
+  Config 20 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 23 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 24 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 25 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 26 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 27 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 28 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 29 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+  Config 30 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\train_sweeps\tswp_3_console_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-09 13:08:42
