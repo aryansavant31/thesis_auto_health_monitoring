@@ -642,6 +642,7 @@ class Decoder(LightningModule):
         self.training_time = time.time() - self.start_time
         self.hyperparams.update({
             'model_id': self.model_id,
+            'model_num': int(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
             'training_time': self.training_time,
             'n_steps': self.global_step,
             'train_loss': self.train_losses['train_losses'][-1],

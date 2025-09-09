@@ -389,6 +389,7 @@ class NRI(LightningModule):
         self.hyperparams.update({
             'model_id': self.model_id,
             'n_steps': self.global_step,
+            'model_num': int(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
 
             # log train data
             'training_time': self.training_time,
