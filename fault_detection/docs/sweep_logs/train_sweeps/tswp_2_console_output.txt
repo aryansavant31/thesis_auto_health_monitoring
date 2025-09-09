@@ -1,8 +1,8 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_train.py
 Base Name: tswp_2
-Start Time: 2025-09-06 13:20:55
-End Time: 2025-09-06 13:24:02
+Start Time: 2025-09-08 14:00:53
+End Time: 2025-09-08 14:03:39
 
 CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
 GPU: None detected
@@ -26,36 +26,32 @@ Parameters and their values:
   signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
   stride: 1 values -> [1000]
   window_length: 1 values -> [1000]
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_5
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
 
 Parameter Sweep Summary:
-Total combinations: 7
+Total combinations: 5
 
 Parameters and their values:
   anom_config: 1 values -> [{'anom_type': 'IF', 'IF/n_estimators': 1000, 'IF/seed': 42, 'IF/contam': 0.001, 'IF/n_jobs': -1, 'IF/verbose': 0, 'IF/max_samples': 'auto', 'IF/bootstrap': False, 'IF/warm_start': False, 'IF/max_features': 1.0}]
   batch_size: 1 values -> [1]
-  domain_config: 1 values -> [{'type': 'time', 'cutoff_freq': 0}]
-  feat_configs: 7 values -> [[], [{'type': 'mean'}], [{'type': 'kurtosis'}], [{'type': 'std'}], [{'type': 'max'}], [{'type': 'peak_to_peak'}], [{'type': 'skewness'}]]
+  domain_config: 1 values -> [{'type': 'freq', 'cutoff_freq': 0}]
+  feat_configs: 5 values -> [[], [{'type': 'meanF'}], [{'type': 'kurtosisF'}], [{'type': 'stdF'}], [{'type': 'skewnessF'}]]
   feat_norm: 1 values -> [None]
   num_workers: 1 values -> [1]
   raw_data_norm: 1 values -> [None]
   reduc_config: 1 values -> [None]
   test_rt: 1 values -> [0.2]
   train_rt: 1 values -> [0.8]
-Parallelizing 7 fault detection configurations across 8 workers...
-  Completed config 2: [ammf_(acc+E1)]-IF_fdet_6
-  Completed config 4: [ammf_(acc+E1)]-IF_fdet_8
-  Completed config 3: [ammf_(acc+E1)]-IF_fdet_7
-  Completed config 7: [ammf_(acc+E1)]-IF_fdet_11
-  Completed config 5: [ammf_(acc+E1)]-IF_fdet_9
-  Completed config 6: [ammf_(acc+E1)]-IF_fdet_10
-  Completed config 1: [ammf_(acc+E1)]-IF_fdet_5
+Parallelizing 5 fault detection configurations across 8 workers...
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_16
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_13
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_14
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_15
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_12
 
 ===========================================================================
 
@@ -65,4 +61,4 @@ Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detectio
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-06 13:24:02
+Log saved at: 2025-09-08 14:03:39

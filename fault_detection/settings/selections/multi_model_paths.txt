@@ -1,7 +1,1 @@
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_5\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_10\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_11\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_6\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_7\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_8\anomaly_detector.pkl
-c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_9\anomaly_detector.pkl
+c:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_2\[ammf_(acc+E1)]-IF_fdet_17\anomaly_detector.pkl

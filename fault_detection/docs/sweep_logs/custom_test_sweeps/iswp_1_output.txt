@@ -1,8 +1,8 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_infer.py
 Base Name: iswp_1
-Start Time: 2025-09-05 18:17:57
-End Time: 2025-09-05 18:45:31
+Start Time: 2025-09-08 18:41:52
+End Time: 2025-09-08 18:48:17
 
 CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
 GPU: None detected
@@ -29,73 +29,25 @@ Parameters and their values:
   window_length: 1 values -> [1000]
 
 Parameter Sweep Summary:
-Total combinations: 7
+Total combinations: 1
 
 Parameters and their values:
   batch_size: 1 values -> [1]
   cutoff_freq: 1 values -> [0]
 
-Number of models selected: 7
+Number of models selected: 1
 Selected models are as follows:
 ------------------------------
-  Model 1: [ammf_(acc+E1)]-IF_fdet_5
-  Model 2: [ammf_(acc+E1)]-IF_fdet_10
-  Model 3: [ammf_(acc+E1)]-IF_fdet_11
-  Model 4: [ammf_(acc+E1)]-IF_fdet_6
-  Model 5: [ammf_(acc+E1)]-IF_fdet_7
-  Model 6: [ammf_(acc+E1)]-IF_fdet_8
-  Model 7: [ammf_(acc+E1)]-IF_fdet_9
+  Model 1: [ammf_(acc+E1)]-IF_fdet_17
 
-Parallelizing 49 fault detection configurations across 8 workers...
-  Config 1 failed with error: DataLoader worker (pid(s) 763000) exited unexpectedly
-  Completed config 5: [ammf_(acc+E1)]-IF_fdet_7/custom_test_1
-  Completed config 6: [ammf_(acc+E1)]-IF_fdet_8/custom_test_1
-  Completed config 3: [ammf_(acc+E1)]-IF_fdet_11/custom_test_1
-  Completed config 4: [ammf_(acc+E1)]-IF_fdet_6/custom_test_1
-  Completed config 8: [ammf_(acc+E1)]-IF_fdet_5/custom_test_2
-  Completed config 7: [ammf_(acc+E1)]-IF_fdet_9/custom_test_1
-  Completed config 2: [ammf_(acc+E1)]-IF_fdet_10/custom_test_1
-  Completed config 9: [ammf_(acc+E1)]-IF_fdet_10/custom_test_2
-  Completed config 10: [ammf_(acc+E1)]-IF_fdet_11/custom_test_2
-  Completed config 13: [ammf_(acc+E1)]-IF_fdet_8/custom_test_2
-  Completed config 11: [ammf_(acc+E1)]-IF_fdet_6/custom_test_2
-  Completed config 12: [ammf_(acc+E1)]-IF_fdet_7/custom_test_2
-  Completed config 14: [ammf_(acc+E1)]-IF_fdet_9/custom_test_2
-  Completed config 15: [ammf_(acc+E1)]-IF_fdet_5/custom_test_3
-  Completed config 16: [ammf_(acc+E1)]-IF_fdet_10/custom_test_3
-  Completed config 17: [ammf_(acc+E1)]-IF_fdet_11/custom_test_3
-  Completed config 20: [ammf_(acc+E1)]-IF_fdet_8/custom_test_3
-  Completed config 19: [ammf_(acc+E1)]-IF_fdet_7/custom_test_3
-  Completed config 18: [ammf_(acc+E1)]-IF_fdet_6/custom_test_3
-  Completed config 21: [ammf_(acc+E1)]-IF_fdet_9/custom_test_3
-  Completed config 22: [ammf_(acc+E1)]-IF_fdet_5/custom_test_4
-  Completed config 24: [ammf_(acc+E1)]-IF_fdet_11/custom_test_4
-  Completed config 23: [ammf_(acc+E1)]-IF_fdet_10/custom_test_4
-  Completed config 25: [ammf_(acc+E1)]-IF_fdet_6/custom_test_4
-  Completed config 27: [ammf_(acc+E1)]-IF_fdet_8/custom_test_4
-  Completed config 26: [ammf_(acc+E1)]-IF_fdet_7/custom_test_4
-  Completed config 28: [ammf_(acc+E1)]-IF_fdet_9/custom_test_4
-  Completed config 29: [ammf_(acc+E1)]-IF_fdet_5/custom_test_5
-  Completed config 30: [ammf_(acc+E1)]-IF_fdet_10/custom_test_5
-  Completed config 31: [ammf_(acc+E1)]-IF_fdet_11/custom_test_5
-  Completed config 32: [ammf_(acc+E1)]-IF_fdet_6/custom_test_5
-  Completed config 33: [ammf_(acc+E1)]-IF_fdet_7/custom_test_5
-  Completed config 34: [ammf_(acc+E1)]-IF_fdet_8/custom_test_5
-  Completed config 35: [ammf_(acc+E1)]-IF_fdet_9/custom_test_5
-  Completed config 36: [ammf_(acc+E1)]-IF_fdet_5/custom_test_6
-  Completed config 38: [ammf_(acc+E1)]-IF_fdet_11/custom_test_6
-  Completed config 37: [ammf_(acc+E1)]-IF_fdet_10/custom_test_6
-  Completed config 39: [ammf_(acc+E1)]-IF_fdet_6/custom_test_6
-  Completed config 40: [ammf_(acc+E1)]-IF_fdet_7/custom_test_6
-  Completed config 41: [ammf_(acc+E1)]-IF_fdet_8/custom_test_6
-  Completed config 42: [ammf_(acc+E1)]-IF_fdet_9/custom_test_6
-  Completed config 43: [ammf_(acc+E1)]-IF_fdet_5/custom_test_7
-  Completed config 44: [ammf_(acc+E1)]-IF_fdet_10/custom_test_7
-  Completed config 46: [ammf_(acc+E1)]-IF_fdet_6/custom_test_7
-  Completed config 45: [ammf_(acc+E1)]-IF_fdet_11/custom_test_7
-  Completed config 47: [ammf_(acc+E1)]-IF_fdet_7/custom_test_7
-  Completed config 48: [ammf_(acc+E1)]-IF_fdet_8/custom_test_7
-  Completed config 49: [ammf_(acc+E1)]-IF_fdet_9/custom_test_7
+Parallelizing 7 fault detection configurations across 8 workers...
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_17/custom_test_2
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_17/custom_test_1
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_17/custom_test_3
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_17/custom_test_4
+  Completed config 6: [ammf_(acc+E1)]-IF_fdet_17/custom_test_6
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_17/custom_test_5
+  Completed config 7: [ammf_(acc+E1)]-IF_fdet_17/custom_test_7
 
 ===========================================================================
 
@@ -105,4 +57,4 @@ Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\AFD\
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-05 18:45:31
+Log saved at: 2025-09-08 18:48:17

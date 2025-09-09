@@ -66,10 +66,10 @@ class AnomalyDetectorTrainConfig:
         self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.001)
 
         # run parameters
-        self.domain_config = get_domain_config('time')
+        self.domain_config = get_domain_config('freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_time_feat_config('kurtosis')
+            get_freq_feat_config('first_n_modes', n_modes=10)
         ]  
         self.reduc_config = None
         self.feat_norm = None
@@ -240,16 +240,16 @@ class AnomalyDetectorTrainSweep:
                             ]
 
         # run parameters
-        self.domain_config = [get_domain_config('time')]
+        self.domain_config = [get_domain_config('freq')]
         self.raw_data_norm = [None]
         self.feat_configs = [
             [],
-            [get_time_feat_config('mean')], 
-            [get_time_feat_config('kurtosis')], 
-            [get_time_feat_config('std')], 
-            [get_time_feat_config('max')],
-            [get_time_feat_config('peak_to_peak')], 
-            [get_time_feat_config('skewness')]
+            [get_freq_feat_config('meanF')], 
+            [get_freq_feat_config('kurtosisF')], 
+            [get_freq_feat_config('stdF')], 
+            # [get_time_feat_config('max')],
+            # [get_time_feat_config('peak_to_peak')], 
+            [get_freq_feat_config('skewnessF')]
 
         ]
         self.reduc_config = [None]

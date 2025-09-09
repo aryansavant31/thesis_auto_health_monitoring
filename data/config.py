@@ -440,7 +440,7 @@ def get_domain_config(domain_type, **kwargs):
         config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency for time domain
         
     elif domain_type == 'freq':
-        config['cutoff_freq'] = kwargs.get('cutoff_freq', 100)  # default cutoff frequency
+        config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency
        
     return config 
 
