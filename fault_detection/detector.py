@@ -1025,7 +1025,7 @@ class TrainerAnomalyDetector:
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_advance_{num}({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_advance", fig, close=True)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_advance_{num}", fig, close=True)
             self.logger.add_text(f"{self.model_id} + {self.run_type}", text)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
