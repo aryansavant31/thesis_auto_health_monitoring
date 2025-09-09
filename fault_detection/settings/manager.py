@@ -460,7 +460,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
             
             # Create configs for each combination
             for combo in combinations:
-                anom_type_change = combo[param_names.index('anom_config')]['anom_type'] != train_configs[-1].anom_config['anom_type'] if train_configs else False
+                anom_type_change = combo[param_names.index('anom_type')] != train_configs[-1].anom_config['anom_type'] if train_configs else False
 
                 # # Second level reset idx
                 # if anom_type_change:
@@ -470,7 +470,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
                         idx_dict.get(data_config.signal_types['node_group_name'], {})
                                 .get(data_config.signal_types['signal_group_name'], {})
                                 .get(data_config.set_id, {})
-                                .get(combo[param_names.index('anom_config')]['anom_type'], -1)
+                                .get(combo[param_names.index('anom_type')], -1)
                     )
                 idx += 1
 
@@ -480,6 +480,8 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
                 # Update parameters based on current combination
                 for param_name, param_value in zip(param_names, combo):
                     setattr(train_config, param_name, param_value)
+
+                train_config.set_anom_config()    
                 
                 # Update model number 
                 _ = train_config.get_train_log_path(n_components=0, n_dim=0, always_next_version=True)  # Dummy values for n_components and n_dim
@@ -492,7 +494,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
                 ][
                     data_config.set_id
                 ][
-                    combo[param_names.index('anom_config')]['anom_type']
+                    combo[param_names.index('anom_type')]
                 ] = idx
 
                 # Regenerate hyperparameters after updating parameters

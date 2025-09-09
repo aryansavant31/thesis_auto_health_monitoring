@@ -63,7 +63,10 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_config = get_anom_config('IF', n_estimators=1000, contam=0.001)
+        self.anom_type = 'IF'
+        self.n_estimators = 1000
+        self.contam = 0.001
+        self.set_anom_config()
 
         # run parameters
         self.domain_config = get_domain_config('freq')
@@ -96,6 +99,10 @@ class AnomalyDetectorTrainConfig:
             'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
         }
+
+    def set_anom_config(self):
+        if self.anom_type == 'IF':
+            self.anom_config = get_anom_config('IF', n_estimators=self.n_estimators, contam=self.contam)
 
     def get_hparams(self):
         """
@@ -226,7 +233,7 @@ class AnomalyDetectorTrainSweep:
         """
         self.data_config = data_config
 
-        self.train_sweep_num = 2
+        self.train_sweep_num = 3
 
     # 1: Training parameters
         # dataset parameters
@@ -236,20 +243,21 @@ class AnomalyDetectorTrainSweep:
         self.num_workers = [1]
 
     # 2: Model parameters
-        self.anom_config = [get_anom_config('IF', n_estimators=1000, contam=0.001)
-                            ]
+        self.anom_type = ['IF']
+        self.n_estimators = [10, 100, 1000, 5000, 10000]
+        self.contam = [1e-7, 1e-5, 1e-3, 1e-2, 0.1, 0.3]
 
         # run parameters
-        self.domain_config = [get_domain_config('freq')]
+        self.domain_config = [get_domain_config('time')]
         self.raw_data_norm = [None]
         self.feat_configs = [
-            [],
-            [get_freq_feat_config('meanF')], 
-            [get_freq_feat_config('kurtosisF')], 
-            [get_freq_feat_config('stdF')], 
+            # [],
+            #[get_time_feat_config('mean')], 
+            # [get_time_feat_config('kurtosis')], 
+            # [get_freq_feat_config('stdF')], 
             # [get_time_feat_config('max')],
             # [get_time_feat_config('peak_to_peak')], 
-            [get_freq_feat_config('skewnessF')]
+            [get_time_feat_config('skewness')]
 
         ]
         self.reduc_config = [None]
