@@ -924,7 +924,10 @@ class TopologyEstimationInferSweepManager(NRIInferSweep, DecoderInferSweep):
                     setattr(infer_config, param_name, param_value)
                 
                 # update domain config
-                infer_config.update_infer_configs()
+                if self.framework == 'nri':
+                    infer_config.update_nri_infer_configs()
+                elif self.framework == 'decoder':
+                    infer_config.update_decoder_infer_configs()
 
                 # Update version number 
                 _ = infer_config.get_infer_log_path(always_next_version=True)
@@ -1576,7 +1579,7 @@ def load_log_config(framework, model_path):
     elif framework == 'decoder':
         log_config = DecoderTrainManager(DataConfig())
 
-    log_config_path = os.path.join(os.path.dirname(model_path), 'train_config.pkl')
+    log_config_path = os.path.join(os.path.dirname(os.path.dirname(model_path)), 'train_config.pkl')
 
     if not os.path.exists(log_config_path):
         raise ValueError(f"\nThe parameter file does not exists")

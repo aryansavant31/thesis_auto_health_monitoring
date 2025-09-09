@@ -73,12 +73,12 @@ class NRIInferConfig:
         self.spf_feat_norm = None
         self.spf_reduc_config = None
 
-        self.update_infer_configs()
+        self.update_nri_infer_configs()
 
     # Hyperparameters for logging
         self.infer_hyperparams = self.get_infer_hyperarams()
 
-    def update_infer_configs(self):
+    def update_nri_infer_configs(self):
         """
         Update the model parameters with the current infer settings.
         """
@@ -193,7 +193,7 @@ class DecoderInferConfig:
 
         self.log_config = load_log_config(framework=DecoderInferConfig.framework, model_path=self.selected_model_path)
 
-        self.is_log = False
+        self.is_log = True
         self.version = 1
         
         self.num_workers = 1
@@ -202,11 +202,11 @@ class DecoderInferConfig:
         self.residual_thresh = 0.1
 
     # Input processor parameters
-        self.dec_cutoff_freq = 100
+        self.dec_cutoff_freq = 0
 
     # Decoder run parameters
         self.skip_first_edge_type = False
-        self.pred_steps = 1
+        self.pred_steps = 5
         self.is_burn_in = False
         self.burn_in_steps = 1
         self.is_dynamic_graph = False
@@ -219,7 +219,7 @@ class DecoderInferConfig:
         self.show_conf_band = False
 
     # Sparsifier parameters 
-        self.spf_config = get_spf_config('no_spf', is_expert=True)
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 
@@ -229,12 +229,12 @@ class DecoderInferConfig:
         self.spf_feat_norm = None
         self.spf_reduc_config = None
 
-        self.update_infer_configs()
+        self.update_decoder_infer_configs()
 
     # Hyperparameters for logging
         self.infer_hyperparams = self.get_infer_hyperparams()
 
-    def update_infer_configs(self):
+    def update_decoder_infer_configs(self):
         """
         Update the model parameters with the current infer settings.
         """
@@ -249,7 +249,7 @@ class DecoderInferConfig:
 
         hyperparams = {
             f'{self.run_type}_version': self.version,
-            f'threshold/{self.run_type}': self.threshold,
+            f'residual_thresh/{self.run_type}': self.residual_thresh,
             f'batch_size/{self.run_type}': self.batch_size,
             f'dec/domain/{self.run_type}': domain_dec_str,
             f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,

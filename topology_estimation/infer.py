@@ -91,6 +91,7 @@ class TopologyEstimationInferHelper:
         if self.tp_config.is_log:
             self.infer_log_path = self.tp_config.get_infer_log_path()
 
+            print("INFER LOG PATH", self.infer_log_path) #DEBUG 
             self.tp_config.save_infer_params()
             logger = TensorBoardLogger(os.path.dirname(self.infer_log_path), name="", version=os.path.basename(self.infer_log_path))
 
@@ -265,8 +266,8 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
 
         elif self.tp_config.run_type == 'predict':
             preds = tester.predict(decoder_model, self.custom_loader)
-        
-        preds['adj_matrix_label'] = send_rel.T @ rec_rel
+            preds['adj_matrix_label'] = send_rel.T @ rec_rel
+
         return preds
         
     def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
@@ -309,7 +310,7 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
             data_stats=data_stats
             )
 
-        print(f"\nDecoder model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
+        print(f"\nDecoder model loaded for '{self.tp_config.run_type}' from {self.tp_config.selected_model_path}")
         print(f"\nModel type: {type(trained_decoder_model).__name__}, Model ID: {trained_decoder_model.hyperparams['model_id']}, No. of dimensions req.: {trained_decoder_model.n_dims}")
         print('\n' + 75*'-')
 
@@ -353,12 +354,13 @@ if __name__ == "__main__":
             print('\n' + 75*'=')
             print(f"\n{args.run_type.capitalize()} of decoder model '{base_name}' completed.")
 
-            if preds_dec['dec/residual'] > decoder_config.residual_thresh:
-                print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} > {decoder_config.residual_thresh}. Hence using NRI model for topology prediction.")
-                use_nri = True
-            else:
-                print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} <= {decoder_config.residual_thresh}. Hence given topology to decoder is correct.")
-                use_nri = False
+            if args.run_type == 'predict':
+                if preds_dec['dec/residual'] > decoder_config.residual_thresh:
+                    print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} > {decoder_config.residual_thresh}. Hence using NRI model for topology prediction.")
+                    use_nri = True
+                else:
+                    print(f"\nDecoder residual {preds_dec['dec/residual']:,.4f} <= {decoder_config.residual_thresh}. Hence given topology to decoder is correct.")
+                    use_nri = False
 
             if decoder_config.is_log:
                 # save the captured output to a file
