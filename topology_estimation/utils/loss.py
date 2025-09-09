@@ -126,7 +126,6 @@ def kl_categorical_uniform(input, num_nodes, add_const=False, eps=1e-16):
 
 def nll_gaussian(pred, target, variance):
     """
-
     Parameters
     ----------
     pred : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
@@ -139,7 +138,6 @@ def nll_gaussian(pred, target, variance):
         The negative log likelihood (NLL) of the Gaussian distribution.
         The NLL is averaged over the total number of nodes in the batch
     """
-
     term_1 = ((pred - target) ** 2 / (2 * variance))
     term_2 = 0.5 * torch.log(2 * torch.pi * variance)
     nll = term_1 + term_2       # shape (batch_size, n_nodes, n_timesteps-1, n_dim)
