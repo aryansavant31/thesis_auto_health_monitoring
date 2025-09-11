@@ -86,16 +86,21 @@ class DataConfig:
         
     def set_train_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
-
+        e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
         self.healthy_configs   = {
             #'0_N': [get_augment_config('OG')],
-            'series_tp': [get_augment_config('OG')]  
-            #key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
+            #'series_tp': [get_augment_config('OG')]  
+            key: [get_augment_config('OG')] for key in e1_keys
         }
         
         self.unhealthy_configs = {
             #'0_B-007': [get_augment_config('OG')],
-            
+            '(sim)_E1_set01_M=mAQ87': [
+                        # get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
+                        # get_augment_config('sine', freqs=[10, 15], amps=[1, 1.2], add_next=False),
+                        get_augment_config('glitch', prob=0.1, std_fac=1.6, add_next=True),
+                        get_augment_config('sine', freqs=[1, 10, 15], amps=[1, 1.5, 1.7], add_next=False)
+                    ]     
             
         }
 
@@ -106,23 +111,25 @@ class DataConfig:
     def set_custom_test_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types[:50] if key.startswith('E1')
         self.amt = 1
-        e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][50:52]
+        e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][50:]
         self.healthy_configs   = {
         #     #'series_tp': [get_augment_config('OG')]  
-        #     key: [get_augment_config('OG')] for key in e1_keys
+            key: [get_augment_config('OG')] for key in e1_keys
         }
         
         self.unhealthy_configs = {
-            '(sim)_E1_set01_M=mAI26': [
-                get_augment_config('glitch', prob=0.01, amp=0.05, add_next=True),
-                get_augment_config('gau', mean=0, std=0.01, add_next=True),
-                get_augment_config('sine', freqs=[10, 15], amps=[1, 0.5])
+            '(sim)_E1_set01_M=mAQ87': [
+                #get_augment_config('glitch', prob=0.01, std_fac=4, add_next=True),
+                # get_augment_config('gau', mean=0, std=0.01, add_next=True),
+                get_augment_config('glitch', prob=0.1, std_fac=1.6, add_next=True),
+                get_augment_config('sine', freqs=[1, 10, 15], amps=[1, 1.5, 1.7], add_next=False)
+                #get_augment_config('OG')
                 ], 
-            '(sim)_E1_set01_M=mAQ10': [
-                get_augment_config('glitch', prob=0.01, amp=0.05, add_next=True),
-                get_augment_config('gau', mean=0, std=0.01, add_next=True),
-                get_augment_config('sine', freqs=[1, 5, 10], amps=[1, 0.5, 0.5])
-                ], 
+            # '(sim)_E1_set01_M=mAQ10': [
+            #     get_augment_config('glitch', prob=0.01, std_fac=4, add_next=True),
+            #     get_augment_config('gau', mean=0, std=0.01, add_next=True),
+            #     get_augment_config('sine', freqs=[1, 5, 10], std_facs=[5, 4, 4])
+            #     ], 
         }
 
         self.unknown_configs = {
@@ -271,9 +278,16 @@ class DataSweep:
             ]
             pass
 
-            # self.unhealthy_configs = [
-            #     #{'0_B-021': [get_augment_config('OG')]},
-            # ]
+            self.unhealthy_configs = [
+                {
+                    '(sim)_E1_set01_M=mAQ87': [
+                        get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
+                        get_augment_config('sine', freqs=[10, 15], amps=[1, 1.2], add_next=False),
+                        get_augment_config('glitch', prob=0.1, std_fac=1.6, add_next=False),
+                        get_augment_config('sine', freqs=[1, 10, 15], amps=[1, 1.5, 1.7], add_next=False)
+                    ]
+                }
+            ]
 
 
         elif self.run_type == 'custom_test':

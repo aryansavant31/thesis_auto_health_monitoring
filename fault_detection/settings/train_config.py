@@ -65,14 +65,14 @@ class AnomalyDetectorTrainConfig:
     # 2: Model parameters
         self.anom_type = 'IF'
         self.n_estimators = 1000
-        self.contam = 0.001
+        self.contam = 0.015
         self.set_anom_config()
 
         # run parameters
-        self.domain_config = get_domain_config('freq')
+        self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=10)
+            #get_freq_feat_config('first_n_modes', n_modes=10)
         ]  
         self.reduc_config = None
         self.feat_norm = None
@@ -233,7 +233,7 @@ class AnomalyDetectorTrainSweep:
         """
         self.data_config = data_config
 
-        self.train_sweep_num = 3
+        self.train_sweep_num = 4
 
     # 1: Training parameters
         # dataset parameters
@@ -244,12 +244,12 @@ class AnomalyDetectorTrainSweep:
 
     # 2: Model parameters
         self.anom_type = ['IF']
-        self.n_estimators = [10, 100, 1000, 5000, 10000]
-        self.contam = [1e-7, 1e-5, 1e-3, 1e-2, 0.1, 0.3]
+        self.n_estimators = [1000]
+        self.contam = [1e-7]
 
         # run parameters
         self.domain_config = [get_domain_config('time')]
-        self.raw_data_norm = [None]
+        self.raw_data_norm = ['std']
         self.feat_configs = [
             # [],
             #[get_time_feat_config('mean')], 

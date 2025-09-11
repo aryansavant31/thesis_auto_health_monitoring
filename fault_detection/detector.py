@@ -706,7 +706,7 @@ class TrainerAnomalyDetector:
             print("\nROC curve not logged as logging is disabled.\n")
         
 
-    def anomaly_score_dist_simple(self, is_pred=False, bins=50):
+    def anomaly_score_dist_simple(self, is_pred=False, is_log_x=False, bins=50):
         """
         Create a histogram of the anomaly scores for Ok and NOK classes.
         
@@ -732,15 +732,18 @@ class TrainerAnomalyDetector:
         indices_ok = self.df[self.df[label_col] == 0].index
         indices_nok = self.df[self.df[label_col] == 1].index
 
-        # handle negative scores by shifting them to positive range
-        min_score_ok = scores_ok.min() if not scores_ok.empty else 0
-        min_score_nok = scores_nok.min() if not scores_nok.empty else 0
-        min_score = min(min_score_ok, min_score_nok)
+        if is_log_x:
+            # handle negative scores by shifting them to positive range
+            min_score_ok = scores_ok.min() if not scores_ok.empty else 0
+            min_score_nok = scores_nok.min() if not scores_nok.empty else 0
+            min_score = min(min_score_ok, min_score_nok)
 
-        if min_score <= 0:
-            shift = abs(min_score) + 1 # boundary = 0 + shift = shift
-            scores_ok += shift
-            scores_nok += shift
+            if min_score <= 0:
+                shift = abs(min_score) + 1 # boundary = 0 + shift = shift
+                scores_ok += shift
+                scores_nok += shift
+            else:
+                shift = 0
         else:
             shift = 0
 
@@ -800,13 +803,17 @@ class TrainerAnomalyDetector:
             if counts_nok[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok[i], str(i), ha='center', va='bottom', fontsize=8, color='orange')
 
-        plt.xlabel('Anomaly Score (log scale) (shifted)')
+        
+        xlabel_text = " (log scale) (shifted)" if is_log_x else ""
+
+        plt.xlabel(f'Anomaly Score{xlabel_text}')
         plt.ylabel('Number of Samples (log scale)')
         plt.title(f'Anomaly Score Distribution ({label_col.replace('_', ' ').capitalize()}) : [{self.model_id} / {self.run_type}]')
         plt.legend()
         plt.grid(True)
-        plt.yscale('log')  
-        plt.xscale('log')
+        plt.yscale('log') 
+        if is_log_x: 
+            plt.xscale('log')
 
         # write sample indices in each bin
         text = f"## Bin details for Anomaly Score Distribution Simple ({label_col})\n"
