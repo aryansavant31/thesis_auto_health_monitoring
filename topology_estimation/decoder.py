@@ -139,10 +139,11 @@ class Decoder(LightningModule):
 
         return rank_feats
 
-    def set_training_params(self, lr=0.001, optimizer='adam', loss_type='nll'):
+    def set_training_params(self, lr=0.001, optimizer='adam', loss_type='nll', momentum=0.9):
         self.lr = lr
         self.optimizer = optimizer
         self.loss_type = loss_type
+        self.momentum = momentum
 
         print(f"\nTraining parameters set to: \nlr={self.lr}, \noptimizer={self.optimizer}, \nloss_type={self.loss_type}")
 
@@ -482,6 +483,7 @@ class Decoder(LightningModule):
         self.lr = checkpoint["lr"]
         self.optimizer = checkpoint["optimizer"]
         self.loss_type = checkpoint["loss_type"]
+        self.momentum = checkpoint["momentum"]
 
         # rebuild the model with the restored attributes
         self.build_model()
@@ -509,12 +511,13 @@ class Decoder(LightningModule):
         checkpoint["lr"] = self.lr
         checkpoint["optimizer"] = self.optimizer
         checkpoint["loss_type"] = self.loss_type
+        checkpoint["momentum"] = self.momentum
 
     def configure_optimizers(self):
         if self.optimizer == 'adam':
             return Adam(self.parameters(), lr=self.lr)
         elif self.optimizer == 'sgd':
-            return SGD(self.parameters(), lr=self.lr)
+            return SGD(self.parameters(), lr=self.lr, momentum=self.momentum)
         
 # ====== Trainer.fit() methods  ======
         
@@ -642,6 +645,7 @@ class Decoder(LightningModule):
         self.training_time = time.time() - self.start_time
         self.hyperparams.update({
             'model_id': self.model_id,
+            'model_num': float(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
             'training_time': self.training_time,
             'n_steps': self.global_step,
             'train_loss': self.train_losses['train_losses'][-1],

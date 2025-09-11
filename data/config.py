@@ -399,8 +399,22 @@ def get_augment_config(augment_type, **kwargs):
             For all `augment_type`, the following parameters are available:
             - `OG` (Original data): No additional parameters
             - `gau` (Gaussian noise): **mean**, **std**
-            - `sine` (Sine wave): **freqs** (_list_), **amps** (_list_)
-            - `glitch` (Random glitches): **prob**, **amp**
+            - `sine` (Sine wave): **freqs** (_list_), **std_facs** (_list_)
+            - `glitch` (Random glitches): **prob**, **std_fac**
+
+        Note
+        ----
+        std_factor is a multiplier that determines the strength of the augmentation (sine wave or glitch)
+        relative to the standard deviation of the original signal.
+
+        For `sine` and `glitch`, the amplitude is calculated as follows:
+        - `sine` amplitude = signal std * std_factor * sqrt(2)
+        - `glitch` amplitude = signal std * std_factor
+
+        Examples:
+        - std_factor = 1.0: The augmentation has the same standard deviation as the original signal.
+        - std_factor < 1.0: The augmentation is weaker than the original signal.
+        - std_factor > 1.0: The augmentation is stronger than the original signal.
 
         """
         config = {}
@@ -410,11 +424,11 @@ def get_augment_config(augment_type, **kwargs):
             config['mean'] = kwargs.get('mean', 0.0)
             config['std'] = kwargs.get('std', 0.1)
         elif augment_type == 'sine':
-            config['freqs'] = kwargs.get('freqs', 10.0)
-            config['amps'] = kwargs.get('amps', 5.0)
+            config['freqs'] = kwargs.get('freqs', [10.0])
+            config['std_facs'] = kwargs.get('std_facs', [5.0])
         elif augment_type == 'glitch':
             config['prob'] = kwargs.get('prob', 0.01)
-            config['amp'] = kwargs.get('amp', 5.0)
+            config['std_fac'] = kwargs.get('std_fac', 5.0)
 
         config['add_next'] = kwargs.get('add_next', False)  # whether to add the next augmentation to the current one
         
