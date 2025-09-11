@@ -439,7 +439,8 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         decoder_model.set_training_params(
             lr=self.tp_config.lr, 
             optimizer=self.tp_config.optimizer,
-            loss_type=self.tp_config.loss_type
+            loss_type=self.tp_config.loss_type,
+            momentum=self.tp_config.momentum
             )
 
         print("\n" + 75*'-')

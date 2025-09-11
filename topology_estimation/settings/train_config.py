@@ -46,7 +46,7 @@ class DecoderTrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 6
+        self.model_num = 8
         self.continue_training = False
         self.is_log = True
         
@@ -62,7 +62,8 @@ class DecoderTrainConfig:
         # optimization parameters
         self.max_epochs = 10
         self.lr = 0.001
-        self.optimizer = 'adam'
+        self.optimizer = 'sgd'
+        self.momentum = 0.9
         self.loss_type = 'mse'
 
     # 2: Decoder parameters
@@ -91,8 +92,8 @@ class DecoderTrainConfig:
         # run parameters
         self.skip_first_edge_type = False
         self.pred_steps = 1
-        self.is_burn_in = False
-        self.burn_in_steps = 1
+        self.is_burn_in = True
+        self.burn_in_steps = 70
         self.is_dynamic_graph = False
 
         # if dynamic graph is true
@@ -146,6 +147,7 @@ class DecoderTrainConfig:
             'max_epochs': self.max_epochs,
             'lr': self.lr,
             'optimizer': self.optimizer,
+            'momentum': self.momentum,
             'loss_type': self.loss_type,
             'n_edge_types': self.n_edge_types,
             'window_length': self.data_config.window_length,

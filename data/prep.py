@@ -774,10 +774,10 @@ class DataPreprocessor:
                 augmented_data = add_gaussian_noise(data, augment_config['mean'], augment_config['std'])
             # sine wave (freq modulation)
             elif augment_config['type'] == 'sine':
-                augmented_data = add_sine_waves(data, augment_config['freqs'], augment_config['amps'], fs)
+                augmented_data = add_sine_waves(data, augment_config['freqs'], augment_config['std_facs'], fs)
             # gitches
             elif augment_config['type'] == 'glitch':
-                augmented_data = add_glitches(data, augment_config['prob'], augment_config['amp'])
+                augmented_data = add_glitches(data, augment_config['prob'], augment_config['std_fac'])
 
             # chain augmentations
             if augment_config['add_next'] and idx < len(augment_configs) - 1:

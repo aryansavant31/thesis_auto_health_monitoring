@@ -21,7 +21,7 @@ def add_gaussian_noise(signal, mean=0.0, std=0.01):
     noise = np.random.normal(mean, std, signal.shape)
     return signal + noise
 
-def add_sine_waves(signal, freqs=[10.0], amps=[5.0], fs=1000.0):
+def add_sine_waves(signal, freqs=[10.0], std_factors=[5.0], fs=1000.0):
     """
     Applies frequency modulation to the input signal.
 
@@ -31,8 +31,8 @@ def add_sine_waves(signal, freqs=[10.0], amps=[5.0], fs=1000.0):
         Input signal
     freqs : list
         List of frequencies of the modulation
-    amps : list
-        List of amplitude of the modulation
+    std_factors : list
+        List of factors to multiply the signal std for each frequency
     fs : float
         Sampling frequency of the signal
     
@@ -44,18 +44,21 @@ def add_sine_waves(signal, freqs=[10.0], amps=[5.0], fs=1000.0):
     n_samples, n_timesteps = signal.shape
     time = np.arange(n_timesteps) / fs
 
+    signal_std = np.std(signal)
+
     # init modulated signal
     modulated_signal = signal.copy()
 
     # add sine waves for each frequency and amplitude pair
-    for freq, amp in zip(freqs, amps):
+    for freq, std_factor in zip(freqs, std_factors):
+        amp = signal_std * std_factor * np.sqrt(2)
         sine_wave = amp * np.sin(2 * np.pi * freq * time)
         sine_wave = np.tile(sine_wave, (n_samples, 1))  # match the shape of signal
         modulated_signal += sine_wave
     
     return modulated_signal
 
-def add_glitches(signal, prob=0.01, amp=5.0):
+def add_glitches(signal, prob=0.01, std_factor=5.0):
     """
     Introduces random glitches into the input signal.
     Glitch range: [-glitch_amp, glitch_amp]
@@ -76,8 +79,12 @@ def add_glitches(signal, prob=0.01, amp=5.0):
     """
     n_samples, n_timesteps = signal.shape
 
+    # Calculate std of the original signal
+    signal_std = np.std(signal)
+    glitch_amp = signal_std * std_factor
+
     # create random masks for glitches
     glitch_mask = np.random.rand(n_samples, n_timesteps) < prob # anything more that glitch_prob will be 0
-    glitches = amp * (2 * np.random.rand(n_samples, n_timesteps) - 1)  # random values in [-glitch_amp, glitch_amp]
+    glitches = glitch_amp * (2 * np.random.rand(n_samples, n_timesteps) - 1)  # random values in [-glitch_amp, glitch_amp]
     
     return signal + (glitch_mask * glitches)
