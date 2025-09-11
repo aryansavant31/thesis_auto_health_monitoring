@@ -659,7 +659,7 @@ class DataPreprocessor:
         fs_matrix = np.array(fs_matrix, dtype=np.float32)
 
         # verbose output
-        if ds_type == 'OK' or ds_type == 'UK':
+        if ds_type == 'OK' or ds_type == 'UK' or ds_type == 'NOK':
             print(f"\nFor ds_type '{ds_type}' and others....")
             print(45*'-')
             print(f"Maximum timesteps across all node types: {self.data_config.max_timesteps:,}")
