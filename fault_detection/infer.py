@@ -90,6 +90,7 @@ class AnomalyDetectorInferPipeline:
         # update the model with custom data statistics and domain config
         anomaly_detector.data_stats = data_stats
         anomaly_detector.domain_config = self.fdet_config.domain_config
+        anomaly_detector.nok_percentage = self.fdet_config.nok_percentage
 
         # update hparams with new values
         anomaly_detector.hparams.update(self.fdet_config.infer_hparams)

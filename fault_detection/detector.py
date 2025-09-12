@@ -29,6 +29,11 @@ class AnomalyDetector:
     def __init__(self, anom_config, hparams):
         self.anom_config = anom_config
         self.hparams = hparams
+        self.ok_percentage = 1
+        self.nok_percentage = 1
+
+        self.ok_lower_bound = None
+        self.nok_upper_bound = None
 
         if anom_config['anom_type'] == 'IF':
             self.model = IsolationForest(contamination=anom_config['IF/contam'], 
@@ -365,19 +370,38 @@ class TrainerAnomalyDetector:
         infer_time = time.time() - start_time
         print(f"\nTraining inference completed in {infer_time:.2f} seconds")
 
-        # preprocess pred label to match the given label notations
-        self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
-        valid_rows = self.df['given_label'] != -1
+        # # preprocess pred label to match the given label notations
+        # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+        valid_rows = self.df['given_label'] != 0
 
         # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
         filtered_df = self.df[valid_rows]
 
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
 
+        print(f"\nTraining accuracy: {accuracy:.2f}")
+
+        # calculate ok_lower_bound
+        scores_pred_ok = self.df[self.df['pred_label'] == 1]['scores']
+        anomaly_detector.ok_lower_bound = np.percentile(scores_pred_ok, (1 - anomaly_detector.ok_percentage) * 100) if len(scores_pred_ok) > 0 else None
+        
+        # calculate nok_upper_bound
+        scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
+        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
+
+        # assign is_final_pred
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+
+        self.ok_percentage = anomaly_detector.ok_percentage
+        self.nok_percentage = anomaly_detector.nok_percentage
+        self.ok_lower_bound = anomaly_detector.ok_lower_bound
+        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+
+        print(f"\nOK lower bound (at {self.ok_percentage*100:.1f} percentile): {self.ok_lower_bound:.4f}" if anomaly_detector.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK.")
+        print(f"\nNOK upper bound (at {self.nok_percentage*100:.1f} percentile): {self.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+
         print(f"\nDataframe is as follows:")
         print(self.df)
-
-        print(f"\nTraining accuracy: {accuracy:.2f}")
 
     # 3. Log model information
         self.model_type = type(anomaly_detector.model).__name__
@@ -390,6 +414,7 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['model_id'] = self.model_id
         anomaly_detector.hparams['training_time'] = training_time
         anomaly_detector.hparams['model_num'] = int(self.logger.log_dir.split('_')[-1]) if self.logger else 0
+        anomaly_detector.hparams['db_delta_ok/train'] = anomaly_detector.ok_lower_bound
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/train_accuracy", accuracy)
@@ -450,8 +475,24 @@ class TrainerAnomalyDetector:
         infer_time = time.time() - start_time
         print(f"\nPrediction completed in {infer_time:.2f} seconds")
         
-        # preprocess pred label to match the given label notations
-        self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+        # # preprocess pred label to match the given label notations
+        # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+
+        # calculate nok_upper_bound
+        scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
+        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
+        print(f"\nNOK upper bound (at {anomaly_detector.nok_percentage*100:.1f} percentile): {anomaly_detector.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+
+        # assign is_final_pred
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+
+        self.ok_percentage = anomaly_detector.ok_percentage
+        self.nok_percentage = anomaly_detector.nok_percentage
+        self.ok_lower_bound = anomaly_detector.ok_lower_bound
+        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+
+        print(f"\nOK lower bound (from training): {self.ok_lower_bound:.4f}" if self.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK during training.")
+        print(f"\nNOK upper bound (from testing): {self.nok_upper_bound:.4f}" if self.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK during testing.")
 
         print(f"\nDataframe is as follows:")
         print(self.df)
@@ -499,9 +540,9 @@ class TrainerAnomalyDetector:
         infer_time = time.time() - start_time
         print(f"\nTest inference completed in {infer_time:.2f} seconds")
 
-        # preprocess pred label to match the given label notations
-        self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
-        valid_rows = self.df['given_label'] != -1
+        # # preprocess pred label to match the given label notations
+        # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+        valid_rows = self.df['given_label'] != 0
 
         # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
         filtered_df = self.df[valid_rows]
@@ -509,18 +550,27 @@ class TrainerAnomalyDetector:
         # calculate test accuracy
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
 
-        # calculate decison boundary deltas
-        scores_ok = filtered_df[filtered_df['pred_label'] == 0]['scores']
-        scores_nok = filtered_df[filtered_df['pred_label'] == 1]['scores']
-        
-        db_delta_ok = np.min(scores_ok) if not scores_ok.empty else -1
-        db_delta_nok = - np.max(scores_nok) if not scores_nok.empty else -1
+        # calculate nok_upper_bound
+        scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
+        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
+        print(f"\nNOK upper bound (at {anomaly_detector.nok_percentage*100:.1f} percentile): {anomaly_detector.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+
+        # assign is_final_pred
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+
+        self.ok_percentage = anomaly_detector.ok_percentage
+        self.nok_percentage = anomaly_detector.nok_percentage
+        self.ok_lower_bound = anomaly_detector.ok_lower_bound
+        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+
+        print(f"\nOK lower bound (from training): {self.ok_lower_bound:.4f}" if self.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK during training.")
+        print(f"\nNOK upper bound (from testing): {self.nok_upper_bound:.4f}" if self.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK during testing.")
 
         # calculate precison, recall, f1-score
-        tp = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == 1))  # True Positives
-        fp = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == 0))  # False Positives
-        fn = np.sum((filtered_df['pred_label'] == 0) & (filtered_df['given_label'] == 1))  # False Negatives
-        tn = np.sum((filtered_df['pred_label'] == 0) & (filtered_df['given_label'] == 0))  # True Negatives
+        tp = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == -1))  # True Positives
+        fp = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == 1))  # False Positives
+        fn = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == -1))  # False Negatives
+        tn = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == -1))  # True Negatives
 
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
@@ -549,8 +599,7 @@ class TrainerAnomalyDetector:
         anomaly_detector.hparams['fp'] = int(fp)
         anomaly_detector.hparams['tn'] = int(tn)
         anomaly_detector.hparams['fn'] = int(fn)
-        anomaly_detector.hparams['db_delta_ok'] = db_delta_ok
-        anomaly_detector.hparams['db_delta_nok'] = db_delta_nok
+        anomaly_detector.hparams[f'db_delta_nok/test'] = anomaly_detector.nok_upper_bound
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/test_accuracy", accuracy)
@@ -569,6 +618,20 @@ class TrainerAnomalyDetector:
             print("\nTesting hyperparameters not logged as logging is disabled.")
 
         print('\n' + 75*'-')
+
+    def _assign_final_pred(self, row, anomaly_detector):
+            if row['pred_label'] == -1:
+                if anomaly_detector.nok_upper_bound is not None and row['scores'] <= anomaly_detector.nok_upper_bound:
+                    return -1
+                elif anomaly_detector.nok_upper_bound is not None and row['scores'] > anomaly_detector.nok_upper_bound:
+                    return -0.5
+            
+            if row['pred_label'] == 1:
+                if anomaly_detector.ok_lower_bound is not None and row['scores'] >= anomaly_detector.ok_lower_bound:
+                    return 1
+                elif anomaly_detector.ok_lower_bound is not None and row['scores'] < anomaly_detector.ok_lower_bound:
+                    return 0.5
+            return np.nan
                 
 # ================== Visualization Methods =======================
 
@@ -610,25 +673,26 @@ class TrainerAnomalyDetector:
             print(f"\nPair plot logged at {self.logger.log_dir}\n")
         else:
             print("\nPair plot not logged as logging is disabled.\n")
+            
 
-    def confusion_matrix(self):
+    def confusion_matrix_simple(self):
         """
         Create a confusion matrix of the predictions.
         """
         if not hasattr(self, 'df'):
             raise ValueError("DataFrame is not available. Please train, test or predict the model first.")
 
-        print("\n" + 12*"<" + " CONFUSION MATRIX " + 12*">")
+        print("\n" + 12*"<" + " CONFUSION MATRIX SIMPLE" + 12*">")
         print(f"\n> Creating confusion matrix for {self.model_id} / {self.run_type}...")
 
         x_label = ['OK (prediction)', 'NOK (prediction)']
         y_label = ['OK (truth)', 'NOK (truth)']
 
-        given_labels = np.where(self.df['given_label'] == 1, -1, 1) # convert 1 to -1 (anomaly) and 0 to 1 (normal)
-        pred_labels = np.where(self.df['pred_label'] == 1, -1, 1) 
+        # given_labels = np.where(self.df['given_label'] == 1, -1, 1) # convert 1 to -1 (anomaly) and 0 to 1 (normal)
+        # pred_labels = np.where(self.df['pred_label'] == 1, -1, 1) 
 
         cm = pd.crosstab(
-            given_labels, pred_labels, 
+            self.df['given_label'], self.df['pred_label'],   
             rownames=['Actual'], colnames=['Predicted'], dropna=False
             ).reindex(index=[1, -1], columns=[1, -1], fill_value=0)
         
@@ -656,11 +720,134 @@ class TrainerAnomalyDetector:
         # save the confusion matrix if logger is available
         if self.logger:
             fig = cm_plot.get_figure()
-            fig.savefig(os.path.join(self.logger.log_dir, f'cm_({self.model_id}_{self.run_type}).png'), dpi=500)
+            fig.savefig(os.path.join(self.logger.log_dir, f'cm_simple({self.model_id}_{self.run_type}).png'), dpi=500)
             self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/confusion_matrix", fig, close=True)
             print(f"\nConfusion matrix logged at {self.logger.log_dir}\n")
         else:
             print("\nConfusion matrix not logged as logging is disabled.\n")
+
+
+    def confusion_matrix_advance(self):
+        """
+        Create a confusion matrix that distinguishes between hard and soft predictions.
+        """
+        if not hasattr(self, 'df'):
+            raise ValueError("DataFrame is not available. Please train, test or predict the model first.")
+
+        print("\n" + 12*"<" + " CONFUSION MATRIX ADVANCE " + 12*">")
+        print(f"\n> Creating confusion matrix (hard/soft) for {self.model_id} / {self.run_type}...")
+
+        # Define mapping for display
+        x_label = ['OK (prediction)', 'NOK (prediction)']
+        y_label = ['OK (truth)', 'NOK (truth)']
+
+        # Prepare masks for each cell
+        # Rows: given_label (1=OK, -1=NOK)
+        # Cols: is_final_pred (1=Hard OK, 0.5=Soft OK, -1=Hard NOK, -0.5=Soft NOK)
+        matrix = {
+            (1, 1): {}, (1, 0.5): {}, (1, -1): {}, (1, -0.5): {},
+            (-1, 1): {}, (-1, 0.5): {}, (-1, -1): {}, (-1, -0.5): {},
+        }
+        for (truth, pred) in matrix.keys():
+            mask = (self.df['given_label'] == truth) & (self.df['final_pred_label'] == pred)
+            matrix[(truth, pred)]['count'] = mask.sum()
+
+        # For each cell, sum hard and soft
+        cell_counts = {
+            (1, 1): matrix[(1, 1)]['count'],
+            (1, 0.5): matrix[(1, 0.5)]['count'],
+            (1, -1): matrix[(1, -1)]['count'],
+            (1, -0.5): matrix[(1, -0.5)]['count'],
+            (-1, 1): matrix[(-1, 1)]['count'],
+            (-1, 0.5): matrix[(-1, 0.5)]['count'],
+            (-1, -1): matrix[(-1, -1)]['count'],
+            (-1, -0.5): matrix[(-1, -0.5)]['count'],
+        }
+
+        # Build 2x2 grid: rows = truth (OK, NOK), cols = pred (OK, NOK)
+        # Each cell: A = total, B = hard, C = soft
+        grid = [
+            [  # Truth = OK
+                {
+                    'A': cell_counts[(1, 1)] + cell_counts[(1, 0.5)],
+                    'B': cell_counts[(1, 1)],
+                    'C': cell_counts[(1, 0.5)],
+                },
+                {
+                    'A': cell_counts[(1, -1)] + cell_counts[(1, -0.5)],
+                    'B': cell_counts[(1, -1)],
+                    'C': cell_counts[(1, -0.5)],
+                },
+            ],
+            [  # Truth = NOK
+                {
+                    'A': cell_counts[(-1, 1)] + cell_counts[(-1, 0.5)],
+                    'B': cell_counts[(-1, 1)],
+                    'C': cell_counts[(-1, 0.5)],
+                },
+                {
+                    'A': cell_counts[(-1, -1)] + cell_counts[(-1, -0.5)],
+                    'B': cell_counts[(-1, -1)],
+                    'C': cell_counts[(-1, -0.5)],
+                },
+            ],
+        ]
+
+        # TN, FP, FN, TP cell labels
+        cell_labels = [['TN', 'FP'], ['FN', 'TP']]
+
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+
+        plt.rcParams.update({
+            "text.usetex": False,
+            "font.family": "serif",
+            "mathtext.fontset": "cm",
+        })
+
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+        ax.set_xticks([0.5, 1.5])
+        ax.set_yticks([0.5, 1.5])
+        ax.set_xticklabels(x_label)
+        ax.set_yticklabels(y_label)
+        ax.set_xlim(0, 2)
+        ax.set_ylim(0, 2)
+        ax.invert_yaxis()
+
+        # Draw grid
+        for i in range(3):
+            ax.axhline(i, color='black', lw=1)
+            ax.axvline(i, color='black', lw=1)
+
+        # Write cell contents
+        for i in range(2):  # rows
+            for j in range(2):  # cols
+                cell = grid[i][j]
+                y = i + 0.5
+                x = j + 0.5
+                # A: total (center, large)
+                ax.text(x, y-0.1, f"{cell['A']}", ha='center', va='center', fontsize=20, fontweight='bold', color='black')
+                # B: hard (below, bold black)
+                ax.text(x, y+0.13, f"H: {cell['B']}", ha='center', va='center', fontsize=13, fontweight='normal', color='black')
+                # C: soft (below, light gray)
+                ax.text(x, y+0.28, f"S: {cell['C']}", ha='center', va='center', fontsize=13, fontweight='normal', color='grey')
+                # Cell label (TN, FP, etc)
+                ax.text(x-0.38, y-0.38, cell_labels[i][j], ha='left', va='top', fontsize=12, color='dimgray', fontweight='bold')
+
+        ax.set_xlabel('Prediction')
+        ax.set_ylabel('Ground Truth')
+        plt.title(f'Confusion Matrix (Hard/Soft) : [{self.model_id} / {self.run_type}]')
+        plt.tight_layout()
+
+        # Save if logger is available
+        if self.logger:
+            fig.savefig(os.path.join(self.logger.log_dir, f'cm_advance_({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/confusion_matrix_advance", fig, close=True)
+            print(f"\nConfusion matrix (hard/soft) logged at {self.logger.log_dir}\n")
+        else:
+            plt.show()
+            print("\nConfusion matrix (hard/soft) not logged as logging is disabled.\n")
+
 
     def roc_curve(self):
         """
@@ -706,7 +893,7 @@ class TrainerAnomalyDetector:
             print("\nROC curve not logged as logging is disabled.\n")
         
 
-    def anomaly_score_dist_simple(self, is_pred=False, is_log_x=False, bins=50):
+    def anomaly_score_dist_simple(self, is_pred=False, is_log_x=False, bins=50, num=1):
         """
         Create a histogram of the anomaly scores for Ok and NOK classes.
         
@@ -722,15 +909,17 @@ class TrainerAnomalyDetector:
         
         label_col = 'pred_label' if is_pred else 'given_label'
 
-        print("\n" + 12*"<" + f" ANOMALY SCORE DISTRIBUTION SIMPLE ({label_col.upper()}) " + 12*">")
+        print("\n" + 12*"<" + f" ANOMALY SCORE DISTRIBUTION SIMPLE {num} ({label_col.upper()}) " + 12*">")
         print(f"\nCreating anomaly score distribution plot for {self.model_id} / {self.run_type}...")
 
-        
+        ok_lower = self.ok_lower_bound if self.ok_lower_bound is not None else None
+        nok_upper = self.nok_upper_bound if self.nok_upper_bound is not None else None
+
         # separate scores for OK and NOK classes
-        scores_ok = self.df[self.df[label_col] == 0]['scores']
-        scores_nok = self.df[self.df[label_col] == 1]['scores']
-        indices_ok = self.df[self.df[label_col] == 0].index
-        indices_nok = self.df[self.df[label_col] == 1].index
+        scores_ok = self.df[self.df[label_col] == 1]['scores']
+        scores_nok = self.df[self.df[label_col] == -1]['scores']
+        indices_ok = self.df[self.df[label_col] == 1].index
+        indices_nok = self.df[self.df[label_col] == -1].index
 
         if is_log_x:
             # handle negative scores by shifting them to positive range
@@ -742,35 +931,48 @@ class TrainerAnomalyDetector:
                 shift = abs(min_score) + 1 # boundary = 0 + shift = shift
                 scores_ok += shift
                 scores_nok += shift
+                ok_lower = ok_lower + shift if ok_lower is not None else None
+                nok_upper = nok_upper + shift if nok_upper is not None else None
             else:
                 shift = 0
         else:
             shift = 0
 
         # calculate means
-        mean_ok = np.mean(scores_ok)
-        mean_nok = np.mean(scores_nok)
-        if not scores_ok.empty:
-            db_delta_ok = min(scores_ok) - shift
-        if not scores_nok.empty:
-            db_delta_nok = shift - max(scores_nok)
+        # mean_ok = np.mean(scores_ok)
+        # mean_nok = np.mean(scores_nok)
 
-         # create bins and map sample indices to bins
-        bins_edges = np.histogram_bin_edges(np.concatenate([scores_ok, scores_nok]), bins=bins)
-        bin_indices_ok = np.digitize(scores_ok, bins_edges) - 1
-        bin_indices_nok = np.digitize(scores_nok, bins_edges) - 1
+        # db_delta values
+        db_delta_ok = ok_lower - shift if ok_lower is not None else None
+        db_delta_nok = shift - nok_upper if nok_upper is not None else None
 
-        # map sample indices to bins
-        bin_samples_ok = {i: [] for i in range(len(bins_edges) - 1)}
-        bin_samples_nok = {i: [] for i in range(len(bins_edges) - 1)}
+        ok_included = scores_ok[scores_ok >= ok_lower] if ok_lower is not None else scores_ok
+        ok_excluded = scores_ok[scores_ok < ok_lower] if ok_lower is not None else np.array([])
+        
+        nok_included = scores_nok[scores_nok <= nok_upper] if nok_upper is not None else scores_nok
+        nok_excluded = scores_nok[scores_nok > nok_upper] if nok_upper is not None else np.array([])
+        
+        
+        # # create bins and map sample indices to bins
+        # bins_edges = np.histogram_bin_edges(np.concatenate([scores_ok, scores_nok]), bins=bins)
+        # bin_indices_ok = np.digitize(scores_ok, bins_edges) - 1
+        # bin_indices_nok = np.digitize(scores_nok, bins_edges) - 1
 
-        for idx, bin_idx in zip(indices_ok, bin_indices_ok):
-            if 0 <= bin_idx < len(bins_edges) - 1:  # Ensure bin_idx is within valid range
-                bin_samples_ok[bin_idx].append(idx)
+        # # map sample indices to bins
+        # bin_samples_ok = {i: [] for i in range(len(bins_edges) - 1)}
+        # bin_samples_nok = {i: [] for i in range(len(bins_edges) - 1)}
 
-        for idx, bin_idx in zip(indices_nok, bin_indices_nok):
-            if 0 <= bin_idx < len(bins_edges) - 1:
-                bin_samples_nok[bin_idx].append(idx)
+        # for idx, bin_idx in zip(indices_ok, bin_indices_ok):
+        #     if 0 <= bin_idx < len(bins_edges) - 1:  # Ensure bin_idx is within valid range
+        #         bin_samples_ok[bin_idx].append(idx)
+
+        # for idx, bin_idx in zip(indices_nok, bin_indices_nok):
+        #     if 0 <= bin_idx < len(bins_edges) - 1:
+        #         bin_samples_nok[bin_idx].append(idx)
+
+        # Combine all scores for bin edges
+        all_scores = np.concatenate([ok_included, ok_excluded, nok_included, nok_excluded])
+        bins_edges = np.histogram_bin_edges(all_scores, bins=bins)
 
         # update font settings for plots
         plt.rcParams.update({
@@ -780,28 +982,37 @@ class TrainerAnomalyDetector:
         })
 
         # create the histogram
-        plt.figure(figsize=(10, 6), dpi=100)
-        counts_ok, _, _ = plt.hist(scores_ok, bins=bins_edges, color='blue', label='OK (label=0)', alpha=0.5)
-        counts_nok, _, _ = plt.hist(scores_nok, bins=bins_edges, color='orange', label='NOK (label=1)', alpha=0.5)
+        plt.figure(figsize=(12, 8), dpi=100)
+        # Plot included/excluded for OK and NOK
+        counts_ok_in, _, _ = plt.hist(ok_included, bins=bins_edges, color='blue', label=f'OK ({self.ok_percentage * 100}% OK of train)', alpha=0.5)
+        counts_ok_ex, _, _ = plt.hist(ok_excluded, bins=bins_edges, color='blue', label='OK (uncertain)', alpha=0.2)
+        counts_nok_in, _, _ = plt.hist(nok_included, bins=bins_edges, color='orange', label=f'NOK ({self.nok_percentage * 100}% NOK)', alpha=0.5)
+        counts_nok_ex, _, _ = plt.hist(nok_excluded, bins=bins_edges, color='orange', label='NOK (uncertain)', alpha=0.2)
 
-        # add vertical lines for means and boundary
-        plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
-        plt.axvline(mean_nok, color='orange', linestyle='--', linewidth=1, label=f'Mean NOK: {mean_nok:.4f}')
+        # # add vertical lines for means and boundary
+        # plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
+        # plt.axvline(mean_nok, color='orange', linestyle='--', linewidth=1, label=f'Mean NOK: {mean_nok:.4f}')
         plt.axvline(shift, color='red', linestyle=':', linewidth=1.5, label=f'Boundary: {shift:.4f}')
+        plt.axvline(ok_lower, color='teal', linestyle=':', linewidth=1.5, label=f'OK Lower Bound (from train): {ok_lower:.4}') if ok_lower is not None else None
+        plt.axvline(nok_upper, color='brown', linestyle=':', linewidth=1.5, label=f'NOK Upper Bound: {nok_upper:.4}') if nok_upper is not None else None
         
         # db_delta_ok
-        if not scores_ok.empty:
-            plt.hlines(y=5, xmin=min(min(scores_ok), shift), xmax=max(min(scores_ok), shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK: {db_delta_ok:.4f}')
+        if ok_lower is not None:
+            plt.hlines(y=5, xmin=min(ok_lower, shift), xmax=max(ok_lower, shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f}')
         # db_delta_nok
-        if not scores_nok.empty:
-            plt.hlines(y=8, xmin=min(max(scores_nok), shift), xmax=max(max(scores_nok), shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK: {db_delta_nok:.4f}')
+        if nok_upper is not None:
+            plt.hlines(y=8, xmin=min(nok_upper, shift), xmax=max(nok_upper, shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
 
-        # add bin indices on top of each bar
-        for i in range(len(counts_ok)):
-            if counts_ok[i] > 0:
-                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_ok[i], str(i), ha='center', va='bottom', fontsize=8, color='blue')
-            if counts_nok[i] > 0:
-                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok[i], str(i), ha='center', va='bottom', fontsize=8, color='orange')
+         # Add bin indices on top of each bar for all histograms
+        for i in range(len(bins_edges) - 1):
+            if counts_ok_in[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_ok_in[i], str(i), ha='center', va='bottom', fontsize=8, color='blue')
+            if counts_ok_ex[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_ok_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='blue', alpha=0.4)
+            if counts_nok_in[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok_in[i], str(i), ha='center', va='bottom', fontsize=8, color='orange')
+            if counts_nok_ex[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='orange', alpha=0.4)
 
         
         xlabel_text = " (log scale) (shifted)" if is_log_x else ""
@@ -816,38 +1027,62 @@ class TrainerAnomalyDetector:
             plt.xscale('log')
 
         # write sample indices in each bin
-        text = f"## Bin details for Anomaly Score Distribution Simple ({label_col})\n"
+        text = f"## Bin details for Anomaly Score Distribution Simple {num} ({label_col})\n"
         text += 25 * "-"
-        text += f"\n### Total OK samples (from {label_col}) : {len(scores_ok)}\n"
-        text += 10*"-" + " Samples in OK bins " + 10*"-" + "\n"
-        for bin_idx, samples in bin_samples_ok.items():
-            if samples:  # Only print non-empty bins
-                low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
-                text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [blue]**: {sample_info}\n"
 
-        text += f"\n### Total NOK samples (from {label_col}) : {len(scores_nok)}\n"
-        text += 10*"-" + " Samples in NOK bins " + 10*"-" + "\n"
-        for bin_idx, samples in bin_samples_nok.items():
-            if samples:  # Only print non-empty bins
-                low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
-                text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [orange]**: {sample_info}\n"
+        # text += f"\n### Total OK samples (from {label_col}) : {len(scores_ok)}\n"
+        # text += 10*"-" + " Samples in OK bins " + 10*"-" + "\n"
+        # for bin_idx, samples in bin_samples_ok.items():
+        #     if samples:  # Only print non-empty bins
+        #         low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
+        #         sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+        #         text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [blue]**: {sample_info}\n"
+
+        # text += f"\n### Total NOK samples (from {label_col}) : {len(scores_nok)}\n"
+        # text += 10*"-" + " Samples in NOK bins " + 10*"-" + "\n"
+        # for bin_idx, samples in bin_samples_nok.items():
+        #     if samples:  # Only print non-empty bins
+        #         low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
+        #         sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+        #         text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [orange]**: {sample_info}\n"
+
+        def write_bin_samples(indices, scores, bins_edges, label, color):
+            nonlocal text
+            bin_indices = np.digitize(scores, bins_edges) - 1
+            bin_samples = {i: [] for i in range(len(bins_edges) - 1)}
+            for idx, bin_idx in zip(indices, bin_indices):
+                if 0 <= bin_idx < len(bins_edges) - 1:
+                    bin_samples[bin_idx].append(idx)
+
+            text += f"\n### Total {label} samples: {sum(len(samples) for samples in bin_samples.values())}\n"
+            text += 10*"-" + f" Samples in {label} bins " + 10*"-" + "\n"
+            for bin_idx, samples in bin_samples.items():
+                if samples:
+                    low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
+                    sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+                    text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [{color}]**: {sample_info}\n"
         
-        # print sample indices for each bin
+        write_bin_samples(indices_ok, scores_ok, bins_edges, "OK", "blue")
+        write_bin_samples(indices_nok, scores_nok, bins_edges, "NOK", "orange")
+
+        # Print db_delta values
+        text += f"\nDB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f} (DB = {shift:.4f})" if db_delta_ok is not None else "No DB delta OK"
+        text += f"\nDB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f} (DB = {shift:.4f})\n" if db_delta_nok is not None else "No DB delta NOK"
+
         print(text)
 
         # save the distribution plot if logger is available
         if self.logger:
             fig = plt.gcf()
-            fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_simple_{label_col.split('_')[0]}({self.model_id}_{self.run_type}).png'), dpi=500)
-            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_simple_{label_col}", fig, close=True)
+            fig.savefig(os.path.join(self.logger.log_dir, f'anom_score_simple_{num}_{label_col.split('_')[0]}({self.model_id}_{self.run_type}).png'), dpi=500)
+            self.logger.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/anomaly_score_dist_simple_{num}_{label_col}", fig, close=True)
             self.logger.add_text(f"{self.model_id} + {self.run_type}", text)
             print(f"\nAnomaly score distribution plot logged at {self.logger.log_dir}\n")
         else:
             print("\nAnomaly score distribution plot not logged as logging is disabled.\n")
 
-    def anomaly_score_dist_advance(self, bins=50, percentile_ok=100, percentile_nok=100, num=1):
+
+    def anomaly_score_dist_advance(self, bins=50, is_log_x=False, num=1):
         """
         Create a histogram of the anomaly scores for all combinations of given and predicted labels.
         Plots:
@@ -862,26 +1097,26 @@ class TrainerAnomalyDetector:
         ----------
         bins : int, optional
             Number of bins for the histogram, by default 50
-        percentile_ok : float, optional (%)
-            Percentile for True Negative (OK) samples to calculate db_delta_ok, by default 100
-        percentile_nok : float, optional (%)
-            Percentile for True Positive (NOK) samples to calculate db_delta_nok, by default 100
+        is_log_x : bool, optional
+            If True, the x-axis is logarithmic, by default False
         """
 
         if not hasattr(self, 'df'):
             raise ValueError("DataFrame is not available. Please train, test or predict the model first.")
 
         print("\n" + 12*"<" + F" ANOMALY SCORE DISTRIBUTION ADVANCE {num} (GIVEN vs PRED) " + 12*">")
-        print(f"\n(Using percentile_ok = {percentile_ok} % and percentile_nok = {percentile_nok} %)")
+        print(f"\n(Using '{self.ok_percentage * 100}%' OK of train and '{self.nok_percentage * 100}%' NOK)")
         print(f"\nCreating anomaly score distribution plot for {self.model_id} / {self.run_type}...")
 
         df = self.df
+        ok_lower = self.ok_lower_bound if self.ok_lower_bound is not None else None
+        nok_upper = self.nok_upper_bound if self.nok_upper_bound is not None else None
 
         # Masks for each category
-        tn_mask = (df['given_label'] == 0) & (df['pred_label'] == 0)  # True Negative (OK correctly classified)
-        tp_mask = (df['given_label'] == 1) & (df['pred_label'] == 1)  # True Positive (NOK correctly classified)
-        fp_mask = (df['given_label'] == 0) & (df['pred_label'] == 1)  # False Positive (OK misclassified as NOK)
-        fn_mask = (df['given_label'] == 1) & (df['pred_label'] == 0)  # False Negative (NOK misclassified as OK)
+        tn_mask = (df['given_label'] == 1) & (df['pred_label'] == 1)  # True Negative (OK correctly classified)
+        tp_mask = (df['given_label'] == -1) & (df['pred_label'] == -1)  # True Positive (NOK correctly classified)
+        fp_mask = (df['given_label'] == 1) & (df['pred_label'] == -1)  # False Positive (OK misclassified as NOK)
+        fn_mask = (df['given_label'] == -1) & (df['pred_label'] == 1)  # False Negative (NOK misclassified as OK)
 
         # Scores and indices for each category
         scores_tn = df[tn_mask]['scores']
@@ -894,46 +1129,52 @@ class TrainerAnomalyDetector:
         indices_fp = df[fp_mask].index
         indices_fn = df[fn_mask].index
 
-        # --- Use all given OK and NOK samples for percentile calculation ---
-        scores_given_ok = df[df['given_label'] == 0]['scores']
-        scores_given_nok = df[df['given_label'] == 1]['scores']
+        if is_log_x:
+            # Shift scores if needed
+            min_score = min([
+                scores_tn.min() if not scores_tn.empty else 0,
+                scores_tp.min() if not scores_tp.empty else 0,
+                scores_fp.min() if not scores_fp.empty else 0,
+                scores_fn.min() if not scores_fn.empty else 0
+            ])
+            shift = abs(min_score) + 1 if min_score <= 0 else 0
+            
+            scores_tn = scores_tn + shift
+            scores_tp = scores_tp + shift
+            scores_fp = scores_fp + shift
+            scores_fn = scores_fn + shift
+            ok_lower = ok_lower + shift if ok_lower is not None else None
+            nok_upper = nok_upper + shift if nok_upper is not None else None
 
-        # Shift scores if needed
-        min_score = min([
-            scores_tn.min() if not scores_tn.empty else 0,
-            scores_tp.min() if not scores_tp.empty else 0,
-            scores_fp.min() if not scores_fp.empty else 0,
-            scores_fn.min() if not scores_fn.empty else 0
-        ])
-        shift = abs(min_score) + 1 if min_score <= 0 else 0
-
-        scores_tn = scores_tn + shift
-        scores_tp = scores_tp + shift
-        scores_fp = scores_fp + shift
-        scores_fn = scores_fn + shift
-        scores_given_ok = scores_given_ok + shift
-        scores_given_nok = scores_given_nok + shift
+        else:
+            shift = 0
 
         # Percentile cutoff for OK (from max to min)
-        ok_sorted = np.sort(scores_given_ok)[::-1]
-        ok_cutoff_idx = int(np.ceil(len(ok_sorted) * (percentile_ok / 100.0))) - 1
-        ok_included_min = ok_sorted[ok_cutoff_idx] if ok_sorted.size > 0 else None
+        # ok_sorted = np.sort(scores_given_ok)[::-1]
+        # ok_cutoff_idx = int(np.ceil(len(ok_sorted) * (percentile_ok / 100.0))) - 1
+        # ok_included_min = ok_sorted[ok_cutoff_idx] if ok_sorted.size > 0 else None
 
-        # Percentile cutoff for NOK (from min to max)
-        nok_sorted = np.sort(scores_given_nok)
-        nok_cutoff_idx = int(np.ceil(len(nok_sorted) * (percentile_nok / 100.0))) - 1
-        nok_included_max = nok_sorted[nok_cutoff_idx] if nok_sorted.size > 0 else None
+        # # Percentile cutoff for NOK (from min to max)
+        # nok_sorted = np.sort(scores_given_nok)
+        # nok_cutoff_idx = int(np.ceil(len(nok_sorted) * (percentile_nok / 100.0))) - 1
+        # nok_included_max = nok_sorted[nok_cutoff_idx] if nok_sorted.size > 0 else None
 
         # db_delta values
-        db_delta_ok = ok_included_min - shift if ok_included_min is not None else None
-        db_delta_nok = shift - nok_included_max if nok_included_max is not None else None
+        db_delta_ok = ok_lower - shift if ok_lower is not None else None
+        db_delta_nok = shift - nok_upper if nok_upper is not None else None
 
         # Filter TN/TP samples based on percentile cutoffs
-        tn_included = scores_tn[scores_tn >= ok_included_min] if ok_included_min is not None else np.array([])
-        tn_excluded = scores_tn[scores_tn < ok_included_min] if ok_included_min is not None else np.array([])
+        tn_included = scores_tn[scores_tn >= ok_lower] if ok_lower is not None else scores_tn
+        tn_excluded = scores_tn[scores_tn < ok_lower] if ok_lower is not None else np.array([])
 
-        tp_included = scores_tp[scores_tp <= nok_included_max] if nok_included_max is not None else np.array([])
-        tp_excluded = scores_tp[scores_tp > nok_included_max] if nok_included_max is not None else np.array([])
+        tp_included = scores_tp[scores_tp <= nok_upper] if nok_upper is not None else scores_tp
+        tp_excluded = scores_tp[scores_tp > nok_upper] if nok_upper is not None else np.array([])
+
+        fn_included = scores_fn[scores_fn >= ok_lower] if ok_lower is not None else scores_fn
+        fn_excluded = scores_fn[scores_fn < ok_lower] if ok_lower is not None else np.array([])
+
+        fp_included = scores_fp[scores_fp <= nok_upper] if nok_upper is not None else scores_fp
+        fp_excluded = scores_fp[scores_fp > nok_upper] if nok_upper is not None else np.array([])
 
         # Combine all scores for bin edges
         all_scores = np.concatenate([tn_included, tn_excluded, tp_included, tp_excluded, scores_fp, scores_fn])
@@ -946,30 +1187,32 @@ class TrainerAnomalyDetector:
             "mathtext.fontset": "cm",
         })
 
-        plt.figure(figsize=(10, 6), dpi=100)
+        plt.figure(figsize=(12, 8), dpi=100)
 
         # Plot included samples
-        counts_tn, _, _ = plt.hist(tn_included, bins=bins_edges, color='blue', label=f'TN (OK, correct, {percentile_ok}%)', alpha=0.5)
-        counts_tp, _, _ = plt.hist(tp_included, bins=bins_edges, color='orange', label=f'TP (NOK, correct, {percentile_nok}%)', alpha=0.5)
-        counts_fp, _, _ = plt.hist(scores_fp, bins=bins_edges, color='red', label='FP (OK, misclassified)', alpha=0.5)
-        counts_fn, _, _ = plt.hist(scores_fn, bins=bins_edges, color='purple', label='FN (NOK, misclassified)', alpha=0.5)
+        counts_tn, _, _ = plt.hist(tn_included, bins=bins_edges, color='blue', label=f'TN (OK, correct, {self.ok_percentage * 100}% OK of train)', alpha=0.5)
+        counts_tp, _, _ = plt.hist(tp_included, bins=bins_edges, color='orange', label=f'TP (NOK, correct, {self.nok_percentage * 100}% NOK)', alpha=0.5)
+        counts_fp, _, _ = plt.hist(fp_included, bins=bins_edges, color='red', label='FP (OK, misclassified)', alpha=0.5)
+        counts_fn, _, _ = plt.hist(fn_included, bins=bins_edges, color='purple', label='FN (NOK, misclassified)', alpha=0.5)
 
         # Plot excluded samples (faded)
-        if tn_excluded.size > 0:
-            counts_tn_ex, _, _ = plt.hist(tn_excluded, bins=bins_edges, color='blue', alpha=0.2, label=f'TN excluded ({100-percentile_ok}%)')
-        if tp_excluded.size > 0:
-            counts_tp_ex, _, _ = plt.hist(tp_excluded, bins=bins_edges, color='orange', alpha=0.2, label=f'TP excluded ({100-percentile_nok}%)')
+        counts_tn_ex, _, _ = plt.hist(tn_excluded, bins=bins_edges, color='blue', alpha=0.2, label=f'TN soft')
+        counts_tp_ex, _, _ = plt.hist(tp_excluded, bins=bins_edges, color='orange', alpha=0.2, label=f'TP soft')
+        counts_fp_ex, _, _ = plt.hist(fp_excluded, bins=bins_edges, color='red', alpha=0.2, label='FP soft')
+        counts_fn_ex, _, _ = plt.hist(fn_excluded, bins=bins_edges, color='purple', alpha=0.2, label='FN soft')
 
         # vertical lines for boundary
         plt.axvline(shift, color='red', linestyle=':', linewidth=1.5, label=f'Boundary: {shift:.4f}')
+        plt.axvline(ok_lower, color='teal', linestyle=':', linewidth=1.5, label=f'OK Lower Bound (from train): {ok_lower:.4}') if ok_lower is not None else None
+        plt.axvline(nok_upper, color='brown', linestyle=':', linewidth=1.5, label=f'NOK Upper Bound: {nok_upper:.4}') if nok_upper is not None else None
 
         # db_delta_ok and db_delta_nok
         if db_delta_ok is not None:
-            plt.hlines(y=5, xmin=min(ok_included_min, shift), xmax=max(ok_included_min, shift), color='teal', linestyle='--', alpha=0.8, linewidth=1,
-                        label=f'DB delta OK ({percentile_ok}%): {db_delta_ok:.4f}')
+            plt.hlines(y=5, xmin=min(ok_lower, shift), xmax=max(ok_lower, shift), color='teal', linestyle='--', alpha=0.8, linewidth=1,
+                        label=f'DB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f}')
         if db_delta_nok is not None:
-            plt.hlines(y=8, xmin=min(nok_included_max, shift), xmax=max(nok_included_max, shift), color='brown', linestyle='--', alpha=0.6, linewidth=1,
-                        label=f'DB delta NOK ({percentile_nok}%): {db_delta_nok:.4f}')
+            plt.hlines(y=8, xmin=min(nok_upper, shift), xmax=max(nok_upper, shift), color='brown', linestyle='--', alpha=0.6, linewidth=1,
+                        label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
 
         # Add bin indices on top of each bar for all histograms
         for i in range(len(bins_edges) - 1):
@@ -990,19 +1233,26 @@ class TrainerAnomalyDetector:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_tn_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='blue', alpha=0.4)
             if tp_excluded.size > 0 and counts_tp_ex[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_tp_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='orange', alpha=0.4)
+            if fp_excluded.size > 0 and counts_fp_ex[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_fp_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='red', alpha=0.4)
+            if fn_excluded.size > 0 and counts_fn_ex[i] > 0:
+                plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_fn_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='purple', alpha=0.4)
 
+        xlabel_text = " (log scale) (shifted)" if is_log_x else ""
 
-        plt.xlabel('Anomaly Score (log scale) (shifted)')
+        plt.xlabel(f'Anomaly Score{xlabel_text}')
         plt.ylabel('Number of Samples (log scale)')
         plt.title(f'Anomaly Score Distribution (Given vs Pred Label) : [{self.model_id} / {self.run_type}]')
         plt.legend()
         plt.grid(True)
         plt.yscale('log')
-        plt.xscale('log')
+        if is_log_x:
+            plt.xscale('log')
 
         # Write sample indices for each bin and category
-        text = f"## Bin details for Anomaly Score Distribution Advance {num} (perc_ok = {percentile_ok}%, perc_nok = {percentile_nok}%) \n"
+        text = f"## Bin details for Anomaly Score Distribution Advance {num} ({self.ok_percentage * 100}% OK of train, {self.nok_percentage * 100}% NOK) \n"
         text += 25 * "-"
+
         def write_bin_samples(indices, scores, bins_edges, label, color):
             nonlocal text
             bin_indices = np.digitize(scores, bins_edges) - 1
@@ -1024,8 +1274,8 @@ class TrainerAnomalyDetector:
         write_bin_samples(indices_fn, scores_fn, bins_edges, "False Negative (NOK, misclassified)", "purple")
 
         # Print db_delta values
-        text += f"\nDB delta OK ({percentile_ok}%): {db_delta_ok:.4f} (DB = {shift:.4f})" if db_delta_ok is not None else "No DB delta OK"
-        text += f"\nDB delta NOK ({percentile_nok}%): {db_delta_nok:.4f} (DB = {shift:.4f})\n" if db_delta_nok is not None else "No DB delta NOK"
+        text += f"\nDB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f} (DB = {shift:.4f})" if db_delta_ok is not None else "No DB delta OK"
+        text += f"\nDB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f} (DB = {shift:.4f})\n" if db_delta_nok is not None else "No DB delta NOK"
 
         print(text)
 

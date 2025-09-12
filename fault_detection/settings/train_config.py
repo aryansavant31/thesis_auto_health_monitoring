@@ -65,8 +65,11 @@ class AnomalyDetectorTrainConfig:
     # 2: Model parameters
         self.anom_type = 'IF'
         self.n_estimators = 1000
-        self.contam = 0.015
+        self.contam = 1e-20
         self.set_anom_config()
+
+        # uncertainity parameters
+        self.ok_percentage = 0.99
 
         # run parameters
         self.domain_config = get_domain_config('time')
@@ -81,22 +84,28 @@ class AnomalyDetectorTrainConfig:
         self.hparams = self.get_hparams()
 
         self.train_plots = {
-            'confusion_matrix'              : [True, {}],
+            'confusion_matrix_simple'              : [True, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
-            'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
+            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
         }
 
         self.test_plots = {
-            'confusion_matrix'              : [True, {}],
+            'confusion_matrix_simple'              : [True, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
-            'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
+            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            #'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
         }
 
@@ -120,6 +129,7 @@ class AnomalyDetectorTrainConfig:
             'window_length': self.data_config.window_length,
             'stride': self.data_config.stride,
 
+            'ok_percentage': self.ok_percentage,
             'domain': domain_str,
             'raw_data_norm': self.raw_data_norm,
             'feats': f"[{feat_str}]",

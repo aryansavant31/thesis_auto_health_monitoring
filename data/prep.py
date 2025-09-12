@@ -128,7 +128,7 @@ class DataPreprocessor:
         label_counts : dict
             Dictionary containing counts of each label.
         """
-        label_counts = {0: 0, 1: 0, -1: 0}  # Assuming labels are 0 for healthy, 1 for unhealthy, and -1 for unknown
+        label_counts = {1: 0, -1: 0, 0: 0}  # Assuming labels are 1 for healthy, -1 for unhealthy, and 0 for unknown
 
         for data in data_loader:
             for label_value in data[-2].view(-1).tolist(): # data has (..., y_node (we want this), y_rep)
@@ -265,11 +265,11 @@ class DataPreprocessor:
         if remainder_samples > 0:
             rem_label_counts, _ = self._get_label_counts(remain_loader)
         else:
-            rem_label_counts = {0: 0, 1: 0, -1: 0}
+            rem_label_counts = {1: 0, -1: 0, 0: 0}
 
         print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
         print(45*'-')
-        print(f"Total samples: {total_samples}", f"\nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[0]}, NOK={des_label_counts[1]}, UK={des_label_counts[-1]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        print(f"Total samples: {total_samples}", f"\nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[1]}, NOK={des_label_counts[-1]}, UK={des_label_counts[0]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
         
         # print loader statistics
         self.print_loader_stats(custom_loader, "custom")
@@ -367,16 +367,16 @@ class DataPreprocessor:
         if val_loader is not None:
             val_label_counts, n_val = self._get_label_counts(val_loader) 
         else: 
-            val_label_counts, n_val = {0: 0, 1: 0, -1: 0}, 0
+            val_label_counts, n_val = {1: 0, -1: 0, 0: 0}, 0
 
         if remainder_samples > 0:
             rem_label_counts, _ = self._get_label_counts(remain_loader)
         else:
-            rem_label_counts = {0: 0, 1: 0, -1: 0}
+            rem_label_counts = {1: 0, -1: 0, 0: 0}
 
         print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
         print(60*'-')
-        print(f"Total samples: {total_samples}", f"\nTrain: {n_train}/{train_total} [OK={train_label_counts[0]}, NOK={train_label_counts[1]}, UK={train_label_counts[-1]}], Test: {n_test}/{test_total} [OK={test_label_counts[0]}, NOK={test_label_counts[1]}, UK={test_label_counts[-1]}], Val: {n_val}/{val_total} [OK={val_label_counts[0]}, NOK={val_label_counts[1]}, UK={val_label_counts[-1]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[0]}, NOK={rem_label_counts[1]}, UK={rem_label_counts[-1]}]")
+        print(f"Total samples: {total_samples}", f"\nTrain: {n_train}/{train_total} [OK={train_label_counts[1]}, NOK={train_label_counts[-1]}, UK={train_label_counts[0]}], Test: {n_test}/{test_total} [OK={test_label_counts[1]}, NOK={test_label_counts[-1]}, UK={test_label_counts[0]}], Val: {n_val}/{val_total} [OK={val_label_counts[1]}, NOK={val_label_counts[-1]}, UK={val_label_counts[0]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
 
         # print loader statistics
         self.print_loader_stats(train_loader, "train")
@@ -567,11 +567,11 @@ class DataPreprocessor:
         final_rep_labels_np = np.concatenate(all_ds_subtype_rep_labels, axis=0)  # (n_samples,)
         
         if ds_type == 'OK':
-            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
-        elif ds_type == 'NOK':
             final_node_labels_np = np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
-        elif ds_type == 'UK':
+        elif ds_type == 'NOK':
             final_node_labels_np = (-1) * np.ones((final_node_data_np.shape[0], 1), dtype=np.float32)
+        elif ds_type == 'UK':
+            final_node_labels_np = np.zeros((final_node_data_np.shape[0], 1), dtype=np.float32)
 
         # convert to torch tensors
         final_node_data = torch.from_numpy(final_node_data_np).to(torch.float32)

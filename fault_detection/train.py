@@ -143,6 +143,7 @@ class AnomalyDetectorTrainPipeline:
             })
         
         anomaly_detector = AnomalyDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
+        anomaly_detector.ok_percentage = self.fdet_config.ok_percentage
         
         req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()
         run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params and key not in ['data_config']}

@@ -40,18 +40,22 @@ class AnomalyDetectorInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
+        self.nok_percentage = 0.99
         self.cutoff_freq = 0
         self.update_infer_configs()
 
         self.infer_hparams = self.get_infer_hparams()
 
         self.test_plots = {
-            'confusion_matrix'              : [True, {}],
+            'confusion_matrix_simple'              : [True, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':False, 'is_log_x': False}],
-            'anomaly_score_dist_advance-1'    : [True, {'percentile_ok': 100, 'percentile_nok': 100, 'num': 1}],
-            'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
+            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            # 'anomaly_score_dist_simple-2'   : [False, {'is_pred':False, 'is_log_x': False}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            # 'anomaly_score_dist_advance-2'    : [True, {'num': 2}],
             'pair_plot'                     : [True, {}],
         }
 
@@ -69,6 +73,7 @@ class AnomalyDetectorInferConfig:
             f'domain/{self.run_type}': domain_str,
             f'{self.run_type}_version': self.version,
             f'batch_size/{self.run_type}': self.batch_size,
+            f'nok_percentage/{self.run_type}': self.nok_percentage,
         }
 
         for key, value in hparams.items():

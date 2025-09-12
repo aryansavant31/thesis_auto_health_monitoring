@@ -1,1 +1,1 @@
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_0\[ammf_(acc+E1)]-IF_fdet_68\anomaly_detector.pkl
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_2\anomaly_detector.pkl
