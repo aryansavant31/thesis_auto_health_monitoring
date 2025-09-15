@@ -15,12 +15,19 @@ def plot_grid_plot(excel_path):
     # Pivot for heatmap
     pivot = df.pivot(index='IF/n_estimators', columns='IF/contam', values='fp')
 
-    plt.figure(figsize=(6, 5))
+    plt.figure(figsize=(10, 5))
+    plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+    
     sns.heatmap(pivot, annot=True, cmap='viridis')
     plt.xlabel('contam')
     plt.ylabel('n_estimators')
     plt.title('False Positives by Hyperparameter Combination')
-    plt.show()
+    # save the plot
+    plt.savefig(os.path.join(os.path.dirname(__file__), 'iswp_2_heatmap.png'), bbox_inches='tight', dpi=500)
 
 def anova_analysis(excel_path):
     # read excel sheet
@@ -40,4 +47,4 @@ def anova_analysis(excel_path):
 if __name__ == "__main__":
     excel_path = os.path.join(os.path.dirname(__file__), 'iswp_2_excel.xlsx')
     plot_grid_plot(excel_path)
-    anova_analysis(excel_path)
+    # anova_analysis(excel_path)

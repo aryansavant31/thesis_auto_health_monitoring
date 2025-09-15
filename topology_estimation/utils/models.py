@@ -3,13 +3,14 @@ import torch
 from pytorch_lightning import LightningModule
 
 class MLP(LightningModule):
-    def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False):
+    def __init__(self, input_size, mlp_config, do_prob=0.0, is_batch_norm=False, is_xavier_weights=True):
         super(MLP, self).__init__()
 
         current_dim = input_size
         self.model_type = 'MLP' 
         self.layers = nn.ModuleList()
         self.is_batch_norm = is_batch_norm
+        self.is_xavier_weights = is_xavier_weights
 
         activation_map = {
             'relu': nn.ReLU(),
@@ -40,8 +41,21 @@ class MLP(LightningModule):
 
             current_dim = layer_output_size
         
+        if self.is_xavier_weights:
+            self.init_xavier_weights()
+        
         # output layer
         # self.layers.append(nn.Linear(current_dim, output_size))
+
+    def init_xavier_weights(self):
+        for layer in self.layers:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_normal_(layer.weight.data)
+                if layer.bias is not None:
+                    layer.bias.data.fill_(0.1)
+            elif isinstance(layer, nn.BatchNorm1d):
+                layer.weight.data.fill_(1)
+                layer.bias.data.zero_()
 
     def batch_norm(self, inputs, bn_layer):
         """
@@ -240,10 +254,11 @@ class GRU(LightningModule):
         r = torch.sigmoid(self.input_r(input) + self.hidden_r(agg_msgs))
 
         # candidate hidden state
-        h_tilde = torch.tanh(self.input_h(input) + self.hidden_h(r * agg_msgs))
+        h_tilde = torch.tanh(self.input_h(input) + r * self.hidden_h(agg_msgs))
 
         # new hidd(en state
-        hidden = ((1 - u) * hidden_prev) + (u * h_tilde)
+        # hidden = ((1 - u) * hidden_prev) + (u * h_tilde)
+        hidden = (1 - u) * h_tilde + u * hidden_prev
 
         return hidden
         

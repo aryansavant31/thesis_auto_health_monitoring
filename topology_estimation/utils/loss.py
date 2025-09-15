@@ -94,9 +94,20 @@ def kl_categorical(input, target, num_nodes, eps=1e-16):
     torch.Tensor
         The KL divergence value.
     """
+    # move target to the device of input
+    target = target.to(input.device)
 
-    kl_div = input * (torch.log(input + eps) - torch.log(target + eps))
-    return kl_div.sum() / (num_nodes * input.size(0)) # shape (scalar)
+    # kl_per_edge = input * (torch.log(input + eps) - torch.log(target + eps))
+    kl_per_edge = torch.sum(input * (torch.log(input + eps) - torch.log(target + eps)), dim=-1)  # shape (batch_size, n_edges)
+    mean_kl_per_edge = kl_per_edge.mean()  # shape (scalar)
+    # mean computed over n_edges * batch_size
+
+    kl_per_sample = kl_per_edge.sum(dim=1)  # shape (batch_size)
+    mean_kl_per_sample = kl_per_sample.mean()  # shape (scalar)
+    # mean computed over all samples in the batch
+
+    return mean_kl_per_edge, mean_kl_per_sample
+
     
 def kl_categorical_uniform(input, num_nodes, add_const=False, eps=1e-16):
     """
@@ -116,13 +127,30 @@ def kl_categorical_uniform(input, num_nodes, add_const=False, eps=1e-16):
     torch.Tensor (Scalar)
         The KL divergence value for uniform target (prior) distribution.
     """
-    num_distributions = input.shape[0] * input.shape[1]
-    kl_div = input * torch.log(input + eps)
-    kl_sum = kl_div.sum()
-    if add_const:
-        kl_sum += torch.log(input.size(-1)) * num_distributions
+    # num_distributions = input.shape[0] * input.shape[1]
+    # kl_div = input * torch.log(input + eps)
+    # kl_sum = kl_div.sum() # sums over n_batches x n_edges
+    # if add_const:
+    #     kl_sum += np.log(input.size(-1)) * num_distributions
 
-    return kl_sum / (num_nodes * input.size(0)) # shape (scalar)
+    # return kl_sum / (num_nodes * input.size(0)) # shape (scalar)
+    n_edge_types = input.size(-1)
+
+    kl_per_edge = torch.sum(input * torch.log(input + eps), dim=-1)  
+    if add_const:
+        kl_per_edge += np.log(n_edge_types) # shape (batch_size, n_edges)
+
+    # mean quantiles
+    mean_kl_per_edge = kl_per_edge.mean()  # shape (scalar)
+    # mean computed over n_edges * batch_size
+
+    # per-sample
+    kl_per_sample = kl_per_edge.sum(dim=1)  # shape (batch_size)
+    mean_kl_per_sample = kl_per_sample.mean()  # shape (scalar)
+    # mean computed over all samples in the batch
+
+    return mean_kl_per_edge, mean_kl_per_sample
+
 
 def nll_gaussian(pred, target, variance):
     """

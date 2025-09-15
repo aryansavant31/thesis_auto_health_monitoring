@@ -151,7 +151,7 @@ Decoder run parameters:
 skip_first_edge_type: False
 pred_steps: 1
 is_burn_in: False
-burn_in_steps: 1
+final_pred_steps: 1
 is_dynamic_graph: False
 temp: 1.0
 is_hard: True
@@ -251,15 +251,28 @@ Initializing input processors for decoder model...
 ---------------------------------------------------------------------------
 C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
 C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
-Training: |                                                       | 0/? [00:00<?, ?it/s]Training:   0%|                                                   | 0/1 [00:00<?, ?it/s]Epoch 0:   0%|                                                    | 0/1 [00:00<?, ?it/s]Epoch 0: 100%|############################################| 1/1 [00:00<00:00,  1.66it/s]Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.65it/s, v_num=_1.1]
-Validation: |                                                     | 0/? [00:00<?, ?it/s][A
-Validation:   0%|                                                 | 0/1 [00:00<?, ?it/s][A
-Validation DataLoader 0:   0%|                                    | 0/1 [00:00<?, ?it/s][A
-Validation DataLoader 0: 100%|############################| 1/1 [00:00<00:00,  5.87it/s][A
-                                                                                        [AEpoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]
+
+Training: |                                                       | 0/? [00:00<?, ?it/s]
+Training:   0%|                                                   | 0/1 [00:00<?, ?it/s]
+Epoch 0:   0%|                                                    | 0/1 [00:00<?, ?it/s]
+Epoch 0: 100%|############################################| 1/1 [00:00<00:00,  1.66it/s]
+Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.65it/s, v_num=_1.1]
+
+Validation: |                                                     | 0/? [00:00<?, ?it/s][A
+
+Validation:   0%|                                                 | 0/1 [00:00<?, ?it/s][A
+
+Validation DataLoader 0:   0%|                                    | 0/1 [00:00<?, ?it/s][A
+
+Validation DataLoader 0: 100%|############################| 1/1 [00:00<00:00,  5.87it/s][A
+
+                                                                                        [A
+Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]
+Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.28it/s, v_num=_1.1]
 Epoch 1/1 completed, Global Step: 1
 train_loss: 0.2433, val_loss: nan
-Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.25it/s, v_num=_1.1]
+
+Epoch 0: 100%|################################| 1/1 [00:00<00:00,  1.25it/s, v_num=_1.1]
 
 Training completed in 0.82 seconds or 0.01 minutes or 0.00022669778929816352 hours.
 Total training steps: 1

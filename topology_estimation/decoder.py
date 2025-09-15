@@ -51,6 +51,7 @@ class Decoder(LightningModule):
         self.out_mlp_config = None
         self.do_prob = None
         self.is_batch_norm = None
+        self.is_xavier_weights = None
 
         # input processor parameters
         self.domain_config = None
@@ -99,7 +100,7 @@ class Decoder(LightningModule):
     def set_run_params(
         self, data_config:DataConfig, data_stats, 
         skip_first_edge_type=False, pred_steps=1,
-        is_burn_in=False, burn_in_steps=1, is_dynamic_graph=False,
+        is_burn_in=False, final_pred_steps=1, is_dynamic_graph=False,
         encoder=None, temp=None, is_hard=False, show_conf_band=True
     ):
         """
@@ -121,7 +122,7 @@ class Decoder(LightningModule):
         self.skip_first_edge_type = skip_first_edge_type  # skip edge type = 0
         self.pred_steps = pred_steps
         self.is_burn_in = is_burn_in
-        self.burn_in_steps = burn_in_steps
+        self.final_pred_steps = final_pred_steps
         self.is_dynamic_graph = is_dynamic_graph
         self.encoder = encoder
         self.temp = temp
@@ -152,7 +153,8 @@ class Decoder(LightningModule):
         self.edge_mlp_fn = nn.ModuleList(MLP(2*self.msg_out_size, 
                                 self.edge_mlp_config,
                                 self.do_prob, 
-                                self.is_batch_norm) for _ in range(self.n_edge_types))
+                                self.is_batch_norm,
+                                self.is_xavier_weights) for _ in range(self.n_edge_types))
         
         # Make recurrent embedding function
         if self.recur_emb_type == 'gru':
@@ -165,13 +167,15 @@ class Decoder(LightningModule):
         self.mean_mlp = MLP(self.msg_out_size,
                            self.out_mlp_config,
                            self.do_prob,
-                           self.is_batch_norm)
+                           self.is_batch_norm,
+                           self.is_xavier_weights)
         
         # Make MLP to predict variance of prediction
         self.var_mlp = MLP(self.msg_out_size,
                            self.out_mlp_config,
                            self.do_prob,
-                           self.is_batch_norm)
+                           self.is_batch_norm,
+                           self.is_xavier_weights)
         
         self.output_layer_size = self.out_mlp_config[-1][0]  
         self.mean_output_layer = nn.Linear(self.output_layer_size, self.n_dims) 
@@ -429,7 +433,7 @@ class Decoder(LightningModule):
         for step in range(0, n_components - 1):
 
             if self.is_burn_in:
-                if step <= self.burn_in_steps:
+                if step < n_components - 1 - self.final_pred_steps:
                     ins = inputs[:, step, :, :]  # here, ins = ground truth
                 else:
                     ins = pred_all[step - 1]    # here, ins = last prediction wrt to current step
@@ -441,9 +445,9 @@ class Decoder(LightningModule):
                 else:                           # else use last prediction as input
                     ins = pred_all[step - 1]
 
-            if self.is_dynamic_graph and step >= self.burn_in_steps: 
+            if self.is_dynamic_graph and step > n_components - 1 - self.final_pred_steps: 
                 
-                # NOTE: Assumes burn_in_steps = args.timesteps
+                # NOTE: Assumes final_pred_steps = args.timesteps
                 self.edge_matrix = self.get_edge_matrix(ins, self.encoder, self.rec_rel, self.send_rel, self.temp, self.is_hard)
 
             pred, var, hidden = self.single_step_forward(ins, self.rec_rel, self.send_rel,
@@ -557,6 +561,11 @@ class Decoder(LightningModule):
         if self.loss_type == 'nll':
             loss = nll_gaussian(x_pred, target, x_var)
         if self.loss_type == 'mse':
+
+            if self.is_burn_in:
+                new_target = target[:, :, -self.final_pred_steps:, :]
+                new_x_pred = x_pred[:, :, -self.final_pred_steps:, :]
+                
             loss = F.mse_loss(x_pred, target)
 
         decoder_plot_data = {

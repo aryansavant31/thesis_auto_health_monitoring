@@ -5,12 +5,16 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 SETTINGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, SETTINGS_DIR) if SETTINGS_DIR not in sys.path else None
 
+import torch
+
 # global imports
 from data.config import DataConfig, get_domain_config
 from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
 
 
 class DecoderTrainConfig:
+    framework = 'decoder'
+
     def __init__(self, data_config:DataConfig):
         """
         1: Training Attributes
@@ -35,18 +39,18 @@ class DecoderTrainConfig:
             Higher values increase autoregressive behavior, lower values provide more stability but can cause exposure bias.
 
         is_burn_in : bool
-            - if True, then use first `burn_in_steps` steps as ground truth inputs. After `burn_in_steps`, use model predictions as inputs.
+            - if True, then use first `n_comps - final_pred_steps` steps as ground truth inputs. After that, use model predictions as inputs for last `final_pred_steps`.
             - if False, then control ground truth injection using `pred_steps` only.
 
-        burn_in_steps : int
-            Number of initial steps to use as ground truth inputs if `is_burn_in` is True.
+        final_pred_steps : int
+            Number of final steps to use as prediction inputs if `is_burn_in` is True.
         """
         self.ext = ExtraSettings()
         self.data_config = data_config
 
     # 1: Training parameters   
 
-        self.model_num = 8
+        self.model_num = 14
         self.continue_training = False
         self.is_log = True
         
@@ -60,9 +64,9 @@ class DecoderTrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 10
+        self.max_epochs = 15
         self.lr = 0.001
-        self.optimizer = 'sgd'
+        self.optimizer = 'adam'
         self.momentum = 0.9
         self.loss_type = 'mse'
 
@@ -71,11 +75,12 @@ class DecoderTrainConfig:
         self.msg_out_size = 64
     
         # embedding function parameters 
-        self.edge_mlp_config = {'mlp': 'default'}
-        self.out_mlp_config = {'mlp': 'default'}
+        self.edge_mlp_config = {'mlp': 'edge_nri_og'}
+        self.out_mlp_config = {'mlp': 'out_nri_og'}
 
         self.do_prob = 0
-        self.is_batch_norm = True
+        self.is_batch_norm = False
+        self.is_xavier_weights = False
 
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
@@ -86,14 +91,14 @@ class DecoderTrainConfig:
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
-        self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
+        self.dec_reduc_config = None 
         self.dec_feat_norm = None
 
         # run parameters
         self.skip_first_edge_type = False
-        self.pred_steps = 1
+        self.pred_steps = 10
         self.is_burn_in = True
-        self.burn_in_steps = 70
+        self.final_pred_steps = 30
         self.is_dynamic_graph = False
 
         # if dynamic graph is true
@@ -107,7 +112,7 @@ class DecoderTrainConfig:
 
     # 3: Sparsifier parameters
 
-        self.spf_config = get_spf_config('vanilla', is_expert=True)
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
 
         self.spf_domain_config = get_domain_config('time')
         self.spf_raw_data_norm = None 
@@ -158,6 +163,7 @@ class DecoderTrainConfig:
             'dec/recur_emb_type': self.recur_emb_type,
             'dec/do_prob': self.do_prob,
             'dec/batch_norm': self.is_batch_norm,
+            'dec/is_xavier_weights': self.is_xavier_weights,
             'dec/domain': domain_dec_str,
             'dec/raw_data_norm': self.dec_raw_data_norm,
             'dec/feats': f"[{feat_dec_str}]",
@@ -166,7 +172,7 @@ class DecoderTrainConfig:
             'dec/skip_first_edge': self.skip_first_edge_type,
             'dec/pred_steps': self.pred_steps,
             'dec/is_burn_in': self.is_burn_in,
-            'dec/burn_in_steps': self.burn_in_steps,
+            'dec/final_pred_steps': self.final_pred_steps,
             'dec/is_dynamic_graph': self.is_dynamic_graph,
             'enc/temp': self.temp,
             'enc/is_hard': self.is_hard,
@@ -242,7 +248,7 @@ class DecoderTrainSweep:
         self.skip_first_edge_type = [False]
         self.pred_steps = [1]
         self.is_burn_in = [False]
-        self.burn_in_steps = [1]
+        self.final_pred_steps = [1]
         self.is_dynamic_graph = [False]
 
         # if dynamic graph is true
@@ -267,6 +273,8 @@ class DecoderTrainSweep:
 
 
 class NRITrainConfig:
+    framework = 'nri'
+
     def __init__(self, data_config:DataConfig):
         """
         1: Training Attributes
@@ -332,11 +340,11 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 1
+        self.model_num = 3
         self.continue_training = False
         self.is_log = True
         
-        self.n_edge_types = 1
+        self.n_edge_types = 2
 
         # dataset parameters
         self.batch_size = 50
@@ -347,28 +355,35 @@ class NRITrainConfig:
 
         # optimization parameters
         self.max_epochs = 5
-        self.lr = 0.001
         self.optimizer = 'adam'
 
+        self.lr_enc = 0.001
         self.loss_type_enc = 'kld'
-        self.prior = None
+        self.is_beta_annealing = True
+        self.final_beta = 0.1   # final value of beta after annealing
+        self.warmup_frac_beta = 0.6  # fraction of total steps for warmup
+
+        # if loss_type_enc is kld
+        self.prior = torch.tensor([0.5, 0.5])  # prior distribution for edge types
         self.add_const_kld = True  # this needs to be True, adds a constant term to the KL divergence
 
-        self.loss_type_dec = 'nll'
+        self.lr_dec = 0.001
+        self.loss_type_dec = 'mse'
 
     # 2: Encoder parameters
 
         # pipeline parameters
-        self.pipeline_type = 'mlp_1' 
-        self.is_residual_connection = True 
+        self.pipeline_type = 'f_mlp1_og' 
+        self.is_residual_connection = False 
 
         # embedding function parameters
+        self.n_hidden_mlp = 256
         self.edge_emb_config = {
-            'mlp': 'default',
+            'mlp': 'nri_og',
             'cnn': 'default'
             }
         self.node_emb_config = {
-            'mlp': 'default',
+            'mlp': 'nri_og',
             'cnn': 'default'
             }
 
@@ -380,37 +395,44 @@ class NRITrainConfig:
             'mlp': True,
             'cnn': False
             }
+        
+        self.enc_is_xavier_weights = True
+
         # attention parameters
         self.attention_output_size = 5   
 
         # input processor parameters
         self.enc_domain_config = get_domain_config('time')
-        self.enc_raw_data_norm = None  
+        self.enc_raw_data_norm = 'min_max'  
         self.enc_feat_configs = []
         self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.enc_feat_norm = None
 
         # gumble softmax parameters
-        self.temp = 1.0       
-        self.is_hard = True   
+        self.is_hard = False   
+
+        self.init_temp = 1.0    # initial temperature for Gumble Softmax
+        self.min_temp = 0.3     # minimum temperature for Gumble Softmax
+        self.decay_temp = 0.001  # exponential decay rate for temperature  
 
     # 3: Decoder parameters
 
-        self.msg_out_size = 64
+        self.msg_out_size = 256
     
         # embedding function parameters 
-        self.edge_mlp_config = {'mlp': 'default'}
-        self.out_mlp_config = {'mlp': 'default'}
+        self.edge_mlp_config = {'mlp': 'edge_nri_og'}
+        self.out_mlp_config = {'mlp': 'out_nri_og'}
 
-        self.dec_do_prob = 0
-        self.dec_is_batch_norm = True
+        self.dec_do_prob = 0.5
+        self.dec_is_batch_norm = False
+        self.dec_is_xavier_weights = False
 
         # recurrent embedding parameters
         self.recur_emb_type = 'gru'
         
         # input processor parameters
         self.dec_domain_config = get_domain_config('time')
-        self.dec_raw_data_norm = None 
+        self.dec_raw_data_norm = 'min_max' 
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
@@ -418,10 +440,10 @@ class NRITrainConfig:
         self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         
         # run parameters
-        self.skip_first_edge_type = True 
-        self.pred_steps = 1
-        self.is_burn_in = False
-        self.burn_in_steps = 1
+        self.skip_first_edge_type = True
+        self.pred_steps = 10
+        self.is_burn_in = True
+        self.final_pred_steps = 20
         self.is_dynamic_graph = False
 
         # plotting parameters
@@ -431,7 +453,7 @@ class NRITrainConfig:
 
     # 4: Sparsifier parameters
 
-        self.spf_config = get_spf_config('vanilla', is_expert=True)
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
         
         self.spf_domain_config   = get_domain_config('time')
         self.spf_raw_data_norm = None 
@@ -450,8 +472,8 @@ class NRITrainConfig:
         """
         # set encoder pipeline and embedding configs
         self.pipeline = self.ext.get_enc_pipeline(self.pipeline_type)  
-        self.enc_edge_emb_configs = self.ext.get_enc_emb_config(config_type=self.edge_emb_config)  
-        self.enc_node_emb_configs = self.ext.get_enc_emb_config(config_type=self.node_emb_config)
+        self.enc_edge_emb_configs = self.ext.get_enc_emb_config(config_type=self.edge_emb_config, n_hidden=self.n_hidden_mlp)  
+        self.enc_node_emb_configs = self.ext.get_enc_emb_config(config_type=self.node_emb_config, n_hidden=self.n_hidden_mlp)
 
         # set decoder embedding configs
         self.dec_edge_mlp_config = self.ext.get_dec_emb_config(self.edge_mlp_config, self.msg_out_size)['mlp']
@@ -482,8 +504,12 @@ class NRITrainConfig:
             'window_length': self.data_config.window_length,
             'stride': self.data_config.stride,
             'max_epochs': self.max_epochs,
-            'lr': self.lr,
+            'lr_enc': self.lr_enc,
+            'lr_dec': self.lr_dec,
             'optimizer': self.optimizer,
+            'is_beta_annealing': self.is_beta_annealing,
+            'final_beta': self.final_beta,
+            'warmup_frac_beta': self.warmup_frac_beta,
             'enc/loss_type': self.loss_type_enc,
             'dec/loss_type': self.loss_type_dec,
             'n_edge_types': self.n_edge_types,
@@ -502,14 +528,19 @@ class NRITrainConfig:
             'enc/feat_norm': self.enc_feat_norm,
             'enc/edge_emb_configs_enc': f"{self.edge_emb_config}",
             'enc/node_emb_configs_enc': f"{self.node_emb_config}",
-            'enc/temp': self.temp,
+            'enc/n_hidden_mlp': self.n_hidden_mlp,
+            'enc/is_xavier_weights': self.enc_is_xavier_weights,
             'enc/is_hard': self.is_hard,
+            'enc/init_temp': self.init_temp,
+            'enc/min_temp': self.min_temp,
+            'enc/decay_temp': self.decay_temp,
             'enc/attention_output_size': self.attention_output_size,
 
             # decoder parameters
             'dec/msg_out_size': self.msg_out_size,
             'dec/do_prob': self.dec_do_prob,
             'dec/is_batch_norm': self.dec_is_batch_norm,
+            'dec/is_xavier_weights': self.dec_is_xavier_weights,
             'dec/recur_emb_type': self.recur_emb_type,
             'dec/domain': domain_dec_str,
             'dec/raw_data_norm': self.dec_raw_data_norm,
@@ -521,7 +552,7 @@ class NRITrainConfig:
             'dec/dec_skip_first_edge': self.skip_first_edge_type,
             'dec/pred_steps': self.pred_steps,
             'dec/is_burn_in': self.is_burn_in,
-            'dec/burn_in_steps': self.burn_in_steps,
+            'dec/final_pred_steps': self.final_pred_steps,
             'dec/is_dynamic_graph': self.is_dynamic_graph,
 
             # sparsifier parameters
@@ -630,7 +661,7 @@ class NRITrainSweep:
         self.skip_first_edge_type = [True] 
         self.pred_steps = [1]
         self.is_burn_in = [False]
-        self.burn_in_steps = [1]
+        self.final_pred_steps = [1]
         self.is_dynamic_graph = [False]
 
     # 4: Sparsifier parameters
@@ -671,18 +702,23 @@ class ExtraSettings:
         custom_pipeline : list or None
         """
         pipelines = {
-            'mlp_1': [
+            'f_mlp1_og': [
                         ['1/node_emd.1', 'mlp'],
-                        ['1/node_emd.2', 'mlp'],
-                        ['1/pairwise_op', 'mean'],
+                        ['1/pairwise_op', 'concat'],
                         ['1/edge_emd.1.@', 'mlp'],
                         ['2/aggregate', 'mean'],
                         ['2/node_emd.1', 'mlp'],
-                        ['2/node_emd.2', 'mlp'],
                         ['2/pairwise_op', 'concat'],
                         ['2/edge_emd.1', 'mlp'],
-                        ['2/edge_emd.2', 'mlp']
                      ],
+            'mlp1_og': [
+                        ['1/node_emd.1', 'mlp'],
+                        ['1/pairwise_op', 'concat'],
+                        ['1/edge_emd.1.@', 'mlp'],
+                        ['1/edge_emd.2', 'mlp'],
+                        ['1/edge_emd.3', 'mlp'],
+                    ],
+
             'cnn1': [] 
         }
 
@@ -699,7 +735,7 @@ class ExtraSettings:
             return custom_pipeline
         
         
-    def get_enc_emb_config(self, config_type, custom_config=None): 
+    def get_enc_emb_config(self, config_type, n_hidden, custom_config=None): 
         """
         config_type : dict
         custom_config : dict
@@ -711,10 +747,8 @@ class ExtraSettings:
 
         # Dictionaries
         mlp_configs = {
-            'default': [[64, 'relu'],
-                        [32, 'relu'],
-                        [16, 'relu'],
-                        [8, None]],
+            'nri_og': [[n_hidden, 'elu'],
+                        [n_hidden, 'elu']],
         }
 
         cnn_configs = {
@@ -756,10 +790,12 @@ class ExtraSettings:
 
         # Dictionaries
         mlp_configs = {
-            'default': [[64, 'tanh'],
-                        [32, 'tanh'],
-                        [16, 'tanh'],
-                        [msg_out_size, None]], # the last layer should look like this for any configs for decoder
+            'edge_nri_og':  [[msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh']], # the last layer should look like this for any configs for decoder
+
+            'out_nri_og': [[msg_out_size, 'relu'],
+                            [msg_out_size, 'relu']],
+                            
         }
 
         # ------ Validate config_type -------

@@ -17,6 +17,7 @@ import pandas as pd
 
 # local imports
 from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+from .utils.schedulers import BetaScheduler, TempScheduler
 from .encoder import Encoder
 from .decoder import Decoder
 
@@ -31,17 +32,26 @@ class NRI(LightningModule):
         self.hyperparams = hyperparams
 
     def set_training_params(
-        self, lr=0.001, optimizer='adam', add_const_kld=True,
+        self, lr_enc=0.001, lr_dec=0.001, 
+        is_beta_annealing=True,
+        final_beta=1.0, warmup_frac_beta=0.3,
+        optimizer='adam', add_const_kld=False,
         loss_type_enc='kld', loss_type_dec='nll', prior=None
     ):
-        self.lr = lr
+        self.lr_enc = lr_enc
+        self.lr_dec = lr_dec
+        self.is_beta_annealing = is_beta_annealing
+        self.final_beta = final_beta
+        self.warmup_frac_beta = warmup_frac_beta
         self.optimizer = optimizer
         self.add_const_kld = add_const_kld
         self.prior = prior
         self.loss_type_encoder = loss_type_enc
         self.loss_type_decoder = loss_type_dec
 
-        print(f"\nTraining parameters set to: \nlr={self.lr}, \noptimizer={self.optimizer}, \nloss_type_encoder={self.loss_type_encoder}, \nloss_type_decoder={self.loss_type_decoder}, \nprior={self.prior}, \nadd_const_kld={self.add_const_kld}")
+        print(f"\nTraining parameters set to: \nlr_enc={self.lr_enc}, \nlr_dec={self.lr_dec}, " 
+              f"\nfinal_beta={self.final_beta}, \nwarmup_frac={self.warmup_frac_beta}, "
+              f"\noptimizer={self.optimizer}, \nloss_type_encoder={self.loss_type_encoder}, \nloss_type_decoder={self.loss_type_decoder}, \nprior={self.prior}, \nadd_const_kld={self.add_const_kld}")
         
     def set_input_example_for_graph(self, n_nodes):
         self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_comps, self.encoder.n_dims))
@@ -61,7 +71,8 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, dec_run_params, data_config, data_stats, temp, is_hard):
+    def set_run_params(self, dec_run_params, data_config, data_stats, 
+                       init_temp=1.0, min_temp=0.3, decay_temp=0.001, is_hard=True):
         """
         Parameters
         ----------
@@ -72,7 +83,9 @@ class NRI(LightningModule):
         is_hard : bool
             If True, use hard Gumble Softmax.
         """
-        self.temp = temp
+        self.init_temp = init_temp
+        self.min_temp = min_temp
+        self.decay_temp = decay_temp
         self.is_hard = is_hard
 
         self.encoder.set_run_params(data_config=data_config, data_stats=data_stats)
@@ -132,14 +145,19 @@ class NRI(LightningModule):
         """
         # Encoder
         logits = self.encoder(data)
-        edge_matrix = F.gumbel_softmax(logits, tau=self.temp, hard=self.is_hard)
+        temp = self.temp_scheduler.step()
+        edge_matrix = F.gumbel_softmax(logits, tau=temp, hard=self.is_hard)
         edge_pred = F.softmax(logits, dim=-1)
+
+        print("Edge pred", edge_pred[0,:,:]) # DEBUG
+        print("logits", logits[0,:,:]) # DEBUG
+        print("Edge matrix from gumble", edge_matrix[0,:,:]) # DEBUG
 
         # Decoder
         self.decoder.set_edge_matrix(edge_matrix)
         x_pred, x_var = self.decoder(data)
 
-        return edge_pred, x_pred, x_var
+        return edge_pred, edge_matrix, x_pred, x_var, temp
     
 # ================== PYTORCH LIGHTNING TRAINER METHODS ================== #
 
@@ -150,7 +168,11 @@ class NRI(LightningModule):
         self.hyperparams = checkpoint["hyperparams"]
 
         # train params
-        self.lr = checkpoint['lr']
+        self.lr_enc = checkpoint['lr_enc']
+        self.lr_dec = checkpoint['lr_dec']
+        self.is_beta_annealing = checkpoint['is_beta_annealing']
+        self.final_beta = checkpoint['final_beta']
+        self.warmup_frac_beta = checkpoint['warmup_frac_beta']
         self.optimizer = checkpoint['optimizer']
         self.prior = checkpoint['prior']
         self.loss_type_encoder = checkpoint['loss_type_encoder']
@@ -167,7 +189,11 @@ class NRI(LightningModule):
         checkpoint["hyperparams"] = self.hyperparams
 
         # train params
-        checkpoint['lr'] = self.lr
+        checkpoint['lr_enc'] = self.lr_enc
+        checkpoint['lr_dec'] = self.lr_dec
+        checkpoint['is_beta_annealing'] = self.is_beta_annealing
+        checkpoint['final_beta'] = self.final_beta
+        checkpoint['warmup_frac_beta'] = self.warmup_frac_beta
         checkpoint['optimizer'] = self.optimizer
         checkpoint['prior'] = self.prior
         checkpoint['loss_type_encoder'] = self.loss_type_encoder
@@ -181,17 +207,32 @@ class NRI(LightningModule):
  
         # select optimizer
         if self.optimizer == 'adam':
-            return Adam(encoder_params + decoder_params, lr=self.lr)
+            return Adam([
+                {'params': encoder_params, 'lr': self.lr_enc},
+                {'params': decoder_params, 'lr': self.lr_dec}
+            ])
         elif self.optimizer == 'sgd':
             return SGD(encoder_params + decoder_params, lr=self.lr)
         
 # ====== Trainer.fit() methods  =======
         
-    def on_fit_start(self):
+    def on_train_start(self):
         """
         Called at the start of training.
         """
-        super().on_fit_start()
+        super().on_train_start()
+
+        # initialze scehdulers
+        self.beta_scheduler = BetaScheduler(
+            total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
+            final_beta=self.final_beta,
+            warmup_frac=self.warmup_frac_beta
+        )
+        self.temp_scheduler = TempScheduler(
+            init_tau=self.init_temp,
+            min_tau=self.min_temp,
+            decay=self.decay_temp
+        )
 
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
@@ -225,38 +266,58 @@ class NRI(LightningModule):
         target = self.decoder.process_input_data(data)[:, :, 1:, :] # get target for decoder based on its transform
 
         # Forward pass
-        edge_pred, x_pred, x_var = self.forward(data)
+        edge_pred, edge_matrix, x_pred, x_var, temp = self.forward(data)
 
         # Loss calculation
         # encoder loss
         if self.loss_type_encoder == 'kld':
-            if self.prior:
-                loss_encoder = kl_categorical(edge_pred, self.prior, num_nodes)
+            if self.prior is not None:
+                mean_kl_per_edge, mean_kl_per_sample = kl_categorical(edge_pred, self.prior, num_nodes)
             else:
-                loss_encoder = kl_categorical_uniform(
-                    edge_pred, num_nodes,
-                    add_const=self.add_const_kld
-                    )
+                mean_kl_per_edge, mean_kl_per_sample = kl_categorical_uniform(
+                    edge_pred, num_nodes, add_const=self.add_const_kld
+                )
+            loss_encoder = mean_kl_per_sample
+
+        elif self.loss_type_encoder == 'ce':
+            enc_target = relations.argmax(dim=-1)  # shape: (batch_size, n_edges)
+            enc_pred = edge_pred.view(-1, edge_pred.size(-1))  # (batch_size * n_edges, n_types)
+            enc_target = enc_target.view(-1)  # (batch_size * n_edges,)
+            loss_encoder = F.cross_entropy(enc_pred, enc_target)
+
+        # entropy calculation
+        entropy_per_edge = -torch.sum(edge_pred * torch.log(edge_pred + 1e-12), dim=-1)  # shape (batch_size, n_edges)
+        mean_entropy_per_edge = entropy_per_edge.mean()  # shape (scalar)
+        # mean computed over n_edges * batch_size
 
         # decoder loss
         if self.loss_type_decoder == 'nll':
             loss_decoder = nll_gaussian(x_pred, target, x_var)
+        elif self.loss_type_decoder == 'mse':
+            loss_decoder = F.mse_loss(x_pred, target)
 
         # total loss
-        loss = loss_encoder + loss_decoder
+        beta = self.beta_scheduler(self.global_step) if self.is_beta_annealing else 1.0
+        # lambda_ent = max(0.0, 0.1 * (1 - self.global_step / (0.5 * self.trainer.max_epochs * len(self.trainer.train_dataloader))))
+
+        loss = (loss_encoder * beta) + loss_decoder # + (0.8 * mean_entropy_per_edge)
 
         if relations is not None:
-            edge_accuracy = (edge_pred.argmax(dim=-1) == relations).float().mean()
+            edge_accuracy = (edge_pred.argmax(dim=-1) == relations.argmax(dim=-1)).float().mean()
         else:
             edge_accuracy = None
         
         # make dict
         log_data = {
             'loss': loss,
+            'beta': beta if self.is_beta_annealing else 1.0,
+            'temp': temp,
             'loss_encoder': loss_encoder,
+            'entropy_per_edge': mean_entropy_per_edge,
             'loss_decoder': loss_decoder,
             'edge_accuracy': edge_accuracy,
         }
+
         decoder_plot_data = {
             'x_pred': x_pred,
             'x_var': x_var,
@@ -289,19 +350,38 @@ class NRI(LightningModule):
         log_dict = {
             'nri/train_loss': log_data['loss'],
             'enc/train_loss': log_data['loss_encoder'],
+            'enc/train_entropy': log_data['entropy_per_edge'],
             'dec/train_loss': log_data['loss_decoder'],
         }
 
         if log_data['edge_accuracy'] is not None:
             log_dict['enc/train_edge_accuracy'] = log_data['edge_accuracy']
 
-        self.log_dict(
-            log_dict,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True
-        )
+        self.n = 5  # log every n batches
+
+        if (self.global_step) % self.n == 0:
+
+            print(f"Step {self.global_step}, Epoch {self.current_epoch+1}/{self.trainer.max_epochs}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
+            print(
+                f"temp: {log_data['temp']:,.4f}, "
+                f"beta: {log_data['beta']:,.4f}, \n"
+                f"nri_train_loss: {log_data['loss']:,.4f}, "
+                f"enc_train_loss: {log_data['loss_encoder']:,.4f}, "
+                f"enc_train_entropy: {log_data['entropy_per_edge']:,.4f}, "
+                f"dec_train_loss: {log_data['loss_decoder']:,.4f}, "
+                f"enc_train_edge_accuracy: {log_data['edge_accuracy']:,.4f}" if log_data['edge_accuracy'] is not None else ""
+            )
+            print("")
+
+            self.log_dict(
+                log_dict,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=False,
+                logger=True
+            )
+        # else:
+        #     print(f"Step {self.global_step}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
             
         return log_data['loss']
     
@@ -324,6 +404,7 @@ class NRI(LightningModule):
         log_dict = {
             'nri/val_loss': log_data['loss'],
             'enc/val_loss': log_data['loss_encoder'],
+            'enc/val_entropy': log_data['entropy_per_edge'],
             'dec/val_loss': log_data['loss_decoder'],
         }
 
@@ -339,8 +420,8 @@ class NRI(LightningModule):
         )
 
         return log_data['loss']
-
     
+
     def on_train_epoch_end(self):
         """
         Called at the end of each training epoch. Updates the training losses and accuracies.
@@ -357,6 +438,7 @@ class NRI(LightningModule):
         print(
             f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:,.4f}, " 
             f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:,.4f}, "
+            f"enc_train_entropy: {self.trainer.callback_metrics['enc/train_entropy'].item():,.4f}, "
             f"dec_train_loss: {self.train_losses['dec/train_losses'][-1]:,.4f}, "
             f"enc_train_edge_accuracy: {self.train_accuracies['enc/train_edge_accuracy'][-1]:.4f}"
             )
@@ -379,8 +461,10 @@ class NRI(LightningModule):
             print(
                 f"nri_val_loss: {self.train_losses['nri/val_losses'][-1]:,.4f}, " 
                 f"enc_val_loss: {self.train_losses['enc/val_losses'][-1]:,.4f}, "
+                f"enc_val_entropy: {self.trainer.callback_metrics['enc/val_entropy'].item():,.4f}, "
                 f"dec_val_loss: {self.train_losses['dec/val_losses'][-1]:,.4f}, "
                 f"enc_val_edge_accuracy: {self.train_accuracies['enc/val_edge_accuracy'][-1]:.4f}"
+                "\n\n" + 75*'-' + '\n'
                 )
             
 
@@ -389,18 +473,20 @@ class NRI(LightningModule):
         self.hyperparams.update({
             'model_id': self.model_id,
             'n_steps': self.global_step,
-            'model_num': int(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
+            'model_num': float(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
 
             # log train data
             'training_time': self.training_time,
             'nri/train_loss': self.train_losses['nri/train_losses'][-1],
             'enc/train_loss': self.train_losses['enc/train_losses'][-1],
+            'enc/train_entropy': self.trainer.callback_metrics['enc/train_entropy'].item(),
             'dec/train_loss': self.train_losses['dec/train_losses'][-1],
             'enc/train_edge_accuracy': self.train_accuracies['enc/train_edge_accuracy'][-1] if self.train_accuracies['enc/train_edge_accuracy'] else -1,
             
             # log validation data
             'nri/val_loss': self.train_losses['nri/val_losses'][-1],
             'enc/val_loss': self.train_losses['enc/val_losses'][-1],
+            'enc/val_entropy': self.trainer.callback_metrics['enc/val_entropy'].item(),
             'dec/val_loss': self.train_losses['dec/val_losses'][-1],
             'enc/val_edge_accuracy': self.train_accuracies['enc/val_edge_accuracy'][-1] if self.train_accuracies['enc/val_edge_accuracy'] else -1,
         })
@@ -422,6 +508,10 @@ class NRI(LightningModule):
     #         f"enc/val_edge_accuracy: {self.train_accuracies['enc/val_edge_accuracy'][-1]:.4f}"
     #         )
         
+    # def on_after_backward(self):
+    #     for name, param in self.encoder.named_parameters():
+    #         if param.grad is not None:
+    #             print(f"{name} grad norm: {param.grad.norm()}")
 
     def on_train_end(self):
         """
@@ -451,6 +541,20 @@ class NRI(LightningModule):
         """
         super().on_test_start()
 
+        # initialze scehdulers
+        # self.beta_scheduler = BetaScheduler(
+        #     total_steps=self.trainer.max_epochs * len(self.trainer.test_dataloaders), 
+        #     final_beta=self.final_beta,
+        #     warmup_frac=self.warmup_frac_beta
+        # )
+        self.is_beta_annealing = False  # no beta annealing during testing
+
+        self.temp_scheduler = TempScheduler(
+            init_tau=self.init_temp,
+            min_tau=self.min_temp,
+            decay=self.decay_temp
+        )
+
         self.encoder.init_input_processors()
         self.decoder.init_input_processors()
 
@@ -475,8 +579,7 @@ class NRI(LightningModule):
                 Contains the receiver and sender relationship matrices.
         """
         log_data, self.decoder_plot_data_test, self.edge_preds = self._forward_pass(batch, batch_idx)
-        data_batch, _ = batch
-        data, _, _, self.rep_nums = data_batch
+        data, _, _, self.rep_nums = batch
         num_nodes = data.size(1)
 
         # convert edge predictions to adjacency matrix
@@ -486,6 +589,7 @@ class NRI(LightningModule):
         log_dict = {
             'nri/test_loss': log_data['loss'],
             'enc/test_loss': log_data['loss_encoder'],
+            'enc/test_entropy': log_data['entropy_per_edge'],
             'dec/test_loss': log_data['loss_decoder'],
         }
 
@@ -514,6 +618,7 @@ class NRI(LightningModule):
             'infer_time': self.infer_time,
             'nri/test_loss': self.trainer.callback_metrics['nri/test_loss'].item(),
             'enc/test_loss': self.trainer.callback_metrics['enc/test_loss'].item(),
+            'enc/test_entropy': self.trainer.callback_metrics['enc/test_entropy'].item(),
             'dec/test_loss': self.trainer.callback_metrics['dec/test_loss'].item(),
         })
 
@@ -559,6 +664,12 @@ class NRI(LightningModule):
         Called at the start of prediction.
         """
         super().on_predict_start()
+
+        self.temp_scheduler = TempScheduler(
+            init_tau=self.init_temp,
+            min_tau=self.min_temp,
+            decay=self.decay_temp
+        )
 
         self.encoder.init_input_processors()
         self.decoder.init_input_processors()
@@ -624,7 +735,7 @@ class NRI(LightningModule):
             'nri/residual': log_data['loss_decoder']
         }
     
-    def edge_pred_to_adjacency_matrix(edge_pred, n_nodes):
+    def edge_pred_to_adjacency_matrix(self, edge_pred, n_nodes):
         """
         Convert edge predictions to an adjacency matrix.
 
@@ -785,7 +896,8 @@ class NRI(LightningModule):
                 # plot ground truth, predictions, and confidence band
                 ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
                 ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
-                ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
+                if self.decoder.show_conf_band:
+                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
 
                 # Add labels and legend
                 #if node == n_nodes - 1:

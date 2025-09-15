@@ -210,7 +210,9 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
             data_stats=data_stats, 
-            temp=self.tp_config.temp, 
+            init_temp=self.tp_config.init_temp,
+            min_temp=self.tp_config.min_temp,
+            decay_temp=self.tp_config.decay_temp,
             is_hard=self.tp_config.is_hard
             )
 

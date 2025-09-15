@@ -294,6 +294,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.node_emb_configs = None
         self.do_prob = None
         self.is_batch_norm = None
+        self.is_xavier_weights = None
         self.attention_output_size = None  # attention layer parameters
 
         # input processors params
@@ -355,6 +356,14 @@ class Encoder(LightningModule, MessagePassingLayers):
         final_input_size = self.edge_emb_configs[final_emd_type][-1][0]
         self.output_layer = nn.Linear(final_input_size, self.n_edge_types)
 
+        if self.is_xavier_weights:
+            self.init_xavier_weights()
+
+    def init_xavier_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight.data)
+                m.bias.data.fill_(0.1)
 
     def init_attention_layers(self):
         self.attention_layer_dict = nn.ModuleDict()
@@ -438,6 +447,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                                                     self.edge_emb_configs['mlp'],
                                                     do_prob=self.do_prob['mlp'],
                                                     is_batch_norm=self.is_batch_norm['mlp'],
+                                                    is_xavier_weights=self.is_xavier_weights
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN' # placeholder
@@ -484,6 +494,7 @@ class Encoder(LightningModule, MessagePassingLayers):
                                                     self.node_emb_configs['mlp'],
                                                     do_prob=self.do_prob['mlp'],
                                                     is_batch_norm=self.is_batch_norm['mlp'],
+                                                    is_xavier_weights=self.is_xavier_weights
                                                     )
                 elif layer[1] == 'cnn':
                     self.emb_fn_dict[layer[0].replace(".", "")] = 'CNN'

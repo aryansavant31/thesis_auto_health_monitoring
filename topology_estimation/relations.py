@@ -179,13 +179,12 @@ class RelationMatrixMaker:
                     # infuse expert knowledge if enabled
                     if self.spf_config['is_expert']:
                         try:
-                            mask = y_edges[edge_idx] != -1
-                            rec_rel[edge_idx, receiver] = torch.where(mask, y_edges[edge_idx], rec_rel[edge_idx, receiver])
-                            send_rel[edge_idx, sender] = torch.where(mask, y_edges[edge_idx], send_rel[edge_idx, sender])
-
-                        except ValueError:
-                            print(f"ValueError: 'is_expert' is True but y_edges is found to be null or has incorrect shape. \
-                                   Please check the input data.")
+                            # If y_edges[edge_idx, 0] == 1, set to 0 (no edge); if 0, keep as 1 (edge exists)
+                            if y_edges[edge_idx, 0] == 1:
+                                rec_rel[edge_idx, receiver] = 0
+                                send_rel[edge_idx, sender] = 0
+                        except Exception as e:
+                            print(f"Error in expert knowledge infusion: {e}")
                             raise
 
                     edge_idx += 1

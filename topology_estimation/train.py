@@ -5,6 +5,7 @@ import inspect
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 import argparse
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 # global imports
 from data.config import DataConfig
@@ -160,6 +161,22 @@ class TopologyEstimationTrainHelper:
                 ckpt_path = None
 
             self.tp_config.save_params()
+
+            # define ckeckpoint callback to save the best model
+            if self.tp_config.framework == 'nri':
+                monitor_metric = 'nri/val_loss'
+            elif self.tp_config.framework == 'decoder':
+                monitor_metric = 'val_loss'
+
+            checkpoint_callback = ModelCheckpoint(
+                dirpath=os.path.join(self.train_log_path, 'checkpoints'),
+                filename='best-model-{epoch:02d}-{val_loss:.4f}',
+                save_top_k=1,
+                monitor=monitor_metric,
+                mode='min'
+            )
+
+            # define logger
             train_logger = TensorBoardLogger(os.path.dirname(self.train_log_path), name="", version=os.path.basename(self.train_log_path))
 
             # log all the attributes of train_config
@@ -178,11 +195,13 @@ class TopologyEstimationTrainHelper:
         else:
             self.train_log_path = None
             train_logger = None
+            checkpoint_callback = None
+            ckpt_path = None
             print("\nTraining environment set. Logging is disabled.")
 
         print('\n' + 75*'-')
 
-        return train_logger, ckpt_path
+        return train_logger, checkpoint_callback, ckpt_path
     
     def _prep_for_testing(self):
         """
@@ -235,12 +254,14 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             )
 
     # 3. Train the NRI model
-        train_logger, ckpt_path = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
+        train_logger, checkpoint_callback, ckpt_path = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
+        
         trainer = Trainer(
             accelerator=device,
+            callbacks=[checkpoint_callback],
             logger=train_logger,
             max_epochs=1 if fast_dev_run else self.tp_config.max_epochs,
-            enable_progress_bar=True,
+            enable_progress_bar=False,
             log_every_n_steps=1,
             num_sanity_val_steps=0,
             limit_train_batches=1 if fast_dev_run else None,
@@ -298,12 +319,18 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
             data_stats=train_data_stats, 
-            temp=self.tp_config.temp, 
+            init_temp=self.tp_config.init_temp,
+            min_temp=self.tp_config.min_temp,
+            decay_temp=self.tp_config.decay_temp,
             is_hard=self.tp_config.is_hard
             )
         
         nri_model.set_training_params(
-            lr=self.tp_config.lr, 
+            lr_enc=self.tp_config.lr_enc,
+            lr_dec=self.tp_config.lr_dec, 
+            is_beta_annealing=self.tp_config.is_beta_annealing,
+            final_beta=self.tp_config.final_beta,
+            warmup_frac_beta=self.tp_config.warmup_frac_beta,
             optimizer=self.tp_config.optimizer,
             add_const_kld=self.tp_config.add_const_kld,
             loss_type_enc=self.tp_config.loss_type_enc,
@@ -331,7 +358,9 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
             data_stats=test_data_stats, 
-            temp=self.tp_config.temp, 
+            init_temp=self.tp_config.init_temp,
+            min_temp=self.tp_config.min_temp,
+            decay_temp=0, 
             is_hard=self.tp_config.is_hard
             )
 
@@ -371,10 +400,11 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
             rec_rel, send_rel, self.train_data_stats)
 
     # 3. Train the Decoder model
-        train_logger, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
+        train_logger, checkpoint_callback, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
         
         trainer = Trainer(
             accelerator=device,
+            callbacks=[checkpoint_callback], 
             logger=train_logger,
             max_epochs=1 if fast_dev_run else self.tp_config.max_epochs, 
             enable_progress_bar=True,
@@ -485,8 +515,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     data_config = DataConfig(run_type='train')
-    nri_config = NRITrainManager(data_config)
-    decoder_config = DecoderTrainManager(data_config)
+    if args.framework == 'nri':
+        nri_config = NRITrainManager(data_config)
+    elif args.framework == 'decoder':
+        decoder_config = DecoderTrainManager(data_config)
+
     
     with console_logger.capture_output():
         print(f"\nStarting {args.framework} model training...")

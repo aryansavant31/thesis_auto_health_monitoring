@@ -805,7 +805,7 @@ class TrainerAnomalyDetector:
             "mathtext.fontset": "cm",
         })
 
-        fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+        fig, ax = plt.subplots(figsize=(10, 8), dpi=100)
         ax.set_xticks([0.5, 1.5])
         ax.set_yticks([0.5, 1.5])
         ax.set_xticklabels(x_label)
@@ -984,10 +984,10 @@ class TrainerAnomalyDetector:
         # create the histogram
         plt.figure(figsize=(12, 8), dpi=100)
         # Plot included/excluded for OK and NOK
-        counts_ok_in, _, _ = plt.hist(ok_included, bins=bins_edges, color='blue', label=f'OK ({self.ok_percentage * 100}% OK of train)', alpha=0.5)
-        counts_ok_ex, _, _ = plt.hist(ok_excluded, bins=bins_edges, color='blue', label='OK (uncertain)', alpha=0.2)
-        counts_nok_in, _, _ = plt.hist(nok_included, bins=bins_edges, color='orange', label=f'NOK ({self.nok_percentage * 100}% NOK)', alpha=0.5)
-        counts_nok_ex, _, _ = plt.hist(nok_excluded, bins=bins_edges, color='orange', label='NOK (uncertain)', alpha=0.2)
+        counts_ok_in, _, _ = plt.hist(ok_included, bins=bins_edges, color='blue', label=f'OK hard ({self.ok_percentage * 100}% OK of train)', alpha=0.5)
+        counts_ok_ex, _, _ = plt.hist(ok_excluded, bins=bins_edges, color='blue', label='OK soft', alpha=0.2)
+        counts_nok_in, _, _ = plt.hist(nok_included, bins=bins_edges, color='orange', label=f'NOK hard ({self.nok_percentage * 100}% NOK)', alpha=0.5)
+        counts_nok_ex, _, _ = plt.hist(nok_excluded, bins=bins_edges, color='orange', label='NOK soft', alpha=0.2)
 
         # # add vertical lines for means and boundary
         # plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
@@ -1190,15 +1190,16 @@ class TrainerAnomalyDetector:
         plt.figure(figsize=(12, 8), dpi=100)
 
         # Plot included samples
-        counts_tn, _, _ = plt.hist(tn_included, bins=bins_edges, color='blue', label=f'TN (OK, correct, {self.ok_percentage * 100}% OK of train)', alpha=0.5)
-        counts_tp, _, _ = plt.hist(tp_included, bins=bins_edges, color='orange', label=f'TP (NOK, correct, {self.nok_percentage * 100}% NOK)', alpha=0.5)
-        counts_fp, _, _ = plt.hist(fp_included, bins=bins_edges, color='red', label='FP (OK, misclassified)', alpha=0.5)
-        counts_fn, _, _ = plt.hist(fn_included, bins=bins_edges, color='purple', label='FN (NOK, misclassified)', alpha=0.5)
-
-        # Plot excluded samples (faded)
+        counts_tn, _, _ = plt.hist(tn_included, bins=bins_edges, color='blue', label=f'TN hard ({self.ok_percentage * 100}% OK of train) [OK, correct]', alpha=0.5)
         counts_tn_ex, _, _ = plt.hist(tn_excluded, bins=bins_edges, color='blue', alpha=0.2, label=f'TN soft')
+
+        counts_tp, _, _ = plt.hist(tp_included, bins=bins_edges, color='orange', label=f'TP hard ({self.nok_percentage * 100}% NOK) [NOK, correct]', alpha=0.5)
         counts_tp_ex, _, _ = plt.hist(tp_excluded, bins=bins_edges, color='orange', alpha=0.2, label=f'TP soft')
+        
+        counts_fp, _, _ = plt.hist(fp_included, bins=bins_edges, color='red', label='FP hard [OK, misclassified]', alpha=0.5)
         counts_fp_ex, _, _ = plt.hist(fp_excluded, bins=bins_edges, color='red', alpha=0.2, label='FP soft')
+        
+        counts_fn, _, _ = plt.hist(fn_included, bins=bins_edges, color='purple', label='FN hard [NOK, misclassified]', alpha=0.5)
         counts_fn_ex, _, _ = plt.hist(fn_excluded, bins=bins_edges, color='purple', alpha=0.2, label='FN soft')
 
         # vertical lines for boundary

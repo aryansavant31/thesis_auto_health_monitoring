@@ -34,7 +34,7 @@ Total combinations: 2
 
 Parameters and their values:
   batch_size: 2 values -> [50, 100]
-  burn_in_steps: 1 values -> [1]
+  final_pred_steps: 1 values -> [1]
   dec_domain_config: 1 values -> [{'type': 'time', 'cutoff_freq': 0}]
   dec_feat_configs: 1 values -> [[]]
   dec_feat_norm: 1 values -> [None]

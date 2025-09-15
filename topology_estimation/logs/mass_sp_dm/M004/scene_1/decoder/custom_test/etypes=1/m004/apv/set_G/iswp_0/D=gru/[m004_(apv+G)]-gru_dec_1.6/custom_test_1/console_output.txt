@@ -124,7 +124,7 @@ Decoder run parameters:
 skip_first_edge_type: False
 pred_steps: 1
 is_burn_in: False
-burn_in_steps: 1
+final_pred_steps: 1
 is_dynamic_graph: False
 temp: 1.0
 is_hard: True
@@ -144,7 +144,8 @@ Custom_test environment set. Custom_test will be logged at: C:\Aryan_Savant\Thes
 
 ---------------------------------------------------------------------------
 C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:420: Consider setting `persistent_workers=True` in 'test_dataloader' to speed up the dataloader worker initialization.
-Testing: |                                                             | 0/? [00:00<?, ?it/s]
+
+Testing: |                                                             | 0/? [00:00<?, ?it/s]
 Initializing input processors for decoder model...
 
 >> Domain transformer initialized: time(cutoff_freq=0)
@@ -158,7 +159,109 @@ Initializing input processors for decoder model...
 >> No feature reduction is applied
 
 ---------------------------------------------------------------------------
-Testing:   0%|                                                       | 0/100 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                          | 0/100 [00:00<?, ?it/s]Testing DataLoader 0:   1%|3                                 | 1/100 [00:00<00:27,  3.61it/s]Testing DataLoader 0:   2%|6                                 | 2/100 [00:00<00:22,  4.38it/s]Testing DataLoader 0:   3%|#                                 | 3/100 [00:00<00:20,  4.68it/s]Testing DataLoader 0:   4%|#3                                | 4/100 [00:00<00:19,  4.87it/s]Testing DataLoader 0:   5%|#7                                | 5/100 [00:01<00:19,  4.96it/s]Testing DataLoader 0:   6%|##                                | 6/100 [00:01<00:18,  5.04it/s]Testing DataLoader 0:   7%|##3                               | 7/100 [00:01<00:18,  5.10it/s]Testing DataLoader 0:   8%|##7                               | 8/100 [00:01<00:17,  5.15it/s]Testing DataLoader 0:   9%|###                               | 9/100 [00:01<00:17,  5.21it/s]Testing DataLoader 0:  10%|###3                             | 10/100 [00:01<00:17,  5.24it/s]Testing DataLoader 0:  11%|###6                             | 11/100 [00:02<00:16,  5.24it/s]Testing DataLoader 0:  12%|###9                             | 12/100 [00:02<00:16,  5.28it/s]Testing DataLoader 0:  13%|####2                            | 13/100 [00:02<00:16,  5.30it/s]Testing DataLoader 0:  14%|####6                            | 14/100 [00:02<00:16,  5.33it/s]Testing DataLoader 0:  15%|####9                            | 15/100 [00:02<00:15,  5.37it/s]Testing DataLoader 0:  16%|#####2                           | 16/100 [00:02<00:15,  5.41it/s]Testing DataLoader 0:  17%|#####6                           | 17/100 [00:03<00:15,  5.44it/s]Testing DataLoader 0:  18%|#####9                           | 18/100 [00:03<00:15,  5.47it/s]Testing DataLoader 0:  19%|######2                          | 19/100 [00:03<00:14,  5.50it/s]Testing DataLoader 0:  20%|######6                          | 20/100 [00:03<00:14,  5.53it/s]Testing DataLoader 0:  21%|######9                          | 21/100 [00:03<00:14,  5.55it/s]Testing DataLoader 0:  22%|#######2                         | 22/100 [00:03<00:14,  5.57it/s]Testing DataLoader 0:  23%|#######5                         | 23/100 [00:04<00:13,  5.60it/s]Testing DataLoader 0:  24%|#######9                         | 24/100 [00:04<00:13,  5.63it/s]Testing DataLoader 0:  25%|########2                        | 25/100 [00:04<00:13,  5.65it/s]Testing DataLoader 0:  26%|########5                        | 26/100 [00:04<00:13,  5.67it/s]Testing DataLoader 0:  27%|########9                        | 27/100 [00:04<00:12,  5.69it/s]Testing DataLoader 0:  28%|#########2                       | 28/100 [00:04<00:12,  5.70it/s]Testing DataLoader 0:  29%|#########5                       | 29/100 [00:05<00:12,  5.71it/s]Testing DataLoader 0:  30%|#########9                       | 30/100 [00:05<00:12,  5.73it/s]Testing DataLoader 0:  31%|##########2                      | 31/100 [00:05<00:12,  5.74it/s]Testing DataLoader 0:  32%|##########5                      | 32/100 [00:05<00:11,  5.73it/s]Testing DataLoader 0:  33%|##########8                      | 33/100 [00:05<00:11,  5.73it/s]Testing DataLoader 0:  34%|###########2                     | 34/100 [00:05<00:11,  5.74it/s]Testing DataLoader 0:  35%|###########5                     | 35/100 [00:06<00:11,  5.71it/s]Testing DataLoader 0:  36%|###########8                     | 36/100 [00:06<00:11,  5.70it/s]Testing DataLoader 0:  37%|############2                    | 37/100 [00:06<00:11,  5.71it/s]Testing DataLoader 0:  38%|############5                    | 38/100 [00:06<00:10,  5.72it/s]Testing DataLoader 0:  39%|############8                    | 39/100 [00:06<00:10,  5.72it/s]Testing DataLoader 0:  40%|#############2                   | 40/100 [00:07<00:10,  5.69it/s]Testing DataLoader 0:  41%|#############5                   | 41/100 [00:07<00:10,  5.70it/s]Testing DataLoader 0:  42%|#############8                   | 42/100 [00:07<00:10,  5.64it/s]Testing DataLoader 0:  43%|##############1                  | 43/100 [00:07<00:10,  5.61it/s]Testing DataLoader 0:  44%|#####7       | 44/100 [00:07<00:09,  5.60it/s]                    Testing DataLoader 0:  45%|#####8       | 45/100 [00:08<00:09,  5.61it/s]Testing DataLoader 0:  46%|#####9       | 46/100 [00:08<00:09,  5.61it/s]Testing DataLoader 0:  47%|######1      | 47/100 [00:08<00:09,  5.61it/s]Testing DataLoader 0:  48%|######2      | 48/100 [00:08<00:09,  5.61it/s]Testing DataLoader 0:  49%|######3      | 49/100 [00:08<00:09,  5.60it/s]Testing DataLoader 0:  50%|######5      | 50/100 [00:08<00:08,  5.59it/s]Testing DataLoader 0:  51%|######6      | 51/100 [00:09<00:08,  5.58it/s]Testing DataLoader 0:  52%|######7      | 52/100 [00:09<00:08,  5.57it/s]Testing DataLoader 0:  53%|######8      | 53/100 [00:09<00:08,  5.53it/s]Testing DataLoader 0:  54%|5| 54/100 [00:09<00:08                        Testing DataLoader 0:  55%|5| 55/100 [00:09<00:08Testing DataLoader 0:  56%|5| 56/100 [00:10<0    Testing DataLoader 0:  57%|5| 57/100 [00:10<0Testing DataLoader 0:  58%|5| 58/100 [00:10<0Testing DataLoader 0:  59%|5| 59/100 [00:10<0Testing DataLoader 0:  60%|6| 60/100 [00:10<0Testing DataLoader 0:  61%|6| 61/100 [00:11<0Testing DataLoader 0:  62%|6| 62/100 [00:11<0Testing DataLoader 0:  63%|6| 63/100 [00:11<0Testing DataLoader 0:  64%|6| 64/100 [00:11<0Testing DataLoader 0:  65%|6| 65/100 [00:11<0Testing DataLoader 0:  66%|6| 66/100 [00:11<0Testing DataLoader 0:  67%|6| 67/100 [00:12<0Testing DataLoader 0:  68%|6| 68/100 [00:12<0Testing DataLoader 0:  69%|6| 69/100 [00:12<0Testing DataLoader 0:  70%|7| 70/100 [00:12<0Testing DataLoader 0:  71%|7| 71/100 [00:12<0Testing DataLoader 0:  72%|7| 72/100 [00:13<0Testing DataLoader 0:  73%|7| 73/100 [00:13<0Testing DataLoader 0:  74%|7| 74/100 [00:13<0Testing DataLoader 0:  75%|7| 75/100 [00:13<0Testing DataLoader 0:  76%|#########################8        | 76/100 [00:13<00:04,  5.45it/s]Testing DataLoader 0:  77%|##########################1       | 77/100 [00:14<00:04,  5.45it/s]Testing DataLoader 0:  78%|##########################5       | 78/100 [00:14<00:04,  5.45it/s]Testing DataLoader 0:  79%|##########################8       | 79/100 [00:14<00:03,  5.45it/s]Testing DataLoader 0:  80%|###########################2      | 80/100 [00:14<00:03,  5.44it/s]Testing DataLoader 0:  81%|###########################5      | 81/100 [00:14<00:03,  5.44it/s]Testing DataLoader 0:  82%|###########################8      | 82/100 [00:15<00:03,  5.43it/s]Testing DataLoader 0:  83%|############################2     | 83/100 [00:15<00:03,  5.43it/s]Testing DataLoader 0:  84%|############################5     | 84/100 [00:15<00:02,  5.43it/s]Testing DataLoader 0:  85%|############################9     | 85/100 [00:15<00:02,  5.43it/s]Testing DataLoader 0:  86%|#############################2    | 86/100 [00:15<00:02,  5.43it/s]Testing DataLoader 0:  87%|#############################5    | 87/100 [00:16<00:02,  5.43it/s]Testing DataLoader 0:  88%|#############################9    | 88/100 [00:16<00:02,  5.43it/s]Testing DataLoader 0:  89%|##############################2   | 89/100 [00:16<00:02,  5.43it/s]Testing DataLoader 0:  90%|##############################6   | 90/100 [00:16<00:01,  5.42it/s]Testing DataLoader 0:  91%|##############################9   | 91/100 [00:16<00:01,  5.43it/s]Testing DataLoader 0:  92%|###############################2  | 92/100 [00:16<00:01,  5.42it/s]Testing DataLoader 0:  93%|###############################6  | 93/100 [00:17<00:01,  5.42it/s]Testing DataLoader 0:  94%|###############################9  | 94/100 [00:17<00:01,  5.42it/s]Testing DataLoader 0:  95%|################################3 | 95/100 [00:17<00:00,  5.42it/s]Testing DataLoader 0:  96%|################################6 | 96/100 [00:17<00:00,  5.42it/s]Testing DataLoader 0:  97%|################################9 | 97/100 [00:17<00:00,  5.41it/s]Testing DataLoader 0:  98%|#################################3| 98/100 [00:18<00:00,  5.41it/s]Testing DataLoader 0:  99%|#################################6| 99/100 [00:18<00:00,  5.41it/s]Testing DataLoader 0: 100%|#################################| 100/100 [00:18<00:00,  5.40it/s]
+
+Testing:   0%|                                                       | 0/100 [00:00<?, ?it/s]
+Testing DataLoader 0:   0%|                                          | 0/100 [00:00<?, ?it/s]
+Testing DataLoader 0:   1%|3                                 | 1/100 [00:00<00:27,  3.61it/s]
+Testing DataLoader 0:   2%|6                                 | 2/100 [00:00<00:22,  4.38it/s]
+Testing DataLoader 0:   3%|#                                 | 3/100 [00:00<00:20,  4.68it/s]
+Testing DataLoader 0:   4%|#3                                | 4/100 [00:00<00:19,  4.87it/s]
+Testing DataLoader 0:   5%|#7                                | 5/100 [00:01<00:19,  4.96it/s]
+Testing DataLoader 0:   6%|##                                | 6/100 [00:01<00:18,  5.04it/s]
+Testing DataLoader 0:   7%|##3                               | 7/100 [00:01<00:18,  5.10it/s]
+Testing DataLoader 0:   8%|##7                               | 8/100 [00:01<00:17,  5.15it/s]
+Testing DataLoader 0:   9%|###                               | 9/100 [00:01<00:17,  5.21it/s]
+Testing DataLoader 0:  10%|###3                             | 10/100 [00:01<00:17,  5.24it/s]
+Testing DataLoader 0:  11%|###6                             | 11/100 [00:02<00:16,  5.24it/s]
+Testing DataLoader 0:  12%|###9                             | 12/100 [00:02<00:16,  5.28it/s]
+Testing DataLoader 0:  13%|####2                            | 13/100 [00:02<00:16,  5.30it/s]
+Testing DataLoader 0:  14%|####6                            | 14/100 [00:02<00:16,  5.33it/s]
+Testing DataLoader 0:  15%|####9                            | 15/100 [00:02<00:15,  5.37it/s]
+Testing DataLoader 0:  16%|#####2                           | 16/100 [00:02<00:15,  5.41it/s]
+Testing DataLoader 0:  17%|#####6                           | 17/100 [00:03<00:15,  5.44it/s]
+Testing DataLoader 0:  18%|#####9                           | 18/100 [00:03<00:15,  5.47it/s]
+Testing DataLoader 0:  19%|######2                          | 19/100 [00:03<00:14,  5.50it/s]
+Testing DataLoader 0:  20%|######6                          | 20/100 [00:03<00:14,  5.53it/s]
+Testing DataLoader 0:  21%|######9                          | 21/100 [00:03<00:14,  5.55it/s]
+Testing DataLoader 0:  22%|#######2                         | 22/100 [00:03<00:14,  5.57it/s]
+Testing DataLoader 0:  23%|#######5                         | 23/100 [00:04<00:13,  5.60it/s]
+Testing DataLoader 0:  24%|#######9                         | 24/100 [00:04<00:13,  5.63it/s]
+Testing DataLoader 0:  25%|########2                        | 25/100 [00:04<00:13,  5.65it/s]
+Testing DataLoader 0:  26%|########5                        | 26/100 [00:04<00:13,  5.67it/s]
+Testing DataLoader 0:  27%|########9                        | 27/100 [00:04<00:12,  5.69it/s]
+Testing DataLoader 0:  28%|#########2                       | 28/100 [00:04<00:12,  5.70it/s]
+Testing DataLoader 0:  29%|#########5                       | 29/100 [00:05<00:12,  5.71it/s]
+Testing DataLoader 0:  30%|#########9                       | 30/100 [00:05<00:12,  5.73it/s]
+Testing DataLoader 0:  31%|##########2                      | 31/100 [00:05<00:12,  5.74it/s]
+Testing DataLoader 0:  32%|##########5                      | 32/100 [00:05<00:11,  5.73it/s]
+Testing DataLoader 0:  33%|##########8                      | 33/100 [00:05<00:11,  5.73it/s]
+Testing DataLoader 0:  34%|###########2                     | 34/100 [00:05<00:11,  5.74it/s]
+Testing DataLoader 0:  35%|###########5                     | 35/100 [00:06<00:11,  5.71it/s]
+Testing DataLoader 0:  36%|###########8                     | 36/100 [00:06<00:11,  5.70it/s]
+Testing DataLoader 0:  37%|############2                    | 37/100 [00:06<00:11,  5.71it/s]
+Testing DataLoader 0:  38%|############5                    | 38/100 [00:06<00:10,  5.72it/s]
+Testing DataLoader 0:  39%|############8                    | 39/100 [00:06<00:10,  5.72it/s]
+Testing DataLoader 0:  40%|#############2                   | 40/100 [00:07<00:10,  5.69it/s]
+Testing DataLoader 0:  41%|#############5                   | 41/100 [00:07<00:10,  5.70it/s]
+Testing DataLoader 0:  42%|#############8                   | 42/100 [00:07<00:10,  5.64it/s]
+Testing DataLoader 0:  43%|##############1                  | 43/100 [00:07<00:10,  5.61it/s]
+Testing DataLoader 0:  44%|#####7       | 44/100 [00:07<00:09,  5.60it/s]                    
+Testing DataLoader 0:  45%|#####8       | 45/100 [00:08<00:09,  5.61it/s]
+Testing DataLoader 0:  46%|#####9       | 46/100 [00:08<00:09,  5.61it/s]
+Testing DataLoader 0:  47%|######1      | 47/100 [00:08<00:09,  5.61it/s]
+Testing DataLoader 0:  48%|######2      | 48/100 [00:08<00:09,  5.61it/s]
+Testing DataLoader 0:  49%|######3      | 49/100 [00:08<00:09,  5.60it/s]
+Testing DataLoader 0:  50%|######5      | 50/100 [00:08<00:08,  5.59it/s]
+Testing DataLoader 0:  51%|######6      | 51/100 [00:09<00:08,  5.58it/s]
+Testing DataLoader 0:  52%|######7      | 52/100 [00:09<00:08,  5.57it/s]
+Testing DataLoader 0:  53%|######8      | 53/100 [00:09<00:08,  5.53it/s]
+Testing DataLoader 0:  54%|5| 54/100 [00:09<00:08                        
+Testing DataLoader 0:  55%|5| 55/100 [00:09<00:08
+Testing DataLoader 0:  56%|5| 56/100 [00:10<0    
+Testing DataLoader 0:  57%|5| 57/100 [00:10<0
+Testing DataLoader 0:  58%|5| 58/100 [00:10<0
+Testing DataLoader 0:  59%|5| 59/100 [00:10<0
+Testing DataLoader 0:  60%|6| 60/100 [00:10<0
+Testing DataLoader 0:  61%|6| 61/100 [00:11<0
+Testing DataLoader 0:  62%|6| 62/100 [00:11<0
+Testing DataLoader 0:  63%|6| 63/100 [00:11<0
+Testing DataLoader 0:  64%|6| 64/100 [00:11<0
+Testing DataLoader 0:  65%|6| 65/100 [00:11<0
+Testing DataLoader 0:  66%|6| 66/100 [00:11<0
+Testing DataLoader 0:  67%|6| 67/100 [00:12<0
+Testing DataLoader 0:  68%|6| 68/100 [00:12<0
+Testing DataLoader 0:  69%|6| 69/100 [00:12<0
+Testing DataLoader 0:  70%|7| 70/100 [00:12<0
+Testing DataLoader 0:  71%|7| 71/100 [00:12<0
+Testing DataLoader 0:  72%|7| 72/100 [00:13<0
+Testing DataLoader 0:  73%|7| 73/100 [00:13<0
+Testing DataLoader 0:  74%|7| 74/100 [00:13<0
+Testing DataLoader 0:  75%|7| 75/100 [00:13<0
+Testing DataLoader 0:  76%|#########################8        | 76/100 [00:13<00:04,  5.45it/s]
+Testing DataLoader 0:  77%|##########################1       | 77/100 [00:14<00:04,  5.45it/s]
+Testing DataLoader 0:  78%|##########################5       | 78/100 [00:14<00:04,  5.45it/s]
+Testing DataLoader 0:  79%|##########################8       | 79/100 [00:14<00:03,  5.45it/s]
+Testing DataLoader 0:  80%|###########################2      | 80/100 [00:14<00:03,  5.44it/s]
+Testing DataLoader 0:  81%|###########################5      | 81/100 [00:14<00:03,  5.44it/s]
+Testing DataLoader 0:  82%|###########################8      | 82/100 [00:15<00:03,  5.43it/s]
+Testing DataLoader 0:  83%|############################2     | 83/100 [00:15<00:03,  5.43it/s]
+Testing DataLoader 0:  84%|############################5     | 84/100 [00:15<00:02,  5.43it/s]
+Testing DataLoader 0:  85%|############################9     | 85/100 [00:15<00:02,  5.43it/s]
+Testing DataLoader 0:  86%|#############################2    | 86/100 [00:15<00:02,  5.43it/s]
+Testing DataLoader 0:  87%|#############################5    | 87/100 [00:16<00:02,  5.43it/s]
+Testing DataLoader 0:  88%|#############################9    | 88/100 [00:16<00:02,  5.43it/s]
+Testing DataLoader 0:  89%|##############################2   | 89/100 [00:16<00:02,  5.43it/s]
+Testing DataLoader 0:  90%|##############################6   | 90/100 [00:16<00:01,  5.42it/s]
+Testing DataLoader 0:  91%|##############################9   | 91/100 [00:16<00:01,  5.43it/s]
+Testing DataLoader 0:  92%|###############################2  | 92/100 [00:16<00:01,  5.42it/s]
+Testing DataLoader 0:  93%|###############################6  | 93/100 [00:17<00:01,  5.42it/s]
+Testing DataLoader 0:  94%|###############################9  | 94/100 [00:17<00:01,  5.42it/s]
+Testing DataLoader 0:  95%|################################3 | 95/100 [00:17<00:00,  5.42it/s]
+Testing DataLoader 0:  96%|################################6 | 96/100 [00:17<00:00,  5.42it/s]
+Testing DataLoader 0:  97%|################################9 | 97/100 [00:17<00:00,  5.41it/s]
+Testing DataLoader 0:  98%|#################################3| 98/100 [00:18<00:00,  5.41it/s]
+Testing DataLoader 0:  99%|#################################6| 99/100 [00:18<00:00,  5.41it/s]
+Testing DataLoader 0: 100%|#################################| 100/100 [00:18<00:00,  5.40it/s]
 Testing completed in 22.73 seconds or 0.38 minutes or 0.006314829587936401 hours.
 
 test_loss: 0.0014
@@ -173,7 +276,8 @@ Creating decoder output plot for rep '1,001.495' for [m004_(apv+G)]-gru_dec_1.6.
 
 Decoder output plot for rep '1001.4951' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.6\custom_test_1
 
-Testing DataLoader 0: 100%|#################################| 100/100 [00:20<00:00,  4.90it/s]
+
+Testing DataLoader 0: 100%|#################################| 100/100 [00:20<00:00,  4.90it/s]
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃        Test metric        ┃       DataLoader 0        ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩

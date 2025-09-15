@@ -357,8 +357,12 @@ class DecoderTrainManager(DecoderTrainConfig):
         for root, dirs, files in os.walk(parent_dir):
             # Only look at immediate subfolders of parent_dir
             if os.path.dirname(root) == parent_dir:
+                if os.path.basename(root) == "archieve":
+                    continue  # skip the 'archieve' folder
                 for d in dirs:
                     model_folders.append(d)
+        
+        print(model_folders)
 
         if model_folders:
             # Extract numbers and find the max

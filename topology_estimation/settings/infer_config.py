@@ -45,8 +45,10 @@ class NRIInferConfig:
     # Encoder run parameters
         # input processor parameters
         self.enc_cutoff_freq = 100
-        self.temp = 0.1
         self.is_hard = False
+        self.init_temp = 1.0
+        self.min_temp = 0.3
+        self.decay_temp = 0.000
 
     # Decoder 
         # input processor parameters
@@ -56,7 +58,7 @@ class NRIInferConfig:
         self.skip_first_edge_type = False
         self.pred_steps = 1
         self.is_burn_in = False
-        self.burn_in_steps = 1
+        self.final_pred_steps = 1
         self.is_dynamic_graph = False
 
         # plotting parameters
@@ -104,11 +106,13 @@ class NRIInferConfig:
             f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,
             f'dec/pred_steps/{self.run_type}': self.pred_steps,
             f'dec/is_burn_in/{self.run_type}': self.is_burn_in,
-            f'dec/burn_in_steps/{self.run_type}': self.burn_in_steps,
+            f'dec/final_pred_steps/{self.run_type}': self.final_pred_steps,
             f'dec/is_dynamic_graph/{self.run_type}': self.is_dynamic_graph,
 
             f'enc/domain/{self.run_type}': domain_enc_str,
-            f'enc/temp/{self.run_type}': self.temp,
+            f'enc/init_temp/{self.run_type}': self.init_temp,
+            f'enc/min_temp/{self.run_type}': self.min_temp,
+            f'enc/decay_temp/{self.run_type}': self.decay_temp,
             f'enc/is_hard/{self.run_type}': self.is_hard,
 
             # sparsifier parameters
@@ -155,7 +159,7 @@ class NRIInferSweep:
         self.skip_first_edge_type = [False]
         self.pred_steps = [1]
         self.is_burn_in = [False]
-        self.burn_in_steps = [1]
+        self.final_pred_steps = [1]
         self.is_dynamic_graph = [False]
 
     # Sparsifier parameters
@@ -207,8 +211,8 @@ class DecoderInferConfig:
     # Decoder run parameters
         self.skip_first_edge_type = False
         self.pred_steps = 5
-        self.is_burn_in = False
-        self.burn_in_steps = 1
+        self.is_burn_in = True
+        self.final_pred_steps = 10
         self.is_dynamic_graph = False
 
         # if dynamic graph is true
@@ -219,7 +223,7 @@ class DecoderInferConfig:
         self.show_conf_band = False
 
     # Sparsifier parameters 
-        self.spf_config = get_spf_config('no_spf', is_expert=False)
+        self.spf_config = get_spf_config('vanilla', is_expert=True)
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 
@@ -255,7 +259,7 @@ class DecoderInferConfig:
             f'dec/skip_first_edge/{self.run_type}': self.skip_first_edge_type,
             f'dec/pred_steps/{self.run_type}': self.pred_steps,
             f'dec/is_burn_in/{self.run_type}': self.is_burn_in,
-            f'dec/burn_in_steps/{self.run_type}': self.burn_in_steps,
+            f'dec/final_pred_steps/{self.run_type}': self.final_pred_steps,
             f'dec/is_dynamic_graph/{self.run_type}': self.is_dynamic_graph,
             f'enc/temp/{self.run_type}': self.temp,
             f'enc/is_hard/{self.run_type}': self.is_hard,
@@ -297,7 +301,7 @@ class DecoderInferSweep:
         self.skip_first_edge_type = [False]
         self.pred_steps = [1]
         self.is_burn_in = [False]
-        self.burn_in_steps = [1]
+        self.final_pred_steps = [1]
         self.is_dynamic_graph = [False]
 
         # if dynamic graph is true

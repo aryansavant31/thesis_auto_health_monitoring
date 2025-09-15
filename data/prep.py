@@ -554,7 +554,7 @@ class DataPreprocessor:
             
             # copy flat edge per segment
             edge_vec = ds_subtype_edge_map[ds_subtype]
-            edge_block = np.tile(edge_vec, (min_segments, 1))  # (min_segments, n_edges)
+            edge_block = np.tile(edge_vec, (min_segments, 1, 1))  # (min_segments, n_edges, n_types)
             all_ds_subtype_edges.append(edge_block)
 
             # collect rep labels from the node that determined min_samples_per_node
@@ -793,15 +793,26 @@ class DataPreprocessor:
 
         for ds_subtype, edge_hdf5_path in ds_subtype_map.items():
             with h5py.File(edge_hdf5_path, 'r') as f:
-                adj_mat = f['adj_matrix'][:]  # shape: (n_nodes, n_nodes)
+                adj_mat = f['adj_matrix'][:]  # shape: (n_nodes, n_nodes, n_types)
+            
+            n_nodes, _, n_types = adj_mat.shape
+            edge_labels = []
 
-            flat_edge = []
-            for r in range(adj_mat.shape[0]):
-                for c in range(adj_mat.shape[1]):
+            for r in range(n_nodes):
+                for c in range(n_nodes):
                     if r != c:
-                        flat_edge.append(adj_mat[r, c])
-            ds_subtype_edge_map[ds_subtype] = np.array(flat_edge)
-        
+                        edge_types = adj_mat[r, c, :]  # shape: (n_types,)
+
+                        # first label = 1 if all types are 0 (no edge exists)
+                        no_edge = 1 if np.all(edge_types == 0) else 0
+                        # next labels = 1 if edge exists in that type, else 0
+                        type_labels = (edge_types == 1).astype(int)
+                        # combine into one row: [no_edge, type1, type2, ...]
+                        edge_labels.append(np.concatenate([[no_edge], type_labels]))
+
+            flat_edge = np.stack(edge_labels, axis=0)  # shape: (n_edges, n_types+1)
+            ds_subtype_edge_map[ds_subtype] = flat_edge
+
         return ds_subtype_edge_map
     
 

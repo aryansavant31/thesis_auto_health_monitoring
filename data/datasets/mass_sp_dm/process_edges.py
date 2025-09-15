@@ -47,13 +47,19 @@ class ProcessRawMSDEdgeData:
         if mat_file_path.endswith('.mat') and os.path.exists(mat_file_path):
             mat_data = scipy.io.loadmat(mat_file_path)
             key_name = next((signal for signal in mat_data.keys() if '_adj' in signal), None)
+
             if key_name is None:
                 raise ValueError(f"No adjacency matrix containing '_adj' found in {mat_file_path}")
             adj_matrix = mat_data[key_name]
+
+            # add an extra dimension to make it (N, N, 1)
+            adj_matrix = np.expand_dims(adj_matrix, axis=-1)
+
             hdf5_filename = os.path.splitext(os.path.basename(mat_file_path))[0] + '.hdf5'
+        
         else:
             # Create a default 2x2 adjacency matrix with all elements 0
-            adj_matrix = -1 * np.ones((2, 2))
+            adj_matrix = -1 * np.ones((2, 2, 1))
             hdf5_filename = 'null_adj.hdf5'
 
         hdf5_path = os.path.join(processed_path, hdf5_filename)
