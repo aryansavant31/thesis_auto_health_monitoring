@@ -213,7 +213,8 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
             init_temp=self.tp_config.init_temp,
             min_temp=self.tp_config.min_temp,
             decay_temp=self.tp_config.decay_temp,
-            is_hard=self.tp_config.is_hard
+            is_hard=self.tp_config.is_hard,
+            dynamic_rel=self.tp_config.dynamic_rel
             )
 
         print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")

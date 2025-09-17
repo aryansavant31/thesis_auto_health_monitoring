@@ -1,0 +1,3613 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+Start Time: 2025-09-16 14:18:18
+End Time: 2025-09-16 14:30:01
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting nri model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) series_tp    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 500/500 [OK=500, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (4, 4)
+     n1   n2   n3   n4
+n1  0.0  1.0  1.0  1.0
+n2  1.0  0.0  1.0  1.0
+n3  1.0  1.0  0.0  1.0
+n4  1.0  1.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  0.0  1.0  0.0  0.0
+e13  0.0  0.0  1.0  0.0
+e14  0.0  0.0  0.0  1.0
+e21  1.0  0.0  0.0  0.0
+e23  0.0  0.0  1.0  0.0
+e24  0.0  0.0  0.0  1.0
+e31  1.0  0.0  0.0  0.0
+e32  0.0  1.0  0.0  0.0
+e34  0.0  0.0  0.0  1.0
+e41  1.0  0.0  0.0  0.0
+e42  0.0  1.0  0.0  0.0
+e43  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  1.0  0.0  0.0  0.0
+e13  1.0  0.0  0.0  0.0
+e14  1.0  0.0  0.0  0.0
+e21  0.0  1.0  0.0  0.0
+e23  0.0  1.0  0.0  0.0
+e24  0.0  1.0  0.0  0.0
+e31  0.0  0.0  1.0  0.0
+e32  0.0  0.0  1.0  0.0
+e34  0.0  0.0  1.0  0.0
+e41  0.0  0.0  0.0  1.0
+e42  0.0  0.0  0.0  1.0
+e43  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+<<<<<< ENCODER PARAMETERS >>>>>>
+Encoder model parameters:
+-------------------------
+n_edge_types: 2
+is_residual_connection: False
+do_prob: {'mlp': 0.0, 'cnn': 0.0}
+is_batch_norm: {'mlp': True, 'cnn': False}
+is_xavier_weights: True
+attention_output_size: 5
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+reduc_config: None
+feat_norm: None
+pipeline: [['1/node_emd.1', 'mlp'], ['1/pairwise_op', 'concat'], ['1/edge_emd.1.@', 'mlp'], ['2/aggregate', 'mean'], ['2/node_emd.1', 'mlp'], ['2/pairwise_op', 'concat'], ['2/edge_emd.1', 'mlp']]
+edge_emb_configs: {'mlp': [[256, 'elu'], [256, 'elu']], 'cnn': [[5, 2, 64], [8]]}
+node_emb_configs: {'mlp': [[256, 'elu'], [256, 'elu']], 'cnn': [[5, 2, 64], [8]]}
+n_comps: 100
+n_dims: 3
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 2
+msg_out_size: 64
+edge_mlp_config: [[64, 'tanh'], [64, 'tanh']]
+out_mlp_config: [[64, 'relu'], [64, 'relu']]
+do_prob: 0
+is_batch_norm: False
+is_xavier_weights: False
+recur_emb_type: gru
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+feat_norm: None
+reduc_config: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+is_hard: False
+skip_first_edge_type: True
+pred_steps: 10
+is_burn_in: True
+final_pred_steps: 30
+is_dynamic_graph: False
+show_conf_band: False
+
+Training parameters set to: 
+lr_enc=0.0002, 
+lr_dec=0.0001, 
+final_beta=0.0001, 
+warmup_frac=0.9, 
+optimizer=adam, 
+loss_type_encoder=kld, 
+loss_type_decoder=mse, 
+prior=tensor([0.5000, 0.5000]), 
+add_const_kld=True
+
+---------------------------------------------------------------------------
+
+NRI Model Initialized with the following configurations:
+----- NRI Model Summary -----
+-- Encoder Summary
+Encoder(
+  (emb_fn_dict): ModuleDict(
+    (1/node_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=300, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (1/edge_emd1@): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=512, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (2/node_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=256, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (2/edge_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=512, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+  )
+  (attention_layer_dict): ModuleDict()
+  (output_layer): Linear(in_features=256, out_features=2, bias=True)
+)
+-- Decoder Summary
+Decoder(
+  (edge_mlp_fn): ModuleList(
+    (0-1): 2 x MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=128, out_features=64, bias=True)
+        (1): Tanh()
+        (2): Dropout(p=0, inplace=False)
+        (3): Linear(in_features=64, out_features=64, bias=True)
+        (4): Tanh()
+      )
+    )
+  )
+  (recurrent_emb_fn): GRU(
+    (input_u): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_u): Linear(in_features=64, out_features=64, bias=True)
+    (input_r): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_r): Linear(in_features=64, out_features=64, bias=True)
+    (input_h): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_h): Linear(in_features=64, out_features=64, bias=True)
+  )
+  (mean_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=64, out_features=64, bias=True)
+      (4): ReLU()
+    )
+  )
+  (var_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=64, out_features=64, bias=True)
+      (4): ReLU()
+    )
+  )
+  (mean_output_layer): Linear(in_features=64, out_features=3, bias=True)
+  (var_output_layer): Linear(in_features=64, out_features=3, bias=True)
+)
+
+---------------------------------------------------------------------------
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+
+Initializing input processors for encoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Step 0, Epoch 1/20, Batch 0/80
+temp: 0.9990, beta: 0.0000, 
+nri_train_loss: 0.8123, enc_train_loss: 1.9680, enc_train_entropy: 0.5291, dec_train_loss: 0.8123, train_edge_accuracy: 0.4900
+
+Step 5, Epoch 1/20, Batch 5/80
+temp: 0.9940, beta: 0.0000, 
+nri_train_loss: 0.6216, enc_train_loss: 6.8580, enc_train_entropy: 0.1216, dec_train_loss: 0.6216, train_edge_accuracy: 0.4950
+
+Step 10, Epoch 1/20, Batch 10/80
+temp: 0.9891, beta: 0.0000, 
+nri_train_loss: 0.4729, enc_train_loss: 7.1755, enc_train_entropy: 0.0952, dec_train_loss: 0.4729, train_edge_accuracy: 0.5200
+
+Step 15, Epoch 1/20, Batch 15/80
+temp: 0.9841, beta: 0.0000, 
+nri_train_loss: 0.3351, enc_train_loss: 7.1729, enc_train_entropy: 0.0954, dec_train_loss: 0.3351, train_edge_accuracy: 0.5067
+
+Step 20, Epoch 1/20, Batch 20/80
+temp: 0.9792, beta: 0.0000, 
+nri_train_loss: 0.2527, enc_train_loss: 6.8979, enc_train_entropy: 0.1183, dec_train_loss: 0.2527, train_edge_accuracy: 0.5033
+
+Step 25, Epoch 1/20, Batch 25/80
+temp: 0.9743, beta: 0.0000, 
+nri_train_loss: 0.1891, enc_train_loss: 6.9758, enc_train_entropy: 0.1118, dec_train_loss: 0.1891, train_edge_accuracy: 0.5383
+
+Step 30, Epoch 1/20, Batch 30/80
+temp: 0.9695, beta: 0.0000, 
+nri_train_loss: 0.1430, enc_train_loss: 7.3679, enc_train_entropy: 0.0792, dec_train_loss: 0.1429, train_edge_accuracy: 0.5300
+
+Step 35, Epoch 1/20, Batch 35/80
+temp: 0.9646, beta: 0.0000, 
+nri_train_loss: 0.1069, enc_train_loss: 7.3497, enc_train_entropy: 0.0807, dec_train_loss: 0.1069, train_edge_accuracy: 0.5467
+
+Step 40, Epoch 1/20, Batch 40/80
+temp: 0.9598, beta: 0.0000, 
+nri_train_loss: 0.0797, enc_train_loss: 7.4388, enc_train_entropy: 0.0733, dec_train_loss: 0.0797, train_edge_accuracy: 0.5350
+
+Step 45, Epoch 1/20, Batch 45/80
+temp: 0.9550, beta: 0.0000, 
+nri_train_loss: 0.0513, enc_train_loss: 7.8212, enc_train_entropy: 0.0414, dec_train_loss: 0.0513, train_edge_accuracy: 0.5400
+
+Step 50, Epoch 1/20, Batch 50/80
+temp: 0.9503, beta: 0.0000, 
+nri_train_loss: 0.0431, enc_train_loss: 7.5387, enc_train_entropy: 0.0649, dec_train_loss: 0.0431, train_edge_accuracy: 0.5350
+
+Step 55, Epoch 1/20, Batch 55/80
+temp: 0.9455, beta: 0.0000, 
+nri_train_loss: 0.0331, enc_train_loss: 7.5642, enc_train_entropy: 0.0628, dec_train_loss: 0.0330, train_edge_accuracy: 0.5367
+
+Step 60, Epoch 1/20, Batch 60/80
+temp: 0.9408, beta: 0.0000, 
+nri_train_loss: 0.0302, enc_train_loss: 7.3179, enc_train_entropy: 0.0833, dec_train_loss: 0.0302, train_edge_accuracy: 0.5500
+
+Step 65, Epoch 1/20, Batch 65/80
+temp: 0.9361, beta: 0.0000, 
+nri_train_loss: 0.0293, enc_train_loss: 7.2845, enc_train_entropy: 0.0861, dec_train_loss: 0.0293, train_edge_accuracy: 0.5633
+
+Step 70, Epoch 1/20, Batch 70/80
+temp: 0.9314, beta: 0.0000, 
+nri_train_loss: 0.0279, enc_train_loss: 7.4588, enc_train_entropy: 0.0716, dec_train_loss: 0.0279, train_edge_accuracy: 0.5650
+
+Step 75, Epoch 1/20, Batch 75/80
+temp: 0.9268, beta: 0.0000, 
+nri_train_loss: 0.0265, enc_train_loss: 7.5664, enc_train_entropy: 0.0626, dec_train_loss: 0.0264, train_edge_accuracy: 0.5850
+
+
+Epoch 1/20 completed, Global Step: 80
+nri_train_loss: 0.0265, enc_train_loss: 7.5664, enc_train_entropy: 0.0626, dec_train_loss: 0.0264, train_edge_accuracy: 0.5850
+nri_val_loss: 0.0266, enc_val_loss: 7.5449, enc_val_entropy: 0.0644, dec_val_loss: 0.0265, val_edge_accuracy: 0.6012
+
+---------------------------------------------------------------------------
+
+Step 80, Epoch 2/20, Batch 0/80
+temp: 0.9130, beta: 0.0000, 
+nri_train_loss: 0.0259, enc_train_loss: 7.3121, enc_train_entropy: 0.0838, dec_train_loss: 0.0258, train_edge_accuracy: 0.6267
+
+Step 85, Epoch 2/20, Batch 5/80
+temp: 0.9084, beta: 0.0000, 
+nri_train_loss: 0.0258, enc_train_loss: 7.4139, enc_train_entropy: 0.0753, dec_train_loss: 0.0257, train_edge_accuracy: 0.6167
+
+Step 90, Epoch 2/20, Batch 10/80
+temp: 0.9039, beta: 0.0000, 
+nri_train_loss: 0.0250, enc_train_loss: 7.5299, enc_train_entropy: 0.0657, dec_train_loss: 0.0250, train_edge_accuracy: 0.6067
+
+Step 95, Epoch 2/20, Batch 15/80
+temp: 0.8994, beta: 0.0000, 
+nri_train_loss: 0.0249, enc_train_loss: 7.2741, enc_train_entropy: 0.0870, dec_train_loss: 0.0249, train_edge_accuracy: 0.6117
+
+Step 100, Epoch 2/20, Batch 20/80
+temp: 0.8949, beta: 0.0000, 
+nri_train_loss: 0.0242, enc_train_loss: 7.1818, enc_train_entropy: 0.0947, dec_train_loss: 0.0241, train_edge_accuracy: 0.6017
+
+Step 105, Epoch 2/20, Batch 25/80
+temp: 0.8904, beta: 0.0000, 
+nri_train_loss: 0.0240, enc_train_loss: 7.2981, enc_train_entropy: 0.0850, dec_train_loss: 0.0240, train_edge_accuracy: 0.6050
+
+Step 110, Epoch 2/20, Batch 30/80
+temp: 0.8860, beta: 0.0000, 
+nri_train_loss: 0.0241, enc_train_loss: 7.3655, enc_train_entropy: 0.0794, dec_train_loss: 0.0240, train_edge_accuracy: 0.6117
+
+Step 115, Epoch 2/20, Batch 35/80
+temp: 0.8816, beta: 0.0000, 
+nri_train_loss: 0.0237, enc_train_loss: 7.2644, enc_train_entropy: 0.0878, dec_train_loss: 0.0236, train_edge_accuracy: 0.6117
+
+Step 120, Epoch 2/20, Batch 40/80
+temp: 0.8772, beta: 0.0000, 
+nri_train_loss: 0.0233, enc_train_loss: 7.4079, enc_train_entropy: 0.0758, dec_train_loss: 0.0233, train_edge_accuracy: 0.6317
+
+Step 125, Epoch 2/20, Batch 45/80
+temp: 0.8728, beta: 0.0000, 
+nri_train_loss: 0.0232, enc_train_loss: 7.1850, enc_train_entropy: 0.0944, dec_train_loss: 0.0232, train_edge_accuracy: 0.6083
+
+Step 130, Epoch 2/20, Batch 50/80
+temp: 0.8684, beta: 0.0000, 
+nri_train_loss: 0.0233, enc_train_loss: 7.3102, enc_train_entropy: 0.0840, dec_train_loss: 0.0232, train_edge_accuracy: 0.6033
+
+Step 135, Epoch 2/20, Batch 55/80
+temp: 0.8641, beta: 0.0000, 
+nri_train_loss: 0.0231, enc_train_loss: 7.3342, enc_train_entropy: 0.0820, dec_train_loss: 0.0231, train_edge_accuracy: 0.5950
+
+Step 140, Epoch 2/20, Batch 60/80
+temp: 0.8598, beta: 0.0000, 
+nri_train_loss: 0.0230, enc_train_loss: 7.2606, enc_train_entropy: 0.0881, dec_train_loss: 0.0229, train_edge_accuracy: 0.6300
+
+Step 145, Epoch 2/20, Batch 65/80
+temp: 0.8555, beta: 0.0000, 
+nri_train_loss: 0.0228, enc_train_loss: 7.3977, enc_train_entropy: 0.0767, dec_train_loss: 0.0228, train_edge_accuracy: 0.6000
+
+Step 150, Epoch 2/20, Batch 70/80
+temp: 0.8512, beta: 0.0000, 
+nri_train_loss: 0.0228, enc_train_loss: 7.3025, enc_train_entropy: 0.0846, dec_train_loss: 0.0227, train_edge_accuracy: 0.6317
+
+Step 155, Epoch 2/20, Batch 75/80
+temp: 0.8470, beta: 0.0000, 
+nri_train_loss: 0.0222, enc_train_loss: 7.3201, enc_train_entropy: 0.0831, dec_train_loss: 0.0222, train_edge_accuracy: 0.6283
+
+
+Epoch 2/20 completed, Global Step: 160
+nri_train_loss: 0.0222, enc_train_loss: 7.3201, enc_train_entropy: 0.0831, dec_train_loss: 0.0222, train_edge_accuracy: 0.6283
+nri_val_loss: 0.0223, enc_val_loss: 7.1612, enc_val_entropy: 0.0964, dec_val_loss: 0.0222, val_edge_accuracy: 0.6195
+
+---------------------------------------------------------------------------
+
+Step 160, Epoch 3/20, Batch 0/80
+temp: 0.8344, beta: 0.0000, 
+nri_train_loss: 0.0224, enc_train_loss: 7.1060, enc_train_entropy: 0.1010, dec_train_loss: 0.0223, train_edge_accuracy: 0.6050
+
+Step 165, Epoch 3/20, Batch 5/80
+temp: 0.8302, beta: 0.0000, 
+nri_train_loss: 0.0223, enc_train_loss: 7.3198, enc_train_entropy: 0.0832, dec_train_loss: 0.0223, train_edge_accuracy: 0.6100
+
+Step 170, Epoch 3/20, Batch 10/80
+temp: 0.8261, beta: 0.0000, 
+nri_train_loss: 0.0221, enc_train_loss: 7.2862, enc_train_entropy: 0.0860, dec_train_loss: 0.0220, train_edge_accuracy: 0.6083
+
+Step 175, Epoch 3/20, Batch 15/80
+temp: 0.8219, beta: 0.0000, 
+nri_train_loss: 0.0221, enc_train_loss: 7.3109, enc_train_entropy: 0.0839, dec_train_loss: 0.0220, train_edge_accuracy: 0.6200
+
+Step 180, Epoch 3/20, Batch 20/80
+temp: 0.8178, beta: 0.0000, 
+nri_train_loss: 0.0221, enc_train_loss: 7.1618, enc_train_entropy: 0.0963, dec_train_loss: 0.0220, train_edge_accuracy: 0.6200
+
+Step 185, Epoch 3/20, Batch 25/80
+temp: 0.8137, beta: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 7.0845, enc_train_entropy: 0.1028, dec_train_loss: 0.0216, train_edge_accuracy: 0.6333
+
+Step 190, Epoch 3/20, Batch 30/80
+temp: 0.8097, beta: 0.0000, 
+nri_train_loss: 0.0219, enc_train_loss: 7.1381, enc_train_entropy: 0.0983, dec_train_loss: 0.0218, train_edge_accuracy: 0.6283
+
+Step 195, Epoch 3/20, Batch 35/80
+temp: 0.8056, beta: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 7.1639, enc_train_entropy: 0.0962, dec_train_loss: 0.0216, train_edge_accuracy: 0.6567
+
+Step 200, Epoch 3/20, Batch 40/80
+temp: 0.8016, beta: 0.0000, 
+nri_train_loss: 0.0219, enc_train_loss: 7.2273, enc_train_entropy: 0.0909, dec_train_loss: 0.0218, train_edge_accuracy: 0.6050
+
+Step 205, Epoch 3/20, Batch 45/80
+temp: 0.7976, beta: 0.0000, 
+nri_train_loss: 0.0219, enc_train_loss: 7.0478, enc_train_entropy: 0.1058, dec_train_loss: 0.0218, train_edge_accuracy: 0.6017
+
+Step 210, Epoch 3/20, Batch 50/80
+temp: 0.7936, beta: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 6.9960, enc_train_entropy: 0.1101, dec_train_loss: 0.0216, train_edge_accuracy: 0.6183
+
+Step 215, Epoch 3/20, Batch 55/80
+temp: 0.7897, beta: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 7.3160, enc_train_entropy: 0.0835, dec_train_loss: 0.0215, train_edge_accuracy: 0.6200
+
+Step 220, Epoch 3/20, Batch 60/80
+temp: 0.7857, beta: 0.0000, 
+nri_train_loss: 0.0218, enc_train_loss: 7.0753, enc_train_entropy: 0.1035, dec_train_loss: 0.0217, train_edge_accuracy: 0.6100
+
+Step 225, Epoch 3/20, Batch 65/80
+temp: 0.7818, beta: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 7.0477, enc_train_entropy: 0.1058, dec_train_loss: 0.0215, train_edge_accuracy: 0.6267
+
+Step 230, Epoch 3/20, Batch 70/80
+temp: 0.7779, beta: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 7.2115, enc_train_entropy: 0.0922, dec_train_loss: 0.0215, train_edge_accuracy: 0.5983
+
+Step 235, Epoch 3/20, Batch 75/80
+temp: 0.7740, beta: 0.0000, 
+nri_train_loss: 0.0215, enc_train_loss: 7.1607, enc_train_entropy: 0.0964, dec_train_loss: 0.0214, train_edge_accuracy: 0.6300
+
+
+Epoch 3/20 completed, Global Step: 240
+nri_train_loss: 0.0215, enc_train_loss: 7.1607, enc_train_entropy: 0.0964, dec_train_loss: 0.0214, train_edge_accuracy: 0.6300
+nri_val_loss: 0.0214, enc_val_loss: 7.1135, enc_val_entropy: 0.1004, dec_val_loss: 0.0213, val_edge_accuracy: 0.6273
+
+---------------------------------------------------------------------------
+
+Step 240, Epoch 4/20, Batch 0/80
+temp: 0.7625, beta: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 7.1361, enc_train_entropy: 0.0985, dec_train_loss: 0.0215, train_edge_accuracy: 0.6067
+
+Step 245, Epoch 4/20, Batch 5/80
+temp: 0.7587, beta: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 7.3142, enc_train_entropy: 0.0836, dec_train_loss: 0.0214, train_edge_accuracy: 0.6400
+
+Step 250, Epoch 4/20, Batch 10/80
+temp: 0.7549, beta: 0.0000, 
+nri_train_loss: 0.0215, enc_train_loss: 7.2997, enc_train_entropy: 0.0848, dec_train_loss: 0.0213, train_edge_accuracy: 0.6317
+
+Step 255, Epoch 4/20, Batch 15/80
+temp: 0.7512, beta: 0.0000, 
+nri_train_loss: 0.0214, enc_train_loss: 7.1181, enc_train_entropy: 0.1000, dec_train_loss: 0.0213, train_edge_accuracy: 0.6100
+
+Step 260, Epoch 4/20, Batch 20/80
+temp: 0.7474, beta: 0.0000, 
+nri_train_loss: 0.0214, enc_train_loss: 7.1713, enc_train_entropy: 0.0955, dec_train_loss: 0.0213, train_edge_accuracy: 0.6067
+
+Step 265, Epoch 4/20, Batch 25/80
+temp: 0.7437, beta: 0.0000, 
+nri_train_loss: 0.0213, enc_train_loss: 7.1934, enc_train_entropy: 0.0937, dec_train_loss: 0.0212, train_edge_accuracy: 0.6017
+
+Step 270, Epoch 4/20, Batch 30/80
+temp: 0.7400, beta: 0.0000, 
+nri_train_loss: 0.0211, enc_train_loss: 7.0936, enc_train_entropy: 0.1020, dec_train_loss: 0.0210, train_edge_accuracy: 0.6033
+
+Step 275, Epoch 4/20, Batch 35/80
+temp: 0.7363, beta: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 6.9157, enc_train_entropy: 0.1168, dec_train_loss: 0.0211, train_edge_accuracy: 0.5817
+
+Step 280, Epoch 4/20, Batch 40/80
+temp: 0.7326, beta: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 7.1905, enc_train_entropy: 0.0939, dec_train_loss: 0.0208, train_edge_accuracy: 0.6433
+
+Step 285, Epoch 4/20, Batch 45/80
+temp: 0.7289, beta: 0.0000, 
+nri_train_loss: 0.0211, enc_train_loss: 7.0096, enc_train_entropy: 0.1090, dec_train_loss: 0.0210, train_edge_accuracy: 0.6050
+
+Step 290, Epoch 4/20, Batch 50/80
+temp: 0.7253, beta: 0.0000, 
+nri_train_loss: 0.0211, enc_train_loss: 7.0972, enc_train_entropy: 0.1017, dec_train_loss: 0.0210, train_edge_accuracy: 0.6000
+
+Step 295, Epoch 4/20, Batch 55/80
+temp: 0.7217, beta: 0.0000, 
+nri_train_loss: 0.0209, enc_train_loss: 7.0100, enc_train_entropy: 0.1090, dec_train_loss: 0.0207, train_edge_accuracy: 0.6067
+
+Step 300, Epoch 4/20, Batch 60/80
+temp: 0.7181, beta: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 6.9795, enc_train_entropy: 0.1115, dec_train_loss: 0.0209, train_edge_accuracy: 0.6400
+
+Step 305, Epoch 4/20, Batch 65/80
+temp: 0.7145, beta: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 6.9810, enc_train_entropy: 0.1114, dec_train_loss: 0.0210, train_edge_accuracy: 0.6067
+
+Step 310, Epoch 4/20, Batch 70/80
+temp: 0.7109, beta: 0.0000, 
+nri_train_loss: 0.0208, enc_train_loss: 7.0365, enc_train_entropy: 0.1068, dec_train_loss: 0.0206, train_edge_accuracy: 0.6417
+
+Step 315, Epoch 4/20, Batch 75/80
+temp: 0.7074, beta: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 7.0360, enc_train_entropy: 0.1068, dec_train_loss: 0.0208, train_edge_accuracy: 0.5950
+
+
+Epoch 4/20 completed, Global Step: 320
+nri_train_loss: 0.0210, enc_train_loss: 7.0360, enc_train_entropy: 0.1068, dec_train_loss: 0.0208, train_edge_accuracy: 0.5950
+nri_val_loss: 0.0209, enc_val_loss: 7.0362, enc_val_entropy: 0.1068, dec_val_loss: 0.0208, val_edge_accuracy: 0.6307
+
+---------------------------------------------------------------------------
+
+Step 320, Epoch 5/20, Batch 0/80
+temp: 0.6969, beta: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 7.0500, enc_train_entropy: 0.1056, dec_train_loss: 0.0211, train_edge_accuracy: 0.6150
+
+Step 325, Epoch 5/20, Batch 5/80
+temp: 0.6934, beta: 0.0000, 
+nri_train_loss: 0.0209, enc_train_loss: 6.9823, enc_train_entropy: 0.1113, dec_train_loss: 0.0208, train_edge_accuracy: 0.6167
+
+Step 330, Epoch 5/20, Batch 10/80
+temp: 0.6899, beta: 0.0000, 
+nri_train_loss: 0.0209, enc_train_loss: 6.9185, enc_train_entropy: 0.1166, dec_train_loss: 0.0208, train_edge_accuracy: 0.5950
+
+Step 335, Epoch 5/20, Batch 15/80
+temp: 0.6865, beta: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 7.0128, enc_train_entropy: 0.1088, dec_train_loss: 0.0206, train_edge_accuracy: 0.6067
+
+Step 340, Epoch 5/20, Batch 20/80
+temp: 0.6830, beta: 0.0000, 
+nri_train_loss: 0.0208, enc_train_loss: 6.9842, enc_train_entropy: 0.1111, dec_train_loss: 0.0207, train_edge_accuracy: 0.6300
+
+Step 345, Epoch 5/20, Batch 25/80
+temp: 0.6796, beta: 0.0000, 
+nri_train_loss: 0.0208, enc_train_loss: 7.0062, enc_train_entropy: 0.1093, dec_train_loss: 0.0206, train_edge_accuracy: 0.5767
+
+Step 350, Epoch 5/20, Batch 30/80
+temp: 0.6762, beta: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 7.0778, enc_train_entropy: 0.1033, dec_train_loss: 0.0208, train_edge_accuracy: 0.5967
+
+Step 355, Epoch 5/20, Batch 35/80
+temp: 0.6729, beta: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 6.9458, enc_train_entropy: 0.1143, dec_train_loss: 0.0206, train_edge_accuracy: 0.6200
+
+Step 360, Epoch 5/20, Batch 40/80
+temp: 0.6695, beta: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 7.0172, enc_train_entropy: 0.1084, dec_train_loss: 0.0204, train_edge_accuracy: 0.6183
+
+Step 365, Epoch 5/20, Batch 45/80
+temp: 0.6662, beta: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 7.0263, enc_train_entropy: 0.1076, dec_train_loss: 0.0205, train_edge_accuracy: 0.5917
+
+Step 370, Epoch 5/20, Batch 50/80
+temp: 0.6629, beta: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 6.9271, enc_train_entropy: 0.1159, dec_train_loss: 0.0205, train_edge_accuracy: 0.6217
+
+Step 375, Epoch 5/20, Batch 55/80
+temp: 0.6595, beta: 0.0000, 
+nri_train_loss: 0.0204, enc_train_loss: 6.9427, enc_train_entropy: 0.1146, dec_train_loss: 0.0202, train_edge_accuracy: 0.6033
+
+Step 380, Epoch 5/20, Batch 60/80
+temp: 0.6563, beta: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 6.9029, enc_train_entropy: 0.1179, dec_train_loss: 0.0203, train_edge_accuracy: 0.6067
+
+Step 385, Epoch 5/20, Batch 65/80
+temp: 0.6530, beta: 0.0000, 
+nri_train_loss: 0.0208, enc_train_loss: 6.9631, enc_train_entropy: 0.1129, dec_train_loss: 0.0206, train_edge_accuracy: 0.6250
+
+Step 390, Epoch 5/20, Batch 70/80
+temp: 0.6497, beta: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 7.0040, enc_train_entropy: 0.1095, dec_train_loss: 0.0203, train_edge_accuracy: 0.6017
+
+Step 395, Epoch 5/20, Batch 75/80
+temp: 0.6465, beta: 0.0000, 
+nri_train_loss: 0.0206, enc_train_loss: 6.8375, enc_train_entropy: 0.1234, dec_train_loss: 0.0205, train_edge_accuracy: 0.5917
+
+
+Epoch 5/20 completed, Global Step: 400
+nri_train_loss: 0.0206, enc_train_loss: 6.8375, enc_train_entropy: 0.1234, dec_train_loss: 0.0205, train_edge_accuracy: 0.5917
+nri_val_loss: 0.0203, enc_val_loss: 6.8401, enc_val_entropy: 0.1231, dec_val_loss: 0.0201, val_edge_accuracy: 0.6085
+
+---------------------------------------------------------------------------
+
+Step 400, Epoch 6/20, Batch 0/80
+temp: 0.6368, beta: 0.0000, 
+nri_train_loss: 0.0203, enc_train_loss: 6.8567, enc_train_entropy: 0.1218, dec_train_loss: 0.0201, train_edge_accuracy: 0.5983
+
+Step 405, Epoch 6/20, Batch 5/80
+temp: 0.6337, beta: 0.0000, 
+nri_train_loss: 0.0202, enc_train_loss: 6.9408, enc_train_entropy: 0.1147, dec_train_loss: 0.0200, train_edge_accuracy: 0.6167
+
+Step 410, Epoch 6/20, Batch 10/80
+temp: 0.6305, beta: 0.0000, 
+nri_train_loss: 0.0203, enc_train_loss: 6.8040, enc_train_entropy: 0.1261, dec_train_loss: 0.0201, train_edge_accuracy: 0.5967
+
+Step 415, Epoch 6/20, Batch 15/80
+temp: 0.6274, beta: 0.0000, 
+nri_train_loss: 0.0202, enc_train_loss: 6.6121, enc_train_entropy: 0.1421, dec_train_loss: 0.0201, train_edge_accuracy: 0.6050
+
+Step 420, Epoch 6/20, Batch 20/80
+temp: 0.6242, beta: 0.0000, 
+nri_train_loss: 0.0200, enc_train_loss: 6.6943, enc_train_entropy: 0.1353, dec_train_loss: 0.0198, train_edge_accuracy: 0.6117
+
+Step 425, Epoch 6/20, Batch 25/80
+temp: 0.6211, beta: 0.0000, 
+nri_train_loss: 0.0199, enc_train_loss: 6.6346, enc_train_entropy: 0.1403, dec_train_loss: 0.0197, train_edge_accuracy: 0.6167
+
+Step 430, Epoch 6/20, Batch 30/80
+temp: 0.6180, beta: 0.0000, 
+nri_train_loss: 0.0201, enc_train_loss: 6.5490, enc_train_entropy: 0.1474, dec_train_loss: 0.0199, train_edge_accuracy: 0.6083
+
+Step 435, Epoch 6/20, Batch 35/80
+temp: 0.6149, beta: 0.0000, 
+nri_train_loss: 0.0199, enc_train_loss: 6.6470, enc_train_entropy: 0.1392, dec_train_loss: 0.0197, train_edge_accuracy: 0.6100
+
+Step 440, Epoch 6/20, Batch 40/80
+temp: 0.6119, beta: 0.0000, 
+nri_train_loss: 0.0199, enc_train_loss: 6.4093, enc_train_entropy: 0.1590, dec_train_loss: 0.0197, train_edge_accuracy: 0.6033
+
+Step 445, Epoch 6/20, Batch 45/80
+temp: 0.6088, beta: 0.0000, 
+nri_train_loss: 0.0198, enc_train_loss: 6.3644, enc_train_entropy: 0.1628, dec_train_loss: 0.0196, train_edge_accuracy: 0.5900
+
+Step 450, Epoch 6/20, Batch 50/80
+temp: 0.6058, beta: 0.0000, 
+nri_train_loss: 0.0199, enc_train_loss: 6.4934, enc_train_entropy: 0.1520, dec_train_loss: 0.0197, train_edge_accuracy: 0.6100
+
+Step 455, Epoch 6/20, Batch 55/80
+temp: 0.6027, beta: 0.0000, 
+nri_train_loss: 0.0197, enc_train_loss: 6.4298, enc_train_entropy: 0.1573, dec_train_loss: 0.0195, train_edge_accuracy: 0.6117
+
+Step 460, Epoch 6/20, Batch 60/80
+temp: 0.5997, beta: 0.0000, 
+nri_train_loss: 0.0197, enc_train_loss: 6.3206, enc_train_entropy: 0.1664, dec_train_loss: 0.0195, train_edge_accuracy: 0.5983
+
+Step 465, Epoch 6/20, Batch 65/80
+temp: 0.5967, beta: 0.0000, 
+nri_train_loss: 0.0194, enc_train_loss: 6.2900, enc_train_entropy: 0.1690, dec_train_loss: 0.0192, train_edge_accuracy: 0.6117
+
+Step 470, Epoch 6/20, Batch 70/80
+temp: 0.5938, beta: 0.0000, 
+nri_train_loss: 0.0195, enc_train_loss: 6.2978, enc_train_entropy: 0.1683, dec_train_loss: 0.0193, train_edge_accuracy: 0.6100
+
+Step 475, Epoch 6/20, Batch 75/80
+temp: 0.5908, beta: 0.0000, 
+nri_train_loss: 0.0197, enc_train_loss: 6.1165, enc_train_entropy: 0.1834, dec_train_loss: 0.0195, train_edge_accuracy: 0.5967
+
+
+Epoch 6/20 completed, Global Step: 480
+nri_train_loss: 0.0197, enc_train_loss: 6.1165, enc_train_entropy: 0.1834, dec_train_loss: 0.0195, train_edge_accuracy: 0.5967
+nri_val_loss: 0.0195, enc_val_loss: 6.1474, enc_val_entropy: 0.1809, dec_val_loss: 0.0193, val_edge_accuracy: 0.5920
+
+---------------------------------------------------------------------------
+
+Step 480, Epoch 7/20, Batch 0/80
+temp: 0.5820, beta: 0.0000, 
+nri_train_loss: 0.0194, enc_train_loss: 6.1936, enc_train_entropy: 0.1770, dec_train_loss: 0.0192, train_edge_accuracy: 0.5967
+
+Step 485, Epoch 7/20, Batch 5/80
+temp: 0.5791, beta: 0.0000, 
+nri_train_loss: 0.0193, enc_train_loss: 6.2175, enc_train_entropy: 0.1750, dec_train_loss: 0.0191, train_edge_accuracy: 0.6083
+
+Step 490, Epoch 7/20, Batch 10/80
+temp: 0.5762, beta: 0.0000, 
+nri_train_loss: 0.0193, enc_train_loss: 6.0425, enc_train_entropy: 0.1896, dec_train_loss: 0.0191, train_edge_accuracy: 0.6117
+
+Step 495, Epoch 7/20, Batch 15/80
+temp: 0.5733, beta: 0.0000, 
+nri_train_loss: 0.0193, enc_train_loss: 5.9847, enc_train_entropy: 0.1944, dec_train_loss: 0.0191, train_edge_accuracy: 0.5967
+
+Step 500, Epoch 7/20, Batch 20/80
+temp: 0.5705, beta: 0.0000, 
+nri_train_loss: 0.0192, enc_train_loss: 5.9096, enc_train_entropy: 0.2007, dec_train_loss: 0.0190, train_edge_accuracy: 0.6083
+
+Step 505, Epoch 7/20, Batch 25/80
+temp: 0.5676, beta: 0.0000, 
+nri_train_loss: 0.0192, enc_train_loss: 5.7388, enc_train_entropy: 0.2149, dec_train_loss: 0.0190, train_edge_accuracy: 0.6017
+
+Step 510, Epoch 7/20, Batch 30/80
+temp: 0.5648, beta: 0.0000, 
+nri_train_loss: 0.0191, enc_train_loss: 5.9181, enc_train_entropy: 0.2000, dec_train_loss: 0.0189, train_edge_accuracy: 0.5817
+
+Step 515, Epoch 7/20, Batch 35/80
+temp: 0.5620, beta: 0.0000, 
+nri_train_loss: 0.0190, enc_train_loss: 5.6925, enc_train_entropy: 0.2188, dec_train_loss: 0.0188, train_edge_accuracy: 0.6200
+
+Step 520, Epoch 7/20, Batch 40/80
+temp: 0.5592, beta: 0.0000, 
+nri_train_loss: 0.0190, enc_train_loss: 5.7254, enc_train_entropy: 0.2160, dec_train_loss: 0.0188, train_edge_accuracy: 0.6050
+
+Step 525, Epoch 7/20, Batch 45/80
+temp: 0.5564, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 6.0004, enc_train_entropy: 0.1931, dec_train_loss: 0.0185, train_edge_accuracy: 0.5950
+
+Step 530, Epoch 7/20, Batch 50/80
+temp: 0.5536, beta: 0.0000, 
+nri_train_loss: 0.0188, enc_train_loss: 5.7888, enc_train_entropy: 0.2107, dec_train_loss: 0.0185, train_edge_accuracy: 0.6083
+
+Step 535, Epoch 7/20, Batch 55/80
+temp: 0.5508, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.6268, enc_train_entropy: 0.2242, dec_train_loss: 0.0185, train_edge_accuracy: 0.6117
+
+Step 540, Epoch 7/20, Batch 60/80
+temp: 0.5481, beta: 0.0000, 
+nri_train_loss: 0.0190, enc_train_loss: 5.5446, enc_train_entropy: 0.2311, dec_train_loss: 0.0188, train_edge_accuracy: 0.5967
+
+Step 545, Epoch 7/20, Batch 65/80
+temp: 0.5454, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.7491, enc_train_entropy: 0.2141, dec_train_loss: 0.0184, train_edge_accuracy: 0.6117
+
+Step 550, Epoch 7/20, Batch 70/80
+temp: 0.5426, beta: 0.0000, 
+nri_train_loss: 0.0186, enc_train_loss: 5.7183, enc_train_entropy: 0.2166, dec_train_loss: 0.0184, train_edge_accuracy: 0.5967
+
+Step 555, Epoch 7/20, Batch 75/80
+temp: 0.5399, beta: 0.0000, 
+nri_train_loss: 0.0185, enc_train_loss: 6.0124, enc_train_entropy: 0.1921, dec_train_loss: 0.0183, train_edge_accuracy: 0.5933
+
+
+Epoch 7/20 completed, Global Step: 560
+nri_train_loss: 0.0185, enc_train_loss: 6.0124, enc_train_entropy: 0.1921, dec_train_loss: 0.0183, train_edge_accuracy: 0.5933
+nri_val_loss: 0.0186, enc_val_loss: 5.7151, enc_val_entropy: 0.2169, dec_val_loss: 0.0183, val_edge_accuracy: 0.6055
+
+---------------------------------------------------------------------------
+
+Step 560, Epoch 8/20, Batch 0/80
+temp: 0.5319, beta: 0.0000, 
+nri_train_loss: 0.0186, enc_train_loss: 5.7280, enc_train_entropy: 0.2158, dec_train_loss: 0.0184, train_edge_accuracy: 0.6183
+
+Step 565, Epoch 8/20, Batch 5/80
+temp: 0.5292, beta: 0.0000, 
+nri_train_loss: 0.0185, enc_train_loss: 5.6679, enc_train_entropy: 0.2208, dec_train_loss: 0.0183, train_edge_accuracy: 0.6167
+
+Step 570, Epoch 8/20, Batch 10/80
+temp: 0.5266, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.8138, enc_train_entropy: 0.2087, dec_train_loss: 0.0185, train_edge_accuracy: 0.5767
+
+Step 575, Epoch 8/20, Batch 15/80
+temp: 0.5240, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.6458, enc_train_entropy: 0.2227, dec_train_loss: 0.0184, train_edge_accuracy: 0.5983
+
+Step 580, Epoch 8/20, Batch 20/80
+temp: 0.5214, beta: 0.0000, 
+nri_train_loss: 0.0186, enc_train_loss: 5.6487, enc_train_entropy: 0.2224, dec_train_loss: 0.0183, train_edge_accuracy: 0.6067
+
+Step 585, Epoch 8/20, Batch 25/80
+temp: 0.5188, beta: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.7621, enc_train_entropy: 0.2130, dec_train_loss: 0.0182, train_edge_accuracy: 0.5900
+
+Step 590, Epoch 8/20, Batch 30/80
+temp: 0.5162, beta: 0.0000, 
+nri_train_loss: 0.0185, enc_train_loss: 5.7457, enc_train_entropy: 0.2143, dec_train_loss: 0.0182, train_edge_accuracy: 0.6033
+
+Step 595, Epoch 8/20, Batch 35/80
+temp: 0.5136, beta: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.9726, enc_train_entropy: 0.1954, dec_train_loss: 0.0185, train_edge_accuracy: 0.5783
+
+Step 600, Epoch 8/20, Batch 40/80
+temp: 0.5110, beta: 0.0000, 
+nri_train_loss: 0.0183, enc_train_loss: 5.8284, enc_train_entropy: 0.2074, dec_train_loss: 0.0180, train_edge_accuracy: 0.6050
+
+Step 605, Epoch 8/20, Batch 45/80
+temp: 0.5085, beta: 0.0000, 
+nri_train_loss: 0.0185, enc_train_loss: 5.9091, enc_train_entropy: 0.2007, dec_train_loss: 0.0182, train_edge_accuracy: 0.5950
+
+Step 610, Epoch 8/20, Batch 50/80
+temp: 0.5059, beta: 0.0000, 
+nri_train_loss: 0.0185, enc_train_loss: 5.9243, enc_train_entropy: 0.1995, dec_train_loss: 0.0183, train_edge_accuracy: 0.5800
+
+Step 615, Epoch 8/20, Batch 55/80
+temp: 0.5034, beta: 0.0000, 
+nri_train_loss: 0.0182, enc_train_loss: 5.8491, enc_train_entropy: 0.2057, dec_train_loss: 0.0180, train_edge_accuracy: 0.6100
+
+Step 620, Epoch 8/20, Batch 60/80
+temp: 0.5009, beta: 0.0000, 
+nri_train_loss: 0.0181, enc_train_loss: 5.8006, enc_train_entropy: 0.2098, dec_train_loss: 0.0179, train_edge_accuracy: 0.5967
+
+Step 625, Epoch 8/20, Batch 65/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0181, enc_train_loss: 5.8807, enc_train_entropy: 0.2031, dec_train_loss: 0.0179, train_edge_accuracy: 0.6083
+
+Step 630, Epoch 8/20, Batch 70/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0182, enc_train_loss: 5.8816, enc_train_entropy: 0.2030, dec_train_loss: 0.0180, train_edge_accuracy: 0.5950
+
+Step 635, Epoch 8/20, Batch 75/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0182, enc_train_loss: 5.7611, enc_train_entropy: 0.2131, dec_train_loss: 0.0179, train_edge_accuracy: 0.6167
+
+
+Epoch 8/20 completed, Global Step: 640
+nri_train_loss: 0.0182, enc_train_loss: 5.7611, enc_train_entropy: 0.2131, dec_train_loss: 0.0179, train_edge_accuracy: 0.6167
+nri_val_loss: 0.0180, enc_val_loss: 5.8746, enc_val_entropy: 0.2036, dec_val_loss: 0.0178, val_edge_accuracy: 0.6047
+
+---------------------------------------------------------------------------
+
+Step 640, Epoch 9/20, Batch 0/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.9048, enc_train_entropy: 0.2011, dec_train_loss: 0.0176, train_edge_accuracy: 0.6167
+
+Step 645, Epoch 9/20, Batch 5/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0183, enc_train_loss: 5.9037, enc_train_entropy: 0.2012, dec_train_loss: 0.0180, train_edge_accuracy: 0.6250
+
+Step 650, Epoch 9/20, Batch 10/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.9425, enc_train_entropy: 0.1979, dec_train_loss: 0.0176, train_edge_accuracy: 0.6083
+
+Step 655, Epoch 9/20, Batch 15/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0181, enc_train_loss: 5.8624, enc_train_entropy: 0.2046, dec_train_loss: 0.0178, train_edge_accuracy: 0.5983
+
+Step 660, Epoch 9/20, Batch 20/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.9396, enc_train_entropy: 0.1982, dec_train_loss: 0.0177, train_edge_accuracy: 0.6000
+
+Step 665, Epoch 9/20, Batch 25/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.9721, enc_train_entropy: 0.1955, dec_train_loss: 0.0174, train_edge_accuracy: 0.5933
+
+Step 670, Epoch 9/20, Batch 30/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.9296, enc_train_entropy: 0.1990, dec_train_loss: 0.0176, train_edge_accuracy: 0.6017
+
+Step 675, Epoch 9/20, Batch 35/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0180, enc_train_loss: 5.8174, enc_train_entropy: 0.2084, dec_train_loss: 0.0177, train_edge_accuracy: 0.6167
+
+Step 680, Epoch 9/20, Batch 40/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.8152, enc_train_entropy: 0.2085, dec_train_loss: 0.0176, train_edge_accuracy: 0.5950
+
+Step 685, Epoch 9/20, Batch 45/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0180, enc_train_loss: 5.6566, enc_train_entropy: 0.2218, dec_train_loss: 0.0177, train_edge_accuracy: 0.5900
+
+Step 690, Epoch 9/20, Batch 50/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.8216, enc_train_entropy: 0.2080, dec_train_loss: 0.0175, train_edge_accuracy: 0.6033
+
+Step 695, Epoch 9/20, Batch 55/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.7387, enc_train_entropy: 0.2149, dec_train_loss: 0.0175, train_edge_accuracy: 0.5883
+
+Step 700, Epoch 9/20, Batch 60/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.9215, enc_train_entropy: 0.1997, dec_train_loss: 0.0177, train_edge_accuracy: 0.5950
+
+Step 705, Epoch 9/20, Batch 65/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.7580, enc_train_entropy: 0.2133, dec_train_loss: 0.0174, train_edge_accuracy: 0.5933
+
+Step 710, Epoch 9/20, Batch 70/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0177, enc_train_loss: 5.7588, enc_train_entropy: 0.2132, dec_train_loss: 0.0175, train_edge_accuracy: 0.6050
+
+Step 715, Epoch 9/20, Batch 75/80
+temp: 0.5000, beta: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.7467, enc_train_entropy: 0.2143, dec_train_loss: 0.0176, train_edge_accuracy: 0.6050
+
+
+Epoch 9/20 completed, Global Step: 720
+nri_train_loss: 0.0179, enc_train_loss: 5.7467, enc_train_entropy: 0.2143, dec_train_loss: 0.0176, train_edge_accuracy: 0.6050
+nri_val_loss: 0.0176, enc_val_loss: 5.7260, enc_val_entropy: 0.2160, dec_val_loss: 0.0173, val_edge_accuracy: 0.6067
+
+---------------------------------------------------------------------------
+
+Step 720, Epoch 10/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0176, enc_train_loss: 5.7742, enc_train_entropy: 0.2120, dec_train_loss: 0.0173, train_edge_accuracy: 0.6033
+
+Step 725, Epoch 10/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0178, enc_train_loss: 5.6409, enc_train_entropy: 0.2231, dec_train_loss: 0.0175, train_edge_accuracy: 0.6033
+
+Step 730, Epoch 10/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0177, enc_train_loss: 5.7369, enc_train_entropy: 0.2151, dec_train_loss: 0.0174, train_edge_accuracy: 0.5933
+
+Step 735, Epoch 10/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0176, enc_train_loss: 5.9624, enc_train_entropy: 0.1963, dec_train_loss: 0.0173, train_edge_accuracy: 0.5867
+
+Step 740, Epoch 10/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0175, enc_train_loss: 5.7098, enc_train_entropy: 0.2173, dec_train_loss: 0.0172, train_edge_accuracy: 0.5900
+
+Step 745, Epoch 10/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0174, enc_train_loss: 5.6995, enc_train_entropy: 0.2182, dec_train_loss: 0.0171, train_edge_accuracy: 0.6167
+
+Step 750, Epoch 10/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0176, enc_train_loss: 5.9619, enc_train_entropy: 0.1963, dec_train_loss: 0.0173, train_edge_accuracy: 0.5983
+
+Step 755, Epoch 10/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0174, enc_train_loss: 5.8597, enc_train_entropy: 0.2048, dec_train_loss: 0.0171, train_edge_accuracy: 0.5983
+
+Step 760, Epoch 10/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0174, enc_train_loss: 5.8700, enc_train_entropy: 0.2040, dec_train_loss: 0.0170, train_edge_accuracy: 0.6067
+
+Step 765, Epoch 10/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.6584, enc_train_entropy: 0.2216, dec_train_loss: 0.0169, train_edge_accuracy: 0.6017
+
+Step 770, Epoch 10/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0175, enc_train_loss: 5.5820, enc_train_entropy: 0.2280, dec_train_loss: 0.0172, train_edge_accuracy: 0.6017
+
+Step 775, Epoch 10/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0175, enc_train_loss: 5.5592, enc_train_entropy: 0.2299, dec_train_loss: 0.0172, train_edge_accuracy: 0.5783
+
+Step 780, Epoch 10/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0173, enc_train_loss: 5.5670, enc_train_entropy: 0.2292, dec_train_loss: 0.0170, train_edge_accuracy: 0.6067
+
+Step 785, Epoch 10/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0171, enc_train_loss: 5.5082, enc_train_entropy: 0.2341, dec_train_loss: 0.0168, train_edge_accuracy: 0.6200
+
+Step 790, Epoch 10/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0171, enc_train_loss: 5.5500, enc_train_entropy: 0.2306, dec_train_loss: 0.0168, train_edge_accuracy: 0.6050
+
+Step 795, Epoch 10/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0174, enc_train_loss: 5.5403, enc_train_entropy: 0.2315, dec_train_loss: 0.0171, train_edge_accuracy: 0.5900
+
+
+Epoch 10/20 completed, Global Step: 800
+nri_train_loss: 0.0174, enc_train_loss: 5.5403, enc_train_entropy: 0.2315, dec_train_loss: 0.0171, train_edge_accuracy: 0.5900
+nri_val_loss: 0.0172, enc_val_loss: 5.5895, enc_val_entropy: 0.2274, dec_val_loss: 0.0169, val_edge_accuracy: 0.5997
+
+---------------------------------------------------------------------------
+
+Step 800, Epoch 11/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0171, enc_train_loss: 5.5414, enc_train_entropy: 0.2314, dec_train_loss: 0.0168, train_edge_accuracy: 0.6283
+
+Step 805, Epoch 11/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0173, enc_train_loss: 5.5024, enc_train_entropy: 0.2346, dec_train_loss: 0.0170, train_edge_accuracy: 0.6183
+
+Step 810, Epoch 11/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.3738, enc_train_entropy: 0.2453, dec_train_loss: 0.0169, train_edge_accuracy: 0.5900
+
+Step 815, Epoch 11/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.4209, enc_train_entropy: 0.2414, dec_train_loss: 0.0169, train_edge_accuracy: 0.6017
+
+Step 820, Epoch 11/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0173, enc_train_loss: 5.5843, enc_train_entropy: 0.2278, dec_train_loss: 0.0169, train_edge_accuracy: 0.5833
+
+Step 825, Epoch 11/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.3779, enc_train_entropy: 0.2450, dec_train_loss: 0.0169, train_edge_accuracy: 0.5933
+
+Step 830, Epoch 11/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.3809, enc_train_entropy: 0.2447, dec_train_loss: 0.0169, train_edge_accuracy: 0.6150
+
+Step 835, Epoch 11/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0173, enc_train_loss: 5.3377, enc_train_entropy: 0.2483, dec_train_loss: 0.0169, train_edge_accuracy: 0.6000
+
+Step 840, Epoch 11/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0170, enc_train_loss: 5.2390, enc_train_entropy: 0.2566, dec_train_loss: 0.0167, train_edge_accuracy: 0.5917
+
+Step 845, Epoch 11/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0172, enc_train_loss: 5.2377, enc_train_entropy: 0.2567, dec_train_loss: 0.0169, train_edge_accuracy: 0.5933
+
+Step 850, Epoch 11/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 5.3973, enc_train_entropy: 0.2434, dec_train_loss: 0.0166, train_edge_accuracy: 0.5917
+
+Step 855, Epoch 11/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0170, enc_train_loss: 5.3398, enc_train_entropy: 0.2482, dec_train_loss: 0.0167, train_edge_accuracy: 0.5883
+
+Step 860, Epoch 11/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 5.3994, enc_train_entropy: 0.2432, dec_train_loss: 0.0166, train_edge_accuracy: 0.5900
+
+Step 865, Epoch 11/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 5.2851, enc_train_entropy: 0.2527, dec_train_loss: 0.0166, train_edge_accuracy: 0.5683
+
+Step 870, Epoch 11/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0170, enc_train_loss: 5.4117, enc_train_entropy: 0.2422, dec_train_loss: 0.0167, train_edge_accuracy: 0.5667
+
+Step 875, Epoch 11/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0170, enc_train_loss: 5.2606, enc_train_entropy: 0.2548, dec_train_loss: 0.0167, train_edge_accuracy: 0.5967
+
+
+Epoch 11/20 completed, Global Step: 880
+nri_train_loss: 0.0170, enc_train_loss: 5.2606, enc_train_entropy: 0.2548, dec_train_loss: 0.0167, train_edge_accuracy: 0.5967
+nri_val_loss: 0.0169, enc_val_loss: 5.1394, enc_val_entropy: 0.2649, dec_val_loss: 0.0166, val_edge_accuracy: 0.5908
+
+---------------------------------------------------------------------------
+
+Step 880, Epoch 12/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 5.1896, enc_train_entropy: 0.2607, dec_train_loss: 0.0166, train_edge_accuracy: 0.5750
+
+Step 885, Epoch 12/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0170, enc_train_loss: 5.2500, enc_train_entropy: 0.2556, dec_train_loss: 0.0167, train_edge_accuracy: 0.6083
+
+Step 890, Epoch 12/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.9595, enc_train_entropy: 0.2799, dec_train_loss: 0.0164, train_edge_accuracy: 0.6067
+
+Step 895, Epoch 12/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 4.9069, enc_train_entropy: 0.2842, dec_train_loss: 0.0166, train_edge_accuracy: 0.5933
+
+Step 900, Epoch 12/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.9465, enc_train_entropy: 0.2809, dec_train_loss: 0.0165, train_edge_accuracy: 0.5733
+
+Step 905, Epoch 12/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 4.8395, enc_train_entropy: 0.2899, dec_train_loss: 0.0166, train_edge_accuracy: 0.5750
+
+Step 910, Epoch 12/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.9398, enc_train_entropy: 0.2815, dec_train_loss: 0.0165, train_edge_accuracy: 0.5633
+
+Step 915, Epoch 12/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.8030, enc_train_entropy: 0.2929, dec_train_loss: 0.0164, train_edge_accuracy: 0.5817
+
+Step 920, Epoch 12/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 4.6725, enc_train_entropy: 0.3038, dec_train_loss: 0.0166, train_edge_accuracy: 0.5950
+
+Step 925, Epoch 12/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.8248, enc_train_entropy: 0.2911, dec_train_loss: 0.0165, train_edge_accuracy: 0.5467
+
+Step 930, Epoch 12/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0169, enc_train_loss: 4.6945, enc_train_entropy: 0.3019, dec_train_loss: 0.0166, train_edge_accuracy: 0.6133
+
+Step 935, Epoch 12/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.9482, enc_train_entropy: 0.2808, dec_train_loss: 0.0164, train_edge_accuracy: 0.5767
+
+Step 940, Epoch 12/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.8587, enc_train_entropy: 0.2883, dec_train_loss: 0.0165, train_edge_accuracy: 0.5767
+
+Step 945, Epoch 12/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.7335, enc_train_entropy: 0.2987, dec_train_loss: 0.0165, train_edge_accuracy: 0.5700
+
+Step 950, Epoch 12/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.7357, enc_train_entropy: 0.2985, dec_train_loss: 0.0164, train_edge_accuracy: 0.5667
+
+Step 955, Epoch 12/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.9653, enc_train_entropy: 0.2794, dec_train_loss: 0.0162, train_edge_accuracy: 0.5583
+
+
+Epoch 12/20 completed, Global Step: 960
+nri_train_loss: 0.0165, enc_train_loss: 4.9653, enc_train_entropy: 0.2794, dec_train_loss: 0.0162, train_edge_accuracy: 0.5583
+nri_val_loss: 0.0167, enc_val_loss: 4.7924, enc_val_entropy: 0.2938, dec_val_loss: 0.0163, val_edge_accuracy: 0.5632
+
+---------------------------------------------------------------------------
+
+Step 960, Epoch 13/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.7204, enc_train_entropy: 0.2998, dec_train_loss: 0.0164, train_edge_accuracy: 0.5733
+
+Step 965, Epoch 13/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.5393, enc_train_entropy: 0.3149, dec_train_loss: 0.0162, train_edge_accuracy: 0.5633
+
+Step 970, Epoch 13/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.6341, enc_train_entropy: 0.3070, dec_train_loss: 0.0162, train_edge_accuracy: 0.5700
+
+Step 975, Epoch 13/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 4.5271, enc_train_entropy: 0.3159, dec_train_loss: 0.0160, train_edge_accuracy: 0.5583
+
+Step 980, Epoch 13/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0167, enc_train_loss: 4.5370, enc_train_entropy: 0.3151, dec_train_loss: 0.0164, train_edge_accuracy: 0.5833
+
+Step 985, Epoch 13/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0168, enc_train_loss: 4.4878, enc_train_entropy: 0.3192, dec_train_loss: 0.0165, train_edge_accuracy: 0.5700
+
+Step 990, Epoch 13/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.6432, enc_train_entropy: 0.3062, dec_train_loss: 0.0163, train_edge_accuracy: 0.5833
+
+Step 995, Epoch 13/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 4.4318, enc_train_entropy: 0.3238, dec_train_loss: 0.0161, train_edge_accuracy: 0.5583
+
+Step 1000, Epoch 13/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 4.3868, enc_train_entropy: 0.3276, dec_train_loss: 0.0161, train_edge_accuracy: 0.5683
+
+Step 1005, Epoch 13/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.3906, enc_train_entropy: 0.3273, dec_train_loss: 0.0162, train_edge_accuracy: 0.5717
+
+Step 1010, Epoch 13/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.2465, enc_train_entropy: 0.3393, dec_train_loss: 0.0163, train_edge_accuracy: 0.5500
+
+Step 1015, Epoch 13/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.2902, enc_train_entropy: 0.3356, dec_train_loss: 0.0162, train_edge_accuracy: 0.5417
+
+Step 1020, Epoch 13/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 4.4396, enc_train_entropy: 0.3232, dec_train_loss: 0.0160, train_edge_accuracy: 0.5550
+
+Step 1025, Epoch 13/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.3635, enc_train_entropy: 0.3295, dec_train_loss: 0.0163, train_edge_accuracy: 0.5317
+
+Step 1030, Epoch 13/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.3976, enc_train_entropy: 0.3267, dec_train_loss: 0.0162, train_edge_accuracy: 0.5433
+
+Step 1035, Epoch 13/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.1609, enc_train_entropy: 0.3464, dec_train_loss: 0.0163, train_edge_accuracy: 0.5500
+
+
+Epoch 13/20 completed, Global Step: 1040
+nri_train_loss: 0.0166, enc_train_loss: 4.1609, enc_train_entropy: 0.3464, dec_train_loss: 0.0163, train_edge_accuracy: 0.5500
+nri_val_loss: 0.0164, enc_val_loss: 4.2038, enc_val_entropy: 0.3428, dec_val_loss: 0.0161, val_edge_accuracy: 0.5290
+
+---------------------------------------------------------------------------
+
+Step 1040, Epoch 14/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.2126, enc_train_entropy: 0.3421, dec_train_loss: 0.0163, train_edge_accuracy: 0.5400
+
+Step 1045, Epoch 14/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.8690, enc_train_entropy: 0.3707, dec_train_loss: 0.0160, train_edge_accuracy: 0.5367
+
+Step 1050, Epoch 14/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 4.0884, enc_train_entropy: 0.3524, dec_train_loss: 0.0163, train_edge_accuracy: 0.5367
+
+Step 1055, Epoch 14/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.3520, enc_train_entropy: 0.3305, dec_train_loss: 0.0162, train_edge_accuracy: 0.5533
+
+Step 1060, Epoch 14/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0166, enc_train_loss: 3.9137, enc_train_entropy: 0.3670, dec_train_loss: 0.0163, train_edge_accuracy: 0.5450
+
+Step 1065, Epoch 14/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.8553, enc_train_entropy: 0.3719, dec_train_loss: 0.0160, train_edge_accuracy: 0.5400
+
+Step 1070, Epoch 14/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.0824, enc_train_entropy: 0.3529, dec_train_loss: 0.0162, train_edge_accuracy: 0.5317
+
+Step 1075, Epoch 14/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.9360, enc_train_entropy: 0.3651, dec_train_loss: 0.0161, train_edge_accuracy: 0.5333
+
+Step 1080, Epoch 14/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.8789, enc_train_entropy: 0.3699, dec_train_loss: 0.0161, train_edge_accuracy: 0.5350
+
+Step 1085, Epoch 14/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 4.0929, enc_train_entropy: 0.3521, dec_train_loss: 0.0158, train_edge_accuracy: 0.5333
+
+Step 1090, Epoch 14/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 4.1932, enc_train_entropy: 0.3437, dec_train_loss: 0.0161, train_edge_accuracy: 0.5417
+
+Step 1095, Epoch 14/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0165, enc_train_loss: 4.0627, enc_train_entropy: 0.3546, dec_train_loss: 0.0162, train_edge_accuracy: 0.5417
+
+Step 1100, Epoch 14/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.7816, enc_train_entropy: 0.3780, dec_train_loss: 0.0161, train_edge_accuracy: 0.5567
+
+Step 1105, Epoch 14/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 4.0143, enc_train_entropy: 0.3586, dec_train_loss: 0.0160, train_edge_accuracy: 0.5283
+
+Step 1110, Epoch 14/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.8033, enc_train_entropy: 0.3762, dec_train_loss: 0.0160, train_edge_accuracy: 0.5283
+
+Step 1115, Epoch 14/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.8645, enc_train_entropy: 0.3711, dec_train_loss: 0.0161, train_edge_accuracy: 0.5317
+
+
+Epoch 14/20 completed, Global Step: 1120
+nri_train_loss: 0.0164, enc_train_loss: 3.8645, enc_train_entropy: 0.3711, dec_train_loss: 0.0161, train_edge_accuracy: 0.5317
+nri_val_loss: 0.0162, enc_val_loss: 3.7973, enc_val_entropy: 0.3767, dec_val_loss: 0.0159, val_edge_accuracy: 0.5297
+
+---------------------------------------------------------------------------
+
+Step 1120, Epoch 15/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.9635, enc_train_entropy: 0.3629, dec_train_loss: 0.0159, train_edge_accuracy: 0.5300
+
+Step 1125, Epoch 15/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.7077, enc_train_entropy: 0.3842, dec_train_loss: 0.0159, train_edge_accuracy: 0.5350
+
+Step 1130, Epoch 15/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.8101, enc_train_entropy: 0.3756, dec_train_loss: 0.0159, train_edge_accuracy: 0.5083
+
+Step 1135, Epoch 15/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.7476, enc_train_entropy: 0.3808, dec_train_loss: 0.0161, train_edge_accuracy: 0.5017
+
+Step 1140, Epoch 15/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.7066, enc_train_entropy: 0.3843, dec_train_loss: 0.0159, train_edge_accuracy: 0.5133
+
+Step 1145, Epoch 15/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0164, enc_train_loss: 3.8681, enc_train_entropy: 0.3708, dec_train_loss: 0.0160, train_edge_accuracy: 0.5133
+
+Step 1150, Epoch 15/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.9107, enc_train_entropy: 0.3673, dec_train_loss: 0.0160, train_edge_accuracy: 0.5083
+
+Step 1155, Epoch 15/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 3.8529, enc_train_entropy: 0.3721, dec_train_loss: 0.0158, train_edge_accuracy: 0.5083
+
+Step 1160, Epoch 15/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.7797, enc_train_entropy: 0.3782, dec_train_loss: 0.0160, train_edge_accuracy: 0.5083
+
+Step 1165, Epoch 15/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 3.5517, enc_train_entropy: 0.3972, dec_train_loss: 0.0158, train_edge_accuracy: 0.5217
+
+Step 1170, Epoch 15/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.3931, enc_train_entropy: 0.4104, dec_train_loss: 0.0159, train_edge_accuracy: 0.5100
+
+Step 1175, Epoch 15/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 3.7929, enc_train_entropy: 0.3771, dec_train_loss: 0.0157, train_edge_accuracy: 0.5000
+
+Step 1180, Epoch 15/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.8174, enc_train_entropy: 0.3750, dec_train_loss: 0.0159, train_edge_accuracy: 0.4933
+
+Step 1185, Epoch 15/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 3.8554, enc_train_entropy: 0.3719, dec_train_loss: 0.0157, train_edge_accuracy: 0.5017
+
+Step 1190, Epoch 15/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0163, enc_train_loss: 3.7274, enc_train_entropy: 0.3825, dec_train_loss: 0.0160, train_edge_accuracy: 0.5117
+
+Step 1195, Epoch 15/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 4.0147, enc_train_entropy: 0.3586, dec_train_loss: 0.0158, train_edge_accuracy: 0.5117
+
+
+Epoch 15/20 completed, Global Step: 1200
+nri_train_loss: 0.0161, enc_train_loss: 4.0147, enc_train_entropy: 0.3586, dec_train_loss: 0.0158, train_edge_accuracy: 0.5117
+nri_val_loss: 0.0160, enc_val_loss: 3.8667, enc_val_entropy: 0.3709, dec_val_loss: 0.0157, val_edge_accuracy: 0.5085
+
+---------------------------------------------------------------------------
+
+Step 1200, Epoch 16/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 3.8562, enc_train_entropy: 0.3718, dec_train_loss: 0.0158, train_edge_accuracy: 0.5083
+
+Step 1205, Epoch 16/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.9195, enc_train_entropy: 0.3665, dec_train_loss: 0.0156, train_edge_accuracy: 0.5183
+
+Step 1210, Epoch 16/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0162, enc_train_loss: 3.6546, enc_train_entropy: 0.3886, dec_train_loss: 0.0158, train_edge_accuracy: 0.5167
+
+Step 1215, Epoch 16/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 3.9976, enc_train_entropy: 0.3600, dec_train_loss: 0.0158, train_edge_accuracy: 0.4883
+
+Step 1220, Epoch 16/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 4.1406, enc_train_entropy: 0.3481, dec_train_loss: 0.0156, train_edge_accuracy: 0.4867
+
+Step 1225, Epoch 16/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 4.0810, enc_train_entropy: 0.3531, dec_train_loss: 0.0154, train_edge_accuracy: 0.4917
+
+Step 1230, Epoch 16/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0161, enc_train_loss: 3.8616, enc_train_entropy: 0.3713, dec_train_loss: 0.0158, train_edge_accuracy: 0.4883
+
+Step 1235, Epoch 16/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 3.8328, enc_train_entropy: 0.3737, dec_train_loss: 0.0155, train_edge_accuracy: 0.4883
+
+Step 1240, Epoch 16/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.9324, enc_train_entropy: 0.3655, dec_train_loss: 0.0156, train_edge_accuracy: 0.4933
+
+Step 1245, Epoch 16/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 3.5854, enc_train_entropy: 0.3944, dec_train_loss: 0.0157, train_edge_accuracy: 0.4700
+
+Step 1250, Epoch 16/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 4.0632, enc_train_entropy: 0.3545, dec_train_loss: 0.0155, train_edge_accuracy: 0.4883
+
+Step 1255, Epoch 16/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 3.8964, enc_train_entropy: 0.3684, dec_train_loss: 0.0154, train_edge_accuracy: 0.5017
+
+Step 1260, Epoch 16/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.7901, enc_train_entropy: 0.3773, dec_train_loss: 0.0156, train_edge_accuracy: 0.5050
+
+Step 1265, Epoch 16/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 4.1348, enc_train_entropy: 0.3486, dec_train_loss: 0.0157, train_edge_accuracy: 0.4900
+
+Step 1270, Epoch 16/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.7614, enc_train_entropy: 0.3797, dec_train_loss: 0.0156, train_edge_accuracy: 0.4967
+
+Step 1275, Epoch 16/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 3.9000, enc_train_entropy: 0.3681, dec_train_loss: 0.0155, train_edge_accuracy: 0.4817
+
+
+Epoch 16/20 completed, Global Step: 1280
+nri_train_loss: 0.0158, enc_train_loss: 3.9000, enc_train_entropy: 0.3681, dec_train_loss: 0.0155, train_edge_accuracy: 0.4817
+nri_val_loss: 0.0158, enc_val_loss: 3.7933, enc_val_entropy: 0.3770, dec_val_loss: 0.0155, val_edge_accuracy: 0.4755
+
+---------------------------------------------------------------------------
+
+Step 1280, Epoch 17/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 3.8263, enc_train_entropy: 0.3743, dec_train_loss: 0.0153, train_edge_accuracy: 0.4633
+
+Step 1285, Epoch 17/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 3.3921, enc_train_entropy: 0.4105, dec_train_loss: 0.0154, train_edge_accuracy: 0.5050
+
+Step 1290, Epoch 17/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 4.1399, enc_train_entropy: 0.3482, dec_train_loss: 0.0157, train_edge_accuracy: 0.4933
+
+Step 1295, Epoch 17/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 4.2495, enc_train_entropy: 0.3390, dec_train_loss: 0.0153, train_edge_accuracy: 0.4917
+
+Step 1300, Epoch 17/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0160, enc_train_loss: 3.6300, enc_train_entropy: 0.3906, dec_train_loss: 0.0157, train_edge_accuracy: 0.4967
+
+Step 1305, Epoch 17/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.8903, enc_train_entropy: 0.3690, dec_train_loss: 0.0156, train_edge_accuracy: 0.4667
+
+Step 1310, Epoch 17/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 4.0654, enc_train_entropy: 0.3544, dec_train_loss: 0.0152, train_edge_accuracy: 0.4800
+
+Step 1315, Epoch 17/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 3.9939, enc_train_entropy: 0.3603, dec_train_loss: 0.0154, train_edge_accuracy: 0.4983
+
+Step 1320, Epoch 17/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0159, enc_train_loss: 3.8239, enc_train_entropy: 0.3745, dec_train_loss: 0.0155, train_edge_accuracy: 0.4900
+
+Step 1325, Epoch 17/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.9263, enc_train_entropy: 0.3660, dec_train_loss: 0.0153, train_edge_accuracy: 0.4933
+
+Step 1330, Epoch 17/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 3.9145, enc_train_entropy: 0.3669, dec_train_loss: 0.0154, train_edge_accuracy: 0.5083
+
+Step 1335, Epoch 17/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0158, enc_train_loss: 4.1021, enc_train_entropy: 0.3513, dec_train_loss: 0.0154, train_edge_accuracy: 0.4717
+
+Step 1340, Epoch 17/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.8379, enc_train_entropy: 0.3733, dec_train_loss: 0.0152, train_edge_accuracy: 0.4833
+
+Step 1345, Epoch 17/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 4.0301, enc_train_entropy: 0.3573, dec_train_loss: 0.0153, train_edge_accuracy: 0.4717
+
+Step 1350, Epoch 17/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 4.0567, enc_train_entropy: 0.3551, dec_train_loss: 0.0153, train_edge_accuracy: 0.4767
+
+Step 1355, Epoch 17/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 3.6557, enc_train_entropy: 0.3885, dec_train_loss: 0.0151, train_edge_accuracy: 0.4767
+
+
+Epoch 17/20 completed, Global Step: 1360
+nri_train_loss: 0.0155, enc_train_loss: 3.6557, enc_train_entropy: 0.3885, dec_train_loss: 0.0151, train_edge_accuracy: 0.4767
+nri_val_loss: 0.0156, enc_val_loss: 3.9858, enc_val_entropy: 0.3610, dec_val_loss: 0.0152, val_edge_accuracy: 0.4727
+
+---------------------------------------------------------------------------
+
+Step 1360, Epoch 18/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.9595, enc_train_entropy: 0.3632, dec_train_loss: 0.0152, train_edge_accuracy: 0.4800
+
+Step 1365, Epoch 18/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.9139, enc_train_entropy: 0.3670, dec_train_loss: 0.0152, train_edge_accuracy: 0.4750
+
+Step 1370, Epoch 18/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0157, enc_train_loss: 3.9791, enc_train_entropy: 0.3616, dec_train_loss: 0.0154, train_edge_accuracy: 0.4850
+
+Step 1375, Epoch 18/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.1678, enc_train_entropy: 0.3458, dec_train_loss: 0.0150, train_edge_accuracy: 0.4700
+
+Step 1380, Epoch 18/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 3.8122, enc_train_entropy: 0.3755, dec_train_loss: 0.0151, train_edge_accuracy: 0.4800
+
+Step 1385, Epoch 18/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 3.9020, enc_train_entropy: 0.3680, dec_train_loss: 0.0151, train_edge_accuracy: 0.4617
+
+Step 1390, Epoch 18/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.7519, enc_train_entropy: 0.3805, dec_train_loss: 0.0152, train_edge_accuracy: 0.4700
+
+Step 1395, Epoch 18/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.8387, enc_train_entropy: 0.3733, dec_train_loss: 0.0153, train_edge_accuracy: 0.5033
+
+Step 1400, Epoch 18/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.1586, enc_train_entropy: 0.3466, dec_train_loss: 0.0150, train_edge_accuracy: 0.4800
+
+Step 1405, Epoch 18/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.1952, enc_train_entropy: 0.3435, dec_train_loss: 0.0150, train_edge_accuracy: 0.4767
+
+Step 1410, Epoch 18/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.9640, enc_train_entropy: 0.3628, dec_train_loss: 0.0152, train_edge_accuracy: 0.4750
+
+Step 1415, Epoch 18/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 3.6032, enc_train_entropy: 0.3929, dec_train_loss: 0.0151, train_edge_accuracy: 0.4683
+
+Step 1420, Epoch 18/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.3048, enc_train_entropy: 0.3344, dec_train_loss: 0.0150, train_edge_accuracy: 0.4650
+
+Step 1425, Epoch 18/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0156, enc_train_loss: 3.9219, enc_train_entropy: 0.3663, dec_train_loss: 0.0152, train_edge_accuracy: 0.4517
+
+Step 1430, Epoch 18/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 3.8416, enc_train_entropy: 0.3730, dec_train_loss: 0.0151, train_edge_accuracy: 0.4617
+
+Step 1435, Epoch 18/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 4.1453, enc_train_entropy: 0.3477, dec_train_loss: 0.0151, train_edge_accuracy: 0.4833
+
+
+Epoch 18/20 completed, Global Step: 1440
+nri_train_loss: 0.0155, enc_train_loss: 4.1453, enc_train_entropy: 0.3477, dec_train_loss: 0.0151, train_edge_accuracy: 0.4833
+nri_val_loss: 0.0154, enc_val_loss: 4.3466, enc_val_entropy: 0.3309, dec_val_loss: 0.0150, val_edge_accuracy: 0.4688
+
+---------------------------------------------------------------------------
+
+Step 1440, Epoch 19/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0155, enc_train_loss: 4.4527, enc_train_entropy: 0.3221, dec_train_loss: 0.0150, train_edge_accuracy: 0.4650
+
+Step 1445, Epoch 19/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 3.4931, enc_train_entropy: 0.4021, dec_train_loss: 0.0150, train_edge_accuracy: 0.4850
+
+Step 1450, Epoch 19/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0151, enc_train_loss: 4.0726, enc_train_entropy: 0.3538, dec_train_loss: 0.0147, train_edge_accuracy: 0.4650
+
+Step 1455, Epoch 19/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.1459, enc_train_entropy: 0.3477, dec_train_loss: 0.0150, train_edge_accuracy: 0.4717
+
+Step 1460, Epoch 19/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.0567, enc_train_entropy: 0.3551, dec_train_loss: 0.0148, train_edge_accuracy: 0.4700
+
+Step 1465, Epoch 19/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.5763, enc_train_entropy: 0.3118, dec_train_loss: 0.0148, train_edge_accuracy: 0.4650
+
+Step 1470, Epoch 19/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.0778, enc_train_entropy: 0.3533, dec_train_loss: 0.0150, train_edge_accuracy: 0.4600
+
+Step 1475, Epoch 19/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.0473, enc_train_entropy: 0.3559, dec_train_loss: 0.0149, train_edge_accuracy: 0.4817
+
+Step 1480, Epoch 19/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 3.9374, enc_train_entropy: 0.3650, dec_train_loss: 0.0149, train_edge_accuracy: 0.4667
+
+Step 1485, Epoch 19/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 3.9458, enc_train_entropy: 0.3643, dec_train_loss: 0.0148, train_edge_accuracy: 0.4817
+
+Step 1490, Epoch 19/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.3093, enc_train_entropy: 0.3340, dec_train_loss: 0.0148, train_edge_accuracy: 0.4767
+
+Step 1495, Epoch 19/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 3.7645, enc_train_entropy: 0.3794, dec_train_loss: 0.0150, train_edge_accuracy: 0.4650
+
+Step 1500, Epoch 19/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0154, enc_train_loss: 4.2481, enc_train_entropy: 0.3391, dec_train_loss: 0.0150, train_edge_accuracy: 0.4883
+
+Step 1505, Epoch 19/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.1642, enc_train_entropy: 0.3461, dec_train_loss: 0.0149, train_edge_accuracy: 0.4567
+
+Step 1510, Epoch 19/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.0953, enc_train_entropy: 0.3519, dec_train_loss: 0.0148, train_edge_accuracy: 0.4683
+
+Step 1515, Epoch 19/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.2651, enc_train_entropy: 0.3377, dec_train_loss: 0.0149, train_edge_accuracy: 0.4667
+
+
+Epoch 19/20 completed, Global Step: 1520
+nri_train_loss: 0.0153, enc_train_loss: 4.2651, enc_train_entropy: 0.3377, dec_train_loss: 0.0149, train_edge_accuracy: 0.4667
+nri_val_loss: 0.0152, enc_val_loss: 4.3616, enc_val_entropy: 0.3297, dec_val_loss: 0.0147, val_edge_accuracy: 0.4712
+
+---------------------------------------------------------------------------
+
+Step 1520, Epoch 20/20, Batch 0/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0151, enc_train_loss: 4.1265, enc_train_entropy: 0.3493, dec_train_loss: 0.0147, train_edge_accuracy: 0.4750
+
+Step 1525, Epoch 20/20, Batch 5/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.1550, enc_train_entropy: 0.3469, dec_train_loss: 0.0149, train_edge_accuracy: 0.4767
+
+Step 1530, Epoch 20/20, Batch 10/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.3248, enc_train_entropy: 0.3327, dec_train_loss: 0.0147, train_edge_accuracy: 0.4533
+
+Step 1535, Epoch 20/20, Batch 15/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.7405, enc_train_entropy: 0.2981, dec_train_loss: 0.0148, train_edge_accuracy: 0.4617
+
+Step 1540, Epoch 20/20, Batch 20/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0153, enc_train_loss: 4.3316, enc_train_entropy: 0.3322, dec_train_loss: 0.0149, train_edge_accuracy: 0.4517
+
+Step 1545, Epoch 20/20, Batch 25/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0151, enc_train_loss: 4.2953, enc_train_entropy: 0.3352, dec_train_loss: 0.0147, train_edge_accuracy: 0.4683
+
+Step 1550, Epoch 20/20, Batch 30/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.5789, enc_train_entropy: 0.3116, dec_train_loss: 0.0147, train_edge_accuracy: 0.4517
+
+Step 1555, Epoch 20/20, Batch 35/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0152, enc_train_loss: 4.7694, enc_train_entropy: 0.2957, dec_train_loss: 0.0147, train_edge_accuracy: 0.4667
+
+Step 1560, Epoch 20/20, Batch 40/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0149, enc_train_loss: 4.6385, enc_train_entropy: 0.3066, dec_train_loss: 0.0145, train_edge_accuracy: 0.4700
+
+Step 1565, Epoch 20/20, Batch 45/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0150, enc_train_loss: 4.1349, enc_train_entropy: 0.3486, dec_train_loss: 0.0145, train_edge_accuracy: 0.4483
+
+Step 1570, Epoch 20/20, Batch 50/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0151, enc_train_loss: 4.9548, enc_train_entropy: 0.2803, dec_train_loss: 0.0146, train_edge_accuracy: 0.4700
+
+Step 1575, Epoch 20/20, Batch 55/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0151, enc_train_loss: 5.0354, enc_train_entropy: 0.2735, dec_train_loss: 0.0146, train_edge_accuracy: 0.4767
+
+Step 1580, Epoch 20/20, Batch 60/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0150, enc_train_loss: 5.1223, enc_train_entropy: 0.2663, dec_train_loss: 0.0145, train_edge_accuracy: 0.4533
+
+Step 1585, Epoch 20/20, Batch 65/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0149, enc_train_loss: 5.0681, enc_train_entropy: 0.2708, dec_train_loss: 0.0144, train_edge_accuracy: 0.4750
+
+Step 1590, Epoch 20/20, Batch 70/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0150, enc_train_loss: 4.2682, enc_train_entropy: 0.3375, dec_train_loss: 0.0146, train_edge_accuracy: 0.4683
+
+Step 1595, Epoch 20/20, Batch 75/80
+temp: 0.5000, beta: 0.0001, 
+nri_train_loss: 0.0150, enc_train_loss: 4.5898, enc_train_entropy: 0.3107, dec_train_loss: 0.0146, train_edge_accuracy: 0.4700
+
+
+Epoch 20/20 completed, Global Step: 1600
+nri_train_loss: 0.0150, enc_train_loss: 4.5898, enc_train_entropy: 0.3107, dec_train_loss: 0.0146, train_edge_accuracy: 0.4700
+nri_val_loss: 0.0149, enc_val_loss: 4.8174, enc_val_entropy: 0.2917, dec_val_loss: 0.0144, val_edge_accuracy: 0.4685
+
+---------------------------------------------------------------------------
+
+
+Training completed in 674.25 seconds or 11.24 minutes or 0.18729264795780182 hours.
+Total training steps: 1600
+
+Training completed for model '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+
+<<<<<<<<<<<< ENCODER EDGE ACCURACY PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating encoder edge accuracy plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Encoder edge accuracy (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+
+<<<<<<<<<<<< ENCODER EDGE ENTROPY PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating encoder edge entropy plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Encoder edge entropy (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.316' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Decoder output plot for rep '1001.316' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.315' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Decoder output plot for rep '1001.3146' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7
+
+
+---------------------------------------------------------------------------
+
+TESTING TRAINED NRI MODEL...
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7\checkpoints:
+
+['best-model-epoch=19-val_loss=0.0000.ckpt']
+
+Trained NRI Model Loaded for testing.
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7\test
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Testing: |                                                         | 0/? [00:00<?, ?it/s]
+Initializing input processors for encoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                    | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                       | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:  10%|###1                           | 1/10 [00:00<00:02,  4.46it/s]Testing DataLoader 0:  20%|######2                        | 2/10 [00:00<00:01,  5.37it/s]Testing DataLoader 0:  30%|#########2                     | 3/10 [00:00<00:01,  5.84it/s]Testing DataLoader 0:  40%|############4                  | 4/10 [00:00<00:01,  5.60it/s]Testing DataLoader 0:  50%|###############5               | 5/10 [00:00<00:00,  5.45it/s]Testing DataLoader 0:  60%|##################5            | 6/10 [00:01<00:00,  5.65it/s]Testing DataLoader 0:  70%|#####################7         | 7/10 [00:01<00:00,  5.86it/s]Testing DataLoader 0:  80%|########################8      | 8/10 [00:01<00:00,  5.92it/s]Testing DataLoader 0:  90%|###########################9   | 9/10 [00:01<00:00,  6.03it/s]Testing DataLoader 0: 100%|##############################| 10/10 [00:01<00:00,  6.11it/s]
+Testing completed in 1.64 seconds or 0.03 minutes or 0.0004549570878346761 hours.
+
+nri_test_loss: 4.8149, enc_test_loss: 4.8003, dec_test_loss: 0.0146, test_edge_accuracy: 0.4708
+
+Edge predictions are as follows (showing probabilities for each edge type):
+
+Rep 1,001.444:
+[[0.11519962 0.8848003 ]
+ [0.24069227 0.75930774]
+ [0.02769455 0.9723054 ]
+ [0.8286885  0.17131157]
+ [0.2547816  0.7452184 ]
+ [0.02531521 0.9746848 ]
+ [0.82589513 0.17410482]
+ [0.16879053 0.8312094 ]
+ [0.0211071  0.9788929 ]
+ [0.8950373  0.10496274]
+ [0.10119813 0.8988019 ]
+ [0.2377512  0.76224875]]
+
+Rep 1,001.243:
+[[0.7260764  0.27392355]
+ [0.91081953 0.08918048]
+ [0.05259787 0.9474021 ]
+ [0.89901024 0.10098972]
+ [0.90460485 0.09539518]
+ [0.03305865 0.96694136]
+ [0.9070769  0.09292311]
+ [0.719455   0.28054494]
+ [0.03668331 0.9633167 ]
+ [0.924334   0.07566606]
+ [0.8043112  0.19568878]
+ [0.9471616  0.05283841]]
+
+Rep 1,001.176:
+[[0.79384196 0.20615806]
+ [0.8758846  0.12411537]
+ [0.12414934 0.8758507 ]
+ [0.6614814  0.33851856]
+ [0.88869643 0.11130359]
+ [0.16014636 0.8398537 ]
+ [0.7110791  0.2889209 ]
+ [0.83189726 0.1681028 ]
+ [0.09058603 0.90941393]
+ [0.6942765  0.30572346]
+ [0.77550614 0.2244939 ]
+ [0.8997811  0.10021894]]
+
+Rep 1,001.489:
+[[0.92758894 0.07241104]
+ [0.9784425  0.02155759]
+ [0.27786863 0.7221314 ]
+ [0.8590237  0.14097632]
+ [0.9815408  0.01845916]
+ [0.26445785 0.7355421 ]
+ [0.7996959  0.20030409]
+ [0.90292716 0.09707284]
+ [0.15117116 0.84882885]
+ [0.832136   0.16786398]
+ [0.93490136 0.06509867]
+ [0.98290837 0.01709162]]
+
+Rep 1,001.153:
+[[0.9923292  0.00767083]
+ [0.7736855  0.22631447]
+ [0.03640593 0.9635941 ]
+ [0.8050849  0.1949151 ]
+ [0.6923907  0.3076093 ]
+ [0.02418861 0.97581136]
+ [0.93300366 0.06699639]
+ [0.99305904 0.00694093]
+ [0.02939356 0.97060645]
+ [0.9408498  0.05915025]
+ [0.9979279  0.00207203]
+ [0.81119907 0.18880098]]
+
+Rep 1,001.269:
+[[3.8780319e-04 9.9961227e-01]
+ [3.5739847e-02 9.6426010e-01]
+ [5.9401974e-02 9.4059807e-01]
+ [2.9285363e-04 9.9970716e-01]
+ [3.3921167e-02 9.6607882e-01]
+ [4.7247309e-02 9.5275265e-01]
+ [7.2190294e-04 9.9927813e-01]
+ [6.6507643e-04 9.9933487e-01]
+ [2.7908593e-02 9.7209138e-01]
+ [6.3106843e-04 9.9936897e-01]
+ [7.4247102e-04 9.9925750e-01]
+ [3.9811861e-02 9.6018815e-01]]
+
+Rep 1,001.244:
+[[0.99339783 0.00660213]
+ [0.79400575 0.20599428]
+ [0.02737836 0.9726217 ]
+ [0.9417522  0.05824781]
+ [0.6921689  0.30783114]
+ [0.02100086 0.97899914]
+ [0.96140623 0.03859371]
+ [0.9891844  0.01081567]
+ [0.01897765 0.9810223 ]
+ [0.98090565 0.01909437]
+ [0.9981469  0.00185315]
+ [0.7985813  0.20141871]]
+
+Rep 1,001.244:
+[[0.926998   0.07300198]
+ [0.21456513 0.7854349 ]
+ [0.00583498 0.994165  ]
+ [0.8562461  0.14375389]
+ [0.15830341 0.8416966 ]
+ [0.00364763 0.9963523 ]
+ [0.90765494 0.09234505]
+ [0.9472119  0.05278807]
+ [0.00639163 0.99360836]
+ [0.9306261  0.06937394]
+ [0.9668819  0.03311817]
+ [0.2373285  0.7626715 ]]
+
+Rep 1,001.259:
+[[4.3263283e-01 5.6736714e-01]
+ [6.7916238e-03 9.9320835e-01]
+ [9.0325059e-04 9.9909675e-01]
+ [5.6766611e-01 4.3233386e-01]
+ [4.5762057e-03 9.9542385e-01]
+ [7.2771608e-04 9.9927229e-01]
+ [5.7479912e-01 4.2520085e-01]
+ [4.5402807e-01 5.4597187e-01]
+ [1.2975310e-03 9.9870241e-01]
+ [6.7860287e-01 3.2139710e-01]
+ [6.1515391e-01 3.8484612e-01]
+ [4.2365794e-03 9.9576342e-01]]
+
+Rep 1,001.380:
+[[7.2802574e-04 9.9927193e-01]
+ [1.2676878e-01 8.7323117e-01]
+ [6.4910829e-02 9.3508911e-01]
+ [1.8849975e-04 9.9981147e-01]
+ [1.4434482e-01 8.5565519e-01]
+ [8.2907259e-02 9.1709274e-01]
+ [3.6446928e-04 9.9963546e-01]
+ [1.2237111e-03 9.9877626e-01]
+ [2.9420966e-02 9.7057903e-01]
+ [3.5712720e-04 9.9964285e-01]
+ [9.6855295e-04 9.9903142e-01]
+ [1.3438715e-01 8.6561280e-01]]
+
+Rep 1,001.374:
+[[0.6500997  0.34990036]
+ [0.84069926 0.1593008 ]
+ [0.07632864 0.92367136]
+ [0.6904133  0.3095867 ]
+ [0.8245477  0.17545229]
+ [0.1061823  0.8938177 ]
+ [0.73074263 0.2692574 ]
+ [0.68605936 0.31394067]
+ [0.04811726 0.95188266]
+ [0.7676553  0.23234469]
+ [0.649313   0.350687  ]
+ [0.84541345 0.15458654]]
+
+Rep 1,001.284:
+[[0.63875127 0.36124873]
+ [0.2189902  0.7810098 ]
+ [0.00861319 0.99138683]
+ [0.5839762  0.41602376]
+ [0.205728   0.79427207]
+ [0.00983921 0.9901608 ]
+ [0.522621   0.477379  ]
+ [0.60568434 0.39431566]
+ [0.00961748 0.9903825 ]
+ [0.5985867  0.40141335]
+ [0.6911245  0.30887547]
+ [0.18628165 0.8137184 ]]
+
+Rep 1,001.365:
+[[0.01005017 0.9899498 ]
+ [0.00759881 0.9924011 ]
+ [0.00893044 0.99106956]
+ [0.00947388 0.9905261 ]
+ [0.00633163 0.9936684 ]
+ [0.01167793 0.9883221 ]
+ [0.01265831 0.9873417 ]
+ [0.01344663 0.9865534 ]
+ [0.00779644 0.9922036 ]
+ [0.01095364 0.9890464 ]
+ [0.01065297 0.989347  ]
+ [0.00776663 0.9922334 ]]
+
+Rep 1,001.335:
+[[0.6634622  0.33653775]
+ [0.02536271 0.9746373 ]
+ [0.00148841 0.9985116 ]
+ [0.65854836 0.34145164]
+ [0.02066954 0.9793305 ]
+ [0.00134279 0.9986572 ]
+ [0.70467776 0.2953223 ]
+ [0.6724119  0.32758802]
+ [0.0021089  0.9978911 ]
+ [0.78224224 0.21775769]
+ [0.80033773 0.19966228]
+ [0.01750949 0.9824905 ]]
+
+Rep 1,001.208:
+[[0.26851857 0.7314814 ]
+ [0.09017462 0.9098254 ]
+ [0.00798299 0.99201703]
+ [0.36704206 0.63295794]
+ [0.09764921 0.90235084]
+ [0.01678953 0.98321044]
+ [0.36097592 0.6390241 ]
+ [0.29435644 0.70564353]
+ [0.01103748 0.9889626 ]
+ [0.40513587 0.5948641 ]
+ [0.28742695 0.71257305]
+ [0.09177601 0.90822405]]
+
+Rep 1,001.631:
+[[0.9759292  0.02407086]
+ [0.9023648  0.09763514]
+ [0.02570256 0.9742974 ]
+ [0.9795482  0.02045183]
+ [0.9007812  0.09921881]
+ [0.02283719 0.97716284]
+ [0.9802074  0.01979264]
+ [0.9746661  0.02533391]
+ [0.01783983 0.98216015]
+ [0.98890483 0.01109513]
+ [0.9889972  0.01100282]
+ [0.9455098  0.05449027]]
+
+Rep 1,001.104:
+[[1.1458140e-03 9.9885416e-01]
+ [1.5050352e-01 8.4949648e-01]
+ [5.5718910e-02 9.4428110e-01]
+ [1.1935766e-03 9.9880648e-01]
+ [1.5311028e-01 8.4688973e-01]
+ [3.8165115e-02 9.6183485e-01]
+ [7.9485617e-04 9.9920517e-01]
+ [1.2786947e-03 9.9872130e-01]
+ [1.6208900e-02 9.8379111e-01]
+ [1.7483924e-03 9.9825162e-01]
+ [2.4623864e-03 9.9753761e-01]
+ [1.5147085e-01 8.4852910e-01]]
+
+Rep 1,001.101:
+[[0.5608993  0.43910074]
+ [0.03840303 0.9615969 ]
+ [0.00525915 0.99474084]
+ [0.1051814  0.89481854]
+ [0.03465065 0.9653494 ]
+ [0.00295568 0.99704427]
+ [0.19775201 0.80224794]
+ [0.5930105  0.40698954]
+ [0.00538845 0.9946116 ]
+ [0.21695486 0.7830452 ]
+ [0.60903895 0.39096108]
+ [0.05357349 0.9464265 ]]
+
+Rep 1,001.480:
+[[0.10630869 0.89369124]
+ [0.6719963  0.32800373]
+ [0.1415737  0.85842633]
+ [0.00949869 0.9905013 ]
+ [0.7202589  0.27974114]
+ [0.13512805 0.864872  ]
+ [0.01480188 0.9851981 ]
+ [0.18839523 0.81160474]
+ [0.06668632 0.9333136 ]
+ [0.01458184 0.9854182 ]
+ [0.11275352 0.88724655]
+ [0.69136566 0.30863428]]
+
+Rep 1,001.446:
+[[0.94907594 0.05092407]
+ [0.9725716  0.02742844]
+ [0.21005556 0.7899444 ]
+ [0.94503695 0.05496306]
+ [0.9762449  0.0237551 ]
+ [0.19825402 0.80174595]
+ [0.91962683 0.08037318]
+ [0.93615323 0.0638468 ]
+ [0.10909585 0.8909041 ]
+ [0.94533694 0.05466308]
+ [0.955935   0.04406497]
+ [0.98102325 0.01897679]]
+
+Rep 1,001.313:
+[[0.5786496  0.42135045]
+ [0.5030678  0.49693218]
+ [0.03536483 0.96463513]
+ [0.6389683  0.36103168]
+ [0.547309   0.45269102]
+ [0.04626443 0.9537356 ]
+ [0.6150864  0.38491365]
+ [0.59820014 0.40179986]
+ [0.03544435 0.9645556 ]
+ [0.63546056 0.36453944]
+ [0.5907133  0.40928662]
+ [0.47277763 0.5272224 ]]
+
+Rep 1,001.263:
+[[0.79478645 0.20521353]
+ [0.61799425 0.38200572]
+ [0.07380332 0.9261967 ]
+ [0.9420532  0.05794683]
+ [0.6770701  0.32292992]
+ [0.06076825 0.9392318 ]
+ [0.94057506 0.05942497]
+ [0.84682137 0.15317865]
+ [0.04612421 0.9538758 ]
+ [0.93439764 0.06560232]
+ [0.8516809  0.14831911]
+ [0.70510393 0.29489607]]
+
+Rep 1,001.206:
+[[0.790689   0.20931095]
+ [0.87035376 0.12964626]
+ [0.13609886 0.86390114]
+ [0.37668088 0.6233191 ]
+ [0.8620124  0.13798764]
+ [0.11917045 0.8808295 ]
+ [0.44237965 0.5576204 ]
+ [0.8092433  0.19075668]
+ [0.08407576 0.9159243 ]
+ [0.33163473 0.66836524]
+ [0.718353   0.28164703]
+ [0.8641275  0.13587242]]
+
+Rep 1,001.235:
+[[0.9508745  0.04912553]
+ [0.9905938  0.00940618]
+ [0.11212452 0.88787544]
+ [0.942158   0.057842  ]
+ [0.9915479  0.00845213]
+ [0.10618357 0.8938164 ]
+ [0.92711216 0.07288785]
+ [0.9457236  0.05427639]
+ [0.0737903  0.9262097 ]
+ [0.9487712  0.05122883]
+ [0.97336406 0.02663599]
+ [0.9951593  0.00484071]]
+
+Rep 1,001.091:
+[[0.04724659 0.9527534 ]
+ [0.0520195  0.94798046]
+ [0.05190691 0.94809306]
+ [0.05348736 0.9465126 ]
+ [0.04961157 0.95038843]
+ [0.051651   0.948349  ]
+ [0.05738244 0.94261754]
+ [0.04772551 0.9522745 ]
+ [0.02943562 0.97056437]
+ [0.05322869 0.9467713 ]
+ [0.04746476 0.9525352 ]
+ [0.05057874 0.9494213 ]]
+
+Rep 1,001.328:
+[[0.93757385 0.06242616]
+ [0.98288006 0.0171199 ]
+ [0.14700304 0.852997  ]
+ [0.85037714 0.14962293]
+ [0.98306113 0.01693889]
+ [0.14113541 0.8588646 ]
+ [0.8456137  0.15438633]
+ [0.93536794 0.06463204]
+ [0.1030484  0.8969516 ]
+ [0.8755053  0.12449469]
+ [0.96380424 0.03619577]
+ [0.9893875  0.01061254]]
+
+Rep 1,001.316:
+[[9.3405116e-01 6.5948837e-02]
+ [7.7774310e-01 2.2225690e-01]
+ [2.3366164e-02 9.7663385e-01]
+ [9.9705255e-01 2.9474979e-03]
+ [8.7166584e-01 1.2833416e-01]
+ [2.7963210e-02 9.7203672e-01]
+ [9.9640024e-01 3.5997098e-03]
+ [9.7209150e-01 2.7908497e-02]
+ [2.2954423e-02 9.7704566e-01]
+ [9.9948764e-01 5.1234581e-04]
+ [9.8337585e-01 1.6624190e-02]
+ [8.7913156e-01 1.2086846e-01]]
+
+Rep 1,001.435:
+[[0.7605711  0.23942894]
+ [0.10061943 0.89938056]
+ [0.00242725 0.9975727 ]
+ [0.9462976  0.05370238]
+ [0.15309605 0.8469039 ]
+ [0.00411957 0.9958805 ]
+ [0.95186615 0.04813384]
+ [0.85822326 0.1417767 ]
+ [0.00558277 0.9944172 ]
+ [0.9644997  0.03550024]
+ [0.85128814 0.14871182]
+ [0.12995008 0.8700499 ]]
+
+Rep 1,001.484:
+[[9.6796823e-01 3.2031845e-02]
+ [7.7449650e-01 2.2550350e-01]
+ [1.5240575e-02 9.8475939e-01]
+ [9.9696666e-01 3.0333358e-03]
+ [8.5442489e-01 1.4557505e-01]
+ [1.8682163e-02 9.8131782e-01]
+ [9.9646902e-01 3.5310024e-03]
+ [9.8632997e-01 1.3670100e-02]
+ [1.7589850e-02 9.8241019e-01]
+ [9.9953175e-01 4.6829664e-04]
+ [9.9422717e-01 5.7727564e-03]
+ [8.7364441e-01 1.2635557e-01]]
+
+Rep 1,001.360:
+[[8.1306754e-04 9.9918693e-01]
+ [8.6521521e-02 9.1347849e-01]
+ [8.2920454e-02 9.1707951e-01]
+ [4.0243709e-04 9.9959761e-01]
+ [8.6597361e-02 9.1340268e-01]
+ [7.2852075e-02 9.2714792e-01]
+ [7.4517494e-04 9.9925476e-01]
+ [1.4107805e-03 9.9858922e-01]
+ [3.4429803e-02 9.6557015e-01]
+ [7.1258110e-04 9.9928743e-01]
+ [1.2179370e-03 9.9878210e-01]
+ [1.0164220e-01 8.9835775e-01]]
+
+Rep 1,001.482:
+[[0.9142074  0.08579259]
+ [0.985741   0.01425893]
+ [0.227095   0.77290505]
+ [0.82285994 0.17714006]
+ [0.9878256  0.01217436]
+ [0.24158046 0.7584195 ]
+ [0.7778205  0.22217947]
+ [0.88810366 0.11189634]
+ [0.13904244 0.86095756]
+ [0.81329966 0.1867003 ]
+ [0.94552886 0.05447112]
+ [0.99127007 0.00872992]]
+
+Rep 1,001.251:
+[[1.6842016e-03 9.9831581e-01]
+ [4.2058066e-01 5.7941937e-01]
+ [1.2554589e-01 8.7445414e-01]
+ [8.9260505e-04 9.9910742e-01]
+ [3.9239839e-01 6.0760158e-01]
+ [5.6014419e-02 9.4398558e-01]
+ [1.5953736e-03 9.9840468e-01]
+ [3.1282415e-03 9.9687177e-01]
+ [2.9605884e-02 9.7039413e-01]
+ [1.2644232e-03 9.9873561e-01]
+ [2.7436635e-03 9.9725634e-01]
+ [3.9851797e-01 6.0148203e-01]]
+
+Rep 1,001.348:
+[[7.1375793e-01 2.8624207e-01]
+ [1.9613702e-02 9.8038632e-01]
+ [1.5468113e-03 9.9845314e-01]
+ [7.2794133e-01 2.7205867e-01]
+ [1.3514382e-02 9.8648560e-01]
+ [8.4625842e-04 9.9915373e-01]
+ [7.4900132e-01 2.5099871e-01]
+ [7.4960750e-01 2.5039253e-01]
+ [2.3855744e-03 9.9761438e-01]
+ [7.8576583e-01 2.1423423e-01]
+ [7.8570473e-01 2.1429522e-01]
+ [2.0184904e-02 9.7981513e-01]]
+
+Rep 1,001.381:
+[[9.6354938e-01 3.6450565e-02]
+ [7.4705082e-01 2.5294918e-01]
+ [1.7806141e-02 9.8219383e-01]
+ [9.9816507e-01 1.8349822e-03]
+ [8.4965128e-01 1.5034874e-01]
+ [2.1841368e-02 9.7815859e-01]
+ [9.9807632e-01 1.9236699e-03]
+ [9.8739457e-01 1.2605384e-02]
+ [1.9376528e-02 9.8062342e-01]
+ [9.9968195e-01 3.1801255e-04]
+ [9.9303114e-01 6.9688223e-03]
+ [8.6151999e-01 1.3847999e-01]]
+
+Rep 1,001.487:
+[[1.18412174e-01 8.81587863e-01]
+ [2.77849543e-03 9.97221470e-01]
+ [6.18174963e-04 9.99381781e-01]
+ [4.56455886e-01 5.43544114e-01]
+ [2.81986548e-03 9.97180104e-01]
+ [7.41470547e-04 9.99258459e-01]
+ [6.08621836e-01 3.91378164e-01]
+ [1.72924027e-01 8.27075958e-01]
+ [1.12311717e-03 9.98876870e-01]
+ [6.40491664e-01 3.59508276e-01]
+ [1.71190128e-01 8.28809798e-01]
+ [4.53523966e-03 9.95464742e-01]]
+
+Rep 1,001.455:
+[[0.22195545 0.7780446 ]
+ [0.61857647 0.3814236 ]
+ [0.09721836 0.9027816 ]
+ [0.29897025 0.7010297 ]
+ [0.67603624 0.32396373]
+ [0.0583091  0.9416909 ]
+ [0.32487556 0.6751244 ]
+ [0.27194375 0.72805625]
+ [0.04503559 0.9549644 ]
+ [0.2863108  0.7136892 ]
+ [0.254615   0.745385  ]
+ [0.6265932  0.37340686]]
+
+Rep 1,001.160:
+[[0.9182443  0.08175574]
+ [0.7730565  0.22694345]
+ [0.03138502 0.968615  ]
+ [0.96070236 0.03929766]
+ [0.7932582  0.20674181]
+ [0.02833874 0.9716612 ]
+ [0.9691794  0.03082062]
+ [0.921974   0.07802605]
+ [0.03114938 0.9688506 ]
+ [0.9793825  0.02061748]
+ [0.9701984  0.02980162]
+ [0.8229662  0.17703383]]
+
+Rep 1,001.214:
+[[0.6598262  0.34017384]
+ [0.5317855  0.4682145 ]
+ [0.01455441 0.9854456 ]
+ [0.8671817  0.13281825]
+ [0.5994335  0.40056652]
+ [0.02027022 0.9797298 ]
+ [0.87108666 0.12891336]
+ [0.7011466  0.29885334]
+ [0.02301728 0.9769827 ]
+ [0.9114971  0.08850291]
+ [0.66813004 0.33186996]
+ [0.5037637  0.49623632]]
+
+Rep 1,001.474:
+[[9.5159739e-02 9.0484029e-01]
+ [2.4156764e-03 9.9758434e-01]
+ [6.8123534e-04 9.9931872e-01]
+ [9.0936434e-01 9.0635628e-02]
+ [2.4601151e-03 9.9753988e-01]
+ [1.1770346e-03 9.9882299e-01]
+ [8.9616680e-01 1.0383317e-01]
+ [1.3249429e-01 8.6750567e-01]
+ [1.3175858e-03 9.9868244e-01]
+ [9.5983583e-01 4.0164229e-02]
+ [1.4337073e-01 8.5662925e-01]
+ [1.6907840e-03 9.9830925e-01]]
+
+Rep 1,001.225:
+[[0.76268864 0.23731135]
+ [0.92786247 0.07213753]
+ [0.1869147  0.81308526]
+ [0.82543874 0.17456122]
+ [0.9502068  0.04979324]
+ [0.18786551 0.8121345 ]
+ [0.8195555  0.18044445]
+ [0.8064921  0.1935079 ]
+ [0.11725024 0.8827498 ]
+ [0.7970546  0.20294541]
+ [0.78885424 0.2111458 ]
+ [0.95816475 0.04183527]]
+
+Rep 1,001.103:
+[[0.83478975 0.16521019]
+ [0.89403355 0.10596644]
+ [0.11646595 0.8835341 ]
+ [0.86127675 0.13872322]
+ [0.88421774 0.11578227]
+ [0.11801977 0.8819802 ]
+ [0.84876394 0.15123606]
+ [0.82382077 0.17617925]
+ [0.0529738  0.94702613]
+ [0.9024906  0.09750933]
+ [0.8291028  0.17089714]
+ [0.9280073  0.07199265]]
+
+Rep 1,001.178:
+[[8.6188778e-02 9.1381121e-01]
+ [3.9360183e-03 9.9606401e-01]
+ [1.0977403e-03 9.9890220e-01]
+ [4.3447739e-01 5.6552261e-01]
+ [2.6353798e-03 9.9736458e-01]
+ [8.2352146e-04 9.9917644e-01]
+ [4.3336561e-01 5.6663436e-01]
+ [7.4587174e-02 9.2541283e-01]
+ [1.2127489e-03 9.9878722e-01]
+ [4.5872688e-01 5.4127306e-01]
+ [6.2759027e-02 9.3724102e-01]
+ [3.9398451e-03 9.9606007e-01]]
+
+Rep 1,001.150:
+[[0.9314891  0.0685109 ]
+ [0.8312027  0.16879733]
+ [0.04571152 0.9542885 ]
+ [0.961849   0.03815098]
+ [0.8322041  0.16779591]
+ [0.03344873 0.9665513 ]
+ [0.97034013 0.0296599 ]
+ [0.9293346  0.0706654 ]
+ [0.03769561 0.96230435]
+ [0.9756402  0.02435981]
+ [0.973384   0.02661598]
+ [0.8794173  0.12058265]]
+
+Rep 1,001.169:
+[[0.5085123  0.49148768]
+ [0.0778136  0.92218643]
+ [0.00421884 0.9957812 ]
+ [0.84927833 0.15072173]
+ [0.12790321 0.8720968 ]
+ [0.0088118  0.99118817]
+ [0.8076383  0.19236168]
+ [0.5160059  0.48399413]
+ [0.00865846 0.99134153]
+ [0.8906316  0.10936837]
+ [0.5529758  0.4470242 ]
+ [0.07120819 0.9287918 ]]
+
+Rep 1,001.178:
+[[0.9602661  0.03973393]
+ [0.5595099  0.4404902 ]
+ [0.01030112 0.98969895]
+ [0.91920877 0.08079129]
+ [0.52463204 0.475368  ]
+ [0.00882184 0.9911781 ]
+ [0.94320536 0.05679462]
+ [0.96533173 0.03466825]
+ [0.00903376 0.9909663 ]
+ [0.96085167 0.03914834]
+ [0.9796571  0.02034288]
+ [0.6374087  0.36259136]]
+
+Rep 1,001.246:
+[[0.00934748 0.99065256]
+ [0.08086027 0.91913974]
+ [0.02155021 0.97844976]
+ [0.00241538 0.9975846 ]
+ [0.07298391 0.92701614]
+ [0.01488929 0.98511076]
+ [0.00235481 0.9976452 ]
+ [0.00729852 0.9927014 ]
+ [0.00890253 0.99109745]
+ [0.00543895 0.994561  ]
+ [0.01091009 0.9890899 ]
+ [0.09847169 0.9015283 ]]
+
+Rep 1,001.056:
+[[0.9430321  0.05696796]
+ [0.4170764  0.58292353]
+ [0.01643732 0.98356265]
+ [0.89145654 0.10854342]
+ [0.3281985  0.6718015 ]
+ [0.01026469 0.98973525]
+ [0.90900767 0.09099236]
+ [0.9482942  0.05170576]
+ [0.01240071 0.98759925]
+ [0.9291696  0.07083041]
+ [0.9688402  0.03115978]
+ [0.46677554 0.5332245 ]]
+
+Rep 1,001.310:
+[[0.9671578  0.03284227]
+ [0.96955967 0.03044029]
+ [0.04234427 0.95765567]
+ [0.93755203 0.06244801]
+ [0.9675601  0.03243989]
+ [0.03054371 0.96945626]
+ [0.93097407 0.06902592]
+ [0.95507586 0.04492418]
+ [0.03513879 0.9648613 ]
+ [0.9580316  0.04196841]
+ [0.9858068  0.01419316]
+ [0.9822907  0.01770936]]
+
+Rep 1,001.390:
+[[1.2848882e-01 8.7151116e-01]
+ [3.0713872e-04 9.9969292e-01]
+ [3.4889515e-04 9.9965107e-01]
+ [2.0565030e-01 7.9434973e-01]
+ [2.5040391e-04 9.9974960e-01]
+ [2.9885946e-04 9.9970108e-01]
+ [3.2373187e-01 6.7626810e-01]
+ [1.8175209e-01 8.1824791e-01]
+ [7.3678233e-04 9.9926323e-01]
+ [2.9915711e-01 7.0084286e-01]
+ [1.8488936e-01 8.1511068e-01]
+ [4.5939331e-04 9.9954069e-01]]
+
+Rep 1,001.430:
+[[0.01542519 0.9845748 ]
+ [0.1840511  0.8159489 ]
+ [0.11162507 0.8883749 ]
+ [0.00705752 0.99294245]
+ [0.22705668 0.7729433 ]
+ [0.0744371  0.9255629 ]
+ [0.01574672 0.98425335]
+ [0.03262337 0.9673766 ]
+ [0.03856146 0.96143854]
+ [0.01113449 0.98886544]
+ [0.02628803 0.9737119 ]
+ [0.23533025 0.7646698 ]]
+
+Adjacency matrix from edge pred is as follows:
+
+Rep 1,001.444:
+[[[0.         0.        ]
+  [0.11519962 0.8848003 ]
+  [0.24069227 0.75930774]
+  [0.02769455 0.9723054 ]]
+
+ [[0.8286885  0.17131157]
+  [0.         0.        ]
+  [0.2547816  0.7452184 ]
+  [0.02531521 0.9746848 ]]
+
+ [[0.82589513 0.17410482]
+  [0.16879053 0.8312094 ]
+  [0.         0.        ]
+  [0.0211071  0.9788929 ]]
+
+ [[0.8950373  0.10496274]
+  [0.10119813 0.8988019 ]
+  [0.2377512  0.76224875]
+  [0.         0.        ]]]
+
+Rep 1,001.243:
+[[[0.         0.        ]
+  [0.7260764  0.27392355]
+  [0.91081953 0.08918048]
+  [0.05259787 0.9474021 ]]
+
+ [[0.89901024 0.10098972]
+  [0.         0.        ]
+  [0.90460485 0.09539518]
+  [0.03305865 0.96694136]]
+
+ [[0.9070769  0.09292311]
+  [0.719455   0.28054494]
+  [0.         0.        ]
+  [0.03668331 0.9633167 ]]
+
+ [[0.924334   0.07566606]
+  [0.8043112  0.19568878]
+  [0.9471616  0.05283841]
+  [0.         0.        ]]]
+
+Rep 1,001.176:
+[[[0.         0.        ]
+  [0.79384196 0.20615806]
+  [0.8758846  0.12411537]
+  [0.12414934 0.8758507 ]]
+
+ [[0.6614814  0.33851856]
+  [0.         0.        ]
+  [0.88869643 0.11130359]
+  [0.16014636 0.8398537 ]]
+
+ [[0.7110791  0.2889209 ]
+  [0.83189726 0.1681028 ]
+  [0.         0.        ]
+  [0.09058603 0.90941393]]
+
+ [[0.6942765  0.30572346]
+  [0.77550614 0.2244939 ]
+  [0.8997811  0.10021894]
+  [0.         0.        ]]]
+
+Rep 1,001.489:
+[[[0.         0.        ]
+  [0.92758894 0.07241104]
+  [0.9784425  0.02155759]
+  [0.27786863 0.7221314 ]]
+
+ [[0.8590237  0.14097632]
+  [0.         0.        ]
+  [0.9815408  0.01845916]
+  [0.26445785 0.7355421 ]]
+
+ [[0.7996959  0.20030409]
+  [0.90292716 0.09707284]
+  [0.         0.        ]
+  [0.15117116 0.84882885]]
+
+ [[0.832136   0.16786398]
+  [0.93490136 0.06509867]
+  [0.98290837 0.01709162]
+  [0.         0.        ]]]
+
+Rep 1,001.153:
+[[[0.         0.        ]
+  [0.9923292  0.00767083]
+  [0.7736855  0.22631447]
+  [0.03640593 0.9635941 ]]
+
+ [[0.8050849  0.1949151 ]
+  [0.         0.        ]
+  [0.6923907  0.3076093 ]
+  [0.02418861 0.97581136]]
+
+ [[0.93300366 0.06699639]
+  [0.99305904 0.00694093]
+  [0.         0.        ]
+  [0.02939356 0.97060645]]
+
+ [[0.9408498  0.05915025]
+  [0.9979279  0.00207203]
+  [0.81119907 0.18880098]
+  [0.         0.        ]]]
+
+Rep 1,001.269:
+[[[0.0000000e+00 0.0000000e+00]
+  [3.8780319e-04 9.9961227e-01]
+  [3.5739847e-02 9.6426010e-01]
+  [5.9401974e-02 9.4059807e-01]]
+
+ [[2.9285363e-04 9.9970716e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.3921167e-02 9.6607882e-01]
+  [4.7247309e-02 9.5275265e-01]]
+
+ [[7.2190294e-04 9.9927813e-01]
+  [6.6507643e-04 9.9933487e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.7908593e-02 9.7209138e-01]]
+
+ [[6.3106843e-04 9.9936897e-01]
+  [7.4247102e-04 9.9925750e-01]
+  [3.9811861e-02 9.6018815e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.244:
+[[[0.         0.        ]
+  [0.99339783 0.00660213]
+  [0.79400575 0.20599428]
+  [0.02737836 0.9726217 ]]
+
+ [[0.9417522  0.05824781]
+  [0.         0.        ]
+  [0.6921689  0.30783114]
+  [0.02100086 0.97899914]]
+
+ [[0.96140623 0.03859371]
+  [0.9891844  0.01081567]
+  [0.         0.        ]
+  [0.01897765 0.9810223 ]]
+
+ [[0.98090565 0.01909437]
+  [0.9981469  0.00185315]
+  [0.7985813  0.20141871]
+  [0.         0.        ]]]
+
+Rep 1,001.244:
+[[[0.         0.        ]
+  [0.926998   0.07300198]
+  [0.21456513 0.7854349 ]
+  [0.00583498 0.994165  ]]
+
+ [[0.8562461  0.14375389]
+  [0.         0.        ]
+  [0.15830341 0.8416966 ]
+  [0.00364763 0.9963523 ]]
+
+ [[0.90765494 0.09234505]
+  [0.9472119  0.05278807]
+  [0.         0.        ]
+  [0.00639163 0.99360836]]
+
+ [[0.9306261  0.06937394]
+  [0.9668819  0.03311817]
+  [0.2373285  0.7626715 ]
+  [0.         0.        ]]]
+
+Rep 1,001.259:
+[[[0.0000000e+00 0.0000000e+00]
+  [4.3263283e-01 5.6736714e-01]
+  [6.7916238e-03 9.9320835e-01]
+  [9.0325059e-04 9.9909675e-01]]
+
+ [[5.6766611e-01 4.3233386e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [4.5762057e-03 9.9542385e-01]
+  [7.2771608e-04 9.9927229e-01]]
+
+ [[5.7479912e-01 4.2520085e-01]
+  [4.5402807e-01 5.4597187e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.2975310e-03 9.9870241e-01]]
+
+ [[6.7860287e-01 3.2139710e-01]
+  [6.1515391e-01 3.8484612e-01]
+  [4.2365794e-03 9.9576342e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.380:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.2802574e-04 9.9927193e-01]
+  [1.2676878e-01 8.7323117e-01]
+  [6.4910829e-02 9.3508911e-01]]
+
+ [[1.8849975e-04 9.9981147e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.4434482e-01 8.5565519e-01]
+  [8.2907259e-02 9.1709274e-01]]
+
+ [[3.6446928e-04 9.9963546e-01]
+  [1.2237111e-03 9.9877626e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.9420966e-02 9.7057903e-01]]
+
+ [[3.5712720e-04 9.9964285e-01]
+  [9.6855295e-04 9.9903142e-01]
+  [1.3438715e-01 8.6561280e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.374:
+[[[0.         0.        ]
+  [0.6500997  0.34990036]
+  [0.84069926 0.1593008 ]
+  [0.07632864 0.92367136]]
+
+ [[0.6904133  0.3095867 ]
+  [0.         0.        ]
+  [0.8245477  0.17545229]
+  [0.1061823  0.8938177 ]]
+
+ [[0.73074263 0.2692574 ]
+  [0.68605936 0.31394067]
+  [0.         0.        ]
+  [0.04811726 0.95188266]]
+
+ [[0.7676553  0.23234469]
+  [0.649313   0.350687  ]
+  [0.84541345 0.15458654]
+  [0.         0.        ]]]
+
+Rep 1,001.284:
+[[[0.         0.        ]
+  [0.63875127 0.36124873]
+  [0.2189902  0.7810098 ]
+  [0.00861319 0.99138683]]
+
+ [[0.5839762  0.41602376]
+  [0.         0.        ]
+  [0.205728   0.79427207]
+  [0.00983921 0.9901608 ]]
+
+ [[0.522621   0.477379  ]
+  [0.60568434 0.39431566]
+  [0.         0.        ]
+  [0.00961748 0.9903825 ]]
+
+ [[0.5985867  0.40141335]
+  [0.6911245  0.30887547]
+  [0.18628165 0.8137184 ]
+  [0.         0.        ]]]
+
+Rep 1,001.365:
+[[[0.         0.        ]
+  [0.01005017 0.9899498 ]
+  [0.00759881 0.9924011 ]
+  [0.00893044 0.99106956]]
+
+ [[0.00947388 0.9905261 ]
+  [0.         0.        ]
+  [0.00633163 0.9936684 ]
+  [0.01167793 0.9883221 ]]
+
+ [[0.01265831 0.9873417 ]
+  [0.01344663 0.9865534 ]
+  [0.         0.        ]
+  [0.00779644 0.9922036 ]]
+
+ [[0.01095364 0.9890464 ]
+  [0.01065297 0.989347  ]
+  [0.00776663 0.9922334 ]
+  [0.         0.        ]]]
+
+Rep 1,001.335:
+[[[0.         0.        ]
+  [0.6634622  0.33653775]
+  [0.02536271 0.9746373 ]
+  [0.00148841 0.9985116 ]]
+
+ [[0.65854836 0.34145164]
+  [0.         0.        ]
+  [0.02066954 0.9793305 ]
+  [0.00134279 0.9986572 ]]
+
+ [[0.70467776 0.2953223 ]
+  [0.6724119  0.32758802]
+  [0.         0.        ]
+  [0.0021089  0.9978911 ]]
+
+ [[0.78224224 0.21775769]
+  [0.80033773 0.19966228]
+  [0.01750949 0.9824905 ]
+  [0.         0.        ]]]
+
+Rep 1,001.208:
+[[[0.         0.        ]
+  [0.26851857 0.7314814 ]
+  [0.09017462 0.9098254 ]
+  [0.00798299 0.99201703]]
+
+ [[0.36704206 0.63295794]
+  [0.         0.        ]
+  [0.09764921 0.90235084]
+  [0.01678953 0.98321044]]
+
+ [[0.36097592 0.6390241 ]
+  [0.29435644 0.70564353]
+  [0.         0.        ]
+  [0.01103748 0.9889626 ]]
+
+ [[0.40513587 0.5948641 ]
+  [0.28742695 0.71257305]
+  [0.09177601 0.90822405]
+  [0.         0.        ]]]
+
+Rep 1,001.631:
+[[[0.         0.        ]
+  [0.9759292  0.02407086]
+  [0.9023648  0.09763514]
+  [0.02570256 0.9742974 ]]
+
+ [[0.9795482  0.02045183]
+  [0.         0.        ]
+  [0.9007812  0.09921881]
+  [0.02283719 0.97716284]]
+
+ [[0.9802074  0.01979264]
+  [0.9746661  0.02533391]
+  [0.         0.        ]
+  [0.01783983 0.98216015]]
+
+ [[0.98890483 0.01109513]
+  [0.9889972  0.01100282]
+  [0.9455098  0.05449027]
+  [0.         0.        ]]]
+
+Rep 1,001.104:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.1458140e-03 9.9885416e-01]
+  [1.5050352e-01 8.4949648e-01]
+  [5.5718910e-02 9.4428110e-01]]
+
+ [[1.1935766e-03 9.9880648e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.5311028e-01 8.4688973e-01]
+  [3.8165115e-02 9.6183485e-01]]
+
+ [[7.9485617e-04 9.9920517e-01]
+  [1.2786947e-03 9.9872130e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.6208900e-02 9.8379111e-01]]
+
+ [[1.7483924e-03 9.9825162e-01]
+  [2.4623864e-03 9.9753761e-01]
+  [1.5147085e-01 8.4852910e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.101:
+[[[0.         0.        ]
+  [0.5608993  0.43910074]
+  [0.03840303 0.9615969 ]
+  [0.00525915 0.99474084]]
+
+ [[0.1051814  0.89481854]
+  [0.         0.        ]
+  [0.03465065 0.9653494 ]
+  [0.00295568 0.99704427]]
+
+ [[0.19775201 0.80224794]
+  [0.5930105  0.40698954]
+  [0.         0.        ]
+  [0.00538845 0.9946116 ]]
+
+ [[0.21695486 0.7830452 ]
+  [0.60903895 0.39096108]
+  [0.05357349 0.9464265 ]
+  [0.         0.        ]]]
+
+Rep 1,001.480:
+[[[0.         0.        ]
+  [0.10630869 0.89369124]
+  [0.6719963  0.32800373]
+  [0.1415737  0.85842633]]
+
+ [[0.00949869 0.9905013 ]
+  [0.         0.        ]
+  [0.7202589  0.27974114]
+  [0.13512805 0.864872  ]]
+
+ [[0.01480188 0.9851981 ]
+  [0.18839523 0.81160474]
+  [0.         0.        ]
+  [0.06668632 0.9333136 ]]
+
+ [[0.01458184 0.9854182 ]
+  [0.11275352 0.88724655]
+  [0.69136566 0.30863428]
+  [0.         0.        ]]]
+
+Rep 1,001.446:
+[[[0.         0.        ]
+  [0.94907594 0.05092407]
+  [0.9725716  0.02742844]
+  [0.21005556 0.7899444 ]]
+
+ [[0.94503695 0.05496306]
+  [0.         0.        ]
+  [0.9762449  0.0237551 ]
+  [0.19825402 0.80174595]]
+
+ [[0.91962683 0.08037318]
+  [0.93615323 0.0638468 ]
+  [0.         0.        ]
+  [0.10909585 0.8909041 ]]
+
+ [[0.94533694 0.05466308]
+  [0.955935   0.04406497]
+  [0.98102325 0.01897679]
+  [0.         0.        ]]]
+
+Rep 1,001.313:
+[[[0.         0.        ]
+  [0.5786496  0.42135045]
+  [0.5030678  0.49693218]
+  [0.03536483 0.96463513]]
+
+ [[0.6389683  0.36103168]
+  [0.         0.        ]
+  [0.547309   0.45269102]
+  [0.04626443 0.9537356 ]]
+
+ [[0.6150864  0.38491365]
+  [0.59820014 0.40179986]
+  [0.         0.        ]
+  [0.03544435 0.9645556 ]]
+
+ [[0.63546056 0.36453944]
+  [0.5907133  0.40928662]
+  [0.47277763 0.5272224 ]
+  [0.         0.        ]]]
+
+Rep 1,001.263:
+[[[0.         0.        ]
+  [0.79478645 0.20521353]
+  [0.61799425 0.38200572]
+  [0.07380332 0.9261967 ]]
+
+ [[0.9420532  0.05794683]
+  [0.         0.        ]
+  [0.6770701  0.32292992]
+  [0.06076825 0.9392318 ]]
+
+ [[0.94057506 0.05942497]
+  [0.84682137 0.15317865]
+  [0.         0.        ]
+  [0.04612421 0.9538758 ]]
+
+ [[0.93439764 0.06560232]
+  [0.8516809  0.14831911]
+  [0.70510393 0.29489607]
+  [0.         0.        ]]]
+
+Rep 1,001.206:
+[[[0.         0.        ]
+  [0.790689   0.20931095]
+  [0.87035376 0.12964626]
+  [0.13609886 0.86390114]]
+
+ [[0.37668088 0.6233191 ]
+  [0.         0.        ]
+  [0.8620124  0.13798764]
+  [0.11917045 0.8808295 ]]
+
+ [[0.44237965 0.5576204 ]
+  [0.8092433  0.19075668]
+  [0.         0.        ]
+  [0.08407576 0.9159243 ]]
+
+ [[0.33163473 0.66836524]
+  [0.718353   0.28164703]
+  [0.8641275  0.13587242]
+  [0.         0.        ]]]
+
+Rep 1,001.235:
+[[[0.         0.        ]
+  [0.9508745  0.04912553]
+  [0.9905938  0.00940618]
+  [0.11212452 0.88787544]]
+
+ [[0.942158   0.057842  ]
+  [0.         0.        ]
+  [0.9915479  0.00845213]
+  [0.10618357 0.8938164 ]]
+
+ [[0.92711216 0.07288785]
+  [0.9457236  0.05427639]
+  [0.         0.        ]
+  [0.0737903  0.9262097 ]]
+
+ [[0.9487712  0.05122883]
+  [0.97336406 0.02663599]
+  [0.9951593  0.00484071]
+  [0.         0.        ]]]
+
+Rep 1,001.091:
+[[[0.         0.        ]
+  [0.04724659 0.9527534 ]
+  [0.0520195  0.94798046]
+  [0.05190691 0.94809306]]
+
+ [[0.05348736 0.9465126 ]
+  [0.         0.        ]
+  [0.04961157 0.95038843]
+  [0.051651   0.948349  ]]
+
+ [[0.05738244 0.94261754]
+  [0.04772551 0.9522745 ]
+  [0.         0.        ]
+  [0.02943562 0.97056437]]
+
+ [[0.05322869 0.9467713 ]
+  [0.04746476 0.9525352 ]
+  [0.05057874 0.9494213 ]
+  [0.         0.        ]]]
+
+Rep 1,001.328:
+[[[0.         0.        ]
+  [0.93757385 0.06242616]
+  [0.98288006 0.0171199 ]
+  [0.14700304 0.852997  ]]
+
+ [[0.85037714 0.14962293]
+  [0.         0.        ]
+  [0.98306113 0.01693889]
+  [0.14113541 0.8588646 ]]
+
+ [[0.8456137  0.15438633]
+  [0.93536794 0.06463204]
+  [0.         0.        ]
+  [0.1030484  0.8969516 ]]
+
+ [[0.8755053  0.12449469]
+  [0.96380424 0.03619577]
+  [0.9893875  0.01061254]
+  [0.         0.        ]]]
+
+Rep 1,001.316:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.3405116e-01 6.5948837e-02]
+  [7.7774310e-01 2.2225690e-01]
+  [2.3366164e-02 9.7663385e-01]]
+
+ [[9.9705255e-01 2.9474979e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [8.7166584e-01 1.2833416e-01]
+  [2.7963210e-02 9.7203672e-01]]
+
+ [[9.9640024e-01 3.5997098e-03]
+  [9.7209150e-01 2.7908497e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [2.2954423e-02 9.7704566e-01]]
+
+ [[9.9948764e-01 5.1234581e-04]
+  [9.8337585e-01 1.6624190e-02]
+  [8.7913156e-01 1.2086846e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.435:
+[[[0.         0.        ]
+  [0.7605711  0.23942894]
+  [0.10061943 0.89938056]
+  [0.00242725 0.9975727 ]]
+
+ [[0.9462976  0.05370238]
+  [0.         0.        ]
+  [0.15309605 0.8469039 ]
+  [0.00411957 0.9958805 ]]
+
+ [[0.95186615 0.04813384]
+  [0.85822326 0.1417767 ]
+  [0.         0.        ]
+  [0.00558277 0.9944172 ]]
+
+ [[0.9644997  0.03550024]
+  [0.85128814 0.14871182]
+  [0.12995008 0.8700499 ]
+  [0.         0.        ]]]
+
+Rep 1,001.484:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.6796823e-01 3.2031845e-02]
+  [7.7449650e-01 2.2550350e-01]
+  [1.5240575e-02 9.8475939e-01]]
+
+ [[9.9696666e-01 3.0333358e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [8.5442489e-01 1.4557505e-01]
+  [1.8682163e-02 9.8131782e-01]]
+
+ [[9.9646902e-01 3.5310024e-03]
+  [9.8632997e-01 1.3670100e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [1.7589850e-02 9.8241019e-01]]
+
+ [[9.9953175e-01 4.6829664e-04]
+  [9.9422717e-01 5.7727564e-03]
+  [8.7364441e-01 1.2635557e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.360:
+[[[0.0000000e+00 0.0000000e+00]
+  [8.1306754e-04 9.9918693e-01]
+  [8.6521521e-02 9.1347849e-01]
+  [8.2920454e-02 9.1707951e-01]]
+
+ [[4.0243709e-04 9.9959761e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [8.6597361e-02 9.1340268e-01]
+  [7.2852075e-02 9.2714792e-01]]
+
+ [[7.4517494e-04 9.9925476e-01]
+  [1.4107805e-03 9.9858922e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.4429803e-02 9.6557015e-01]]
+
+ [[7.1258110e-04 9.9928743e-01]
+  [1.2179370e-03 9.9878210e-01]
+  [1.0164220e-01 8.9835775e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.482:
+[[[0.         0.        ]
+  [0.9142074  0.08579259]
+  [0.985741   0.01425893]
+  [0.227095   0.77290505]]
+
+ [[0.82285994 0.17714006]
+  [0.         0.        ]
+  [0.9878256  0.01217436]
+  [0.24158046 0.7584195 ]]
+
+ [[0.7778205  0.22217947]
+  [0.88810366 0.11189634]
+  [0.         0.        ]
+  [0.13904244 0.86095756]]
+
+ [[0.81329966 0.1867003 ]
+  [0.94552886 0.05447112]
+  [0.99127007 0.00872992]
+  [0.         0.        ]]]
+
+Rep 1,001.251:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.6842016e-03 9.9831581e-01]
+  [4.2058066e-01 5.7941937e-01]
+  [1.2554589e-01 8.7445414e-01]]
+
+ [[8.9260505e-04 9.9910742e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.9239839e-01 6.0760158e-01]
+  [5.6014419e-02 9.4398558e-01]]
+
+ [[1.5953736e-03 9.9840468e-01]
+  [3.1282415e-03 9.9687177e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.9605884e-02 9.7039413e-01]]
+
+ [[1.2644232e-03 9.9873561e-01]
+  [2.7436635e-03 9.9725634e-01]
+  [3.9851797e-01 6.0148203e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.348:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.1375793e-01 2.8624207e-01]
+  [1.9613702e-02 9.8038632e-01]
+  [1.5468113e-03 9.9845314e-01]]
+
+ [[7.2794133e-01 2.7205867e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.3514382e-02 9.8648560e-01]
+  [8.4625842e-04 9.9915373e-01]]
+
+ [[7.4900132e-01 2.5099871e-01]
+  [7.4960750e-01 2.5039253e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.3855744e-03 9.9761438e-01]]
+
+ [[7.8576583e-01 2.1423423e-01]
+  [7.8570473e-01 2.1429522e-01]
+  [2.0184904e-02 9.7981513e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.381:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.6354938e-01 3.6450565e-02]
+  [7.4705082e-01 2.5294918e-01]
+  [1.7806141e-02 9.8219383e-01]]
+
+ [[9.9816507e-01 1.8349822e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [8.4965128e-01 1.5034874e-01]
+  [2.1841368e-02 9.7815859e-01]]
+
+ [[9.9807632e-01 1.9236699e-03]
+  [9.8739457e-01 1.2605384e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [1.9376528e-02 9.8062342e-01]]
+
+ [[9.9968195e-01 3.1801255e-04]
+  [9.9303114e-01 6.9688223e-03]
+  [8.6151999e-01 1.3847999e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.487:
+[[[0.00000000e+00 0.00000000e+00]
+  [1.18412174e-01 8.81587863e-01]
+  [2.77849543e-03 9.97221470e-01]
+  [6.18174963e-04 9.99381781e-01]]
+
+ [[4.56455886e-01 5.43544114e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [2.81986548e-03 9.97180104e-01]
+  [7.41470547e-04 9.99258459e-01]]
+
+ [[6.08621836e-01 3.91378164e-01]
+  [1.72924027e-01 8.27075958e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [1.12311717e-03 9.98876870e-01]]
+
+ [[6.40491664e-01 3.59508276e-01]
+  [1.71190128e-01 8.28809798e-01]
+  [4.53523966e-03 9.95464742e-01]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.455:
+[[[0.         0.        ]
+  [0.22195545 0.7780446 ]
+  [0.61857647 0.3814236 ]
+  [0.09721836 0.9027816 ]]
+
+ [[0.29897025 0.7010297 ]
+  [0.         0.        ]
+  [0.67603624 0.32396373]
+  [0.0583091  0.9416909 ]]
+
+ [[0.32487556 0.6751244 ]
+  [0.27194375 0.72805625]
+  [0.         0.        ]
+  [0.04503559 0.9549644 ]]
+
+ [[0.2863108  0.7136892 ]
+  [0.254615   0.745385  ]
+  [0.6265932  0.37340686]
+  [0.         0.        ]]]
+
+Rep 1,001.160:
+[[[0.         0.        ]
+  [0.9182443  0.08175574]
+  [0.7730565  0.22694345]
+  [0.03138502 0.968615  ]]
+
+ [[0.96070236 0.03929766]
+  [0.         0.        ]
+  [0.7932582  0.20674181]
+  [0.02833874 0.9716612 ]]
+
+ [[0.9691794  0.03082062]
+  [0.921974   0.07802605]
+  [0.         0.        ]
+  [0.03114938 0.9688506 ]]
+
+ [[0.9793825  0.02061748]
+  [0.9701984  0.02980162]
+  [0.8229662  0.17703383]
+  [0.         0.        ]]]
+
+Rep 1,001.214:
+[[[0.         0.        ]
+  [0.6598262  0.34017384]
+  [0.5317855  0.4682145 ]
+  [0.01455441 0.9854456 ]]
+
+ [[0.8671817  0.13281825]
+  [0.         0.        ]
+  [0.5994335  0.40056652]
+  [0.02027022 0.9797298 ]]
+
+ [[0.87108666 0.12891336]
+  [0.7011466  0.29885334]
+  [0.         0.        ]
+  [0.02301728 0.9769827 ]]
+
+ [[0.9114971  0.08850291]
+  [0.66813004 0.33186996]
+  [0.5037637  0.49623632]
+  [0.         0.        ]]]
+
+Rep 1,001.474:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.5159739e-02 9.0484029e-01]
+  [2.4156764e-03 9.9758434e-01]
+  [6.8123534e-04 9.9931872e-01]]
+
+ [[9.0936434e-01 9.0635628e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [2.4601151e-03 9.9753988e-01]
+  [1.1770346e-03 9.9882299e-01]]
+
+ [[8.9616680e-01 1.0383317e-01]
+  [1.3249429e-01 8.6750567e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.3175858e-03 9.9868244e-01]]
+
+ [[9.5983583e-01 4.0164229e-02]
+  [1.4337073e-01 8.5662925e-01]
+  [1.6907840e-03 9.9830925e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.225:
+[[[0.         0.        ]
+  [0.76268864 0.23731135]
+  [0.92786247 0.07213753]
+  [0.1869147  0.81308526]]
+
+ [[0.82543874 0.17456122]
+  [0.         0.        ]
+  [0.9502068  0.04979324]
+  [0.18786551 0.8121345 ]]
+
+ [[0.8195555  0.18044445]
+  [0.8064921  0.1935079 ]
+  [0.         0.        ]
+  [0.11725024 0.8827498 ]]
+
+ [[0.7970546  0.20294541]
+  [0.78885424 0.2111458 ]
+  [0.95816475 0.04183527]
+  [0.         0.        ]]]
+
+Rep 1,001.103:
+[[[0.         0.        ]
+  [0.83478975 0.16521019]
+  [0.89403355 0.10596644]
+  [0.11646595 0.8835341 ]]
+
+ [[0.86127675 0.13872322]
+  [0.         0.        ]
+  [0.88421774 0.11578227]
+  [0.11801977 0.8819802 ]]
+
+ [[0.84876394 0.15123606]
+  [0.82382077 0.17617925]
+  [0.         0.        ]
+  [0.0529738  0.94702613]]
+
+ [[0.9024906  0.09750933]
+  [0.8291028  0.17089714]
+  [0.9280073  0.07199265]
+  [0.         0.        ]]]
+
+Rep 1,001.178:
+[[[0.0000000e+00 0.0000000e+00]
+  [8.6188778e-02 9.1381121e-01]
+  [3.9360183e-03 9.9606401e-01]
+  [1.0977403e-03 9.9890220e-01]]
+
+ [[4.3447739e-01 5.6552261e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.6353798e-03 9.9736458e-01]
+  [8.2352146e-04 9.9917644e-01]]
+
+ [[4.3336561e-01 5.6663436e-01]
+  [7.4587174e-02 9.2541283e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.2127489e-03 9.9878722e-01]]
+
+ [[4.5872688e-01 5.4127306e-01]
+  [6.2759027e-02 9.3724102e-01]
+  [3.9398451e-03 9.9606007e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.150:
+[[[0.         0.        ]
+  [0.9314891  0.0685109 ]
+  [0.8312027  0.16879733]
+  [0.04571152 0.9542885 ]]
+
+ [[0.961849   0.03815098]
+  [0.         0.        ]
+  [0.8322041  0.16779591]
+  [0.03344873 0.9665513 ]]
+
+ [[0.97034013 0.0296599 ]
+  [0.9293346  0.0706654 ]
+  [0.         0.        ]
+  [0.03769561 0.96230435]]
+
+ [[0.9756402  0.02435981]
+  [0.973384   0.02661598]
+  [0.8794173  0.12058265]
+  [0.         0.        ]]]
+
+Rep 1,001.169:
+[[[0.         0.        ]
+  [0.5085123  0.49148768]
+  [0.0778136  0.92218643]
+  [0.00421884 0.9957812 ]]
+
+ [[0.84927833 0.15072173]
+  [0.         0.        ]
+  [0.12790321 0.8720968 ]
+  [0.0088118  0.99118817]]
+
+ [[0.8076383  0.19236168]
+  [0.5160059  0.48399413]
+  [0.         0.        ]
+  [0.00865846 0.99134153]]
+
+ [[0.8906316  0.10936837]
+  [0.5529758  0.4470242 ]
+  [0.07120819 0.9287918 ]
+  [0.         0.        ]]]
+
+Rep 1,001.178:
+[[[0.         0.        ]
+  [0.9602661  0.03973393]
+  [0.5595099  0.4404902 ]
+  [0.01030112 0.98969895]]
+
+ [[0.91920877 0.08079129]
+  [0.         0.        ]
+  [0.52463204 0.475368  ]
+  [0.00882184 0.9911781 ]]
+
+ [[0.94320536 0.05679462]
+  [0.96533173 0.03466825]
+  [0.         0.        ]
+  [0.00903376 0.9909663 ]]
+
+ [[0.96085167 0.03914834]
+  [0.9796571  0.02034288]
+  [0.6374087  0.36259136]
+  [0.         0.        ]]]
+
+Rep 1,001.246:
+[[[0.         0.        ]
+  [0.00934748 0.99065256]
+  [0.08086027 0.91913974]
+  [0.02155021 0.97844976]]
+
+ [[0.00241538 0.9975846 ]
+  [0.         0.        ]
+  [0.07298391 0.92701614]
+  [0.01488929 0.98511076]]
+
+ [[0.00235481 0.9976452 ]
+  [0.00729852 0.9927014 ]
+  [0.         0.        ]
+  [0.00890253 0.99109745]]
+
+ [[0.00543895 0.994561  ]
+  [0.01091009 0.9890899 ]
+  [0.09847169 0.9015283 ]
+  [0.         0.        ]]]
+
+Rep 1,001.056:
+[[[0.         0.        ]
+  [0.9430321  0.05696796]
+  [0.4170764  0.58292353]
+  [0.01643732 0.98356265]]
+
+ [[0.89145654 0.10854342]
+  [0.         0.        ]
+  [0.3281985  0.6718015 ]
+  [0.01026469 0.98973525]]
+
+ [[0.90900767 0.09099236]
+  [0.9482942  0.05170576]
+  [0.         0.        ]
+  [0.01240071 0.98759925]]
+
+ [[0.9291696  0.07083041]
+  [0.9688402  0.03115978]
+  [0.46677554 0.5332245 ]
+  [0.         0.        ]]]
+
+Rep 1,001.310:
+[[[0.         0.        ]
+  [0.9671578  0.03284227]
+  [0.96955967 0.03044029]
+  [0.04234427 0.95765567]]
+
+ [[0.93755203 0.06244801]
+  [0.         0.        ]
+  [0.9675601  0.03243989]
+  [0.03054371 0.96945626]]
+
+ [[0.93097407 0.06902592]
+  [0.95507586 0.04492418]
+  [0.         0.        ]
+  [0.03513879 0.9648613 ]]
+
+ [[0.9580316  0.04196841]
+  [0.9858068  0.01419316]
+  [0.9822907  0.01770936]
+  [0.         0.        ]]]
+
+Rep 1,001.390:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.2848882e-01 8.7151116e-01]
+  [3.0713872e-04 9.9969292e-01]
+  [3.4889515e-04 9.9965107e-01]]
+
+ [[2.0565030e-01 7.9434973e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.5040391e-04 9.9974960e-01]
+  [2.9885946e-04 9.9970108e-01]]
+
+ [[3.2373187e-01 6.7626810e-01]
+  [1.8175209e-01 8.1824791e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.3678233e-04 9.9926323e-01]]
+
+ [[2.9915711e-01 7.0084286e-01]
+  [1.8488936e-01 8.1511068e-01]
+  [4.5939331e-04 9.9954069e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.430:
+[[[0.         0.        ]
+  [0.01542519 0.9845748 ]
+  [0.1840511  0.8159489 ]
+  [0.11162507 0.8883749 ]]
+
+ [[0.00705752 0.99294245]
+  [0.         0.        ]
+  [0.22705668 0.7729433 ]
+  [0.0744371  0.9255629 ]]
+
+ [[0.01574672 0.98425335]
+  [0.03262337 0.9673766 ]
+  [0.         0.        ]
+  [0.03856146 0.96143854]]
+
+ [[0.01113449 0.98886544]
+  [0.02628803 0.9737119 ]
+  [0.23533025 0.7646698 ]
+  [0.         0.        ]]]
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.444' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7...
+
+Decoder output plot for rep '1001.444' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7\test
+
+Testing DataLoader 0: 100%|##############################| 10/10 [00:03<00:00,  2.51it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│       dec/test_loss       │   0.014641075395047665    │
+│  enc/test_edge_accuracy   │    0.47083333134651184    │
+│     enc/test_entropy      │    0.29312291741371155    │
+│       enc/test_loss       │     4.800291061401367     │
+│       nri/test_loss       │     4.814932346343994     │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Nri model '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.7' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-16 14:30:01

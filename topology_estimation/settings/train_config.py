@@ -340,7 +340,7 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 3
+        self.model_num = 13 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains)
         self.continue_training = False
         self.is_log = True
         
@@ -354,20 +354,28 @@ class NRITrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 5
+        self.max_epochs = 20
         self.optimizer = 'adam'
 
-        self.lr_enc = 0.001
+            # encoder
+        self.lr_enc = 0.000015
         self.loss_type_enc = 'kld'
+
         self.is_beta_annealing = True
-        self.final_beta = 0.1   # final value of beta after annealing
-        self.warmup_frac_beta = 0.6  # fraction of total steps for warmup
+        self.final_beta = 0.000        # final value of beta after annealing
+        self.warmup_frac_beta = 0.8     # fraction of total steps for warmup
 
-        # if loss_type_enc is kld
+        self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
+        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
+        self.final_gamma = 0.3
+        self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup
+
+        # for kld loss
         self.prior = torch.tensor([0.5, 0.5])  # prior distribution for edge types
-        self.add_const_kld = True  # this needs to be True, adds a constant term to the KL divergence
+        self.add_const_kld = True               # this needs to be True, adds a constant term to the KL divergence
 
-        self.lr_dec = 0.001
+            # decoder
+        self.lr_dec = 0.0001
         self.loss_type_dec = 'mse'
 
     # 2: Encoder parameters
@@ -412,18 +420,18 @@ class NRITrainConfig:
         self.is_hard = False   
 
         self.init_temp = 1.0    # initial temperature for Gumble Softmax
-        self.min_temp = 0.3     # minimum temperature for Gumble Softmax
+        self.min_temp = 0.7     # minimum temperature for Gumble Softmax
         self.decay_temp = 0.001  # exponential decay rate for temperature  
 
     # 3: Decoder parameters
 
-        self.msg_out_size = 256
+        self.msg_out_size = 64
     
         # embedding function parameters 
         self.edge_mlp_config = {'mlp': 'edge_nri_og'}
         self.out_mlp_config = {'mlp': 'out_nri_og'}
 
-        self.dec_do_prob = 0.5
+        self.dec_do_prob = 0
         self.dec_is_batch_norm = False
         self.dec_is_xavier_weights = False
 
@@ -443,7 +451,8 @@ class NRITrainConfig:
         self.skip_first_edge_type = True
         self.pred_steps = 10
         self.is_burn_in = True
-        self.final_pred_steps = 20
+        self.final_pred_steps = 30
+        self.dynamic_rel = False
         self.is_dynamic_graph = False
 
         # plotting parameters
@@ -510,6 +519,10 @@ class NRITrainConfig:
             'is_beta_annealing': self.is_beta_annealing,
             'final_beta': self.final_beta,
             'warmup_frac_beta': self.warmup_frac_beta,
+            'enc/is_enc_warmup': self.is_enc_warmup,
+            'enc/warmup_acc_cutoff': self.warmup_acc_cutoff,
+            'enc/final_gamma': self.final_gamma,
+            'enc/warmup_frac_gamma': self.warmup_frac_gamma,
             'enc/loss_type': self.loss_type_enc,
             'dec/loss_type': self.loss_type_dec,
             'n_edge_types': self.n_edge_types,
@@ -553,6 +566,7 @@ class NRITrainConfig:
             'dec/pred_steps': self.pred_steps,
             'dec/is_burn_in': self.is_burn_in,
             'dec/final_pred_steps': self.final_pred_steps,
+            'dec/dynamic_rel': self.dynamic_rel,
             'dec/is_dynamic_graph': self.is_dynamic_graph,
 
             # sparsifier parameters

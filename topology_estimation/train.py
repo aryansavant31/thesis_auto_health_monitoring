@@ -322,7 +322,8 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             init_temp=self.tp_config.init_temp,
             min_temp=self.tp_config.min_temp,
             decay_temp=self.tp_config.decay_temp,
-            is_hard=self.tp_config.is_hard
+            is_hard=self.tp_config.is_hard,
+            dynamic_rel=self.tp_config.dynamic_rel
             )
         
         nri_model.set_training_params(
@@ -335,7 +336,9 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             add_const_kld=self.tp_config.add_const_kld,
             loss_type_enc=self.tp_config.loss_type_enc,
             loss_type_dec=self.tp_config.loss_type_dec,
-            prior = self.tp_config.prior
+            prior = self.tp_config.prior,
+            is_enc_warmup=self.tp_config.is_enc_warmup,
+            warmup_acc_cutoff=self.tp_config.warmup_acc_cutoff
             )
 
         # print model info

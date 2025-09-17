@@ -59,6 +59,7 @@ class NRIInferConfig:
         self.pred_steps = 1
         self.is_burn_in = False
         self.final_pred_steps = 1
+        self.dynamic_rel = False
         self.is_dynamic_graph = False
 
         # plotting parameters
@@ -107,6 +108,7 @@ class NRIInferConfig:
             f'dec/pred_steps/{self.run_type}': self.pred_steps,
             f'dec/is_burn_in/{self.run_type}': self.is_burn_in,
             f'dec/final_pred_steps/{self.run_type}': self.final_pred_steps,
+            f'dec/dynamic_rel/{self.run_type}': self.dynamic_rel,
             f'dec/is_dynamic_graph/{self.run_type}': self.is_dynamic_graph,
 
             f'enc/domain/{self.run_type}': domain_enc_str,

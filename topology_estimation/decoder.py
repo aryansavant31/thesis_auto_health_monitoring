@@ -15,6 +15,7 @@ from pytorch_lightning import LightningModule
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle
 
 # global imports
 from data.config import DataConfig
@@ -315,7 +316,8 @@ class Decoder(LightningModule):
         # Run separate MLP for every edge type
         for i in range(start_idx, len(self.edge_mlp_fn)):
             msg = self.edge_mlp_fn[i](pre_msg)
-            msg = msg * rel_type[:, :, i:i + 1]
+            # msg = msg * rel_type[:, :, i:i + 1]
+            msg = msg * rel_type[:, :, i].unsqueeze(-1)
             all_msgs += msg / norm
 
         agg_msgs = torch.matmul(all_msgs.transpose(-2, -1), rec_rel).transpose(-2, -1)  #### MSG (MeSsage aGgregation) (#Correct)
@@ -669,6 +671,11 @@ class Decoder(LightningModule):
         print(f"Total training steps: {self.global_step}")
         
         if self.logger:
+            
+            # save losses
+            with open(os.path.join(self.logger.log_dir, 'train_losses.pkl'), 'wb') as f:
+                pickle.dump(self.train_losses, f)
+            
             print(f"\nTraining completed for model '{self.model_id}'. Trained model saved at {os.path.join(self.logger.log_dir, 'checkpoints')}")
         else:
             print(f"\nTraining completed for model '{self.model_id}'. Logging is disabled, so no checkpoints are saved.")

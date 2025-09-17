@@ -1,0 +1,3945 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+Start Time: 2025-09-17 14:54:59
+End Time: 2025-09-17 15:05:52
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting nri model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) series_tp    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 500/500 [OK=500, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (4, 4)
+     n1   n2   n3   n4
+n1  0.0  1.0  1.0  1.0
+n2  1.0  0.0  1.0  1.0
+n3  1.0  1.0  0.0  1.0
+n4  1.0  1.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  0.0  1.0  0.0  0.0
+e13  0.0  0.0  1.0  0.0
+e14  0.0  0.0  0.0  1.0
+e21  1.0  0.0  0.0  0.0
+e23  0.0  0.0  1.0  0.0
+e24  0.0  0.0  0.0  1.0
+e31  1.0  0.0  0.0  0.0
+e32  0.0  1.0  0.0  0.0
+e34  0.0  0.0  0.0  1.0
+e41  1.0  0.0  0.0  0.0
+e42  0.0  1.0  0.0  0.0
+e43  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  1.0  0.0  0.0  0.0
+e13  1.0  0.0  0.0  0.0
+e14  1.0  0.0  0.0  0.0
+e21  0.0  1.0  0.0  0.0
+e23  0.0  1.0  0.0  0.0
+e24  0.0  1.0  0.0  0.0
+e31  0.0  0.0  1.0  0.0
+e32  0.0  0.0  1.0  0.0
+e34  0.0  0.0  1.0  0.0
+e41  0.0  0.0  0.0  1.0
+e42  0.0  0.0  0.0  1.0
+e43  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+<<<<<< ENCODER PARAMETERS >>>>>>
+Encoder model parameters:
+-------------------------
+n_edge_types: 2
+is_residual_connection: False
+do_prob: {'mlp': 0.0, 'cnn': 0.0}
+is_batch_norm: {'mlp': True, 'cnn': False}
+is_xavier_weights: True
+attention_output_size: 5
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+reduc_config: None
+feat_norm: None
+pipeline: [['1/node_emd.1', 'mlp'], ['1/pairwise_op', 'concat'], ['1/edge_emd.1.@', 'mlp'], ['2/aggregate', 'mean'], ['2/node_emd.1', 'mlp'], ['2/pairwise_op', 'concat'], ['2/edge_emd.1', 'mlp']]
+edge_emb_configs: {'mlp': [[256, 'elu'], [256, 'elu']], 'cnn': [[5, 2, 64], [8]]}
+node_emb_configs: {'mlp': [[256, 'elu'], [256, 'elu']], 'cnn': [[5, 2, 64], [8]]}
+n_comps: 100
+n_dims: 3
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 2
+msg_out_size: 64
+edge_mlp_config: [[64, 'tanh'], [64, 'tanh']]
+out_mlp_config: [[64, 'relu'], [64, 'relu']]
+do_prob: 0
+is_batch_norm: False
+is_xavier_weights: False
+recur_emb_type: gru
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+feat_norm: None
+reduc_config: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+is_hard: False
+skip_first_edge_type: True
+pred_steps: 10
+is_burn_in: True
+final_pred_steps: 30
+is_dynamic_graph: False
+show_conf_band: False
+
+Training parameters set to: 
+lr_enc=1.5e-05, 
+lr_dec=0.0001, 
+final_beta=0.0, 
+warmup_frac=0.8, 
+optimizer=adam, 
+loss_type_encoder=kld, 
+loss_type_decoder=mse, 
+prior=tensor([0.5000, 0.5000]), 
+add_const_kld=True
+is_enc_warmup: True, 
+warmup_acc_cutoff: 0.85
+, 
+final_gamma: 0.5, 
+warmup_frac_gamma: 0.3
+
+
+---------------------------------------------------------------------------
+
+NRI Model Initialized with the following configurations:
+----- NRI Model Summary -----
+-- Encoder Summary
+Encoder(
+  (emb_fn_dict): ModuleDict(
+    (1/node_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=300, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (1/edge_emd1@): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=512, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (2/node_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=256, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+    (2/edge_emd1): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=512, out_features=256, bias=True)
+        (1): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ELU(alpha=1.0)
+        (3): Dropout(p=0.0, inplace=False)
+        (4): Linear(in_features=256, out_features=256, bias=True)
+        (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ELU(alpha=1.0)
+      )
+    )
+  )
+  (attention_layer_dict): ModuleDict()
+  (output_layer): Linear(in_features=256, out_features=2, bias=True)
+)
+-- Decoder Summary
+Decoder(
+  (edge_mlp_fn): ModuleList(
+    (0-1): 2 x MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=128, out_features=64, bias=True)
+        (1): Tanh()
+        (2): Dropout(p=0, inplace=False)
+        (3): Linear(in_features=64, out_features=64, bias=True)
+        (4): Tanh()
+      )
+    )
+  )
+  (recurrent_emb_fn): GRU(
+    (input_u): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_u): Linear(in_features=64, out_features=64, bias=True)
+    (input_r): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_r): Linear(in_features=64, out_features=64, bias=True)
+    (input_h): Linear(in_features=3, out_features=64, bias=True)
+    (hidden_h): Linear(in_features=64, out_features=64, bias=True)
+  )
+  (mean_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=64, out_features=64, bias=True)
+      (4): ReLU()
+    )
+  )
+  (var_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=64, out_features=64, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=64, out_features=64, bias=True)
+      (4): ReLU()
+    )
+  )
+  (mean_output_layer): Linear(in_features=64, out_features=3, bias=True)
+  (var_output_layer): Linear(in_features=64, out_features=3, bias=True)
+)
+
+---------------------------------------------------------------------------
+
+'[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13? (y/n): Overwrote '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13.
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+
+Initializing input processors for encoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Step 5, Epoch 1/20, Batch 5/80
+temp: 0.9950, beta: 0.0000, gamma: 0.0042, 
+enc_train_warmup_loss: 0.7306, 
+nri_train_loss: 0.3394, enc_train_loss: 2.4096, enc_train_entropy: 0.4923, dec_train_loss: 0.3364, train_edge_accuracy: 0.5017, 
+
+Step 10, Epoch 1/20, Batch 10/80
+temp: 0.9900, beta: 0.0000, gamma: 0.0094, 
+enc_train_warmup_loss: 0.7350, 
+nri_train_loss: 0.2516, enc_train_loss: 3.4558, enc_train_entropy: 0.4052, dec_train_loss: 0.2447, train_edge_accuracy: 0.5083, 
+
+Step 15, Epoch 1/20, Batch 15/80
+temp: 0.9851, beta: 0.0000, gamma: 0.0146, 
+enc_train_warmup_loss: 0.7311, 
+nri_train_loss: 0.1899, enc_train_loss: 3.8284, enc_train_entropy: 0.3741, dec_train_loss: 0.1793, train_edge_accuracy: 0.5217, 
+
+Step 20, Epoch 1/20, Batch 20/80
+temp: 0.9802, beta: 0.0000, gamma: 0.0198, 
+enc_train_warmup_loss: 0.7354, 
+nri_train_loss: 0.1513, enc_train_loss: 4.2306, enc_train_entropy: 0.3406, dec_train_loss: 0.1367, train_edge_accuracy: 0.5350, 
+
+Step 25, Epoch 1/20, Batch 25/80
+temp: 0.9753, beta: 0.0000, gamma: 0.0250, 
+enc_train_warmup_loss: 0.7130, 
+nri_train_loss: 0.1235, enc_train_loss: 4.4069, enc_train_entropy: 0.3259, dec_train_loss: 0.1057, train_edge_accuracy: 0.5667, 
+
+Step 30, Epoch 1/20, Batch 30/80
+temp: 0.9704, beta: 0.0000, gamma: 0.0302, 
+enc_train_warmup_loss: 0.6947, 
+nri_train_loss: 0.0988, enc_train_loss: 4.2237, enc_train_entropy: 0.3412, dec_train_loss: 0.0778, train_edge_accuracy: 0.5800, 
+
+Step 35, Epoch 1/20, Batch 35/80
+temp: 0.9656, beta: 0.0000, gamma: 0.0354, 
+enc_train_warmup_loss: 0.6849, 
+nri_train_loss: 0.0843, enc_train_loss: 4.2886, enc_train_entropy: 0.3358, dec_train_loss: 0.0600, train_edge_accuracy: 0.5767, 
+
+Step 40, Epoch 1/20, Batch 40/80
+temp: 0.9608, beta: 0.0000, gamma: 0.0406, 
+enc_train_warmup_loss: 0.6584, 
+nri_train_loss: 0.0737, enc_train_loss: 4.0744, enc_train_entropy: 0.3536, dec_train_loss: 0.0469, train_edge_accuracy: 0.6267, 
+
+Step 45, Epoch 1/20, Batch 45/80
+temp: 0.9560, beta: 0.0000, gamma: 0.0458, 
+enc_train_warmup_loss: 0.6437, 
+nri_train_loss: 0.0688, enc_train_loss: 4.1000, enc_train_entropy: 0.3515, dec_train_loss: 0.0393, train_edge_accuracy: 0.6367, 
+
+Step 50, Epoch 1/20, Batch 50/80
+temp: 0.9512, beta: 0.0000, gamma: 0.0510, 
+enc_train_warmup_loss: 0.6440, 
+nri_train_loss: 0.0670, enc_train_loss: 4.1188, enc_train_entropy: 0.3499, dec_train_loss: 0.0341, train_edge_accuracy: 0.6233, 
+
+Step 55, Epoch 1/20, Batch 55/80
+temp: 0.9465, beta: 0.0000, gamma: 0.0563, 
+enc_train_warmup_loss: 0.6130, 
+nri_train_loss: 0.0634, enc_train_loss: 3.9352, enc_train_entropy: 0.3652, dec_train_loss: 0.0289, train_edge_accuracy: 0.6767, 
+
+Step 60, Epoch 1/20, Batch 60/80
+temp: 0.9417, beta: 0.0000, gamma: 0.0615, 
+enc_train_warmup_loss: 0.5956, 
+nri_train_loss: 0.0636, enc_train_loss: 4.0572, enc_train_entropy: 0.3550, dec_train_loss: 0.0270, train_edge_accuracy: 0.7033, 
+
+Step 65, Epoch 1/20, Batch 65/80
+temp: 0.9370, beta: 0.0000, gamma: 0.0667, 
+enc_train_warmup_loss: 0.5746, 
+nri_train_loss: 0.0653, enc_train_loss: 4.1496, enc_train_entropy: 0.3473, dec_train_loss: 0.0270, train_edge_accuracy: 0.7350, 
+
+Step 70, Epoch 1/20, Batch 70/80
+temp: 0.9324, beta: 0.0000, gamma: 0.0719, 
+enc_train_warmup_loss: 0.5567, 
+nri_train_loss: 0.0664, enc_train_loss: 3.8864, enc_train_entropy: 0.3693, dec_train_loss: 0.0264, train_edge_accuracy: 0.7583, 
+
+Step 75, Epoch 1/20, Batch 75/80
+temp: 0.9277, beta: 0.0000, gamma: 0.0771, 
+enc_train_warmup_loss: 0.5423, 
+nri_train_loss: 0.0679, enc_train_loss: 3.6601, enc_train_entropy: 0.3881, dec_train_loss: 0.0261, train_edge_accuracy: 0.7933, 
+
+Step 80, Epoch 1/20, Batch 80/80
+temp: 0.9231, beta: 0.0000, gamma: 0.0823, 
+enc_train_warmup_loss: 0.5326, 
+nri_train_loss: 0.0699, enc_train_loss: 3.5275, enc_train_entropy: 0.3992, dec_train_loss: 0.0261, train_edge_accuracy: 0.8067, 
+
+
+Epoch 1/20 completed, Global Step: 80
+nri_train_loss: 0.0699, enc_train_loss: 3.5275, enc_train_warmup_loss: 0.5332, enc_train_entropy: 0.3999, dec_train_loss: 0.0261, train_edge_accuracy: 0.8067
+nri_val_loss: 0.0695, enc_val_loss: 3.4296, enc_val_warmup_loss: 0.5202, enc_val_entropy: 0.4073, dec_val_loss: 0.0261, val_edge_accuracy: 0.8228
+
+---------------------------------------------------------------------------
+
+Step 85, Epoch 2/20, Batch 5/80
+temp: 0.9093, beta: 0.0000, gamma: 0.0875, 
+enc_train_warmup_loss: 0.5079, 
+nri_train_loss: 0.0702, enc_train_loss: 3.4061, enc_train_entropy: 0.4093, dec_train_loss: 0.0258, train_edge_accuracy: 0.8417, 
+
+
+Encoder warmup completed at step 85. Encoder warmup disabled for the rest of training.
+
+Step 90, Epoch 2/20, Batch 10/80
+temp: 0.9048, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0256, enc_train_loss: 3.4132, enc_train_entropy: 0.4087, dec_train_loss: 0.0256, train_edge_accuracy: 0.8767, 
+
+Step 95, Epoch 2/20, Batch 15/80
+temp: 0.9003, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0246, enc_train_loss: 3.3942, enc_train_entropy: 0.4103, dec_train_loss: 0.0246, train_edge_accuracy: 0.8583, 
+
+Step 100, Epoch 2/20, Batch 20/80
+temp: 0.8958, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0246, enc_train_loss: 3.4138, enc_train_entropy: 0.4087, dec_train_loss: 0.0246, train_edge_accuracy: 0.8250, 
+
+Step 105, Epoch 2/20, Batch 25/80
+temp: 0.8913, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0242, enc_train_loss: 3.6253, enc_train_entropy: 0.3910, dec_train_loss: 0.0242, train_edge_accuracy: 0.8033, 
+
+Step 110, Epoch 2/20, Batch 30/80
+temp: 0.8869, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0233, enc_train_loss: 3.4783, enc_train_entropy: 0.4033, dec_train_loss: 0.0233, train_edge_accuracy: 0.7650, 
+
+Step 115, Epoch 2/20, Batch 35/80
+temp: 0.8824, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0236, enc_train_loss: 3.7717, enc_train_entropy: 0.3788, dec_train_loss: 0.0236, train_edge_accuracy: 0.7517, 
+
+Step 120, Epoch 2/20, Batch 40/80
+temp: 0.8780, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0235, enc_train_loss: 3.9021, enc_train_entropy: 0.3680, dec_train_loss: 0.0235, train_edge_accuracy: 0.7117, 
+
+Step 125, Epoch 2/20, Batch 45/80
+temp: 0.8737, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0229, enc_train_loss: 3.9899, enc_train_entropy: 0.3607, dec_train_loss: 0.0229, train_edge_accuracy: 0.6917, 
+
+Step 130, Epoch 2/20, Batch 50/80
+temp: 0.8693, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0228, enc_train_loss: 4.0655, enc_train_entropy: 0.3544, dec_train_loss: 0.0228, train_edge_accuracy: 0.6950, 
+
+Step 135, Epoch 2/20, Batch 55/80
+temp: 0.8650, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0230, enc_train_loss: 4.0673, enc_train_entropy: 0.3542, dec_train_loss: 0.0230, train_edge_accuracy: 0.7100, 
+
+Step 140, Epoch 2/20, Batch 60/80
+temp: 0.8606, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0227, enc_train_loss: 4.1191, enc_train_entropy: 0.3499, dec_train_loss: 0.0227, train_edge_accuracy: 0.7067, 
+
+Step 145, Epoch 2/20, Batch 65/80
+temp: 0.8563, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0223, enc_train_loss: 4.2578, enc_train_entropy: 0.3383, dec_train_loss: 0.0223, train_edge_accuracy: 0.6717, 
+
+Step 150, Epoch 2/20, Batch 70/80
+temp: 0.8521, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0222, enc_train_loss: 4.3537, enc_train_entropy: 0.3303, dec_train_loss: 0.0222, train_edge_accuracy: 0.6783, 
+
+Step 155, Epoch 2/20, Batch 75/80
+temp: 0.8478, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0224, enc_train_loss: 4.2582, enc_train_entropy: 0.3383, dec_train_loss: 0.0224, train_edge_accuracy: 0.6783, 
+
+Step 160, Epoch 2/20, Batch 80/80
+temp: 0.8436, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0226, enc_train_loss: 4.2874, enc_train_entropy: 0.3359, dec_train_loss: 0.0226, train_edge_accuracy: 0.6550, 
+
+
+Epoch 2/20 completed, Global Step: 160
+nri_train_loss: 0.0226, enc_train_loss: 4.2874, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.3366, dec_train_loss: 0.0226, train_edge_accuracy: 0.6550
+nri_val_loss: 0.0223, enc_val_loss: 4.3300, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.3323, dec_val_loss: 0.0223, val_edge_accuracy: 0.6725
+
+---------------------------------------------------------------------------
+
+Step 165, Epoch 3/20, Batch 5/80
+temp: 0.8310, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0223, enc_train_loss: 4.2654, enc_train_entropy: 0.3377, dec_train_loss: 0.0223, train_edge_accuracy: 0.6600, 
+
+Step 170, Epoch 3/20, Batch 10/80
+temp: 0.8269, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0222, enc_train_loss: 4.3749, enc_train_entropy: 0.3286, dec_train_loss: 0.0222, train_edge_accuracy: 0.6833, 
+
+Step 175, Epoch 3/20, Batch 15/80
+temp: 0.8228, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0222, enc_train_loss: 4.3388, enc_train_entropy: 0.3316, dec_train_loss: 0.0222, train_edge_accuracy: 0.6583, 
+
+Step 180, Epoch 3/20, Batch 20/80
+temp: 0.8186, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0221, enc_train_loss: 4.4139, enc_train_entropy: 0.3253, dec_train_loss: 0.0221, train_edge_accuracy: 0.6883, 
+
+Step 185, Epoch 3/20, Batch 25/80
+temp: 0.8146, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0222, enc_train_loss: 4.5074, enc_train_entropy: 0.3175, dec_train_loss: 0.0222, train_edge_accuracy: 0.6667, 
+
+Step 190, Epoch 3/20, Batch 30/80
+temp: 0.8105, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 4.4334, enc_train_entropy: 0.3237, dec_train_loss: 0.0217, train_edge_accuracy: 0.6633, 
+
+Step 195, Epoch 3/20, Batch 35/80
+temp: 0.8065, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0218, enc_train_loss: 4.4853, enc_train_entropy: 0.3194, dec_train_loss: 0.0218, train_edge_accuracy: 0.6600, 
+
+Step 200, Epoch 3/20, Batch 40/80
+temp: 0.8024, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 4.4655, enc_train_entropy: 0.3210, dec_train_loss: 0.0216, train_edge_accuracy: 0.6583, 
+
+Step 205, Epoch 3/20, Batch 45/80
+temp: 0.7984, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0219, enc_train_loss: 4.4352, enc_train_entropy: 0.3235, dec_train_loss: 0.0219, train_edge_accuracy: 0.6517, 
+
+Step 210, Epoch 3/20, Batch 50/80
+temp: 0.7944, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 4.4989, enc_train_entropy: 0.3182, dec_train_loss: 0.0217, train_edge_accuracy: 0.6450, 
+
+Step 215, Epoch 3/20, Batch 55/80
+temp: 0.7905, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0216, enc_train_loss: 4.4318, enc_train_entropy: 0.3238, dec_train_loss: 0.0216, train_edge_accuracy: 0.6283, 
+
+Step 220, Epoch 3/20, Batch 60/80
+temp: 0.7865, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0213, enc_train_loss: 4.5514, enc_train_entropy: 0.3139, dec_train_loss: 0.0213, train_edge_accuracy: 0.6483, 
+
+Step 225, Epoch 3/20, Batch 65/80
+temp: 0.7826, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0218, enc_train_loss: 4.5594, enc_train_entropy: 0.3132, dec_train_loss: 0.0218, train_edge_accuracy: 0.6400, 
+
+Step 230, Epoch 3/20, Batch 70/80
+temp: 0.7787, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0217, enc_train_loss: 4.6477, enc_train_entropy: 0.3058, dec_train_loss: 0.0217, train_edge_accuracy: 0.6233, 
+
+Step 235, Epoch 3/20, Batch 75/80
+temp: 0.7748, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0215, enc_train_loss: 4.6104, enc_train_entropy: 0.3089, dec_train_loss: 0.0215, train_edge_accuracy: 0.6350, 
+
+Step 240, Epoch 3/20, Batch 80/80
+temp: 0.7710, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0213, enc_train_loss: 4.6901, enc_train_entropy: 0.3023, dec_train_loss: 0.0213, train_edge_accuracy: 0.6567, 
+
+
+Epoch 3/20 completed, Global Step: 240
+nri_train_loss: 0.0213, enc_train_loss: 4.6901, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.3094, dec_train_loss: 0.0213, train_edge_accuracy: 0.6567
+nri_val_loss: 0.0214, enc_val_loss: 4.6199, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.3082, dec_val_loss: 0.0214, val_edge_accuracy: 0.6472
+
+---------------------------------------------------------------------------
+
+Step 245, Epoch 4/20, Batch 5/80
+temp: 0.7595, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0213, enc_train_loss: 4.5916, enc_train_entropy: 0.3105, dec_train_loss: 0.0213, train_edge_accuracy: 0.6217, 
+
+Step 250, Epoch 4/20, Batch 10/80
+temp: 0.7557, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 4.6461, enc_train_entropy: 0.3060, dec_train_loss: 0.0212, train_edge_accuracy: 0.6383, 
+
+Step 255, Epoch 4/20, Batch 15/80
+temp: 0.7519, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0211, enc_train_loss: 4.7307, enc_train_entropy: 0.2989, dec_train_loss: 0.0211, train_edge_accuracy: 0.6317, 
+
+Step 260, Epoch 4/20, Batch 20/80
+temp: 0.7482, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0213, enc_train_loss: 4.5158, enc_train_entropy: 0.3168, dec_train_loss: 0.0213, train_edge_accuracy: 0.6433, 
+
+Step 265, Epoch 4/20, Batch 25/80
+temp: 0.7444, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 4.6647, enc_train_entropy: 0.3044, dec_train_loss: 0.0212, train_edge_accuracy: 0.6300, 
+
+Step 270, Epoch 4/20, Batch 30/80
+temp: 0.7407, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 4.6569, enc_train_entropy: 0.3051, dec_train_loss: 0.0210, train_edge_accuracy: 0.6383, 
+
+Step 275, Epoch 4/20, Batch 35/80
+temp: 0.7370, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0206, enc_train_loss: 4.6668, enc_train_entropy: 0.3042, dec_train_loss: 0.0206, train_edge_accuracy: 0.6550, 
+
+Step 280, Epoch 4/20, Batch 40/80
+temp: 0.7333, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 4.7533, enc_train_entropy: 0.2970, dec_train_loss: 0.0212, train_edge_accuracy: 0.6417, 
+
+Step 285, Epoch 4/20, Batch 45/80
+temp: 0.7297, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0212, enc_train_loss: 4.6633, enc_train_entropy: 0.3045, dec_train_loss: 0.0212, train_edge_accuracy: 0.6200, 
+
+Step 290, Epoch 4/20, Batch 50/80
+temp: 0.7260, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0210, enc_train_loss: 4.8558, enc_train_entropy: 0.2885, dec_train_loss: 0.0210, train_edge_accuracy: 0.6283, 
+
+Step 295, Epoch 4/20, Batch 55/80
+temp: 0.7224, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0209, enc_train_loss: 4.7174, enc_train_entropy: 0.3000, dec_train_loss: 0.0209, train_edge_accuracy: 0.6350, 
+
+Step 300, Epoch 4/20, Batch 60/80
+temp: 0.7188, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0208, enc_train_loss: 4.7161, enc_train_entropy: 0.3001, dec_train_loss: 0.0208, train_edge_accuracy: 0.6450, 
+
+Step 305, Epoch 4/20, Batch 65/80
+temp: 0.7152, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0206, enc_train_loss: 4.9993, enc_train_entropy: 0.2765, dec_train_loss: 0.0206, train_edge_accuracy: 0.6383, 
+
+Step 310, Epoch 4/20, Batch 70/80
+temp: 0.7116, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 4.8681, enc_train_entropy: 0.2875, dec_train_loss: 0.0205, train_edge_accuracy: 0.6383, 
+
+Step 315, Epoch 4/20, Batch 75/80
+temp: 0.7081, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 4.9423, enc_train_entropy: 0.2813, dec_train_loss: 0.0207, train_edge_accuracy: 0.6217, 
+
+Step 320, Epoch 4/20, Batch 80/80
+temp: 0.7046, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 4.9516, enc_train_entropy: 0.2805, dec_train_loss: 0.0207, train_edge_accuracy: 0.6417, 
+
+
+Epoch 4/20 completed, Global Step: 320
+nri_train_loss: 0.0207, enc_train_loss: 4.9516, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.2888, dec_train_loss: 0.0207, train_edge_accuracy: 0.6417
+nri_val_loss: 0.0206, enc_val_loss: 4.9113, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.2839, dec_val_loss: 0.0206, val_edge_accuracy: 0.6222
+
+---------------------------------------------------------------------------
+
+Step 325, Epoch 5/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 4.9628, enc_train_entropy: 0.2796, dec_train_loss: 0.0205, train_edge_accuracy: 0.6033, 
+
+Step 330, Epoch 5/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0207, enc_train_loss: 4.8559, enc_train_entropy: 0.2885, dec_train_loss: 0.0207, train_edge_accuracy: 0.6150, 
+
+Step 335, Epoch 5/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0204, enc_train_loss: 5.0097, enc_train_entropy: 0.2757, dec_train_loss: 0.0204, train_edge_accuracy: 0.6150, 
+
+Step 340, Epoch 5/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 4.8580, enc_train_entropy: 0.2883, dec_train_loss: 0.0205, train_edge_accuracy: 0.6250, 
+
+Step 345, Epoch 5/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0205, enc_train_loss: 5.1265, enc_train_entropy: 0.2659, dec_train_loss: 0.0205, train_edge_accuracy: 0.6183, 
+
+Step 350, Epoch 5/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0204, enc_train_loss: 4.9571, enc_train_entropy: 0.2801, dec_train_loss: 0.0204, train_edge_accuracy: 0.6383, 
+
+Step 355, Epoch 5/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0203, enc_train_loss: 5.0572, enc_train_entropy: 0.2717, dec_train_loss: 0.0203, train_edge_accuracy: 0.6250, 
+
+Step 360, Epoch 5/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0203, enc_train_loss: 4.9614, enc_train_entropy: 0.2797, dec_train_loss: 0.0203, train_edge_accuracy: 0.6433, 
+
+Step 365, Epoch 5/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0203, enc_train_loss: 4.9297, enc_train_entropy: 0.2823, dec_train_loss: 0.0203, train_edge_accuracy: 0.6133, 
+
+Step 370, Epoch 5/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0201, enc_train_loss: 5.2091, enc_train_entropy: 0.2591, dec_train_loss: 0.0201, train_edge_accuracy: 0.6117, 
+
+Step 375, Epoch 5/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0202, enc_train_loss: 5.1177, enc_train_entropy: 0.2667, dec_train_loss: 0.0202, train_edge_accuracy: 0.6017, 
+
+Step 380, Epoch 5/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0199, enc_train_loss: 5.0986, enc_train_entropy: 0.2683, dec_train_loss: 0.0199, train_edge_accuracy: 0.6050, 
+
+Step 385, Epoch 5/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0198, enc_train_loss: 5.2473, enc_train_entropy: 0.2559, dec_train_loss: 0.0198, train_edge_accuracy: 0.6083, 
+
+Step 390, Epoch 5/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0196, enc_train_loss: 5.2381, enc_train_entropy: 0.2566, dec_train_loss: 0.0196, train_edge_accuracy: 0.6000, 
+
+Step 395, Epoch 5/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0196, enc_train_loss: 5.2789, enc_train_entropy: 0.2532, dec_train_loss: 0.0196, train_edge_accuracy: 0.5917, 
+
+Step 400, Epoch 5/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0198, enc_train_loss: 5.3062, enc_train_entropy: 0.2510, dec_train_loss: 0.0198, train_edge_accuracy: 0.5933, 
+
+
+Epoch 5/20 completed, Global Step: 400
+nri_train_loss: 0.0198, enc_train_loss: 5.3062, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.2580, dec_train_loss: 0.0198, train_edge_accuracy: 0.5933
+nri_val_loss: 0.0198, enc_val_loss: 5.2064, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.2593, dec_val_loss: 0.0198, val_edge_accuracy: 0.6053
+
+---------------------------------------------------------------------------
+
+Step 405, Epoch 6/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0198, enc_train_loss: 5.2809, enc_train_entropy: 0.2531, dec_train_loss: 0.0198, train_edge_accuracy: 0.6050, 
+
+Step 410, Epoch 6/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0197, enc_train_loss: 5.3620, enc_train_entropy: 0.2463, dec_train_loss: 0.0197, train_edge_accuracy: 0.5983, 
+
+Step 415, Epoch 6/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0195, enc_train_loss: 5.3341, enc_train_entropy: 0.2486, dec_train_loss: 0.0195, train_edge_accuracy: 0.6067, 
+
+Step 420, Epoch 6/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0195, enc_train_loss: 5.4365, enc_train_entropy: 0.2401, dec_train_loss: 0.0195, train_edge_accuracy: 0.5967, 
+
+Step 425, Epoch 6/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0196, enc_train_loss: 5.2594, enc_train_entropy: 0.2549, dec_train_loss: 0.0196, train_edge_accuracy: 0.5883, 
+
+Step 430, Epoch 6/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0194, enc_train_loss: 5.3348, enc_train_entropy: 0.2486, dec_train_loss: 0.0194, train_edge_accuracy: 0.6133, 
+
+Step 435, Epoch 6/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0195, enc_train_loss: 5.3545, enc_train_entropy: 0.2469, dec_train_loss: 0.0195, train_edge_accuracy: 0.5750, 
+
+Step 440, Epoch 6/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0196, enc_train_loss: 5.3909, enc_train_entropy: 0.2439, dec_train_loss: 0.0196, train_edge_accuracy: 0.5983, 
+
+Step 445, Epoch 6/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0191, enc_train_loss: 5.3953, enc_train_entropy: 0.2435, dec_train_loss: 0.0191, train_edge_accuracy: 0.6250, 
+
+Step 450, Epoch 6/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0192, enc_train_loss: 5.4958, enc_train_entropy: 0.2352, dec_train_loss: 0.0192, train_edge_accuracy: 0.6017, 
+
+Step 455, Epoch 6/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0192, enc_train_loss: 5.2876, enc_train_entropy: 0.2525, dec_train_loss: 0.0192, train_edge_accuracy: 0.6117, 
+
+Step 460, Epoch 6/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0191, enc_train_loss: 5.3349, enc_train_entropy: 0.2486, dec_train_loss: 0.0191, train_edge_accuracy: 0.5967, 
+
+Step 465, Epoch 6/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0188, enc_train_loss: 5.4069, enc_train_entropy: 0.2426, dec_train_loss: 0.0188, train_edge_accuracy: 0.5983, 
+
+Step 470, Epoch 6/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0192, enc_train_loss: 5.3012, enc_train_entropy: 0.2514, dec_train_loss: 0.0192, train_edge_accuracy: 0.6000, 
+
+Step 475, Epoch 6/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.6057, enc_train_entropy: 0.2260, dec_train_loss: 0.0187, train_edge_accuracy: 0.6050, 
+
+Step 480, Epoch 6/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0190, enc_train_loss: 5.5232, enc_train_entropy: 0.2329, dec_train_loss: 0.0190, train_edge_accuracy: 0.5817, 
+
+
+Epoch 6/20 completed, Global Step: 480
+nri_train_loss: 0.0190, enc_train_loss: 5.5232, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.2355, dec_train_loss: 0.0190, train_edge_accuracy: 0.5817
+nri_val_loss: 0.0189, enc_val_loss: 5.4726, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.2371, dec_val_loss: 0.0189, val_edge_accuracy: 0.6015
+
+---------------------------------------------------------------------------
+
+Step 485, Epoch 7/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0188, enc_train_loss: 5.4104, enc_train_entropy: 0.2423, dec_train_loss: 0.0188, train_edge_accuracy: 0.6133, 
+
+Step 490, Epoch 7/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0188, enc_train_loss: 5.4912, enc_train_entropy: 0.2356, dec_train_loss: 0.0188, train_edge_accuracy: 0.6033, 
+
+Step 495, Epoch 7/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0186, enc_train_loss: 5.4078, enc_train_entropy: 0.2425, dec_train_loss: 0.0186, train_edge_accuracy: 0.5983, 
+
+Step 500, Epoch 7/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0186, enc_train_loss: 5.5751, enc_train_entropy: 0.2286, dec_train_loss: 0.0186, train_edge_accuracy: 0.5883, 
+
+Step 505, Epoch 7/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.4461, enc_train_entropy: 0.2393, dec_train_loss: 0.0187, train_edge_accuracy: 0.5967, 
+
+Step 510, Epoch 7/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0187, enc_train_loss: 5.5275, enc_train_entropy: 0.2325, dec_train_loss: 0.0187, train_edge_accuracy: 0.5917, 
+
+Step 515, Epoch 7/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0188, enc_train_loss: 5.5000, enc_train_entropy: 0.2348, dec_train_loss: 0.0188, train_edge_accuracy: 0.6067, 
+
+Step 520, Epoch 7/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.7318, enc_train_entropy: 0.2155, dec_train_loss: 0.0184, train_edge_accuracy: 0.6050, 
+
+Step 525, Epoch 7/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.6431, enc_train_entropy: 0.2229, dec_train_loss: 0.0184, train_edge_accuracy: 0.6350, 
+
+Step 530, Epoch 7/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.5840, enc_train_entropy: 0.2278, dec_train_loss: 0.0184, train_edge_accuracy: 0.5783, 
+
+Step 535, Epoch 7/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.7608, enc_train_entropy: 0.2131, dec_train_loss: 0.0184, train_edge_accuracy: 0.5633, 
+
+Step 540, Epoch 7/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0181, enc_train_loss: 5.6685, enc_train_entropy: 0.2208, dec_train_loss: 0.0181, train_edge_accuracy: 0.5900, 
+
+Step 545, Epoch 7/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.6324, enc_train_entropy: 0.2238, dec_train_loss: 0.0184, train_edge_accuracy: 0.6050, 
+
+Step 550, Epoch 7/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0182, enc_train_loss: 5.7881, enc_train_entropy: 0.2108, dec_train_loss: 0.0182, train_edge_accuracy: 0.5767, 
+
+Step 555, Epoch 7/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0182, enc_train_loss: 5.6468, enc_train_entropy: 0.2226, dec_train_loss: 0.0182, train_edge_accuracy: 0.5617, 
+
+Step 560, Epoch 7/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0184, enc_train_loss: 5.6212, enc_train_entropy: 0.2247, dec_train_loss: 0.0184, train_edge_accuracy: 0.6000, 
+
+
+Epoch 7/20 completed, Global Step: 560
+nri_train_loss: 0.0184, enc_train_loss: 5.6212, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.2073, dec_train_loss: 0.0184, train_edge_accuracy: 0.6000
+nri_val_loss: 0.0182, enc_val_loss: 5.6767, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.2201, dec_val_loss: 0.0182, val_edge_accuracy: 0.5967
+
+---------------------------------------------------------------------------
+
+Step 565, Epoch 8/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0180, enc_train_loss: 5.7459, enc_train_entropy: 0.2143, dec_train_loss: 0.0180, train_edge_accuracy: 0.5933, 
+
+Step 570, Epoch 8/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0179, enc_train_loss: 5.8051, enc_train_entropy: 0.2094, dec_train_loss: 0.0179, train_edge_accuracy: 0.5783, 
+
+Step 575, Epoch 8/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0180, enc_train_loss: 5.7031, enc_train_entropy: 0.2179, dec_train_loss: 0.0180, train_edge_accuracy: 0.5833, 
+
+Step 580, Epoch 8/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.7845, enc_train_entropy: 0.2111, dec_train_loss: 0.0178, train_edge_accuracy: 0.6150, 
+
+Step 585, Epoch 8/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.7094, enc_train_entropy: 0.2174, dec_train_loss: 0.0178, train_edge_accuracy: 0.5933, 
+
+Step 590, Epoch 8/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0180, enc_train_loss: 5.6996, enc_train_entropy: 0.2182, dec_train_loss: 0.0180, train_edge_accuracy: 0.6017, 
+
+Step 595, Epoch 8/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 6.0114, enc_train_entropy: 0.1922, dec_train_loss: 0.0178, train_edge_accuracy: 0.5867, 
+
+Step 600, Epoch 8/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.7025, enc_train_entropy: 0.2179, dec_train_loss: 0.0178, train_edge_accuracy: 0.5850, 
+
+Step 605, Epoch 8/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0177, enc_train_loss: 5.7994, enc_train_entropy: 0.2099, dec_train_loss: 0.0177, train_edge_accuracy: 0.6033, 
+
+Step 610, Epoch 8/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.7613, enc_train_entropy: 0.2130, dec_train_loss: 0.0176, train_edge_accuracy: 0.6100, 
+
+Step 615, Epoch 8/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0178, enc_train_loss: 5.6778, enc_train_entropy: 0.2200, dec_train_loss: 0.0178, train_edge_accuracy: 0.6200, 
+
+Step 620, Epoch 8/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.8493, enc_train_entropy: 0.2057, dec_train_loss: 0.0176, train_edge_accuracy: 0.5883, 
+
+Step 625, Epoch 8/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.8825, enc_train_entropy: 0.2029, dec_train_loss: 0.0176, train_edge_accuracy: 0.6033, 
+
+Step 630, Epoch 8/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0174, enc_train_loss: 5.9294, enc_train_entropy: 0.1990, dec_train_loss: 0.0174, train_edge_accuracy: 0.5867, 
+
+Step 635, Epoch 8/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.8018, enc_train_entropy: 0.2097, dec_train_loss: 0.0176, train_edge_accuracy: 0.5800, 
+
+Step 640, Epoch 8/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0176, enc_train_loss: 5.8108, enc_train_entropy: 0.2089, dec_train_loss: 0.0176, train_edge_accuracy: 0.5900, 
+
+
+Epoch 8/20 completed, Global Step: 640
+nri_train_loss: 0.0176, enc_train_loss: 5.8108, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1999, dec_train_loss: 0.0176, train_edge_accuracy: 0.5900
+nri_val_loss: 0.0175, enc_val_loss: 5.8093, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.2090, dec_val_loss: 0.0175, val_edge_accuracy: 0.5945
+
+---------------------------------------------------------------------------
+
+Step 645, Epoch 9/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0173, enc_train_loss: 5.8726, enc_train_entropy: 0.2038, dec_train_loss: 0.0173, train_edge_accuracy: 0.5833, 
+
+Step 650, Epoch 9/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0174, enc_train_loss: 5.8531, enc_train_entropy: 0.2054, dec_train_loss: 0.0174, train_edge_accuracy: 0.5817, 
+
+Step 655, Epoch 9/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0174, enc_train_loss: 5.7934, enc_train_entropy: 0.2104, dec_train_loss: 0.0174, train_edge_accuracy: 0.6033, 
+
+Step 660, Epoch 9/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0175, enc_train_loss: 5.8848, enc_train_entropy: 0.2027, dec_train_loss: 0.0175, train_edge_accuracy: 0.6000, 
+
+Step 665, Epoch 9/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0175, enc_train_loss: 5.8468, enc_train_entropy: 0.2059, dec_train_loss: 0.0175, train_edge_accuracy: 0.5917, 
+
+Step 670, Epoch 9/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0173, enc_train_loss: 5.8870, enc_train_entropy: 0.2026, dec_train_loss: 0.0173, train_edge_accuracy: 0.5700, 
+
+Step 675, Epoch 9/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0173, enc_train_loss: 5.7465, enc_train_entropy: 0.2143, dec_train_loss: 0.0173, train_edge_accuracy: 0.5767, 
+
+Step 680, Epoch 9/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0172, enc_train_loss: 5.9991, enc_train_entropy: 0.1932, dec_train_loss: 0.0172, train_edge_accuracy: 0.5867, 
+
+Step 685, Epoch 9/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0172, enc_train_loss: 5.9401, enc_train_entropy: 0.1981, dec_train_loss: 0.0172, train_edge_accuracy: 0.5683, 
+
+Step 690, Epoch 9/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0170, enc_train_loss: 5.9033, enc_train_entropy: 0.2012, dec_train_loss: 0.0170, train_edge_accuracy: 0.5767, 
+
+Step 695, Epoch 9/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0172, enc_train_loss: 5.9333, enc_train_entropy: 0.1987, dec_train_loss: 0.0172, train_edge_accuracy: 0.5783, 
+
+Step 700, Epoch 9/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0168, enc_train_loss: 5.9574, enc_train_entropy: 0.1967, dec_train_loss: 0.0168, train_edge_accuracy: 0.5733, 
+
+Step 705, Epoch 9/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0171, enc_train_loss: 6.0602, enc_train_entropy: 0.1881, dec_train_loss: 0.0171, train_edge_accuracy: 0.5867, 
+
+Step 710, Epoch 9/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0171, enc_train_loss: 5.9619, enc_train_entropy: 0.1963, dec_train_loss: 0.0171, train_edge_accuracy: 0.5617, 
+
+Step 715, Epoch 9/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0173, enc_train_loss: 5.9643, enc_train_entropy: 0.1961, dec_train_loss: 0.0173, train_edge_accuracy: 0.6033, 
+
+Step 720, Epoch 9/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0169, enc_train_loss: 5.9553, enc_train_entropy: 0.1969, dec_train_loss: 0.0169, train_edge_accuracy: 0.5883, 
+
+
+Epoch 9/20 completed, Global Step: 720
+nri_train_loss: 0.0169, enc_train_loss: 5.9553, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1903, dec_train_loss: 0.0169, train_edge_accuracy: 0.5883
+nri_val_loss: 0.0170, enc_val_loss: 5.9379, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1983, dec_val_loss: 0.0170, val_edge_accuracy: 0.5862
+
+---------------------------------------------------------------------------
+
+Step 725, Epoch 10/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0170, enc_train_loss: 6.1779, enc_train_entropy: 0.1783, dec_train_loss: 0.0170, train_edge_accuracy: 0.5650, 
+
+Step 730, Epoch 10/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0170, enc_train_loss: 5.9175, enc_train_entropy: 0.2000, dec_train_loss: 0.0170, train_edge_accuracy: 0.5683, 
+
+Step 735, Epoch 10/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0168, enc_train_loss: 6.0654, enc_train_entropy: 0.1877, dec_train_loss: 0.0168, train_edge_accuracy: 0.5483, 
+
+Step 740, Epoch 10/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0166, enc_train_loss: 6.1294, enc_train_entropy: 0.1824, dec_train_loss: 0.0166, train_edge_accuracy: 0.5650, 
+
+Step 745, Epoch 10/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0169, enc_train_loss: 5.9839, enc_train_entropy: 0.1945, dec_train_loss: 0.0169, train_edge_accuracy: 0.5717, 
+
+Step 750, Epoch 10/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0167, enc_train_loss: 6.0022, enc_train_entropy: 0.1930, dec_train_loss: 0.0167, train_edge_accuracy: 0.5717, 
+
+Step 755, Epoch 10/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0168, enc_train_loss: 5.9823, enc_train_entropy: 0.1946, dec_train_loss: 0.0168, train_edge_accuracy: 0.5783, 
+
+Step 760, Epoch 10/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0167, enc_train_loss: 5.8622, enc_train_entropy: 0.2046, dec_train_loss: 0.0167, train_edge_accuracy: 0.5800, 
+
+Step 765, Epoch 10/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0167, enc_train_loss: 6.1215, enc_train_entropy: 0.1830, dec_train_loss: 0.0167, train_edge_accuracy: 0.5600, 
+
+Step 770, Epoch 10/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0167, enc_train_loss: 5.9802, enc_train_entropy: 0.1948, dec_train_loss: 0.0167, train_edge_accuracy: 0.5617, 
+
+Step 775, Epoch 10/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.0281, enc_train_entropy: 0.1908, dec_train_loss: 0.0165, train_edge_accuracy: 0.5717, 
+
+Step 780, Epoch 10/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.1929, enc_train_entropy: 0.1771, dec_train_loss: 0.0165, train_edge_accuracy: 0.5683, 
+
+Step 785, Epoch 10/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.1529, enc_train_entropy: 0.1804, dec_train_loss: 0.0165, train_edge_accuracy: 0.5800, 
+
+Step 790, Epoch 10/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0166, enc_train_loss: 6.0126, enc_train_entropy: 0.1921, dec_train_loss: 0.0166, train_edge_accuracy: 0.5600, 
+
+Step 795, Epoch 10/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.0845, enc_train_entropy: 0.1861, dec_train_loss: 0.0165, train_edge_accuracy: 0.5700, 
+
+Step 800, Epoch 10/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0163, enc_train_loss: 6.1230, enc_train_entropy: 0.1829, dec_train_loss: 0.0163, train_edge_accuracy: 0.5783, 
+
+
+Epoch 10/20 completed, Global Step: 800
+nri_train_loss: 0.0163, enc_train_loss: 6.1230, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1938, dec_train_loss: 0.0163, train_edge_accuracy: 0.5783
+nri_val_loss: 0.0165, enc_val_loss: 6.0599, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1882, dec_val_loss: 0.0165, val_edge_accuracy: 0.5732
+
+---------------------------------------------------------------------------
+
+Step 805, Epoch 11/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.1865, enc_train_entropy: 0.1776, dec_train_loss: 0.0165, train_edge_accuracy: 0.5450, 
+
+Step 810, Epoch 11/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0164, enc_train_loss: 6.0890, enc_train_entropy: 0.1857, dec_train_loss: 0.0164, train_edge_accuracy: 0.5483, 
+
+Step 815, Epoch 11/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0166, enc_train_loss: 5.7605, enc_train_entropy: 0.2131, dec_train_loss: 0.0166, train_edge_accuracy: 0.5933, 
+
+Step 820, Epoch 11/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0164, enc_train_loss: 5.9693, enc_train_entropy: 0.1957, dec_train_loss: 0.0164, train_edge_accuracy: 0.5850, 
+
+Step 825, Epoch 11/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.1689, enc_train_entropy: 0.1791, dec_train_loss: 0.0165, train_edge_accuracy: 0.5400, 
+
+Step 830, Epoch 11/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0162, enc_train_loss: 6.1468, enc_train_entropy: 0.1809, dec_train_loss: 0.0162, train_edge_accuracy: 0.5650, 
+
+Step 835, Epoch 11/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0163, enc_train_loss: 6.0891, enc_train_entropy: 0.1857, dec_train_loss: 0.0163, train_edge_accuracy: 0.5917, 
+
+Step 840, Epoch 11/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0162, enc_train_loss: 6.1947, enc_train_entropy: 0.1769, dec_train_loss: 0.0162, train_edge_accuracy: 0.5717, 
+
+Step 845, Epoch 11/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0165, enc_train_loss: 6.0155, enc_train_entropy: 0.1919, dec_train_loss: 0.0165, train_edge_accuracy: 0.5517, 
+
+Step 850, Epoch 11/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0161, enc_train_loss: 6.1525, enc_train_entropy: 0.1804, dec_train_loss: 0.0161, train_edge_accuracy: 0.5550, 
+
+Step 855, Epoch 11/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0161, enc_train_loss: 6.1220, enc_train_entropy: 0.1830, dec_train_loss: 0.0161, train_edge_accuracy: 0.5583, 
+
+Step 860, Epoch 11/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0161, enc_train_loss: 6.1714, enc_train_entropy: 0.1789, dec_train_loss: 0.0161, train_edge_accuracy: 0.5767, 
+
+Step 865, Epoch 11/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0159, enc_train_loss: 6.2940, enc_train_entropy: 0.1686, dec_train_loss: 0.0159, train_edge_accuracy: 0.5533, 
+
+Step 870, Epoch 11/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0160, enc_train_loss: 6.0413, enc_train_entropy: 0.1897, dec_train_loss: 0.0160, train_edge_accuracy: 0.5767, 
+
+Step 875, Epoch 11/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0161, enc_train_loss: 6.1144, enc_train_entropy: 0.1836, dec_train_loss: 0.0161, train_edge_accuracy: 0.5517, 
+
+Step 880, Epoch 11/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0160, enc_train_loss: 6.1028, enc_train_entropy: 0.1846, dec_train_loss: 0.0160, train_edge_accuracy: 0.5533, 
+
+
+Epoch 11/20 completed, Global Step: 880
+nri_train_loss: 0.0160, enc_train_loss: 6.1028, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1723, dec_train_loss: 0.0160, train_edge_accuracy: 0.5533
+nri_val_loss: 0.0160, enc_val_loss: 6.1851, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1777, dec_val_loss: 0.0160, val_edge_accuracy: 0.5643
+
+---------------------------------------------------------------------------
+
+Step 885, Epoch 12/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0160, enc_train_loss: 6.1828, enc_train_entropy: 0.1779, dec_train_loss: 0.0160, train_edge_accuracy: 0.5583, 
+
+Step 890, Epoch 12/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.2453, enc_train_entropy: 0.1727, dec_train_loss: 0.0158, train_edge_accuracy: 0.5417, 
+
+Step 895, Epoch 12/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.2108, enc_train_entropy: 0.1756, dec_train_loss: 0.0158, train_edge_accuracy: 0.5933, 
+
+Step 900, Epoch 12/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.4454, enc_train_entropy: 0.1560, dec_train_loss: 0.0158, train_edge_accuracy: 0.5400, 
+
+Step 905, Epoch 12/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.2057, enc_train_entropy: 0.1760, dec_train_loss: 0.0158, train_edge_accuracy: 0.5567, 
+
+Step 910, Epoch 12/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.2612, enc_train_entropy: 0.1714, dec_train_loss: 0.0158, train_edge_accuracy: 0.5317, 
+
+Step 915, Epoch 12/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0160, enc_train_loss: 6.2451, enc_train_entropy: 0.1727, dec_train_loss: 0.0160, train_edge_accuracy: 0.5533, 
+
+Step 920, Epoch 12/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0159, enc_train_loss: 6.0699, enc_train_entropy: 0.1873, dec_train_loss: 0.0159, train_edge_accuracy: 0.5917, 
+
+Step 925, Epoch 12/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0156, enc_train_loss: 6.4434, enc_train_entropy: 0.1562, dec_train_loss: 0.0156, train_edge_accuracy: 0.5367, 
+
+Step 930, Epoch 12/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0156, enc_train_loss: 6.0351, enc_train_entropy: 0.1902, dec_train_loss: 0.0156, train_edge_accuracy: 0.5667, 
+
+Step 935, Epoch 12/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0156, enc_train_loss: 6.5213, enc_train_entropy: 0.1497, dec_train_loss: 0.0156, train_edge_accuracy: 0.5417, 
+
+Step 940, Epoch 12/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0157, enc_train_loss: 6.3212, enc_train_entropy: 0.1664, dec_train_loss: 0.0157, train_edge_accuracy: 0.5283, 
+
+Step 945, Epoch 12/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0157, enc_train_loss: 6.1691, enc_train_entropy: 0.1791, dec_train_loss: 0.0157, train_edge_accuracy: 0.5583, 
+
+Step 950, Epoch 12/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0156, enc_train_loss: 6.4036, enc_train_entropy: 0.1595, dec_train_loss: 0.0156, train_edge_accuracy: 0.5500, 
+
+Step 955, Epoch 12/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0157, enc_train_loss: 6.3280, enc_train_entropy: 0.1658, dec_train_loss: 0.0157, train_edge_accuracy: 0.5317, 
+
+Step 960, Epoch 12/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.3329, enc_train_entropy: 0.1654, dec_train_loss: 0.0158, train_edge_accuracy: 0.5567, 
+
+
+Epoch 12/20 completed, Global Step: 960
+nri_train_loss: 0.0158, enc_train_loss: 6.3329, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1590, dec_train_loss: 0.0158, train_edge_accuracy: 0.5567
+nri_val_loss: 0.0156, enc_val_loss: 6.3111, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1672, dec_val_loss: 0.0156, val_edge_accuracy: 0.5472
+
+---------------------------------------------------------------------------
+
+Step 965, Epoch 13/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0157, enc_train_loss: 6.3622, enc_train_entropy: 0.1630, dec_train_loss: 0.0157, train_edge_accuracy: 0.5450, 
+
+Step 970, Epoch 13/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.4594, enc_train_entropy: 0.1549, dec_train_loss: 0.0155, train_edge_accuracy: 0.5450, 
+
+Step 975, Epoch 13/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.2974, enc_train_entropy: 0.1684, dec_train_loss: 0.0155, train_edge_accuracy: 0.5333, 
+
+Step 980, Epoch 13/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0154, enc_train_loss: 6.4119, enc_train_entropy: 0.1588, dec_train_loss: 0.0154, train_edge_accuracy: 0.5150, 
+
+Step 985, Epoch 13/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.4569, enc_train_entropy: 0.1551, dec_train_loss: 0.0155, train_edge_accuracy: 0.5617, 
+
+Step 990, Epoch 13/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.2601, enc_train_entropy: 0.1715, dec_train_loss: 0.0155, train_edge_accuracy: 0.5600, 
+
+Step 995, Epoch 13/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.4917, enc_train_entropy: 0.1522, dec_train_loss: 0.0155, train_edge_accuracy: 0.5267, 
+
+Step 1000, Epoch 13/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0152, enc_train_loss: 6.5012, enc_train_entropy: 0.1514, dec_train_loss: 0.0152, train_edge_accuracy: 0.5450, 
+
+Step 1005, Epoch 13/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0158, enc_train_loss: 6.2248, enc_train_entropy: 0.1744, dec_train_loss: 0.0158, train_edge_accuracy: 0.5317, 
+
+Step 1010, Epoch 13/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0155, enc_train_loss: 6.3307, enc_train_entropy: 0.1656, dec_train_loss: 0.0155, train_edge_accuracy: 0.5650, 
+
+Step 1015, Epoch 13/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0151, enc_train_loss: 6.5431, enc_train_entropy: 0.1479, dec_train_loss: 0.0151, train_edge_accuracy: 0.5433, 
+
+Step 1020, Epoch 13/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0154, enc_train_loss: 6.4772, enc_train_entropy: 0.1534, dec_train_loss: 0.0154, train_edge_accuracy: 0.5467, 
+
+Step 1025, Epoch 13/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0149, enc_train_loss: 6.3485, enc_train_entropy: 0.1641, dec_train_loss: 0.0149, train_edge_accuracy: 0.5283, 
+
+Step 1030, Epoch 13/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0153, enc_train_loss: 6.4089, enc_train_entropy: 0.1591, dec_train_loss: 0.0153, train_edge_accuracy: 0.5650, 
+
+Step 1035, Epoch 13/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0153, enc_train_loss: 6.4229, enc_train_entropy: 0.1579, dec_train_loss: 0.0153, train_edge_accuracy: 0.5433, 
+
+Step 1040, Epoch 13/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0152, enc_train_loss: 6.4867, enc_train_entropy: 0.1526, dec_train_loss: 0.0152, train_edge_accuracy: 0.5267, 
+
+
+Epoch 13/20 completed, Global Step: 1040
+nri_train_loss: 0.0152, enc_train_loss: 6.4867, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1534, dec_train_loss: 0.0152, train_edge_accuracy: 0.5267
+nri_val_loss: 0.0152, enc_val_loss: 6.4330, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1571, dec_val_loss: 0.0152, val_edge_accuracy: 0.5320
+
+---------------------------------------------------------------------------
+
+Step 1045, Epoch 14/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0152, enc_train_loss: 6.4996, enc_train_entropy: 0.1515, dec_train_loss: 0.0152, train_edge_accuracy: 0.5250, 
+
+Step 1050, Epoch 14/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0150, enc_train_loss: 6.4780, enc_train_entropy: 0.1533, dec_train_loss: 0.0150, train_edge_accuracy: 0.5367, 
+
+Step 1055, Epoch 14/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0151, enc_train_loss: 6.5042, enc_train_entropy: 0.1511, dec_train_loss: 0.0151, train_edge_accuracy: 0.5583, 
+
+Step 1060, Epoch 14/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0152, enc_train_loss: 6.5243, enc_train_entropy: 0.1495, dec_train_loss: 0.0152, train_edge_accuracy: 0.4950, 
+
+Step 1065, Epoch 14/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0149, enc_train_loss: 6.7644, enc_train_entropy: 0.1294, dec_train_loss: 0.0149, train_edge_accuracy: 0.5150, 
+
+Step 1070, Epoch 14/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0150, enc_train_loss: 6.4765, enc_train_entropy: 0.1534, dec_train_loss: 0.0150, train_edge_accuracy: 0.5400, 
+
+Step 1075, Epoch 14/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0151, enc_train_loss: 6.5816, enc_train_entropy: 0.1447, dec_train_loss: 0.0151, train_edge_accuracy: 0.5233, 
+
+Step 1080, Epoch 14/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0149, enc_train_loss: 6.7074, enc_train_entropy: 0.1342, dec_train_loss: 0.0149, train_edge_accuracy: 0.5250, 
+
+Step 1085, Epoch 14/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0149, enc_train_loss: 6.5187, enc_train_entropy: 0.1499, dec_train_loss: 0.0149, train_edge_accuracy: 0.5483, 
+
+Step 1090, Epoch 14/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0148, enc_train_loss: 6.5904, enc_train_entropy: 0.1440, dec_train_loss: 0.0148, train_edge_accuracy: 0.5500, 
+
+Step 1095, Epoch 14/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0151, enc_train_loss: 6.6997, enc_train_entropy: 0.1348, dec_train_loss: 0.0151, train_edge_accuracy: 0.5100, 
+
+Step 1100, Epoch 14/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0148, enc_train_loss: 6.7035, enc_train_entropy: 0.1345, dec_train_loss: 0.0148, train_edge_accuracy: 0.5083, 
+
+Step 1105, Epoch 14/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.6797, enc_train_entropy: 0.1365, dec_train_loss: 0.0147, train_edge_accuracy: 0.5317, 
+
+Step 1110, Epoch 14/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0148, enc_train_loss: 6.7476, enc_train_entropy: 0.1308, dec_train_loss: 0.0148, train_edge_accuracy: 0.5333, 
+
+Step 1115, Epoch 14/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0146, enc_train_loss: 6.8764, enc_train_entropy: 0.1201, dec_train_loss: 0.0146, train_edge_accuracy: 0.5050, 
+
+Step 1120, Epoch 14/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0146, enc_train_loss: 6.5707, enc_train_entropy: 0.1456, dec_train_loss: 0.0146, train_edge_accuracy: 0.5233, 
+
+
+Epoch 14/20 completed, Global Step: 1120
+nri_train_loss: 0.0146, enc_train_loss: 6.5707, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1366, dec_train_loss: 0.0146, train_edge_accuracy: 0.5233
+nri_val_loss: 0.0147, enc_val_loss: 6.6161, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1418, dec_val_loss: 0.0147, val_edge_accuracy: 0.5145
+
+---------------------------------------------------------------------------
+
+Step 1125, Epoch 15/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0146, enc_train_loss: 6.7973, enc_train_entropy: 0.1267, dec_train_loss: 0.0146, train_edge_accuracy: 0.4900, 
+
+Step 1130, Epoch 15/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0145, enc_train_loss: 6.7651, enc_train_entropy: 0.1294, dec_train_loss: 0.0145, train_edge_accuracy: 0.5067, 
+
+Step 1135, Epoch 15/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0146, enc_train_loss: 6.6878, enc_train_entropy: 0.1358, dec_train_loss: 0.0146, train_edge_accuracy: 0.5067, 
+
+Step 1140, Epoch 15/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.6163, enc_train_entropy: 0.1418, dec_train_loss: 0.0147, train_edge_accuracy: 0.5533, 
+
+Step 1145, Epoch 15/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.6378, enc_train_entropy: 0.1400, dec_train_loss: 0.0147, train_edge_accuracy: 0.5317, 
+
+Step 1150, Epoch 15/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.6689, enc_train_entropy: 0.1374, dec_train_loss: 0.0147, train_edge_accuracy: 0.5117, 
+
+Step 1155, Epoch 15/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0145, enc_train_loss: 6.6344, enc_train_entropy: 0.1403, dec_train_loss: 0.0145, train_edge_accuracy: 0.5267, 
+
+Step 1160, Epoch 15/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0144, enc_train_loss: 6.8004, enc_train_entropy: 0.1265, dec_train_loss: 0.0144, train_edge_accuracy: 0.5133, 
+
+Step 1165, Epoch 15/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.5989, enc_train_entropy: 0.1432, dec_train_loss: 0.0147, train_edge_accuracy: 0.5183, 
+
+Step 1170, Epoch 15/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0147, enc_train_loss: 6.6905, enc_train_entropy: 0.1356, dec_train_loss: 0.0147, train_edge_accuracy: 0.5033, 
+
+Step 1175, Epoch 15/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0143, enc_train_loss: 6.7373, enc_train_entropy: 0.1317, dec_train_loss: 0.0143, train_edge_accuracy: 0.5083, 
+
+Step 1180, Epoch 15/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0145, enc_train_loss: 6.8035, enc_train_entropy: 0.1262, dec_train_loss: 0.0145, train_edge_accuracy: 0.5183, 
+
+Step 1185, Epoch 15/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0145, enc_train_loss: 6.9438, enc_train_entropy: 0.1145, dec_train_loss: 0.0145, train_edge_accuracy: 0.4950, 
+
+Step 1190, Epoch 15/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0143, enc_train_loss: 6.9818, enc_train_entropy: 0.1113, dec_train_loss: 0.0143, train_edge_accuracy: 0.5000, 
+
+Step 1195, Epoch 15/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0142, enc_train_loss: 6.8325, enc_train_entropy: 0.1238, dec_train_loss: 0.0142, train_edge_accuracy: 0.5117, 
+
+Step 1200, Epoch 15/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0142, enc_train_loss: 6.9001, enc_train_entropy: 0.1181, dec_train_loss: 0.0142, train_edge_accuracy: 0.4950, 
+
+
+Epoch 15/20 completed, Global Step: 1200
+nri_train_loss: 0.0142, enc_train_loss: 6.9001, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1260, dec_train_loss: 0.0142, train_edge_accuracy: 0.4950
+nri_val_loss: 0.0143, enc_val_loss: 6.8068, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1259, dec_val_loss: 0.0143, val_edge_accuracy: 0.5053
+
+---------------------------------------------------------------------------
+
+Step 1205, Epoch 16/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0142, enc_train_loss: 6.8289, enc_train_entropy: 0.1241, dec_train_loss: 0.0142, train_edge_accuracy: 0.4883, 
+
+Step 1210, Epoch 16/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.8622, enc_train_entropy: 0.1213, dec_train_loss: 0.0141, train_edge_accuracy: 0.5083, 
+
+Step 1215, Epoch 16/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0140, enc_train_loss: 6.8702, enc_train_entropy: 0.1206, dec_train_loss: 0.0140, train_edge_accuracy: 0.5050, 
+
+Step 1220, Epoch 16/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.9028, enc_train_entropy: 0.1179, dec_train_loss: 0.0141, train_edge_accuracy: 0.5067, 
+
+Step 1225, Epoch 16/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0142, enc_train_loss: 6.7900, enc_train_entropy: 0.1273, dec_train_loss: 0.0142, train_edge_accuracy: 0.5417, 
+
+Step 1230, Epoch 16/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.8811, enc_train_entropy: 0.1197, dec_train_loss: 0.0141, train_edge_accuracy: 0.4933, 
+
+Step 1235, Epoch 16/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.8974, enc_train_entropy: 0.1184, dec_train_loss: 0.0141, train_edge_accuracy: 0.5183, 
+
+Step 1240, Epoch 16/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0143, enc_train_loss: 6.9470, enc_train_entropy: 0.1142, dec_train_loss: 0.0143, train_edge_accuracy: 0.4850, 
+
+Step 1245, Epoch 16/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0140, enc_train_loss: 7.0003, enc_train_entropy: 0.1098, dec_train_loss: 0.0140, train_edge_accuracy: 0.4883, 
+
+Step 1250, Epoch 16/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0140, enc_train_loss: 6.9709, enc_train_entropy: 0.1122, dec_train_loss: 0.0140, train_edge_accuracy: 0.5050, 
+
+Step 1255, Epoch 16/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.9609, enc_train_entropy: 0.1131, dec_train_loss: 0.0141, train_edge_accuracy: 0.5000, 
+
+Step 1260, Epoch 16/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0139, enc_train_loss: 6.8889, enc_train_entropy: 0.1191, dec_train_loss: 0.0139, train_edge_accuracy: 0.4950, 
+
+Step 1265, Epoch 16/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.6241, enc_train_entropy: 0.1411, dec_train_loss: 0.0141, train_edge_accuracy: 0.5250, 
+
+Step 1270, Epoch 16/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0141, enc_train_loss: 6.9414, enc_train_entropy: 0.1147, dec_train_loss: 0.0141, train_edge_accuracy: 0.5133, 
+
+Step 1275, Epoch 16/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0142, enc_train_loss: 6.8358, enc_train_entropy: 0.1235, dec_train_loss: 0.0142, train_edge_accuracy: 0.5117, 
+
+Step 1280, Epoch 16/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0140, enc_train_loss: 6.8460, enc_train_entropy: 0.1226, dec_train_loss: 0.0140, train_edge_accuracy: 0.5100, 
+
+
+Epoch 16/20 completed, Global Step: 1280
+nri_train_loss: 0.0140, enc_train_loss: 6.8460, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1046, dec_train_loss: 0.0140, train_edge_accuracy: 0.5100
+nri_val_loss: 0.0139, enc_val_loss: 6.9167, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1168, dec_val_loss: 0.0139, val_edge_accuracy: 0.4992
+
+---------------------------------------------------------------------------
+
+Step 1285, Epoch 17/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.9719, enc_train_entropy: 0.1122, dec_train_loss: 0.0138, train_edge_accuracy: 0.4983, 
+
+Step 1290, Epoch 17/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.8083, enc_train_entropy: 0.1258, dec_train_loss: 0.0138, train_edge_accuracy: 0.5150, 
+
+Step 1295, Epoch 17/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.9223, enc_train_entropy: 0.1163, dec_train_loss: 0.0138, train_edge_accuracy: 0.4900, 
+
+Step 1300, Epoch 17/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.8227, enc_train_entropy: 0.1246, dec_train_loss: 0.0138, train_edge_accuracy: 0.5050, 
+
+Step 1305, Epoch 17/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 7.0593, enc_train_entropy: 0.1049, dec_train_loss: 0.0138, train_edge_accuracy: 0.4967, 
+
+Step 1310, Epoch 17/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0136, enc_train_loss: 6.7300, enc_train_entropy: 0.1323, dec_train_loss: 0.0136, train_edge_accuracy: 0.5000, 
+
+Step 1315, Epoch 17/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.9669, enc_train_entropy: 0.1126, dec_train_loss: 0.0138, train_edge_accuracy: 0.5017, 
+
+Step 1320, Epoch 17/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0136, enc_train_loss: 6.9610, enc_train_entropy: 0.1131, dec_train_loss: 0.0136, train_edge_accuracy: 0.4967, 
+
+Step 1325, Epoch 17/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0136, enc_train_loss: 7.0697, enc_train_entropy: 0.1040, dec_train_loss: 0.0136, train_edge_accuracy: 0.4900, 
+
+Step 1330, Epoch 17/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0138, enc_train_loss: 6.9309, enc_train_entropy: 0.1156, dec_train_loss: 0.0138, train_edge_accuracy: 0.4883, 
+
+Step 1335, Epoch 17/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.9997, enc_train_entropy: 0.1098, dec_train_loss: 0.0134, train_edge_accuracy: 0.4933, 
+
+Step 1340, Epoch 17/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0136, enc_train_loss: 6.9434, enc_train_entropy: 0.1145, dec_train_loss: 0.0136, train_edge_accuracy: 0.4900, 
+
+Step 1345, Epoch 17/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0136, enc_train_loss: 7.0145, enc_train_entropy: 0.1086, dec_train_loss: 0.0136, train_edge_accuracy: 0.4933, 
+
+Step 1350, Epoch 17/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0137, enc_train_loss: 6.8617, enc_train_entropy: 0.1213, dec_train_loss: 0.0137, train_edge_accuracy: 0.5167, 
+
+Step 1355, Epoch 17/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0137, enc_train_loss: 7.0412, enc_train_entropy: 0.1064, dec_train_loss: 0.0137, train_edge_accuracy: 0.4833, 
+
+Step 1360, Epoch 17/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0135, enc_train_loss: 6.8807, enc_train_entropy: 0.1198, dec_train_loss: 0.0135, train_edge_accuracy: 0.5100, 
+
+
+Epoch 17/20 completed, Global Step: 1360
+nri_train_loss: 0.0135, enc_train_loss: 6.8807, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1060, dec_train_loss: 0.0135, train_edge_accuracy: 0.5100
+nri_val_loss: 0.0135, enc_val_loss: 6.9399, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1148, dec_val_loss: 0.0135, val_edge_accuracy: 0.5013
+
+---------------------------------------------------------------------------
+
+Step 1365, Epoch 18/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0135, enc_train_loss: 6.8780, enc_train_entropy: 0.1200, dec_train_loss: 0.0135, train_edge_accuracy: 0.5150, 
+
+Step 1370, Epoch 18/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.8404, enc_train_entropy: 0.1231, dec_train_loss: 0.0134, train_edge_accuracy: 0.5133, 
+
+Step 1375, Epoch 18/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.9592, enc_train_entropy: 0.1132, dec_train_loss: 0.0134, train_edge_accuracy: 0.4933, 
+
+Step 1380, Epoch 18/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.9224, enc_train_entropy: 0.1163, dec_train_loss: 0.0134, train_edge_accuracy: 0.5050, 
+
+Step 1385, Epoch 18/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.9213, enc_train_entropy: 0.1164, dec_train_loss: 0.0134, train_edge_accuracy: 0.5233, 
+
+Step 1390, Epoch 18/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0133, enc_train_loss: 6.7753, enc_train_entropy: 0.1285, dec_train_loss: 0.0133, train_edge_accuracy: 0.5000, 
+
+Step 1395, Epoch 18/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0135, enc_train_loss: 6.8147, enc_train_entropy: 0.1253, dec_train_loss: 0.0135, train_edge_accuracy: 0.5167, 
+
+Step 1400, Epoch 18/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.8394, enc_train_entropy: 0.1232, dec_train_loss: 0.0134, train_edge_accuracy: 0.4983, 
+
+Step 1405, Epoch 18/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.8935, enc_train_entropy: 0.1187, dec_train_loss: 0.0134, train_edge_accuracy: 0.5183, 
+
+Step 1410, Epoch 18/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0133, enc_train_loss: 6.7576, enc_train_entropy: 0.1300, dec_train_loss: 0.0133, train_edge_accuracy: 0.4950, 
+
+Step 1415, Epoch 18/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0132, enc_train_loss: 6.7471, enc_train_entropy: 0.1309, dec_train_loss: 0.0132, train_edge_accuracy: 0.5183, 
+
+Step 1420, Epoch 18/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0134, enc_train_loss: 6.7411, enc_train_entropy: 0.1314, dec_train_loss: 0.0134, train_edge_accuracy: 0.5117, 
+
+Step 1425, Epoch 18/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0133, enc_train_loss: 6.8740, enc_train_entropy: 0.1203, dec_train_loss: 0.0133, train_edge_accuracy: 0.5117, 
+
+Step 1430, Epoch 18/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0129, enc_train_loss: 6.8550, enc_train_entropy: 0.1219, dec_train_loss: 0.0129, train_edge_accuracy: 0.5067, 
+
+Step 1435, Epoch 18/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0132, enc_train_loss: 6.7481, enc_train_entropy: 0.1308, dec_train_loss: 0.0132, train_edge_accuracy: 0.4983, 
+
+Step 1440, Epoch 18/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0131, enc_train_loss: 6.6042, enc_train_entropy: 0.1428, dec_train_loss: 0.0131, train_edge_accuracy: 0.5233, 
+
+
+Epoch 18/20 completed, Global Step: 1440
+nri_train_loss: 0.0131, enc_train_loss: 6.6042, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1270, dec_train_loss: 0.0131, train_edge_accuracy: 0.5233
+nri_val_loss: 0.0131, enc_val_loss: 6.8294, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1240, dec_val_loss: 0.0131, val_edge_accuracy: 0.5005
+
+---------------------------------------------------------------------------
+
+Step 1445, Epoch 19/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0132, enc_train_loss: 6.7735, enc_train_entropy: 0.1287, dec_train_loss: 0.0132, train_edge_accuracy: 0.5067, 
+
+Step 1450, Epoch 19/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0127, enc_train_loss: 6.8493, enc_train_entropy: 0.1224, dec_train_loss: 0.0127, train_edge_accuracy: 0.5217, 
+
+Step 1455, Epoch 19/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0129, enc_train_loss: 6.7457, enc_train_entropy: 0.1310, dec_train_loss: 0.0129, train_edge_accuracy: 0.4950, 
+
+Step 1460, Epoch 19/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0132, enc_train_loss: 6.6060, enc_train_entropy: 0.1426, dec_train_loss: 0.0132, train_edge_accuracy: 0.5233, 
+
+Step 1465, Epoch 19/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0130, enc_train_loss: 6.5875, enc_train_entropy: 0.1442, dec_train_loss: 0.0130, train_edge_accuracy: 0.5017, 
+
+Step 1470, Epoch 19/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0130, enc_train_loss: 6.5896, enc_train_entropy: 0.1440, dec_train_loss: 0.0130, train_edge_accuracy: 0.5017, 
+
+Step 1475, Epoch 19/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0127, enc_train_loss: 6.6513, enc_train_entropy: 0.1389, dec_train_loss: 0.0127, train_edge_accuracy: 0.4883, 
+
+Step 1480, Epoch 19/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0130, enc_train_loss: 6.5170, enc_train_entropy: 0.1501, dec_train_loss: 0.0130, train_edge_accuracy: 0.5000, 
+
+Step 1485, Epoch 19/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0128, enc_train_loss: 6.6936, enc_train_entropy: 0.1353, dec_train_loss: 0.0128, train_edge_accuracy: 0.4983, 
+
+Step 1490, Epoch 19/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0129, enc_train_loss: 6.6720, enc_train_entropy: 0.1371, dec_train_loss: 0.0129, train_edge_accuracy: 0.5117, 
+
+Step 1495, Epoch 19/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0128, enc_train_loss: 6.5726, enc_train_entropy: 0.1454, dec_train_loss: 0.0128, train_edge_accuracy: 0.4950, 
+
+Step 1500, Epoch 19/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0129, enc_train_loss: 6.5572, enc_train_entropy: 0.1467, dec_train_loss: 0.0129, train_edge_accuracy: 0.5183, 
+
+Step 1505, Epoch 19/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0127, enc_train_loss: 6.5066, enc_train_entropy: 0.1509, dec_train_loss: 0.0127, train_edge_accuracy: 0.5233, 
+
+Step 1510, Epoch 19/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0127, enc_train_loss: 6.5785, enc_train_entropy: 0.1449, dec_train_loss: 0.0127, train_edge_accuracy: 0.5117, 
+
+Step 1515, Epoch 19/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0125, enc_train_loss: 6.5768, enc_train_entropy: 0.1451, dec_train_loss: 0.0125, train_edge_accuracy: 0.5050, 
+
+Step 1520, Epoch 19/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0124, enc_train_loss: 6.5313, enc_train_entropy: 0.1489, dec_train_loss: 0.0124, train_edge_accuracy: 0.4983, 
+
+
+Epoch 19/20 completed, Global Step: 1520
+nri_train_loss: 0.0124, enc_train_loss: 6.5313, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1446, dec_train_loss: 0.0124, train_edge_accuracy: 0.4983
+nri_val_loss: 0.0125, enc_val_loss: 6.5976, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1433, dec_val_loss: 0.0125, val_edge_accuracy: 0.5053
+
+---------------------------------------------------------------------------
+
+Step 1525, Epoch 20/20, Batch 5/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0123, enc_train_loss: 6.4721, enc_train_entropy: 0.1538, dec_train_loss: 0.0123, train_edge_accuracy: 0.5083, 
+
+Step 1530, Epoch 20/20, Batch 10/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0124, enc_train_loss: 6.5036, enc_train_entropy: 0.1512, dec_train_loss: 0.0124, train_edge_accuracy: 0.5150, 
+
+Step 1535, Epoch 20/20, Batch 15/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0125, enc_train_loss: 6.3984, enc_train_entropy: 0.1599, dec_train_loss: 0.0125, train_edge_accuracy: 0.5133, 
+
+Step 1540, Epoch 20/20, Batch 20/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0123, enc_train_loss: 6.4178, enc_train_entropy: 0.1583, dec_train_loss: 0.0123, train_edge_accuracy: 0.5117, 
+
+Step 1545, Epoch 20/20, Batch 25/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0124, enc_train_loss: 6.4149, enc_train_entropy: 0.1586, dec_train_loss: 0.0124, train_edge_accuracy: 0.5067, 
+
+Step 1550, Epoch 20/20, Batch 30/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0126, enc_train_loss: 6.5610, enc_train_entropy: 0.1464, dec_train_loss: 0.0126, train_edge_accuracy: 0.4933, 
+
+Step 1555, Epoch 20/20, Batch 35/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0124, enc_train_loss: 6.5114, enc_train_entropy: 0.1505, dec_train_loss: 0.0124, train_edge_accuracy: 0.5167, 
+
+Step 1560, Epoch 20/20, Batch 40/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0123, enc_train_loss: 6.5411, enc_train_entropy: 0.1481, dec_train_loss: 0.0123, train_edge_accuracy: 0.5167, 
+
+Step 1565, Epoch 20/20, Batch 45/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0124, enc_train_loss: 6.3811, enc_train_entropy: 0.1614, dec_train_loss: 0.0124, train_edge_accuracy: 0.5333, 
+
+Step 1570, Epoch 20/20, Batch 50/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0121, enc_train_loss: 6.3965, enc_train_entropy: 0.1601, dec_train_loss: 0.0121, train_edge_accuracy: 0.5083, 
+
+Step 1575, Epoch 20/20, Batch 55/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0121, enc_train_loss: 6.4354, enc_train_entropy: 0.1569, dec_train_loss: 0.0121, train_edge_accuracy: 0.5050, 
+
+Step 1580, Epoch 20/20, Batch 60/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0118, enc_train_loss: 6.4986, enc_train_entropy: 0.1516, dec_train_loss: 0.0118, train_edge_accuracy: 0.4983, 
+
+Step 1585, Epoch 20/20, Batch 65/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0121, enc_train_loss: 6.3656, enc_train_entropy: 0.1627, dec_train_loss: 0.0121, train_edge_accuracy: 0.5300, 
+
+Step 1590, Epoch 20/20, Batch 70/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0118, enc_train_loss: 6.4357, enc_train_entropy: 0.1568, dec_train_loss: 0.0118, train_edge_accuracy: 0.4883, 
+
+Step 1595, Epoch 20/20, Batch 75/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0116, enc_train_loss: 6.5534, enc_train_entropy: 0.1470, dec_train_loss: 0.0116, train_edge_accuracy: 0.4950, 
+
+Step 1600, Epoch 20/20, Batch 80/80
+temp: 0.7000, beta: 0.0000, gamma: 0.0000, 
+enc_train_warmup_loss: 0.0000, 
+nri_train_loss: 0.0117, enc_train_loss: 6.5154, enc_train_entropy: 0.1502, dec_train_loss: 0.0117, train_edge_accuracy: 0.4967, 
+
+
+Epoch 20/20 completed, Global Step: 1600
+nri_train_loss: 0.0117, enc_train_loss: 6.5154, enc_train_warmup_loss: 0.0000, enc_train_entropy: 0.1467, dec_train_loss: 0.0117, train_edge_accuracy: 0.4967
+nri_val_loss: 0.0116, enc_val_loss: 6.5350, enc_val_warmup_loss: 0.0000, enc_val_entropy: 0.1486, dec_val_loss: 0.0116, val_edge_accuracy: 0.5062
+
+---------------------------------------------------------------------------
+
+
+Training completed in 606.39 seconds or 10.11 minutes or 0.16844102819760642 hours.
+Total training steps: 1600
+
+Training completed for model '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+
+<<<<<<<<<<<< ENCODER EDGE ACCURACY PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating encoder edge accuracy plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Encoder edge accuracy (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+
+<<<<<<<<<<<< ENCODER EDGE ENTROPY PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating encoder edge entropy plot for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Encoder edge entropy (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.123' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Decoder output plot for rep '1001.1227' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.416' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Decoder output plot for rep '1001.4158' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13
+
+
+---------------------------------------------------------------------------
+
+TESTING TRAINED NRI MODEL...
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13\checkpoints:
+
+['best-model-epoch=19-val_loss=0.0000.ckpt']
+
+Trained NRI Model Loaded for testing.
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13\test
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Testing: |                                                                     | 0/? [00:00<?, ?it/s]
+Initializing input processors for encoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                                | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                                   | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:  10%|####3                                      | 1/10 [00:00<00:01,  6.53it/s]Testing DataLoader 0:  20%|########6                                  | 2/10 [00:00<00:01,  7.63it/s]Testing DataLoader 0:  30%|############9                              | 3/10 [00:00<00:00,  8.37it/s]Testing DataLoader 0:  40%|#################2                         | 4/10 [00:00<00:00,  8.61it/s]Testing DataLoader 0:  50%|#####################5                     | 5/10 [00:00<00:00,  8.71it/s]Testing DataLoader 0:  60%|#########################8                 | 6/10 [00:00<00:00,  8.80it/s]Testing DataLoader 0:  70%|##############################1            | 7/10 [00:00<00:00,  8.71it/s]Testing DataLoader 0:  80%|##################################4        | 8/10 [00:00<00:00,  8.75it/s]Testing DataLoader 0:  90%|######################################7    | 9/10 [00:01<00:00,  8.86it/s]Testing DataLoader 0: 100%|##########################################| 10/10 [00:01<00:00,  8.80it/s]
+Testing completed in 1.14 seconds or 0.02 minutes or 0.000316607223616706 hours.
+
+nri_test_loss: 6.5410, enc_test_loss: 6.5292, dec_test_loss: 0.0118, test_edge_accuracy: 0.4930
+
+Edge predictions are as follows (showing probabilities for each edge type):
+
+Rep 1,001.271:
+[[1.6938560e-02 9.8306149e-01]
+ [5.4546708e-01 4.5453298e-01]
+ [4.8998027e-06 9.9999511e-01]
+ [1.0158394e-02 9.8984164e-01]
+ [3.9325160e-01 6.0674846e-01]
+ [2.2063516e-06 9.9999774e-01]
+ [6.8604791e-01 3.1395215e-01]
+ [5.0346506e-01 4.9653497e-01]
+ [3.5415746e-05 9.9996459e-01]
+ [9.8701185e-01 1.2988095e-02]
+ [9.5222467e-01 4.7775317e-02]
+ [9.9712998e-01 2.8700489e-03]]
+
+Rep 1,001.429:
+[[9.7030592e-01 2.9694062e-02]
+ [9.9981624e-01 1.8381963e-04]
+ [6.3414444e-07 9.9999940e-01]
+ [9.8176217e-01 1.8237837e-02]
+ [9.9884605e-01 1.1539635e-03]
+ [1.8779923e-07 9.9999976e-01]
+ [9.9598348e-01 4.0165875e-03]
+ [9.6945447e-01 3.0545531e-02]
+ [4.7359040e-07 9.9999952e-01]
+ [9.9956995e-01 4.3004064e-04]
+ [9.9870336e-01 1.2966309e-03]
+ [9.9996293e-01 3.7118611e-05]]
+
+Rep 1,001.186:
+[[9.7938550e-01 2.0614499e-02]
+ [9.9807101e-01 1.9290689e-03]
+ [1.4440905e-06 9.9999857e-01]
+ [9.9834490e-01 1.6551118e-03]
+ [9.9895751e-01 1.0425146e-03]
+ [5.1233060e-06 9.9999487e-01]
+ [9.9400556e-01 5.9943544e-03]
+ [9.6003264e-01 3.9967280e-02]
+ [2.6666666e-07 9.9999976e-01]
+ [9.9946767e-01 5.3232291e-04]
+ [9.9803370e-01 1.9663509e-03]
+ [9.9860531e-01 1.3947298e-03]]
+
+Rep 1,001.321:
+[[3.9335418e-01 6.0664582e-01]
+ [5.3404778e-01 4.6595219e-01]
+ [4.2938434e-05 9.9995708e-01]
+ [1.5105893e-01 8.4894103e-01]
+ [1.6464099e-01 8.3535898e-01]
+ [8.4874437e-06 9.9999154e-01]
+ [5.1484936e-01 4.8515064e-01]
+ [3.0872989e-01 6.9127011e-01]
+ [3.1812258e-05 9.9996817e-01]
+ [9.5273978e-01 4.7260236e-02]
+ [9.7261018e-01 2.7389869e-02]
+ [9.7075957e-01 2.9240420e-02]]
+
+Rep 1,001.381:
+[[4.8636748e-03 9.9513632e-01]
+ [7.4887413e-01 2.5112587e-01]
+ [7.4718428e-06 9.9999249e-01]
+ [4.7178365e-02 9.5282161e-01]
+ [3.1436813e-01 6.8563187e-01]
+ [2.1395631e-06 9.9999785e-01]
+ [7.4615288e-01 2.5384715e-01]
+ [9.7656675e-02 9.0234339e-01]
+ [5.5658620e-05 9.9994433e-01]
+ [9.9075025e-01 9.2497831e-03]
+ [7.6834065e-01 2.3165940e-01]
+ [9.9828267e-01 1.7173920e-03]]
+
+Rep 1,001.379:
+[[9.8370314e-01 1.6296851e-02]
+ [9.9440837e-01 5.5916645e-03]
+ [2.7444159e-07 9.9999976e-01]
+ [9.6515280e-01 3.4847185e-02]
+ [9.9215537e-01 7.8446884e-03]
+ [1.4101268e-07 9.9999988e-01]
+ [9.9215055e-01 7.8494996e-03]
+ [9.9555027e-01 4.4496888e-03]
+ [3.7824927e-07 9.9999964e-01]
+ [9.9967480e-01 3.2516476e-04]
+ [9.9987996e-01 1.1998626e-04]
+ [9.9990070e-01 9.9318342e-05]]
+
+Rep 1,001.919:
+[[9.9768233e-01 2.3176032e-03]
+ [9.5343888e-01 4.6561163e-02]
+ [1.9783158e-06 9.9999797e-01]
+ [7.5658309e-01 2.4341694e-01]
+ [9.1286474e-01 8.7135240e-02]
+ [3.7129035e-07 9.9999964e-01]
+ [8.6850280e-01 1.3149714e-01]
+ [9.9867767e-01 1.3223416e-03]
+ [5.5541898e-07 9.9999940e-01]
+ [9.9908781e-01 9.1217866e-04]
+ [9.9998593e-01 1.4083425e-05]
+ [9.9943143e-01 5.6854804e-04]]
+
+Rep 1,001.128:
+[[1.35141969e-01 8.64857972e-01]
+ [7.68009067e-01 2.31990948e-01]
+ [9.48935303e-06 9.99990463e-01]
+ [8.64857912e-01 1.35142058e-01]
+ [7.68891871e-01 2.31108129e-01]
+ [4.86954414e-05 9.99951243e-01]
+ [9.08937693e-01 9.10622403e-02]
+ [1.14957735e-01 8.85042310e-01]
+ [1.53304336e-05 9.99984622e-01]
+ [9.93817031e-01 6.18289085e-03]
+ [8.25692654e-01 1.74307376e-01]
+ [9.77434635e-01 2.25653034e-02]]
+
+Rep 1,001.334:
+[[2.6236257e-01 7.3763740e-01]
+ [3.3795360e-01 6.6204637e-01]
+ [3.1156433e-04 9.9968851e-01]
+ [9.9746466e-01 2.5353297e-03]
+ [1.2206090e-01 8.7793911e-01]
+ [5.9068734e-05 9.9994087e-01]
+ [9.9013901e-01 9.8609813e-03]
+ [1.5692007e-02 9.8430794e-01]
+ [1.4116715e-06 9.9999857e-01]
+ [9.9995756e-01 4.2444844e-05]
+ [8.6848646e-01 1.3151361e-01]
+ [2.8116453e-01 7.1883547e-01]]
+
+Rep 1,001.473:
+[[8.57379496e-01 1.42620444e-01]
+ [4.20480013e-01 5.79519987e-01]
+ [8.29668192e-04 9.99170303e-01]
+ [9.18895066e-01 8.11049491e-02]
+ [2.37461887e-02 9.76253808e-01]
+ [3.68028996e-05 9.99963164e-01]
+ [8.47920418e-01 1.52079582e-01]
+ [1.24911696e-01 8.75088334e-01]
+ [2.19301000e-06 9.99997854e-01]
+ [9.99694705e-01 3.05352442e-04]
+ [9.90468562e-01 9.53147560e-03]
+ [3.23521465e-01 6.76478565e-01]]
+
+Rep 1,001.428:
+[[9.4407004e-01 5.5929922e-02]
+ [9.6912855e-01 3.0871486e-02]
+ [1.9182004e-05 9.9998081e-01]
+ [9.9960333e-01 3.9667936e-04]
+ [8.5758901e-01 1.4241099e-01]
+ [6.6051002e-06 9.9999344e-01]
+ [9.9940717e-01 5.9278420e-04]
+ [6.4162856e-01 3.5837147e-01]
+ [1.6732434e-06 9.9999833e-01]
+ [9.9994695e-01 5.3077612e-05]
+ [9.8400116e-01 1.5998838e-02]
+ [9.6952987e-01 3.0470187e-02]]
+
+Rep 1,001.470:
+[[1.8714113e-02 9.8128593e-01]
+ [7.6320142e-01 2.3679857e-01]
+ [1.1695167e-05 9.9998832e-01]
+ [1.1993783e-02 9.8800629e-01]
+ [2.4012533e-01 7.5987470e-01]
+ [3.0812557e-06 9.9999690e-01]
+ [7.4981666e-01 2.5018337e-01]
+ [2.6756841e-01 7.3243159e-01]
+ [1.5794238e-04 9.9984205e-01]
+ [9.7020090e-01 2.9799173e-02]
+ [8.7312311e-01 1.2687691e-01]
+ [9.9712002e-01 2.8799714e-03]]
+
+Rep 1,001.281:
+[[9.9859661e-01 1.4034036e-03]
+ [9.9384981e-01 6.1501730e-03]
+ [3.4202499e-06 9.9999654e-01]
+ [9.1113937e-01 8.8860586e-02]
+ [9.6727037e-01 3.2729607e-02]
+ [2.3833826e-07 9.9999976e-01]
+ [9.8665965e-01 1.3340316e-02]
+ [9.9856681e-01 1.4332175e-03]
+ [1.4332119e-06 9.9999857e-01]
+ [9.9992287e-01 7.7112352e-05]
+ [9.9998128e-01 1.8766867e-05]
+ [9.9986041e-01 1.3959294e-04]]
+
+Rep 1,001.183:
+[[9.9980336e-01 1.9663434e-04]
+ [9.9852705e-01 1.4729735e-03]
+ [7.9437859e-06 9.9999201e-01]
+ [8.8822019e-01 1.1177985e-01]
+ [9.7642255e-01 2.3577446e-02]
+ [1.9706574e-06 9.9999797e-01]
+ [8.9656508e-01 1.0343495e-01]
+ [9.9630934e-01 3.6906749e-03]
+ [3.1456739e-06 9.9999690e-01]
+ [9.9756783e-01 2.4321494e-03]
+ [9.9993443e-01 6.5557782e-05]
+ [9.9963832e-01 3.6164085e-04]]
+
+Rep 1,001.393:
+[[6.4863123e-02 9.3513685e-01]
+ [9.7835940e-01 2.1640655e-02]
+ [1.9291487e-05 9.9998069e-01]
+ [5.5049574e-01 4.4950429e-01]
+ [8.8028091e-01 1.1971908e-01]
+ [6.4980109e-06 9.9999344e-01]
+ [9.8685014e-01 1.3149923e-02]
+ [4.5044360e-01 5.4955637e-01]
+ [1.0270813e-04 9.9989724e-01]
+ [9.9847215e-01 1.5278618e-03]
+ [9.6634108e-01 3.3658929e-02]
+ [9.9966335e-01 3.3659511e-04]]
+
+Rep 1,001.289:
+[[7.2053450e-01 2.7946553e-01]
+ [9.3186265e-01 6.8137392e-02]
+ [9.1435977e-06 9.9999082e-01]
+ [9.8699677e-01 1.3003221e-02]
+ [9.0932047e-01 9.0679459e-02]
+ [1.0738774e-05 9.9998927e-01]
+ [9.8776442e-01 1.2235604e-02]
+ [8.8210076e-01 1.1789924e-01]
+ [7.9342844e-06 9.9999201e-01]
+ [9.9965632e-01 3.4369953e-04]
+ [9.9477202e-01 5.2279383e-03]
+ [9.9674124e-01 3.2588248e-03]]
+
+Rep 1,001.229:
+[[9.7436792e-01 2.5632124e-02]
+ [9.7934020e-01 2.0659771e-02]
+ [2.3888174e-04 9.9976116e-01]
+ [9.9914014e-01 8.5987058e-04]
+ [6.1572528e-01 3.8427475e-01]
+ [2.3503280e-05 9.9997652e-01]
+ [9.9921679e-01 7.8318990e-04]
+ [6.3527125e-01 3.6472872e-01]
+ [1.5850036e-06 9.9999845e-01]
+ [9.9996710e-01 3.2850923e-05]
+ [9.9454701e-01 5.4530622e-03]
+ [9.1887236e-01 8.1127673e-02]]
+
+Rep 1,001.277:
+[[8.4916919e-01 1.5083082e-01]
+ [9.6188074e-01 3.8119230e-02]
+ [9.9809942e-05 9.9990022e-01]
+ [9.9940610e-01 5.9395045e-04]
+ [7.5720435e-01 2.4279562e-01]
+ [4.2560750e-06 9.9999571e-01]
+ [9.9827659e-01 1.7234522e-03]
+ [1.3354196e-01 8.6645800e-01]
+ [7.5105044e-07 9.9999928e-01]
+ [9.9998236e-01 1.7622866e-05]
+ [9.8584044e-01 1.4159554e-02]
+ [9.9177778e-01 8.2222512e-03]]
+
+Rep 1,001.121:
+[[7.7949101e-01 2.2050893e-01]
+ [9.8855597e-01 1.1444069e-02]
+ [1.1711797e-05 9.9998832e-01]
+ [9.9946469e-01 5.3528335e-04]
+ [9.3606913e-01 6.3930839e-02]
+ [4.3932041e-06 9.9999559e-01]
+ [9.9891758e-01 1.0824389e-03]
+ [8.8293038e-02 9.1170698e-01]
+ [1.3265600e-07 9.9999988e-01]
+ [9.9997389e-01 2.6153280e-05]
+ [9.7405452e-01 2.5945472e-02]
+ [9.8882967e-01 1.1170302e-02]]
+
+Rep 1,001.419:
+[[9.4926971e-01 5.0730344e-02]
+ [9.3052197e-01 6.9478005e-02]
+ [1.4678834e-04 9.9985313e-01]
+ [9.9706036e-01 2.9396215e-03]
+ [6.3921213e-01 3.6078787e-01]
+ [1.3581776e-05 9.9998641e-01]
+ [9.9575222e-01 4.2477641e-03]
+ [6.2271899e-01 3.7728101e-01]
+ [8.1669862e-07 9.9999917e-01]
+ [9.9994600e-01 5.4051743e-05]
+ [9.9341786e-01 6.5822070e-03]
+ [8.9358538e-01 1.0641455e-01]]
+
+Rep 1,001.398:
+[[2.6136269e-03 9.9738640e-01]
+ [3.7472636e-01 6.2527359e-01]
+ [5.3886806e-06 9.9999464e-01]
+ [5.8943205e-02 9.4105685e-01]
+ [2.7411070e-01 7.2588927e-01]
+ [6.1253363e-06 9.9999392e-01]
+ [6.3239646e-01 3.6760354e-01]
+ [5.7099901e-02 9.4290012e-01]
+ [6.0780112e-05 9.9993920e-01]
+ [9.8023832e-01 1.9761670e-02]
+ [6.1618090e-01 3.8381913e-01]
+ [9.9077648e-01 9.2235385e-03]]
+
+Rep 1,001.446:
+[[9.54143584e-01 4.58563827e-02]
+ [8.75675142e-01 1.24324866e-01]
+ [2.47027609e-04 9.99752939e-01]
+ [7.50505984e-01 2.49494001e-01]
+ [5.25677502e-01 4.74322468e-01]
+ [3.21763728e-05 9.99967813e-01]
+ [8.70755196e-01 1.29244834e-01]
+ [8.50325048e-01 1.49674967e-01]
+ [2.90414246e-05 9.99970913e-01]
+ [9.90138769e-01 9.86122433e-03]
+ [9.96126592e-01 3.87338316e-03]
+ [9.78089154e-01 2.19108369e-02]]
+
+Rep 1,001.390:
+[[9.0652704e-01 9.3472928e-02]
+ [9.9596357e-01 4.0364075e-03]
+ [2.5792253e-05 9.9997425e-01]
+ [9.9729103e-01 2.7089291e-03]
+ [9.8750919e-01 1.2490835e-02]
+ [6.5216336e-05 9.9993479e-01]
+ [9.9848372e-01 1.5162758e-03]
+ [7.3999631e-01 2.6000369e-01]
+ [9.8186456e-06 9.9999022e-01]
+ [9.9989259e-01 1.0737413e-04]
+ [9.9473226e-01 5.2677938e-03]
+ [9.9947077e-01 5.2919640e-04]]
+
+Rep 1,001.220:
+[[9.9832875e-01 1.6712497e-03]
+ [9.9327672e-01 6.7233206e-03]
+ [1.9797255e-05 9.9998021e-01]
+ [8.2518291e-01 1.7481713e-01]
+ [9.1732764e-01 8.2672387e-02]
+ [4.9753157e-06 9.9999499e-01]
+ [8.9553875e-01 1.0446124e-01]
+ [9.8896396e-01 1.1035984e-02]
+ [7.2400130e-06 9.9999273e-01]
+ [9.9750274e-01 2.4972372e-03]
+ [9.9988592e-01 1.1408854e-04]
+ [9.9916303e-01 8.3703734e-04]]
+
+Rep 1,001.456:
+[[9.8866010e-01 1.1339920e-02]
+ [9.8695600e-01 1.3043994e-02]
+ [3.0622436e-04 9.9969375e-01]
+ [9.9940276e-01 5.9723487e-04]
+ [9.5084810e-01 4.9151935e-02]
+ [3.7099715e-05 9.9996293e-01]
+ [9.9863654e-01 1.3635007e-03]
+ [9.3119252e-01 6.8807445e-02]
+ [4.2044608e-06 9.9999583e-01]
+ [9.9991918e-01 8.0820610e-05]
+ [9.9764168e-01 2.3583127e-03]
+ [9.8768288e-01 1.2317153e-02]]
+
+Rep 1,001.484:
+[[9.9798238e-01 2.0175711e-03]
+ [9.9960607e-01 3.9392279e-04]
+ [2.5639323e-05 9.9997437e-01]
+ [9.9915659e-01 8.4345089e-04]
+ [9.9484575e-01 5.1542656e-03]
+ [1.1548033e-06 9.9999881e-01]
+ [9.9726897e-01 2.7309461e-03]
+ [9.4938725e-01 5.0612763e-02]
+ [3.2919013e-07 9.9999964e-01]
+ [9.9959379e-01 4.0616904e-04]
+ [9.9547642e-01 4.5235828e-03]
+ [9.9531847e-01 4.6814717e-03]]
+
+Rep 1,001.952:
+[[9.8196125e-01 1.8038828e-02]
+ [9.5020473e-01 4.9795251e-02]
+ [1.8644261e-05 9.9998140e-01]
+ [4.6436432e-01 5.3563565e-01]
+ [7.2250587e-01 2.7749416e-01]
+ [1.0417993e-05 9.9998963e-01]
+ [6.7081535e-01 3.2918459e-01]
+ [9.3922991e-01 6.0770039e-02]
+ [2.2095392e-05 9.9997795e-01]
+ [9.9036473e-01 9.6352799e-03]
+ [9.9956065e-01 4.3928565e-04]
+ [9.9776185e-01 2.2381491e-03]]
+
+Rep 1,001.226:
+[[9.2602271e-01 7.3977321e-02]
+ [9.9990332e-01 9.6634118e-05]
+ [2.6574055e-06 9.9999738e-01]
+ [9.9822086e-01 1.7791502e-03]
+ [9.9949622e-01 5.0375651e-04]
+ [9.4536244e-07 9.9999905e-01]
+ [9.9923551e-01 7.6445914e-04]
+ [6.9543529e-01 3.0456471e-01]
+ [3.6454534e-07 9.9999964e-01]
+ [9.9985683e-01 1.4309151e-04]
+ [9.9314708e-01 6.8529132e-03]
+ [9.9995100e-01 4.9032540e-05]]
+
+Rep 1,001.391:
+[[9.1719371e-01 8.2806282e-02]
+ [9.5000720e-01 4.9992777e-02]
+ [5.5038591e-04 9.9944955e-01]
+ [9.9966288e-01 3.3711345e-04]
+ [4.7246811e-01 5.2753192e-01]
+ [3.0674251e-05 9.9996936e-01]
+ [9.9929643e-01 7.0353143e-04]
+ [2.3178835e-01 7.6821160e-01]
+ [1.7574345e-06 9.9999821e-01]
+ [9.9997640e-01 2.3574370e-05]
+ [9.6363473e-01 3.6365248e-02]
+ [7.2383684e-01 2.7616316e-01]]
+
+Rep 1,001.363:
+[[9.9485308e-01 5.1469062e-03]
+ [9.9975902e-01 2.4099188e-04]
+ [1.7447096e-06 9.9999821e-01]
+ [9.4623649e-01 5.3763475e-02]
+ [9.9895871e-01 1.0412306e-03]
+ [6.9130778e-07 9.9999928e-01]
+ [9.8087376e-01 1.9126246e-02]
+ [9.9677902e-01 3.2209775e-03]
+ [1.4638144e-06 9.9999857e-01]
+ [9.9598998e-01 4.0100669e-03]
+ [9.9967062e-01 3.2941077e-04]
+ [9.9980897e-01 1.9099974e-04]]
+
+Rep 1,001.191:
+[[7.5105417e-01 2.4894580e-01]
+ [6.6246492e-01 3.3753511e-01]
+ [6.8786308e-06 9.9999309e-01]
+ [2.1249412e-01 7.8750587e-01]
+ [3.5471857e-01 6.4528143e-01]
+ [2.1200015e-06 9.9999785e-01]
+ [6.0424840e-01 3.9575157e-01]
+ [8.6927879e-01 1.3072120e-01]
+ [7.0309015e-06 9.9999297e-01]
+ [9.9166870e-01 8.3312541e-03]
+ [9.9817479e-01 1.8252026e-03]
+ [9.9413210e-01 5.8678575e-03]]
+
+Rep 1,001.315:
+[[8.44940126e-01 1.55059814e-01]
+ [9.32304859e-01 6.76951334e-02]
+ [1.92066418e-05 9.99980807e-01]
+ [9.98869836e-01 1.13009079e-03]
+ [8.23266387e-01 1.76733583e-01]
+ [1.33775920e-05 9.99986649e-01]
+ [9.98414993e-01 1.58494327e-03]
+ [3.87723178e-01 6.12276852e-01]
+ [3.01275372e-06 9.99997020e-01]
+ [9.99879003e-01 1.21031044e-04]
+ [9.67454135e-01 3.25459205e-02]
+ [9.65539277e-01 3.44607942e-02]]
+
+Rep 1,001.269:
+[[9.8901910e-01 1.0980845e-02]
+ [9.9163193e-01 8.3680348e-03]
+ [6.0620278e-06 9.9999392e-01]
+ [9.9571335e-01 4.2866403e-03]
+ [8.8960552e-01 1.1039446e-01]
+ [2.7735663e-07 9.9999976e-01]
+ [9.8626095e-01 1.3739006e-02]
+ [8.1110716e-01 1.8889290e-01]
+ [4.6812787e-08 1.0000000e+00]
+ [9.9995351e-01 4.6516438e-05]
+ [9.9904400e-01 9.5595053e-04]
+ [9.9661750e-01 3.3824937e-03]]
+
+Rep 1,001.745:
+[[3.2999605e-01 6.7000401e-01]
+ [7.4240029e-01 2.5759971e-01]
+ [2.6844697e-05 9.9997318e-01]
+ [4.3683213e-01 5.6316793e-01]
+ [2.1997976e-01 7.8002024e-01]
+ [7.2516223e-06 9.9999273e-01]
+ [8.8551241e-01 1.1448761e-01]
+ [2.5608158e-01 7.4391842e-01]
+ [1.6948983e-05 9.9998307e-01]
+ [9.9682719e-01 3.1727580e-03]
+ [9.3948847e-01 6.0511552e-02]
+ [9.7790742e-01 2.2092657e-02]]
+
+Rep 1,001.486:
+[[9.6147966e-01 3.8520318e-02]
+ [9.9763477e-01 2.3652057e-03]
+ [5.1670788e-05 9.9994838e-01]
+ [8.2745409e-01 1.7254592e-01]
+ [9.9280131e-01 7.1987207e-03]
+ [4.0365376e-06 9.9999595e-01]
+ [9.9058646e-01 9.4134919e-03]
+ [9.9024409e-01 9.7559290e-03]
+ [1.2746455e-05 9.9998724e-01]
+ [9.9991298e-01 8.6997970e-05]
+ [9.9986112e-01 1.3887323e-04]
+ [9.9988174e-01 1.1821834e-04]]
+
+Rep 1,001.308:
+[[9.3789649e-01 6.2103465e-02]
+ [9.9900514e-01 9.9485693e-04]
+ [2.8624845e-06 9.9999714e-01]
+ [9.9755907e-01 2.4409543e-03]
+ [9.9902105e-01 9.7895437e-04]
+ [5.2934329e-06 9.9999475e-01]
+ [9.9806684e-01 1.9331604e-03]
+ [9.8470879e-01 1.5291197e-02]
+ [4.5188431e-06 9.9999547e-01]
+ [9.9985015e-01 1.4984699e-04]
+ [9.9938452e-01 6.1546132e-04]
+ [9.9996138e-01 3.8569302e-05]]
+
+Rep 1,001.452:
+[[9.9694401e-01 3.0559450e-03]
+ [9.6240336e-01 3.7596609e-02]
+ [5.0181468e-05 9.9994981e-01]
+ [9.9977440e-01 2.2560856e-04]
+ [6.0786784e-01 3.9213213e-01]
+ [3.3476383e-06 9.9999666e-01]
+ [9.9985456e-01 1.4539392e-04]
+ [9.4666398e-01 5.3336073e-02]
+ [4.5282849e-07 9.9999952e-01]
+ [9.9998927e-01 1.0780311e-05]
+ [9.9877101e-01 1.2289329e-03]
+ [8.1619275e-01 1.8380721e-01]]
+
+Rep 1,001.668:
+[[9.9163014e-01 8.3698370e-03]
+ [9.5797473e-01 4.2025253e-02]
+ [1.0792116e-04 9.9989212e-01]
+ [8.9459288e-01 1.0540716e-01]
+ [2.7690756e-01 7.2309238e-01]
+ [1.5559810e-05 9.9998438e-01]
+ [9.7776204e-01 2.2237929e-02]
+ [9.1483253e-01 8.5167453e-02]
+ [4.0484383e-06 9.9999595e-01]
+ [9.9955970e-01 4.4022963e-04]
+ [9.9905902e-01 9.4096444e-04]
+ [9.5236140e-01 4.7638532e-02]]
+
+Rep 1,001.319:
+[[1.08244292e-01 8.91755760e-01]
+ [7.62631774e-01 2.37368256e-01]
+ [5.00644564e-05 9.99949932e-01]
+ [6.18064225e-01 3.81935775e-01]
+ [3.26089352e-01 6.73910677e-01]
+ [5.68445148e-06 9.99994278e-01]
+ [8.14635754e-01 1.85364261e-01]
+ [4.55800779e-02 9.54419971e-01]
+ [4.96995699e-06 9.99994993e-01]
+ [9.99574602e-01 4.25381877e-04]
+ [9.86191630e-01 1.38083715e-02]
+ [9.95708346e-01 4.29163594e-03]]
+
+Rep 1,001.350:
+[[7.2403267e-02 9.2759675e-01]
+ [6.9705093e-01 3.0294907e-01]
+ [1.4636422e-05 9.9998534e-01]
+ [2.0976394e-01 7.9023606e-01]
+ [4.1505909e-01 5.8494091e-01]
+ [6.9103821e-06 9.9999309e-01]
+ [8.2383448e-01 1.7616554e-01]
+ [5.3440368e-01 4.6559632e-01]
+ [1.0602521e-04 9.9989402e-01]
+ [9.8568833e-01 1.4311622e-02]
+ [9.6468759e-01 3.5312418e-02]
+ [9.9294382e-01 7.0561566e-03]]
+
+Rep 1,001.451:
+[[9.8009312e-01 1.9906955e-02]
+ [9.4079173e-01 5.9208244e-02]
+ [2.4109302e-05 9.9997592e-01]
+ [9.8863971e-01 1.1360328e-02]
+ [7.3970211e-01 2.6029786e-01]
+ [1.0049233e-05 9.9998999e-01]
+ [9.8489445e-01 1.5105552e-02]
+ [9.8177308e-01 1.8226949e-02]
+ [7.6283068e-06 9.9999237e-01]
+ [9.9967837e-01 3.2165667e-04]
+ [9.9938500e-01 6.1501388e-04]
+ [9.9239641e-01 7.6035480e-03]]
+
+Rep 1,001.195:
+[[9.9742740e-01 2.5725942e-03]
+ [9.4356215e-01 5.6437895e-02]
+ [1.5091151e-04 9.9984908e-01]
+ [9.8252696e-01 1.7473025e-02]
+ [7.1712112e-01 2.8287888e-01]
+ [2.8260261e-05 9.9997175e-01]
+ [9.3985456e-01 6.0145382e-02]
+ [9.3374413e-01 6.6255830e-02]
+ [3.0854753e-06 9.9999690e-01]
+ [9.9890935e-01 1.0906273e-03]
+ [9.9933439e-01 6.6562969e-04]
+ [9.6969908e-01 3.0300902e-02]]
+
+Rep 1,001.443:
+[[1.6477598e-01 8.3522409e-01]
+ [9.8373020e-01 1.6269820e-02]
+ [8.5131578e-06 9.9999154e-01]
+ [8.7177420e-01 1.2822576e-01]
+ [9.6445966e-01 3.5540339e-02]
+ [6.5575746e-06 9.9999344e-01]
+ [9.7127593e-01 2.8724108e-02]
+ [4.1045487e-01 5.8954513e-01]
+ [2.2708165e-05 9.9997735e-01]
+ [9.9840206e-01 1.5979133e-03]
+ [9.5890737e-01 4.1092649e-02]
+ [9.9967039e-01 3.2959608e-04]]
+
+Rep 1,001.264:
+[[8.51694047e-01 1.48305967e-01]
+ [9.76510048e-01 2.34898981e-02]
+ [3.45839871e-05 9.99965429e-01]
+ [4.10056472e-01 5.89943528e-01]
+ [8.27474415e-01 1.72525585e-01]
+ [5.97731832e-06 9.99994040e-01]
+ [9.18446004e-01 8.15540403e-02]
+ [8.85598540e-01 1.14401475e-01]
+ [6.72134047e-05 9.99932766e-01]
+ [9.91901934e-01 8.09800345e-03]
+ [9.95701015e-01 4.29898407e-03]
+ [9.98257458e-01 1.74250163e-03]]
+
+Rep 1,001.487:
+[[9.7720009e-01 2.2799902e-02]
+ [9.9741423e-01 2.5857636e-03]
+ [6.7133642e-06 9.9999332e-01]
+ [9.9267185e-01 7.3281843e-03]
+ [9.9258983e-01 7.4101337e-03]
+ [2.7187095e-06 9.9999726e-01]
+ [9.9719381e-01 2.8062169e-03]
+ [9.8263621e-01 1.7363831e-02]
+ [5.8118103e-06 9.9999416e-01]
+ [9.9978679e-01 2.1320423e-04]
+ [9.9957246e-01 4.2756274e-04]
+ [9.9983704e-01 1.6288340e-04]]
+
+Rep 1,001.135:
+[[2.68128335e-01 7.31871605e-01]
+ [8.98521066e-01 1.01478964e-01]
+ [1.21935600e-05 9.99987841e-01]
+ [2.32009426e-01 7.67990649e-01]
+ [6.99320018e-01 3.00679922e-01]
+ [3.84258192e-06 9.99996185e-01]
+ [5.46803534e-01 4.53196466e-01]
+ [3.06861967e-01 6.93138003e-01]
+ [1.74764882e-05 9.99982476e-01]
+ [9.93878186e-01 6.12180959e-03]
+ [9.95474279e-01 4.52573085e-03]
+ [9.99062479e-01 9.37519595e-04]]
+
+Rep 1,001.431:
+[[9.9173999e-01 8.2600079e-03]
+ [6.0641700e-01 3.9358303e-01]
+ [4.7182565e-04 9.9952817e-01]
+ [9.9572045e-01 4.2795208e-03]
+ [1.0008860e-01 8.9991140e-01]
+ [5.3478729e-05 9.9994648e-01]
+ [9.1991615e-01 8.0083847e-02]
+ [3.7638146e-01 6.2361848e-01]
+ [1.0675349e-06 9.9999893e-01]
+ [9.9907434e-01 9.2560623e-04]
+ [9.8434699e-01 1.5653022e-02]
+ [5.6763195e-02 9.4323683e-01]]
+
+Rep 1,001.129:
+[[9.9639338e-01 3.6066589e-03]
+ [9.9415815e-01 5.8418578e-03]
+ [8.8564411e-07 9.9999917e-01]
+ [9.6220535e-01 3.7794713e-02]
+ [9.7220039e-01 2.7799547e-02]
+ [1.9509490e-07 9.9999976e-01]
+ [9.8559487e-01 1.4405099e-02]
+ [9.9696046e-01 3.0395542e-03]
+ [1.3930805e-06 9.9999857e-01]
+ [9.9985802e-01 1.4194268e-04]
+ [9.9996638e-01 3.3611723e-05]
+ [9.9991393e-01 8.6051761e-05]]
+
+Rep 1,001.282:
+[[9.5873594e-01 4.1264087e-02]
+ [9.9910766e-01 8.9227664e-04]
+ [1.1637990e-05 9.9998832e-01]
+ [9.9948645e-01 5.1349349e-04]
+ [9.9056506e-01 9.4350064e-03]
+ [5.5117602e-07 9.9999940e-01]
+ [9.9937469e-01 6.2529603e-04]
+ [6.7745554e-01 3.2254446e-01]
+ [7.1313735e-08 9.9999988e-01]
+ [9.9993980e-01 6.0209979e-05]
+ [9.8192906e-01 1.8070929e-02]
+ [9.9475574e-01 5.2442895e-03]]
+
+Rep 1,001.353:
+[[9.9679250e-01 3.2075471e-03]
+ [9.9520689e-01 4.7930535e-03]
+ [1.0684497e-04 9.9989319e-01]
+ [9.9959999e-01 4.0001576e-04]
+ [9.7966260e-01 2.0337369e-02]
+ [1.0691838e-05 9.9998927e-01]
+ [9.9923050e-01 7.6944142e-04]
+ [9.6691382e-01 3.3086207e-02]
+ [9.8809312e-07 9.9999905e-01]
+ [9.9994850e-01 5.1487659e-05]
+ [9.9903202e-01 9.6795469e-04]
+ [9.9650502e-01 3.4950469e-03]]
+
+Adjacency matrix from edge pred is as follows:
+
+Rep 1,001.271:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.6938560e-02 9.8306149e-01]
+  [5.4546708e-01 4.5453298e-01]
+  [4.8998027e-06 9.9999511e-01]]
+
+ [[1.0158394e-02 9.8984164e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.9325160e-01 6.0674846e-01]
+  [2.2063516e-06 9.9999774e-01]]
+
+ [[6.8604791e-01 3.1395215e-01]
+  [5.0346506e-01 4.9653497e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.5415746e-05 9.9996459e-01]]
+
+ [[9.8701185e-01 1.2988095e-02]
+  [9.5222467e-01 4.7775317e-02]
+  [9.9712998e-01 2.8700489e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.429:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.7030592e-01 2.9694062e-02]
+  [9.9981624e-01 1.8381963e-04]
+  [6.3414444e-07 9.9999940e-01]]
+
+ [[9.8176217e-01 1.8237837e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9884605e-01 1.1539635e-03]
+  [1.8779923e-07 9.9999976e-01]]
+
+ [[9.9598348e-01 4.0165875e-03]
+  [9.6945447e-01 3.0545531e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [4.7359040e-07 9.9999952e-01]]
+
+ [[9.9956995e-01 4.3004064e-04]
+  [9.9870336e-01 1.2966309e-03]
+  [9.9996293e-01 3.7118611e-05]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.186:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.7938550e-01 2.0614499e-02]
+  [9.9807101e-01 1.9290689e-03]
+  [1.4440905e-06 9.9999857e-01]]
+
+ [[9.9834490e-01 1.6551118e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9895751e-01 1.0425146e-03]
+  [5.1233060e-06 9.9999487e-01]]
+
+ [[9.9400556e-01 5.9943544e-03]
+  [9.6003264e-01 3.9967280e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [2.6666666e-07 9.9999976e-01]]
+
+ [[9.9946767e-01 5.3232291e-04]
+  [9.9803370e-01 1.9663509e-03]
+  [9.9860531e-01 1.3947298e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.321:
+[[[0.0000000e+00 0.0000000e+00]
+  [3.9335418e-01 6.0664582e-01]
+  [5.3404778e-01 4.6595219e-01]
+  [4.2938434e-05 9.9995708e-01]]
+
+ [[1.5105893e-01 8.4894103e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.6464099e-01 8.3535898e-01]
+  [8.4874437e-06 9.9999154e-01]]
+
+ [[5.1484936e-01 4.8515064e-01]
+  [3.0872989e-01 6.9127011e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.1812258e-05 9.9996817e-01]]
+
+ [[9.5273978e-01 4.7260236e-02]
+  [9.7261018e-01 2.7389869e-02]
+  [9.7075957e-01 2.9240420e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.381:
+[[[0.0000000e+00 0.0000000e+00]
+  [4.8636748e-03 9.9513632e-01]
+  [7.4887413e-01 2.5112587e-01]
+  [7.4718428e-06 9.9999249e-01]]
+
+ [[4.7178365e-02 9.5282161e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.1436813e-01 6.8563187e-01]
+  [2.1395631e-06 9.9999785e-01]]
+
+ [[7.4615288e-01 2.5384715e-01]
+  [9.7656675e-02 9.0234339e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [5.5658620e-05 9.9994433e-01]]
+
+ [[9.9075025e-01 9.2497831e-03]
+  [7.6834065e-01 2.3165940e-01]
+  [9.9828267e-01 1.7173920e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.379:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.8370314e-01 1.6296851e-02]
+  [9.9440837e-01 5.5916645e-03]
+  [2.7444159e-07 9.9999976e-01]]
+
+ [[9.6515280e-01 3.4847185e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9215537e-01 7.8446884e-03]
+  [1.4101268e-07 9.9999988e-01]]
+
+ [[9.9215055e-01 7.8494996e-03]
+  [9.9555027e-01 4.4496888e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [3.7824927e-07 9.9999964e-01]]
+
+ [[9.9967480e-01 3.2516476e-04]
+  [9.9987996e-01 1.1998626e-04]
+  [9.9990070e-01 9.9318342e-05]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.919:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9768233e-01 2.3176032e-03]
+  [9.5343888e-01 4.6561163e-02]
+  [1.9783158e-06 9.9999797e-01]]
+
+ [[7.5658309e-01 2.4341694e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.1286474e-01 8.7135240e-02]
+  [3.7129035e-07 9.9999964e-01]]
+
+ [[8.6850280e-01 1.3149714e-01]
+  [9.9867767e-01 1.3223416e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [5.5541898e-07 9.9999940e-01]]
+
+ [[9.9908781e-01 9.1217866e-04]
+  [9.9998593e-01 1.4083425e-05]
+  [9.9943143e-01 5.6854804e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.128:
+[[[0.00000000e+00 0.00000000e+00]
+  [1.35141969e-01 8.64857972e-01]
+  [7.68009067e-01 2.31990948e-01]
+  [9.48935303e-06 9.99990463e-01]]
+
+ [[8.64857912e-01 1.35142058e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [7.68891871e-01 2.31108129e-01]
+  [4.86954414e-05 9.99951243e-01]]
+
+ [[9.08937693e-01 9.10622403e-02]
+  [1.14957735e-01 8.85042310e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [1.53304336e-05 9.99984622e-01]]
+
+ [[9.93817031e-01 6.18289085e-03]
+  [8.25692654e-01 1.74307376e-01]
+  [9.77434635e-01 2.25653034e-02]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.334:
+[[[0.0000000e+00 0.0000000e+00]
+  [2.6236257e-01 7.3763740e-01]
+  [3.3795360e-01 6.6204637e-01]
+  [3.1156433e-04 9.9968851e-01]]
+
+ [[9.9746466e-01 2.5353297e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.2206090e-01 8.7793911e-01]
+  [5.9068734e-05 9.9994087e-01]]
+
+ [[9.9013901e-01 9.8609813e-03]
+  [1.5692007e-02 9.8430794e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.4116715e-06 9.9999857e-01]]
+
+ [[9.9995756e-01 4.2444844e-05]
+  [8.6848646e-01 1.3151361e-01]
+  [2.8116453e-01 7.1883547e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.473:
+[[[0.00000000e+00 0.00000000e+00]
+  [8.57379496e-01 1.42620444e-01]
+  [4.20480013e-01 5.79519987e-01]
+  [8.29668192e-04 9.99170303e-01]]
+
+ [[9.18895066e-01 8.11049491e-02]
+  [0.00000000e+00 0.00000000e+00]
+  [2.37461887e-02 9.76253808e-01]
+  [3.68028996e-05 9.99963164e-01]]
+
+ [[8.47920418e-01 1.52079582e-01]
+  [1.24911696e-01 8.75088334e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [2.19301000e-06 9.99997854e-01]]
+
+ [[9.99694705e-01 3.05352442e-04]
+  [9.90468562e-01 9.53147560e-03]
+  [3.23521465e-01 6.76478565e-01]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.428:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.4407004e-01 5.5929922e-02]
+  [9.6912855e-01 3.0871486e-02]
+  [1.9182004e-05 9.9998081e-01]]
+
+ [[9.9960333e-01 3.9667936e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [8.5758901e-01 1.4241099e-01]
+  [6.6051002e-06 9.9999344e-01]]
+
+ [[9.9940717e-01 5.9278420e-04]
+  [6.4162856e-01 3.5837147e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.6732434e-06 9.9999833e-01]]
+
+ [[9.9994695e-01 5.3077612e-05]
+  [9.8400116e-01 1.5998838e-02]
+  [9.6952987e-01 3.0470187e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.470:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.8714113e-02 9.8128593e-01]
+  [7.6320142e-01 2.3679857e-01]
+  [1.1695167e-05 9.9998832e-01]]
+
+ [[1.1993783e-02 9.8800629e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.4012533e-01 7.5987470e-01]
+  [3.0812557e-06 9.9999690e-01]]
+
+ [[7.4981666e-01 2.5018337e-01]
+  [2.6756841e-01 7.3243159e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.5794238e-04 9.9984205e-01]]
+
+ [[9.7020090e-01 2.9799173e-02]
+  [8.7312311e-01 1.2687691e-01]
+  [9.9712002e-01 2.8799714e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.281:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9859661e-01 1.4034036e-03]
+  [9.9384981e-01 6.1501730e-03]
+  [3.4202499e-06 9.9999654e-01]]
+
+ [[9.1113937e-01 8.8860586e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.6727037e-01 3.2729607e-02]
+  [2.3833826e-07 9.9999976e-01]]
+
+ [[9.8665965e-01 1.3340316e-02]
+  [9.9856681e-01 1.4332175e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.4332119e-06 9.9999857e-01]]
+
+ [[9.9992287e-01 7.7112352e-05]
+  [9.9998128e-01 1.8766867e-05]
+  [9.9986041e-01 1.3959294e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.183:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9980336e-01 1.9663434e-04]
+  [9.9852705e-01 1.4729735e-03]
+  [7.9437859e-06 9.9999201e-01]]
+
+ [[8.8822019e-01 1.1177985e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.7642255e-01 2.3577446e-02]
+  [1.9706574e-06 9.9999797e-01]]
+
+ [[8.9656508e-01 1.0343495e-01]
+  [9.9630934e-01 3.6906749e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [3.1456739e-06 9.9999690e-01]]
+
+ [[9.9756783e-01 2.4321494e-03]
+  [9.9993443e-01 6.5557782e-05]
+  [9.9963832e-01 3.6164085e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.393:
+[[[0.0000000e+00 0.0000000e+00]
+  [6.4863123e-02 9.3513685e-01]
+  [9.7835940e-01 2.1640655e-02]
+  [1.9291487e-05 9.9998069e-01]]
+
+ [[5.5049574e-01 4.4950429e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [8.8028091e-01 1.1971908e-01]
+  [6.4980109e-06 9.9999344e-01]]
+
+ [[9.8685014e-01 1.3149923e-02]
+  [4.5044360e-01 5.4955637e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.0270813e-04 9.9989724e-01]]
+
+ [[9.9847215e-01 1.5278618e-03]
+  [9.6634108e-01 3.3658929e-02]
+  [9.9966335e-01 3.3659511e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.289:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.2053450e-01 2.7946553e-01]
+  [9.3186265e-01 6.8137392e-02]
+  [9.1435977e-06 9.9999082e-01]]
+
+ [[9.8699677e-01 1.3003221e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.0932047e-01 9.0679459e-02]
+  [1.0738774e-05 9.9998927e-01]]
+
+ [[9.8776442e-01 1.2235604e-02]
+  [8.8210076e-01 1.1789924e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.9342844e-06 9.9999201e-01]]
+
+ [[9.9965632e-01 3.4369953e-04]
+  [9.9477202e-01 5.2279383e-03]
+  [9.9674124e-01 3.2588248e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.229:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.7436792e-01 2.5632124e-02]
+  [9.7934020e-01 2.0659771e-02]
+  [2.3888174e-04 9.9976116e-01]]
+
+ [[9.9914014e-01 8.5987058e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [6.1572528e-01 3.8427475e-01]
+  [2.3503280e-05 9.9997652e-01]]
+
+ [[9.9921679e-01 7.8318990e-04]
+  [6.3527125e-01 3.6472872e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.5850036e-06 9.9999845e-01]]
+
+ [[9.9996710e-01 3.2850923e-05]
+  [9.9454701e-01 5.4530622e-03]
+  [9.1887236e-01 8.1127673e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.277:
+[[[0.0000000e+00 0.0000000e+00]
+  [8.4916919e-01 1.5083082e-01]
+  [9.6188074e-01 3.8119230e-02]
+  [9.9809942e-05 9.9990022e-01]]
+
+ [[9.9940610e-01 5.9395045e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [7.5720435e-01 2.4279562e-01]
+  [4.2560750e-06 9.9999571e-01]]
+
+ [[9.9827659e-01 1.7234522e-03]
+  [1.3354196e-01 8.6645800e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.5105044e-07 9.9999928e-01]]
+
+ [[9.9998236e-01 1.7622866e-05]
+  [9.8584044e-01 1.4159554e-02]
+  [9.9177778e-01 8.2222512e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.121:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.7949101e-01 2.2050893e-01]
+  [9.8855597e-01 1.1444069e-02]
+  [1.1711797e-05 9.9998832e-01]]
+
+ [[9.9946469e-01 5.3528335e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [9.3606913e-01 6.3930839e-02]
+  [4.3932041e-06 9.9999559e-01]]
+
+ [[9.9891758e-01 1.0824389e-03]
+  [8.8293038e-02 9.1170698e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.3265600e-07 9.9999988e-01]]
+
+ [[9.9997389e-01 2.6153280e-05]
+  [9.7405452e-01 2.5945472e-02]
+  [9.8882967e-01 1.1170302e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.419:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.4926971e-01 5.0730344e-02]
+  [9.3052197e-01 6.9478005e-02]
+  [1.4678834e-04 9.9985313e-01]]
+
+ [[9.9706036e-01 2.9396215e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [6.3921213e-01 3.6078787e-01]
+  [1.3581776e-05 9.9998641e-01]]
+
+ [[9.9575222e-01 4.2477641e-03]
+  [6.2271899e-01 3.7728101e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [8.1669862e-07 9.9999917e-01]]
+
+ [[9.9994600e-01 5.4051743e-05]
+  [9.9341786e-01 6.5822070e-03]
+  [8.9358538e-01 1.0641455e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.398:
+[[[0.0000000e+00 0.0000000e+00]
+  [2.6136269e-03 9.9738640e-01]
+  [3.7472636e-01 6.2527359e-01]
+  [5.3886806e-06 9.9999464e-01]]
+
+ [[5.8943205e-02 9.4105685e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.7411070e-01 7.2588927e-01]
+  [6.1253363e-06 9.9999392e-01]]
+
+ [[6.3239646e-01 3.6760354e-01]
+  [5.7099901e-02 9.4290012e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [6.0780112e-05 9.9993920e-01]]
+
+ [[9.8023832e-01 1.9761670e-02]
+  [6.1618090e-01 3.8381913e-01]
+  [9.9077648e-01 9.2235385e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.446:
+[[[0.00000000e+00 0.00000000e+00]
+  [9.54143584e-01 4.58563827e-02]
+  [8.75675142e-01 1.24324866e-01]
+  [2.47027609e-04 9.99752939e-01]]
+
+ [[7.50505984e-01 2.49494001e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [5.25677502e-01 4.74322468e-01]
+  [3.21763728e-05 9.99967813e-01]]
+
+ [[8.70755196e-01 1.29244834e-01]
+  [8.50325048e-01 1.49674967e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [2.90414246e-05 9.99970913e-01]]
+
+ [[9.90138769e-01 9.86122433e-03]
+  [9.96126592e-01 3.87338316e-03]
+  [9.78089154e-01 2.19108369e-02]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.390:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.0652704e-01 9.3472928e-02]
+  [9.9596357e-01 4.0364075e-03]
+  [2.5792253e-05 9.9997425e-01]]
+
+ [[9.9729103e-01 2.7089291e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [9.8750919e-01 1.2490835e-02]
+  [6.5216336e-05 9.9993479e-01]]
+
+ [[9.9848372e-01 1.5162758e-03]
+  [7.3999631e-01 2.6000369e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.8186456e-06 9.9999022e-01]]
+
+ [[9.9989259e-01 1.0737413e-04]
+  [9.9473226e-01 5.2677938e-03]
+  [9.9947077e-01 5.2919640e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.220:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9832875e-01 1.6712497e-03]
+  [9.9327672e-01 6.7233206e-03]
+  [1.9797255e-05 9.9998021e-01]]
+
+ [[8.2518291e-01 1.7481713e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.1732764e-01 8.2672387e-02]
+  [4.9753157e-06 9.9999499e-01]]
+
+ [[8.9553875e-01 1.0446124e-01]
+  [9.8896396e-01 1.1035984e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [7.2400130e-06 9.9999273e-01]]
+
+ [[9.9750274e-01 2.4972372e-03]
+  [9.9988592e-01 1.1408854e-04]
+  [9.9916303e-01 8.3703734e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.456:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.8866010e-01 1.1339920e-02]
+  [9.8695600e-01 1.3043994e-02]
+  [3.0622436e-04 9.9969375e-01]]
+
+ [[9.9940276e-01 5.9723487e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [9.5084810e-01 4.9151935e-02]
+  [3.7099715e-05 9.9996293e-01]]
+
+ [[9.9863654e-01 1.3635007e-03]
+  [9.3119252e-01 6.8807445e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [4.2044608e-06 9.9999583e-01]]
+
+ [[9.9991918e-01 8.0820610e-05]
+  [9.9764168e-01 2.3583127e-03]
+  [9.8768288e-01 1.2317153e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.484:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9798238e-01 2.0175711e-03]
+  [9.9960607e-01 3.9392279e-04]
+  [2.5639323e-05 9.9997437e-01]]
+
+ [[9.9915659e-01 8.4345089e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9484575e-01 5.1542656e-03]
+  [1.1548033e-06 9.9999881e-01]]
+
+ [[9.9726897e-01 2.7309461e-03]
+  [9.4938725e-01 5.0612763e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [3.2919013e-07 9.9999964e-01]]
+
+ [[9.9959379e-01 4.0616904e-04]
+  [9.9547642e-01 4.5235828e-03]
+  [9.9531847e-01 4.6814717e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.952:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.8196125e-01 1.8038828e-02]
+  [9.5020473e-01 4.9795251e-02]
+  [1.8644261e-05 9.9998140e-01]]
+
+ [[4.6436432e-01 5.3563565e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.2250587e-01 2.7749416e-01]
+  [1.0417993e-05 9.9998963e-01]]
+
+ [[6.7081535e-01 3.2918459e-01]
+  [9.3922991e-01 6.0770039e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [2.2095392e-05 9.9997795e-01]]
+
+ [[9.9036473e-01 9.6352799e-03]
+  [9.9956065e-01 4.3928565e-04]
+  [9.9776185e-01 2.2381491e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.226:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.2602271e-01 7.3977321e-02]
+  [9.9990332e-01 9.6634118e-05]
+  [2.6574055e-06 9.9999738e-01]]
+
+ [[9.9822086e-01 1.7791502e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9949622e-01 5.0375651e-04]
+  [9.4536244e-07 9.9999905e-01]]
+
+ [[9.9923551e-01 7.6445914e-04]
+  [6.9543529e-01 3.0456471e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.6454534e-07 9.9999964e-01]]
+
+ [[9.9985683e-01 1.4309151e-04]
+  [9.9314708e-01 6.8529132e-03]
+  [9.9995100e-01 4.9032540e-05]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.391:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.1719371e-01 8.2806282e-02]
+  [9.5000720e-01 4.9992777e-02]
+  [5.5038591e-04 9.9944955e-01]]
+
+ [[9.9966288e-01 3.3711345e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [4.7246811e-01 5.2753192e-01]
+  [3.0674251e-05 9.9996936e-01]]
+
+ [[9.9929643e-01 7.0353143e-04]
+  [2.3178835e-01 7.6821160e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.7574345e-06 9.9999821e-01]]
+
+ [[9.9997640e-01 2.3574370e-05]
+  [9.6363473e-01 3.6365248e-02]
+  [7.2383684e-01 2.7616316e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.363:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9485308e-01 5.1469062e-03]
+  [9.9975902e-01 2.4099188e-04]
+  [1.7447096e-06 9.9999821e-01]]
+
+ [[9.4623649e-01 5.3763475e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9895871e-01 1.0412306e-03]
+  [6.9130778e-07 9.9999928e-01]]
+
+ [[9.8087376e-01 1.9126246e-02]
+  [9.9677902e-01 3.2209775e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.4638144e-06 9.9999857e-01]]
+
+ [[9.9598998e-01 4.0100669e-03]
+  [9.9967062e-01 3.2941077e-04]
+  [9.9980897e-01 1.9099974e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.191:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.5105417e-01 2.4894580e-01]
+  [6.6246492e-01 3.3753511e-01]
+  [6.8786308e-06 9.9999309e-01]]
+
+ [[2.1249412e-01 7.8750587e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [3.5471857e-01 6.4528143e-01]
+  [2.1200015e-06 9.9999785e-01]]
+
+ [[6.0424840e-01 3.9575157e-01]
+  [8.6927879e-01 1.3072120e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.0309015e-06 9.9999297e-01]]
+
+ [[9.9166870e-01 8.3312541e-03]
+  [9.9817479e-01 1.8252026e-03]
+  [9.9413210e-01 5.8678575e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.315:
+[[[0.00000000e+00 0.00000000e+00]
+  [8.44940126e-01 1.55059814e-01]
+  [9.32304859e-01 6.76951334e-02]
+  [1.92066418e-05 9.99980807e-01]]
+
+ [[9.98869836e-01 1.13009079e-03]
+  [0.00000000e+00 0.00000000e+00]
+  [8.23266387e-01 1.76733583e-01]
+  [1.33775920e-05 9.99986649e-01]]
+
+ [[9.98414993e-01 1.58494327e-03]
+  [3.87723178e-01 6.12276852e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [3.01275372e-06 9.99997020e-01]]
+
+ [[9.99879003e-01 1.21031044e-04]
+  [9.67454135e-01 3.25459205e-02]
+  [9.65539277e-01 3.44607942e-02]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.269:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.8901910e-01 1.0980845e-02]
+  [9.9163193e-01 8.3680348e-03]
+  [6.0620278e-06 9.9999392e-01]]
+
+ [[9.9571335e-01 4.2866403e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [8.8960552e-01 1.1039446e-01]
+  [2.7735663e-07 9.9999976e-01]]
+
+ [[9.8626095e-01 1.3739006e-02]
+  [8.1110716e-01 1.8889290e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [4.6812787e-08 1.0000000e+00]]
+
+ [[9.9995351e-01 4.6516438e-05]
+  [9.9904400e-01 9.5595053e-04]
+  [9.9661750e-01 3.3824937e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.745:
+[[[0.0000000e+00 0.0000000e+00]
+  [3.2999605e-01 6.7000401e-01]
+  [7.4240029e-01 2.5759971e-01]
+  [2.6844697e-05 9.9997318e-01]]
+
+ [[4.3683213e-01 5.6316793e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.1997976e-01 7.8002024e-01]
+  [7.2516223e-06 9.9999273e-01]]
+
+ [[8.8551241e-01 1.1448761e-01]
+  [2.5608158e-01 7.4391842e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.6948983e-05 9.9998307e-01]]
+
+ [[9.9682719e-01 3.1727580e-03]
+  [9.3948847e-01 6.0511552e-02]
+  [9.7790742e-01 2.2092657e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.486:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.6147966e-01 3.8520318e-02]
+  [9.9763477e-01 2.3652057e-03]
+  [5.1670788e-05 9.9994838e-01]]
+
+ [[8.2745409e-01 1.7254592e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9280131e-01 7.1987207e-03]
+  [4.0365376e-06 9.9999595e-01]]
+
+ [[9.9058646e-01 9.4134919e-03]
+  [9.9024409e-01 9.7559290e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.2746455e-05 9.9998724e-01]]
+
+ [[9.9991298e-01 8.6997970e-05]
+  [9.9986112e-01 1.3887323e-04]
+  [9.9988174e-01 1.1821834e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.308:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.3789649e-01 6.2103465e-02]
+  [9.9900514e-01 9.9485693e-04]
+  [2.8624845e-06 9.9999714e-01]]
+
+ [[9.9755907e-01 2.4409543e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9902105e-01 9.7895437e-04]
+  [5.2934329e-06 9.9999475e-01]]
+
+ [[9.9806684e-01 1.9331604e-03]
+  [9.8470879e-01 1.5291197e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [4.5188431e-06 9.9999547e-01]]
+
+ [[9.9985015e-01 1.4984699e-04]
+  [9.9938452e-01 6.1546132e-04]
+  [9.9996138e-01 3.8569302e-05]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.452:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9694401e-01 3.0559450e-03]
+  [9.6240336e-01 3.7596609e-02]
+  [5.0181468e-05 9.9994981e-01]]
+
+ [[9.9977440e-01 2.2560856e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [6.0786784e-01 3.9213213e-01]
+  [3.3476383e-06 9.9999666e-01]]
+
+ [[9.9985456e-01 1.4539392e-04]
+  [9.4666398e-01 5.3336073e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [4.5282849e-07 9.9999952e-01]]
+
+ [[9.9998927e-01 1.0780311e-05]
+  [9.9877101e-01 1.2289329e-03]
+  [8.1619275e-01 1.8380721e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.668:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9163014e-01 8.3698370e-03]
+  [9.5797473e-01 4.2025253e-02]
+  [1.0792116e-04 9.9989212e-01]]
+
+ [[8.9459288e-01 1.0540716e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.7690756e-01 7.2309238e-01]
+  [1.5559810e-05 9.9998438e-01]]
+
+ [[9.7776204e-01 2.2237929e-02]
+  [9.1483253e-01 8.5167453e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [4.0484383e-06 9.9999595e-01]]
+
+ [[9.9955970e-01 4.4022963e-04]
+  [9.9905902e-01 9.4096444e-04]
+  [9.5236140e-01 4.7638532e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.319:
+[[[0.00000000e+00 0.00000000e+00]
+  [1.08244292e-01 8.91755760e-01]
+  [7.62631774e-01 2.37368256e-01]
+  [5.00644564e-05 9.99949932e-01]]
+
+ [[6.18064225e-01 3.81935775e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [3.26089352e-01 6.73910677e-01]
+  [5.68445148e-06 9.99994278e-01]]
+
+ [[8.14635754e-01 1.85364261e-01]
+  [4.55800779e-02 9.54419971e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [4.96995699e-06 9.99994993e-01]]
+
+ [[9.99574602e-01 4.25381877e-04]
+  [9.86191630e-01 1.38083715e-02]
+  [9.95708346e-01 4.29163594e-03]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.350:
+[[[0.0000000e+00 0.0000000e+00]
+  [7.2403267e-02 9.2759675e-01]
+  [6.9705093e-01 3.0294907e-01]
+  [1.4636422e-05 9.9998534e-01]]
+
+ [[2.0976394e-01 7.9023606e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [4.1505909e-01 5.8494091e-01]
+  [6.9103821e-06 9.9999309e-01]]
+
+ [[8.2383448e-01 1.7616554e-01]
+  [5.3440368e-01 4.6559632e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.0602521e-04 9.9989402e-01]]
+
+ [[9.8568833e-01 1.4311622e-02]
+  [9.6468759e-01 3.5312418e-02]
+  [9.9294382e-01 7.0561566e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.451:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.8009312e-01 1.9906955e-02]
+  [9.4079173e-01 5.9208244e-02]
+  [2.4109302e-05 9.9997592e-01]]
+
+ [[9.8863971e-01 1.1360328e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [7.3970211e-01 2.6029786e-01]
+  [1.0049233e-05 9.9998999e-01]]
+
+ [[9.8489445e-01 1.5105552e-02]
+  [9.8177308e-01 1.8226949e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [7.6283068e-06 9.9999237e-01]]
+
+ [[9.9967837e-01 3.2165667e-04]
+  [9.9938500e-01 6.1501388e-04]
+  [9.9239641e-01 7.6035480e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.195:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9742740e-01 2.5725942e-03]
+  [9.4356215e-01 5.6437895e-02]
+  [1.5091151e-04 9.9984908e-01]]
+
+ [[9.8252696e-01 1.7473025e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [7.1712112e-01 2.8287888e-01]
+  [2.8260261e-05 9.9997175e-01]]
+
+ [[9.3985456e-01 6.0145382e-02]
+  [9.3374413e-01 6.6255830e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [3.0854753e-06 9.9999690e-01]]
+
+ [[9.9890935e-01 1.0906273e-03]
+  [9.9933439e-01 6.6562969e-04]
+  [9.6969908e-01 3.0300902e-02]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.443:
+[[[0.0000000e+00 0.0000000e+00]
+  [1.6477598e-01 8.3522409e-01]
+  [9.8373020e-01 1.6269820e-02]
+  [8.5131578e-06 9.9999154e-01]]
+
+ [[8.7177420e-01 1.2822576e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [9.6445966e-01 3.5540339e-02]
+  [6.5575746e-06 9.9999344e-01]]
+
+ [[9.7127593e-01 2.8724108e-02]
+  [4.1045487e-01 5.8954513e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [2.2708165e-05 9.9997735e-01]]
+
+ [[9.9840206e-01 1.5979133e-03]
+  [9.5890737e-01 4.1092649e-02]
+  [9.9967039e-01 3.2959608e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.264:
+[[[0.00000000e+00 0.00000000e+00]
+  [8.51694047e-01 1.48305967e-01]
+  [9.76510048e-01 2.34898981e-02]
+  [3.45839871e-05 9.99965429e-01]]
+
+ [[4.10056472e-01 5.89943528e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [8.27474415e-01 1.72525585e-01]
+  [5.97731832e-06 9.99994040e-01]]
+
+ [[9.18446004e-01 8.15540403e-02]
+  [8.85598540e-01 1.14401475e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [6.72134047e-05 9.99932766e-01]]
+
+ [[9.91901934e-01 8.09800345e-03]
+  [9.95701015e-01 4.29898407e-03]
+  [9.98257458e-01 1.74250163e-03]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.487:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.7720009e-01 2.2799902e-02]
+  [9.9741423e-01 2.5857636e-03]
+  [6.7133642e-06 9.9999332e-01]]
+
+ [[9.9267185e-01 7.3281843e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9258983e-01 7.4101337e-03]
+  [2.7187095e-06 9.9999726e-01]]
+
+ [[9.9719381e-01 2.8062169e-03]
+  [9.8263621e-01 1.7363831e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [5.8118103e-06 9.9999416e-01]]
+
+ [[9.9978679e-01 2.1320423e-04]
+  [9.9957246e-01 4.2756274e-04]
+  [9.9983704e-01 1.6288340e-04]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.135:
+[[[0.00000000e+00 0.00000000e+00]
+  [2.68128335e-01 7.31871605e-01]
+  [8.98521066e-01 1.01478964e-01]
+  [1.21935600e-05 9.99987841e-01]]
+
+ [[2.32009426e-01 7.67990649e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [6.99320018e-01 3.00679922e-01]
+  [3.84258192e-06 9.99996185e-01]]
+
+ [[5.46803534e-01 4.53196466e-01]
+  [3.06861967e-01 6.93138003e-01]
+  [0.00000000e+00 0.00000000e+00]
+  [1.74764882e-05 9.99982476e-01]]
+
+ [[9.93878186e-01 6.12180959e-03]
+  [9.95474279e-01 4.52573085e-03]
+  [9.99062479e-01 9.37519595e-04]
+  [0.00000000e+00 0.00000000e+00]]]
+
+Rep 1,001.431:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9173999e-01 8.2600079e-03]
+  [6.0641700e-01 3.9358303e-01]
+  [4.7182565e-04 9.9952817e-01]]
+
+ [[9.9572045e-01 4.2795208e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.0008860e-01 8.9991140e-01]
+  [5.3478729e-05 9.9994648e-01]]
+
+ [[9.1991615e-01 8.0083847e-02]
+  [3.7638146e-01 6.2361848e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [1.0675349e-06 9.9999893e-01]]
+
+ [[9.9907434e-01 9.2560623e-04]
+  [9.8434699e-01 1.5653022e-02]
+  [5.6763195e-02 9.4323683e-01]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.129:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9639338e-01 3.6066589e-03]
+  [9.9415815e-01 5.8418578e-03]
+  [8.8564411e-07 9.9999917e-01]]
+
+ [[9.6220535e-01 3.7794713e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.7220039e-01 2.7799547e-02]
+  [1.9509490e-07 9.9999976e-01]]
+
+ [[9.8559487e-01 1.4405099e-02]
+  [9.9696046e-01 3.0395542e-03]
+  [0.0000000e+00 0.0000000e+00]
+  [1.3930805e-06 9.9999857e-01]]
+
+ [[9.9985802e-01 1.4194268e-04]
+  [9.9996638e-01 3.3611723e-05]
+  [9.9991393e-01 8.6051761e-05]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.282:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.5873594e-01 4.1264087e-02]
+  [9.9910766e-01 8.9227664e-04]
+  [1.1637990e-05 9.9998832e-01]]
+
+ [[9.9948645e-01 5.1349349e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [9.9056506e-01 9.4350064e-03]
+  [5.5117602e-07 9.9999940e-01]]
+
+ [[9.9937469e-01 6.2529603e-04]
+  [6.7745554e-01 3.2254446e-01]
+  [0.0000000e+00 0.0000000e+00]
+  [7.1313735e-08 9.9999988e-01]]
+
+ [[9.9993980e-01 6.0209979e-05]
+  [9.8192906e-01 1.8070929e-02]
+  [9.9475574e-01 5.2442895e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Rep 1,001.353:
+[[[0.0000000e+00 0.0000000e+00]
+  [9.9679250e-01 3.2075471e-03]
+  [9.9520689e-01 4.7930535e-03]
+  [1.0684497e-04 9.9989319e-01]]
+
+ [[9.9959999e-01 4.0001576e-04]
+  [0.0000000e+00 0.0000000e+00]
+  [9.7966260e-01 2.0337369e-02]
+  [1.0691838e-05 9.9998927e-01]]
+
+ [[9.9923050e-01 7.6944142e-04]
+  [9.6691382e-01 3.3086207e-02]
+  [0.0000000e+00 0.0000000e+00]
+  [9.8809312e-07 9.9999905e-01]]
+
+ [[9.9994850e-01 5.1487659e-05]
+  [9.9903202e-01 9.6795469e-04]
+  [9.9650502e-01 3.4950469e-03]
+  [0.0000000e+00 0.0000000e+00]]]
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.271' for [m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13...
+
+Decoder output plot for rep '1001.2707' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\nri\train\etypes=2\m004\apv\set_G\E=f_mlp1_og_D=gru\tswp_0\[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13\test
+
+Testing DataLoader 0: 100%|##########################################| 10/10 [00:03<00:00,  2.69it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│       dec/test_loss       │   0.011841075494885445    │
+│  enc/test_edge_accuracy   │    0.49300000071525574    │
+│     enc/test_entropy      │    0.14904657006263733    │
+│       enc/test_loss       │     6.529207706451416     │
+│       nri/test_loss       │     6.541049003601074     │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Nri model '[m004_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.13' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-17 15:05:52
