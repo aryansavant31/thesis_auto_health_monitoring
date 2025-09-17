@@ -338,7 +338,9 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             loss_type_dec=self.tp_config.loss_type_dec,
             prior = self.tp_config.prior,
             is_enc_warmup=self.tp_config.is_enc_warmup,
-            warmup_acc_cutoff=self.tp_config.warmup_acc_cutoff
+            warmup_acc_cutoff=self.tp_config.warmup_acc_cutoff,
+            final_gamma=self.tp_config.final_gamma,
+            warmup_frac_gamma=self.tp_config.warmup_frac_gamma
             )
 
         # print model info
