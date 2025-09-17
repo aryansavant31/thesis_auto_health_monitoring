@@ -40,7 +40,7 @@ class AnomalyDetectorInferConfig:
         self.num_workers = 1
         self.batch_size = 1
 
-        self.nok_percentage = 0.99
+        self.nok_percentage = 1
         self.cutoff_freq = 0
         self.update_infer_configs()
 
@@ -48,13 +48,13 @@ class AnomalyDetectorInferConfig:
 
         self.test_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [True, {}],
+            'confusion_matrix_advance'      : [False, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num': 1, 'bins':80}],
+            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [False, {'is_pred':False, 'is_log_x': False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False, 'bins': 80}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             # 'anomaly_score_dist_advance-2'    : [True, {'num': 2}],
             'pair_plot'                     : [True, {}],
         }
@@ -110,7 +110,7 @@ class AnomalyDetectorInferSweep:
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 2
+        self.infer_sweep_num = 1.1
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 

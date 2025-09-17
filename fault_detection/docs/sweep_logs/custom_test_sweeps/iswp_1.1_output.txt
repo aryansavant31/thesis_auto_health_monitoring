@@ -1,0 +1,628 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_infer.py
+Base Name: iswp_1.1
+Start Time: 2025-09-16 16:42:17
+End Time: 2025-09-16 19:56:12
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model inference sweep...
+
+Processing 3 data groups
+
+Data Config Sweep Summary:
+Run type: custom_test
+------------------------------
+Total combinations: 3
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{'E1_set01_M=mEK83': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mat': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  unhealthy_configs: 3 values -> [{'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.09, 'std_fac': 1.6, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.001, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [1.3, 1.4], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.05, 'std_fac': 1.7, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.0001, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [1.3, 1.4, 1.5], 'add_next': False}]}, {'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.01, 'std_fac': 1, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.0001, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [0.9, 1.2], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.02, 'std_fac': 0.9, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 1e-05, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [1, 0.9, 1.2], 'add_next': False}]}, {'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.001, 'std_fac': 0.5, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [0.4, 0.3], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.0005, 'std_fac': 0.6, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [0.5, 0.4, 0.3], 'add_next': False}]}]
+  window_length: 1 values -> [1000]
+
+Parameter Sweep Summary:
+Total combinations: 144
+
+Parameters and their values:
+  batch_size: 1 values -> [1]
+  cutoff_freq: 1 values -> [0]
+
+Number of models selected: 144
+Selected models are as follows:
+------------------------------
+  Model 1: [ammf_(acc+E1)]-IF_fdet_1
+  Model 2: [ammf_(acc+E1)]-IF_fdet_2
+  Model 3: [ammf_(acc+E1)]-IF_fdet_3
+  Model 4: [ammf_(acc+E1)]-IF_fdet_4
+  Model 5: [ammf_(acc+E1)]-IF_fdet_5
+  Model 6: [ammf_(acc+E1)]-IF_fdet_6
+  Model 7: [ammf_(acc+E1)]-IF_fdet_7
+  Model 8: [ammf_(acc+E1)]-IF_fdet_8
+  Model 9: [ammf_(acc+E1)]-IF_fdet_9
+  Model 10: [ammf_(acc+E1)]-IF_fdet_10
+  Model 11: [ammf_(acc+E1)]-IF_fdet_11
+  Model 12: [ammf_(acc+E1)]-IF_fdet_12
+  Model 13: [ammf_(acc+E1)]-IF_fdet_13
+  Model 14: [ammf_(acc+E1)]-IF_fdet_14
+  Model 15: [ammf_(acc+E1)]-IF_fdet_15
+  Model 16: [ammf_(acc+E1)]-IF_fdet_16
+  Model 17: [ammf_(acc+E1)]-IF_fdet_17
+  Model 18: [ammf_(acc+E1)]-IF_fdet_18
+  Model 19: [ammf_(acc+E1)]-IF_fdet_19
+  Model 20: [ammf_(acc+E1)]-IF_fdet_20
+  Model 21: [ammf_(acc+E1)]-IF_fdet_21
+  Model 22: [ammf_(acc+E1)]-IF_fdet_22
+  Model 23: [ammf_(acc+E1)]-IF_fdet_23
+  Model 24: [ammf_(acc+E1)]-IF_fdet_24
+  Model 25: [ammf_(acc+E1)]-IF_fdet_25
+  Model 26: [ammf_(acc+E1)]-IF_fdet_26
+  Model 27: [ammf_(acc+E1)]-IF_fdet_27
+  Model 28: [ammf_(acc+E1)]-IF_fdet_28
+  Model 29: [ammf_(acc+E1)]-IF_fdet_29
+  Model 30: [ammf_(acc+E1)]-IF_fdet_30
+  Model 31: [ammf_(acc+E1)]-IF_fdet_31
+  Model 32: [ammf_(acc+E1)]-IF_fdet_32
+  Model 33: [ammf_(acc+E1)]-IF_fdet_33
+  Model 34: [ammf_(acc+E1)]-IF_fdet_34
+  Model 35: [ammf_(acc+E1)]-IF_fdet_35
+  Model 36: [ammf_(acc+E1)]-IF_fdet_36
+  Model 37: [ammf_(acc+E1)]-IF_fdet_37
+  Model 38: [ammf_(acc+E1)]-IF_fdet_38
+  Model 39: [ammf_(acc+E1)]-IF_fdet_39
+  Model 40: [ammf_(acc+E1)]-IF_fdet_40
+  Model 41: [ammf_(acc+E1)]-IF_fdet_41
+  Model 42: [ammf_(acc+E1)]-IF_fdet_42
+  Model 43: [ammf_(acc+E1)]-IF_fdet_43
+  Model 44: [ammf_(acc+E1)]-IF_fdet_44
+  Model 45: [ammf_(acc+E1)]-IF_fdet_45
+  Model 46: [ammf_(acc+E1)]-IF_fdet_46
+  Model 47: [ammf_(acc+E1)]-IF_fdet_47
+  Model 48: [ammf_(acc+E1)]-IF_fdet_48
+  Model 49: [ammf_(acc+E1)]-IF_fdet_49
+  Model 50: [ammf_(acc+E1)]-IF_fdet_50
+  Model 51: [ammf_(acc+E1)]-IF_fdet_51
+  Model 52: [ammf_(acc+E1)]-IF_fdet_52
+  Model 53: [ammf_(acc+E1)]-IF_fdet_53
+  Model 54: [ammf_(acc+E1)]-IF_fdet_54
+  Model 55: [ammf_(acc+E1)]-IF_fdet_55
+  Model 56: [ammf_(acc+E1)]-IF_fdet_56
+  Model 57: [ammf_(acc+E1)]-IF_fdet_57
+  Model 58: [ammf_(acc+E1)]-IF_fdet_58
+  Model 59: [ammf_(acc+E1)]-IF_fdet_59
+  Model 60: [ammf_(acc+E1)]-IF_fdet_60
+  Model 61: [ammf_(acc+E1)]-IF_fdet_61
+  Model 62: [ammf_(acc+E1)]-IF_fdet_62
+  Model 63: [ammf_(acc+E1)]-IF_fdet_63
+  Model 64: [ammf_(acc+E1)]-IF_fdet_64
+  Model 65: [ammf_(acc+E1)]-IF_fdet_65
+  Model 66: [ammf_(acc+E1)]-IF_fdet_66
+  Model 67: [ammf_(acc+E1)]-IF_fdet_67
+  Model 68: [ammf_(acc+E1)]-IF_fdet_68
+  Model 69: [ammf_(acc+E1)]-IF_fdet_69
+  Model 70: [ammf_(acc+E1)]-IF_fdet_70
+  Model 71: [ammf_(acc+E1)]-IF_fdet_71
+  Model 72: [ammf_(acc+E1)]-IF_fdet_72
+  Model 73: [ammf_(acc+E1)]-IF_fdet_73
+  Model 74: [ammf_(acc+E1)]-IF_fdet_74
+  Model 75: [ammf_(acc+E1)]-IF_fdet_75
+  Model 76: [ammf_(acc+E1)]-IF_fdet_76
+  Model 77: [ammf_(acc+E1)]-IF_fdet_77
+  Model 78: [ammf_(acc+E1)]-IF_fdet_78
+  Model 79: [ammf_(acc+E1)]-IF_fdet_79
+  Model 80: [ammf_(acc+E1)]-IF_fdet_80
+  Model 81: [ammf_(acc+E1)]-IF_fdet_81
+  Model 82: [ammf_(acc+E1)]-IF_fdet_82
+  Model 83: [ammf_(acc+E1)]-IF_fdet_83
+  Model 84: [ammf_(acc+E1)]-IF_fdet_84
+  Model 85: [ammf_(acc+E1)]-IF_fdet_85
+  Model 86: [ammf_(acc+E1)]-IF_fdet_86
+  Model 87: [ammf_(acc+E1)]-IF_fdet_87
+  Model 88: [ammf_(acc+E1)]-IF_fdet_88
+  Model 89: [ammf_(acc+E1)]-IF_fdet_89
+  Model 90: [ammf_(acc+E1)]-IF_fdet_90
+  Model 91: [ammf_(acc+E1)]-IF_fdet_91
+  Model 92: [ammf_(acc+E1)]-IF_fdet_92
+  Model 93: [ammf_(acc+E1)]-IF_fdet_93
+  Model 94: [ammf_(acc+E1)]-IF_fdet_94
+  Model 95: [ammf_(acc+E1)]-IF_fdet_95
+  Model 96: [ammf_(acc+E1)]-IF_fdet_96
+  Model 97: [ammf_(acc+E1)]-IF_fdet_97
+  Model 98: [ammf_(acc+E1)]-IF_fdet_98
+  Model 99: [ammf_(acc+E1)]-IF_fdet_99
+  Model 100: [ammf_(acc+E1)]-IF_fdet_100
+  Model 101: [ammf_(acc+E1)]-IF_fdet_101
+  Model 102: [ammf_(acc+E1)]-IF_fdet_102
+  Model 103: [ammf_(acc+E1)]-IF_fdet_103
+  Model 104: [ammf_(acc+E1)]-IF_fdet_104
+  Model 105: [ammf_(acc+E1)]-IF_fdet_105
+  Model 106: [ammf_(acc+E1)]-IF_fdet_106
+  Model 107: [ammf_(acc+E1)]-IF_fdet_107
+  Model 108: [ammf_(acc+E1)]-IF_fdet_108
+  Model 109: [ammf_(acc+E1)]-IF_fdet_109
+  Model 110: [ammf_(acc+E1)]-IF_fdet_110
+  Model 111: [ammf_(acc+E1)]-IF_fdet_111
+  Model 112: [ammf_(acc+E1)]-IF_fdet_112
+  Model 113: [ammf_(acc+E1)]-IF_fdet_113
+  Model 114: [ammf_(acc+E1)]-IF_fdet_114
+  Model 115: [ammf_(acc+E1)]-IF_fdet_115
+  Model 116: [ammf_(acc+E1)]-IF_fdet_116
+  Model 117: [ammf_(acc+E1)]-IF_fdet_117
+  Model 118: [ammf_(acc+E1)]-IF_fdet_118
+  Model 119: [ammf_(acc+E1)]-IF_fdet_119
+  Model 120: [ammf_(acc+E1)]-IF_fdet_120
+  Model 121: [ammf_(acc+E1)]-IF_fdet_121
+  Model 122: [ammf_(acc+E1)]-IF_fdet_122
+  Model 123: [ammf_(acc+E1)]-IF_fdet_123
+  Model 124: [ammf_(acc+E1)]-IF_fdet_124
+  Model 125: [ammf_(acc+E1)]-IF_fdet_125
+  Model 126: [ammf_(acc+E1)]-IF_fdet_126
+  Model 127: [ammf_(acc+E1)]-IF_fdet_127
+  Model 128: [ammf_(acc+E1)]-IF_fdet_128
+  Model 129: [ammf_(acc+E1)]-IF_fdet_129
+  Model 130: [ammf_(acc+E1)]-IF_fdet_130
+  Model 131: [ammf_(acc+E1)]-IF_fdet_131
+  Model 132: [ammf_(acc+E1)]-IF_fdet_132
+  Model 133: [ammf_(acc+E1)]-IF_fdet_133
+  Model 134: [ammf_(acc+E1)]-IF_fdet_134
+  Model 135: [ammf_(acc+E1)]-IF_fdet_135
+  Model 136: [ammf_(acc+E1)]-IF_fdet_136
+  Model 137: [ammf_(acc+E1)]-IF_fdet_137
+  Model 138: [ammf_(acc+E1)]-IF_fdet_138
+  Model 139: [ammf_(acc+E1)]-IF_fdet_139
+  Model 140: [ammf_(acc+E1)]-IF_fdet_140
+  Model 141: [ammf_(acc+E1)]-IF_fdet_141
+  Model 142: [ammf_(acc+E1)]-IF_fdet_142
+  Model 143: [ammf_(acc+E1)]-IF_fdet_143
+  Model 144: [ammf_(acc+E1)]-IF_fdet_144
+
+Parallelizing 432 fault detection configurations across 8 workers...
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_1/custom_test_1
+  Completed config 6: [ammf_(acc+E1)]-IF_fdet_6/custom_test_1
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_3/custom_test_1
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_2/custom_test_1
+  Completed config 8: [ammf_(acc+E1)]-IF_fdet_8/custom_test_1
+  Completed config 7: [ammf_(acc+E1)]-IF_fdet_7/custom_test_1
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_4/custom_test_1
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_5/custom_test_1
+  Completed config 11: [ammf_(acc+E1)]-IF_fdet_11/custom_test_1
+  Completed config 14: [ammf_(acc+E1)]-IF_fdet_14/custom_test_1
+  Completed config 9: [ammf_(acc+E1)]-IF_fdet_9/custom_test_1
+  Completed config 13: [ammf_(acc+E1)]-IF_fdet_13/custom_test_1
+  Completed config 10: [ammf_(acc+E1)]-IF_fdet_10/custom_test_1
+  Completed config 12: [ammf_(acc+E1)]-IF_fdet_12/custom_test_1
+  Completed config 15: [ammf_(acc+E1)]-IF_fdet_15/custom_test_1
+  Completed config 16: [ammf_(acc+E1)]-IF_fdet_16/custom_test_1
+  Completed config 19: [ammf_(acc+E1)]-IF_fdet_19/custom_test_1
+  Completed config 17: [ammf_(acc+E1)]-IF_fdet_17/custom_test_1
+  Completed config 21: [ammf_(acc+E1)]-IF_fdet_21/custom_test_1
+  Completed config 20: [ammf_(acc+E1)]-IF_fdet_20/custom_test_1
+  Completed config 22: [ammf_(acc+E1)]-IF_fdet_22/custom_test_1
+  Completed config 23: [ammf_(acc+E1)]-IF_fdet_23/custom_test_1
+  Completed config 18: [ammf_(acc+E1)]-IF_fdet_18/custom_test_1
+  Completed config 24: [ammf_(acc+E1)]-IF_fdet_24/custom_test_1
+  Completed config 25: [ammf_(acc+E1)]-IF_fdet_25/custom_test_1
+  Completed config 26: [ammf_(acc+E1)]-IF_fdet_26/custom_test_1
+  Completed config 27: [ammf_(acc+E1)]-IF_fdet_27/custom_test_1
+  Completed config 28: [ammf_(acc+E1)]-IF_fdet_28/custom_test_1
+  Completed config 30: [ammf_(acc+E1)]-IF_fdet_30/custom_test_1
+  Completed config 29: [ammf_(acc+E1)]-IF_fdet_29/custom_test_1
+  Completed config 31: [ammf_(acc+E1)]-IF_fdet_31/custom_test_1
+  Completed config 32: [ammf_(acc+E1)]-IF_fdet_32/custom_test_1
+  Completed config 33: [ammf_(acc+E1)]-IF_fdet_33/custom_test_1
+  Completed config 34: [ammf_(acc+E1)]-IF_fdet_34/custom_test_1
+  Completed config 35: [ammf_(acc+E1)]-IF_fdet_35/custom_test_1
+  Completed config 37: [ammf_(acc+E1)]-IF_fdet_37/custom_test_1
+  Completed config 38: [ammf_(acc+E1)]-IF_fdet_38/custom_test_1
+  Completed config 39: [ammf_(acc+E1)]-IF_fdet_39/custom_test_1
+  Completed config 40: [ammf_(acc+E1)]-IF_fdet_40/custom_test_1
+  Completed config 36: [ammf_(acc+E1)]-IF_fdet_36/custom_test_1
+  Completed config 41: [ammf_(acc+E1)]-IF_fdet_41/custom_test_1
+  Completed config 42: [ammf_(acc+E1)]-IF_fdet_42/custom_test_1
+  Completed config 43: [ammf_(acc+E1)]-IF_fdet_43/custom_test_1
+  Completed config 44: [ammf_(acc+E1)]-IF_fdet_44/custom_test_1
+  Completed config 45: [ammf_(acc+E1)]-IF_fdet_45/custom_test_1
+  Completed config 46: [ammf_(acc+E1)]-IF_fdet_46/custom_test_1
+  Completed config 47: [ammf_(acc+E1)]-IF_fdet_47/custom_test_1
+  Completed config 48: [ammf_(acc+E1)]-IF_fdet_48/custom_test_1
+  Completed config 49: [ammf_(acc+E1)]-IF_fdet_49/custom_test_1
+  Completed config 50: [ammf_(acc+E1)]-IF_fdet_50/custom_test_1
+  Completed config 51: [ammf_(acc+E1)]-IF_fdet_51/custom_test_1
+  Completed config 52: [ammf_(acc+E1)]-IF_fdet_52/custom_test_1
+  Completed config 53: [ammf_(acc+E1)]-IF_fdet_53/custom_test_1
+  Completed config 55: [ammf_(acc+E1)]-IF_fdet_55/custom_test_1
+  Completed config 56: [ammf_(acc+E1)]-IF_fdet_56/custom_test_1
+  Completed config 54: [ammf_(acc+E1)]-IF_fdet_54/custom_test_1
+  Completed config 57: [ammf_(acc+E1)]-IF_fdet_57/custom_test_1
+  Completed config 58: [ammf_(acc+E1)]-IF_fdet_58/custom_test_1
+  Completed config 59: [ammf_(acc+E1)]-IF_fdet_59/custom_test_1
+  Completed config 60: [ammf_(acc+E1)]-IF_fdet_60/custom_test_1
+  Completed config 61: [ammf_(acc+E1)]-IF_fdet_61/custom_test_1
+  Completed config 62: [ammf_(acc+E1)]-IF_fdet_62/custom_test_1
+  Completed config 63: [ammf_(acc+E1)]-IF_fdet_63/custom_test_1
+  Completed config 64: [ammf_(acc+E1)]-IF_fdet_64/custom_test_1
+  Completed config 65: [ammf_(acc+E1)]-IF_fdet_65/custom_test_1
+  Completed config 66: [ammf_(acc+E1)]-IF_fdet_66/custom_test_1
+  Completed config 67: [ammf_(acc+E1)]-IF_fdet_67/custom_test_1
+  Completed config 68: [ammf_(acc+E1)]-IF_fdet_68/custom_test_1
+  Completed config 69: [ammf_(acc+E1)]-IF_fdet_69/custom_test_1
+  Completed config 70: [ammf_(acc+E1)]-IF_fdet_70/custom_test_1
+  Completed config 72: [ammf_(acc+E1)]-IF_fdet_72/custom_test_1
+  Completed config 71: [ammf_(acc+E1)]-IF_fdet_71/custom_test_1
+  Completed config 73: [ammf_(acc+E1)]-IF_fdet_73/custom_test_1
+  Completed config 74: [ammf_(acc+E1)]-IF_fdet_74/custom_test_1
+  Completed config 75: [ammf_(acc+E1)]-IF_fdet_75/custom_test_1
+  Completed config 76: [ammf_(acc+E1)]-IF_fdet_76/custom_test_1
+  Completed config 77: [ammf_(acc+E1)]-IF_fdet_77/custom_test_1
+  Completed config 78: [ammf_(acc+E1)]-IF_fdet_78/custom_test_1
+  Completed config 79: [ammf_(acc+E1)]-IF_fdet_79/custom_test_1
+  Completed config 80: [ammf_(acc+E1)]-IF_fdet_80/custom_test_1
+  Completed config 81: [ammf_(acc+E1)]-IF_fdet_81/custom_test_1
+  Completed config 82: [ammf_(acc+E1)]-IF_fdet_82/custom_test_1
+  Completed config 83: [ammf_(acc+E1)]-IF_fdet_83/custom_test_1
+  Completed config 84: [ammf_(acc+E1)]-IF_fdet_84/custom_test_1
+  Completed config 85: [ammf_(acc+E1)]-IF_fdet_85/custom_test_1
+  Completed config 86: [ammf_(acc+E1)]-IF_fdet_86/custom_test_1
+  Completed config 87: [ammf_(acc+E1)]-IF_fdet_87/custom_test_1
+  Completed config 88: [ammf_(acc+E1)]-IF_fdet_88/custom_test_1
+  Completed config 89: [ammf_(acc+E1)]-IF_fdet_89/custom_test_1
+  Completed config 90: [ammf_(acc+E1)]-IF_fdet_90/custom_test_1
+  Completed config 91: [ammf_(acc+E1)]-IF_fdet_91/custom_test_1
+  Completed config 92: [ammf_(acc+E1)]-IF_fdet_92/custom_test_1
+  Completed config 93: [ammf_(acc+E1)]-IF_fdet_93/custom_test_1
+  Completed config 94: [ammf_(acc+E1)]-IF_fdet_94/custom_test_1
+  Completed config 95: [ammf_(acc+E1)]-IF_fdet_95/custom_test_1
+  Completed config 96: [ammf_(acc+E1)]-IF_fdet_96/custom_test_1
+  Completed config 97: [ammf_(acc+E1)]-IF_fdet_97/custom_test_1
+  Completed config 98: [ammf_(acc+E1)]-IF_fdet_98/custom_test_1
+  Completed config 99: [ammf_(acc+E1)]-IF_fdet_99/custom_test_1
+  Completed config 100: [ammf_(acc+E1)]-IF_fdet_100/custom_test_1
+  Completed config 101: [ammf_(acc+E1)]-IF_fdet_101/custom_test_1
+  Completed config 102: [ammf_(acc+E1)]-IF_fdet_102/custom_test_1
+  Completed config 103: [ammf_(acc+E1)]-IF_fdet_103/custom_test_1
+  Completed config 104: [ammf_(acc+E1)]-IF_fdet_104/custom_test_1
+  Completed config 105: [ammf_(acc+E1)]-IF_fdet_105/custom_test_1
+  Completed config 106: [ammf_(acc+E1)]-IF_fdet_106/custom_test_1
+  Completed config 107: [ammf_(acc+E1)]-IF_fdet_107/custom_test_1
+  Completed config 109: [ammf_(acc+E1)]-IF_fdet_109/custom_test_1
+  Completed config 110: [ammf_(acc+E1)]-IF_fdet_110/custom_test_1
+  Completed config 108: [ammf_(acc+E1)]-IF_fdet_108/custom_test_1
+  Completed config 111: [ammf_(acc+E1)]-IF_fdet_111/custom_test_1
+  Completed config 112: [ammf_(acc+E1)]-IF_fdet_112/custom_test_1
+  Completed config 113: [ammf_(acc+E1)]-IF_fdet_113/custom_test_1
+  Completed config 114: [ammf_(acc+E1)]-IF_fdet_114/custom_test_1
+  Completed config 115: [ammf_(acc+E1)]-IF_fdet_115/custom_test_1
+  Completed config 116: [ammf_(acc+E1)]-IF_fdet_116/custom_test_1
+  Completed config 117: [ammf_(acc+E1)]-IF_fdet_117/custom_test_1
+  Completed config 118: [ammf_(acc+E1)]-IF_fdet_118/custom_test_1
+  Completed config 119: [ammf_(acc+E1)]-IF_fdet_119/custom_test_1
+  Completed config 120: [ammf_(acc+E1)]-IF_fdet_120/custom_test_1
+  Completed config 122: [ammf_(acc+E1)]-IF_fdet_122/custom_test_1
+  Completed config 121: [ammf_(acc+E1)]-IF_fdet_121/custom_test_1
+  Completed config 123: [ammf_(acc+E1)]-IF_fdet_123/custom_test_1
+  Completed config 124: [ammf_(acc+E1)]-IF_fdet_124/custom_test_1
+  Completed config 125: [ammf_(acc+E1)]-IF_fdet_125/custom_test_1
+  Completed config 127: [ammf_(acc+E1)]-IF_fdet_127/custom_test_1
+  Completed config 126: [ammf_(acc+E1)]-IF_fdet_126/custom_test_1
+  Completed config 128: [ammf_(acc+E1)]-IF_fdet_128/custom_test_1
+  Completed config 129: [ammf_(acc+E1)]-IF_fdet_129/custom_test_1
+  Completed config 130: [ammf_(acc+E1)]-IF_fdet_130/custom_test_1
+  Completed config 131: [ammf_(acc+E1)]-IF_fdet_131/custom_test_1
+  Completed config 132: [ammf_(acc+E1)]-IF_fdet_132/custom_test_1
+  Completed config 133: [ammf_(acc+E1)]-IF_fdet_133/custom_test_1
+  Completed config 134: [ammf_(acc+E1)]-IF_fdet_134/custom_test_1
+  Completed config 135: [ammf_(acc+E1)]-IF_fdet_135/custom_test_1
+  Completed config 136: [ammf_(acc+E1)]-IF_fdet_136/custom_test_1
+  Completed config 138: [ammf_(acc+E1)]-IF_fdet_138/custom_test_1
+  Completed config 137: [ammf_(acc+E1)]-IF_fdet_137/custom_test_1
+  Completed config 139: [ammf_(acc+E1)]-IF_fdet_139/custom_test_1
+  Completed config 140: [ammf_(acc+E1)]-IF_fdet_140/custom_test_1
+  Completed config 141: [ammf_(acc+E1)]-IF_fdet_141/custom_test_1
+  Completed config 142: [ammf_(acc+E1)]-IF_fdet_142/custom_test_1
+  Completed config 143: [ammf_(acc+E1)]-IF_fdet_143/custom_test_1
+  Completed config 144: [ammf_(acc+E1)]-IF_fdet_144/custom_test_1
+  Completed config 145: [ammf_(acc+E1)]-IF_fdet_1/custom_test_2
+  Completed config 146: [ammf_(acc+E1)]-IF_fdet_2/custom_test_2
+  Completed config 147: [ammf_(acc+E1)]-IF_fdet_3/custom_test_2
+  Completed config 148: [ammf_(acc+E1)]-IF_fdet_4/custom_test_2
+  Completed config 149: [ammf_(acc+E1)]-IF_fdet_5/custom_test_2
+  Completed config 150: [ammf_(acc+E1)]-IF_fdet_6/custom_test_2
+  Completed config 151: [ammf_(acc+E1)]-IF_fdet_7/custom_test_2
+  Completed config 152: [ammf_(acc+E1)]-IF_fdet_8/custom_test_2
+  Config 158 failed with error: [Errno 28] No space left on device
+  Config 159 failed with error: [Errno 28] No space left on device
+  Completed config 153: [ammf_(acc+E1)]-IF_fdet_9/custom_test_2
+  Completed config 154: [ammf_(acc+E1)]-IF_fdet_10/custom_test_2
+  Config 160 failed with error: [Errno 28] No space left on device
+  Completed config 155: [ammf_(acc+E1)]-IF_fdet_11/custom_test_2
+  Completed config 156: [ammf_(acc+E1)]-IF_fdet_12/custom_test_2
+  Completed config 157: [ammf_(acc+E1)]-IF_fdet_13/custom_test_2
+  Config 161 failed with error: [Errno 28] No space left on device
+  Config 162 failed with error: [Errno 28] No space left on device
+  Config 163 failed with error: [Errno 28] No space left on device
+  Config 165 failed with error: [Errno 28] No space left on device
+  Config 164 failed with error: [Errno 28] No space left on device
+  Config 166 failed with error: [Errno 28] No space left on device
+  Config 167 failed with error: [Errno 28] No space left on device
+  Config 168 failed with error: [Errno 28] No space left on device
+  Config 169 failed with error: [Errno 28] No space left on device
+  Config 170 failed with error: [Errno 28] No space left on device
+  Config 171 failed with error: [Errno 28] No space left on device
+  Config 172 failed with error: [Errno 28] No space left on device
+  Config 173 failed with error: [Errno 28] No space left on device
+  Config 174 failed with error: [Errno 28] No space left on device
+  Config 175 failed with error: [Errno 28] No space left on device
+  Config 176 failed with error: [Errno 28] No space left on device
+  Config 177 failed with error: [Errno 28] No space left on device
+  Config 178 failed with error: [Errno 28] No space left on device
+  Config 179 failed with error: [Errno 28] No space left on device
+  Config 181 failed with error: [Errno 28] No space left on device
+  Config 180 failed with error: [Errno 28] No space left on device
+  Config 182 failed with error: [Errno 28] No space left on device
+  Config 183 failed with error: [Errno 28] No space left on device
+  Config 184 failed with error: [Errno 28] No space left on device
+  Config 185 failed with error: [Errno 28] No space left on device
+  Config 186 failed with error: [Errno 28] No space left on device
+  Config 187 failed with error: [Errno 28] No space left on device
+  Config 188 failed with error: [Errno 28] No space left on device
+  Config 189 failed with error: [Errno 28] No space left on device
+  Completed config 190: [ammf_(acc+E1)]-IF_fdet_46/custom_test_2
+  Completed config 191: [ammf_(acc+E1)]-IF_fdet_47/custom_test_2
+  Completed config 192: [ammf_(acc+E1)]-IF_fdet_48/custom_test_2
+  Completed config 193: [ammf_(acc+E1)]-IF_fdet_49/custom_test_2
+  Completed config 194: [ammf_(acc+E1)]-IF_fdet_50/custom_test_2
+  Completed config 195: [ammf_(acc+E1)]-IF_fdet_51/custom_test_2
+  Completed config 197: [ammf_(acc+E1)]-IF_fdet_53/custom_test_2
+  Completed config 196: [ammf_(acc+E1)]-IF_fdet_52/custom_test_2
+  Completed config 198: [ammf_(acc+E1)]-IF_fdet_54/custom_test_2
+  Completed config 199: [ammf_(acc+E1)]-IF_fdet_55/custom_test_2
+  Completed config 200: [ammf_(acc+E1)]-IF_fdet_56/custom_test_2
+  Completed config 201: [ammf_(acc+E1)]-IF_fdet_57/custom_test_2
+  Completed config 202: [ammf_(acc+E1)]-IF_fdet_58/custom_test_2
+  Completed config 203: [ammf_(acc+E1)]-IF_fdet_59/custom_test_2
+  Completed config 205: [ammf_(acc+E1)]-IF_fdet_61/custom_test_2
+  Completed config 204: [ammf_(acc+E1)]-IF_fdet_60/custom_test_2
+  Completed config 206: [ammf_(acc+E1)]-IF_fdet_62/custom_test_2
+  Completed config 207: [ammf_(acc+E1)]-IF_fdet_63/custom_test_2
+  Completed config 208: [ammf_(acc+E1)]-IF_fdet_64/custom_test_2
+  Completed config 209: [ammf_(acc+E1)]-IF_fdet_65/custom_test_2
+  Completed config 210: [ammf_(acc+E1)]-IF_fdet_66/custom_test_2
+  Completed config 211: [ammf_(acc+E1)]-IF_fdet_67/custom_test_2
+  Completed config 212: [ammf_(acc+E1)]-IF_fdet_68/custom_test_2
+  Completed config 213: [ammf_(acc+E1)]-IF_fdet_69/custom_test_2
+  Completed config 214: [ammf_(acc+E1)]-IF_fdet_70/custom_test_2
+  Completed config 215: [ammf_(acc+E1)]-IF_fdet_71/custom_test_2
+  Completed config 217: [ammf_(acc+E1)]-IF_fdet_73/custom_test_2
+  Completed config 216: [ammf_(acc+E1)]-IF_fdet_72/custom_test_2
+  Completed config 218: [ammf_(acc+E1)]-IF_fdet_74/custom_test_2
+  Completed config 219: [ammf_(acc+E1)]-IF_fdet_75/custom_test_2
+  Completed config 220: [ammf_(acc+E1)]-IF_fdet_76/custom_test_2
+  Completed config 221: [ammf_(acc+E1)]-IF_fdet_77/custom_test_2
+  Completed config 222: [ammf_(acc+E1)]-IF_fdet_78/custom_test_2
+  Completed config 223: [ammf_(acc+E1)]-IF_fdet_79/custom_test_2
+  Completed config 224: [ammf_(acc+E1)]-IF_fdet_80/custom_test_2
+  Completed config 225: [ammf_(acc+E1)]-IF_fdet_81/custom_test_2
+  Completed config 226: [ammf_(acc+E1)]-IF_fdet_82/custom_test_2
+  Completed config 227: [ammf_(acc+E1)]-IF_fdet_83/custom_test_2
+  Completed config 228: [ammf_(acc+E1)]-IF_fdet_84/custom_test_2
+  Completed config 229: [ammf_(acc+E1)]-IF_fdet_85/custom_test_2
+  Completed config 230: [ammf_(acc+E1)]-IF_fdet_86/custom_test_2
+  Completed config 231: [ammf_(acc+E1)]-IF_fdet_87/custom_test_2
+  Completed config 232: [ammf_(acc+E1)]-IF_fdet_88/custom_test_2
+  Completed config 233: [ammf_(acc+E1)]-IF_fdet_89/custom_test_2
+  Completed config 235: [ammf_(acc+E1)]-IF_fdet_91/custom_test_2
+  Completed config 234: [ammf_(acc+E1)]-IF_fdet_90/custom_test_2
+  Completed config 236: [ammf_(acc+E1)]-IF_fdet_92/custom_test_2
+  Completed config 237: [ammf_(acc+E1)]-IF_fdet_93/custom_test_2
+  Completed config 238: [ammf_(acc+E1)]-IF_fdet_94/custom_test_2
+  Completed config 239: [ammf_(acc+E1)]-IF_fdet_95/custom_test_2
+  Completed config 240: [ammf_(acc+E1)]-IF_fdet_96/custom_test_2
+  Completed config 241: [ammf_(acc+E1)]-IF_fdet_97/custom_test_2
+  Completed config 242: [ammf_(acc+E1)]-IF_fdet_98/custom_test_2
+  Completed config 243: [ammf_(acc+E1)]-IF_fdet_99/custom_test_2
+  Completed config 244: [ammf_(acc+E1)]-IF_fdet_100/custom_test_2
+  Completed config 245: [ammf_(acc+E1)]-IF_fdet_101/custom_test_2
+  Completed config 246: [ammf_(acc+E1)]-IF_fdet_102/custom_test_2
+  Completed config 247: [ammf_(acc+E1)]-IF_fdet_103/custom_test_2
+  Completed config 248: [ammf_(acc+E1)]-IF_fdet_104/custom_test_2
+  Completed config 249: [ammf_(acc+E1)]-IF_fdet_105/custom_test_2
+  Completed config 250: [ammf_(acc+E1)]-IF_fdet_106/custom_test_2
+  Completed config 251: [ammf_(acc+E1)]-IF_fdet_107/custom_test_2
+  Completed config 253: [ammf_(acc+E1)]-IF_fdet_109/custom_test_2
+  Completed config 252: [ammf_(acc+E1)]-IF_fdet_108/custom_test_2
+  Completed config 254: [ammf_(acc+E1)]-IF_fdet_110/custom_test_2
+  Completed config 255: [ammf_(acc+E1)]-IF_fdet_111/custom_test_2
+  Completed config 256: [ammf_(acc+E1)]-IF_fdet_112/custom_test_2
+  Completed config 257: [ammf_(acc+E1)]-IF_fdet_113/custom_test_2
+  Completed config 258: [ammf_(acc+E1)]-IF_fdet_114/custom_test_2
+  Completed config 259: [ammf_(acc+E1)]-IF_fdet_115/custom_test_2
+  Completed config 260: [ammf_(acc+E1)]-IF_fdet_116/custom_test_2
+  Completed config 261: [ammf_(acc+E1)]-IF_fdet_117/custom_test_2
+  Completed config 262: [ammf_(acc+E1)]-IF_fdet_118/custom_test_2
+  Completed config 263: [ammf_(acc+E1)]-IF_fdet_119/custom_test_2
+  Completed config 264: [ammf_(acc+E1)]-IF_fdet_120/custom_test_2
+  Completed config 265: [ammf_(acc+E1)]-IF_fdet_121/custom_test_2
+  Completed config 266: [ammf_(acc+E1)]-IF_fdet_122/custom_test_2
+  Completed config 267: [ammf_(acc+E1)]-IF_fdet_123/custom_test_2
+  Completed config 268: [ammf_(acc+E1)]-IF_fdet_124/custom_test_2
+  Completed config 269: [ammf_(acc+E1)]-IF_fdet_125/custom_test_2
+  Completed config 270: [ammf_(acc+E1)]-IF_fdet_126/custom_test_2
+  Completed config 271: [ammf_(acc+E1)]-IF_fdet_127/custom_test_2
+  Completed config 272: [ammf_(acc+E1)]-IF_fdet_128/custom_test_2
+  Completed config 273: [ammf_(acc+E1)]-IF_fdet_129/custom_test_2
+  Completed config 274: [ammf_(acc+E1)]-IF_fdet_130/custom_test_2
+  Completed config 275: [ammf_(acc+E1)]-IF_fdet_131/custom_test_2
+  Completed config 276: [ammf_(acc+E1)]-IF_fdet_132/custom_test_2
+  Completed config 277: [ammf_(acc+E1)]-IF_fdet_133/custom_test_2
+  Completed config 278: [ammf_(acc+E1)]-IF_fdet_134/custom_test_2
+  Completed config 279: [ammf_(acc+E1)]-IF_fdet_135/custom_test_2
+  Completed config 280: [ammf_(acc+E1)]-IF_fdet_136/custom_test_2
+  Completed config 281: [ammf_(acc+E1)]-IF_fdet_137/custom_test_2
+  Completed config 282: [ammf_(acc+E1)]-IF_fdet_138/custom_test_2
+  Completed config 283: [ammf_(acc+E1)]-IF_fdet_139/custom_test_2
+  Completed config 284: [ammf_(acc+E1)]-IF_fdet_140/custom_test_2
+  Completed config 285: [ammf_(acc+E1)]-IF_fdet_141/custom_test_2
+  Completed config 286: [ammf_(acc+E1)]-IF_fdet_142/custom_test_2
+  Completed config 287: [ammf_(acc+E1)]-IF_fdet_143/custom_test_2
+  Completed config 288: [ammf_(acc+E1)]-IF_fdet_144/custom_test_2
+  Completed config 289: [ammf_(acc+E1)]-IF_fdet_1/custom_test_3
+  Completed config 290: [ammf_(acc+E1)]-IF_fdet_2/custom_test_3
+  Completed config 291: [ammf_(acc+E1)]-IF_fdet_3/custom_test_3
+  Completed config 292: [ammf_(acc+E1)]-IF_fdet_4/custom_test_3
+  Completed config 293: [ammf_(acc+E1)]-IF_fdet_5/custom_test_3
+  Completed config 294: [ammf_(acc+E1)]-IF_fdet_6/custom_test_3
+  Completed config 295: [ammf_(acc+E1)]-IF_fdet_7/custom_test_3
+  Completed config 296: [ammf_(acc+E1)]-IF_fdet_8/custom_test_3
+  Completed config 297: [ammf_(acc+E1)]-IF_fdet_9/custom_test_3
+  Completed config 298: [ammf_(acc+E1)]-IF_fdet_10/custom_test_3
+  Completed config 299: [ammf_(acc+E1)]-IF_fdet_11/custom_test_3
+  Completed config 300: [ammf_(acc+E1)]-IF_fdet_12/custom_test_3
+  Completed config 301: [ammf_(acc+E1)]-IF_fdet_13/custom_test_3
+  Completed config 302: [ammf_(acc+E1)]-IF_fdet_14/custom_test_3
+  Completed config 303: [ammf_(acc+E1)]-IF_fdet_15/custom_test_3
+  Completed config 304: [ammf_(acc+E1)]-IF_fdet_16/custom_test_3
+  Completed config 305: [ammf_(acc+E1)]-IF_fdet_17/custom_test_3
+  Completed config 306: [ammf_(acc+E1)]-IF_fdet_18/custom_test_3
+  Completed config 307: [ammf_(acc+E1)]-IF_fdet_19/custom_test_3
+  Completed config 308: [ammf_(acc+E1)]-IF_fdet_20/custom_test_3
+  Completed config 309: [ammf_(acc+E1)]-IF_fdet_21/custom_test_3
+  Completed config 310: [ammf_(acc+E1)]-IF_fdet_22/custom_test_3
+  Completed config 311: [ammf_(acc+E1)]-IF_fdet_23/custom_test_3
+  Completed config 312: [ammf_(acc+E1)]-IF_fdet_24/custom_test_3
+  Completed config 313: [ammf_(acc+E1)]-IF_fdet_25/custom_test_3
+  Completed config 315: [ammf_(acc+E1)]-IF_fdet_27/custom_test_3
+  Completed config 314: [ammf_(acc+E1)]-IF_fdet_26/custom_test_3
+  Completed config 316: [ammf_(acc+E1)]-IF_fdet_28/custom_test_3
+  Completed config 317: [ammf_(acc+E1)]-IF_fdet_29/custom_test_3
+  Completed config 318: [ammf_(acc+E1)]-IF_fdet_30/custom_test_3
+  Completed config 319: [ammf_(acc+E1)]-IF_fdet_31/custom_test_3
+  Completed config 320: [ammf_(acc+E1)]-IF_fdet_32/custom_test_3
+  Completed config 321: [ammf_(acc+E1)]-IF_fdet_33/custom_test_3
+  Completed config 322: [ammf_(acc+E1)]-IF_fdet_34/custom_test_3
+  Completed config 323: [ammf_(acc+E1)]-IF_fdet_35/custom_test_3
+  Completed config 325: [ammf_(acc+E1)]-IF_fdet_37/custom_test_3
+  Completed config 324: [ammf_(acc+E1)]-IF_fdet_36/custom_test_3
+  Completed config 326: [ammf_(acc+E1)]-IF_fdet_38/custom_test_3
+  Completed config 327: [ammf_(acc+E1)]-IF_fdet_39/custom_test_3
+  Completed config 328: [ammf_(acc+E1)]-IF_fdet_40/custom_test_3
+  Completed config 329: [ammf_(acc+E1)]-IF_fdet_41/custom_test_3
+  Completed config 330: [ammf_(acc+E1)]-IF_fdet_42/custom_test_3
+  Completed config 331: [ammf_(acc+E1)]-IF_fdet_43/custom_test_3
+  Completed config 332: [ammf_(acc+E1)]-IF_fdet_44/custom_test_3
+  Completed config 333: [ammf_(acc+E1)]-IF_fdet_45/custom_test_3
+  Completed config 334: [ammf_(acc+E1)]-IF_fdet_46/custom_test_3
+  Completed config 335: [ammf_(acc+E1)]-IF_fdet_47/custom_test_3
+  Completed config 336: [ammf_(acc+E1)]-IF_fdet_48/custom_test_3
+  Completed config 337: [ammf_(acc+E1)]-IF_fdet_49/custom_test_3
+  Completed config 339: [ammf_(acc+E1)]-IF_fdet_51/custom_test_3
+  Completed config 338: [ammf_(acc+E1)]-IF_fdet_50/custom_test_3
+  Completed config 340: [ammf_(acc+E1)]-IF_fdet_52/custom_test_3
+  Completed config 341: [ammf_(acc+E1)]-IF_fdet_53/custom_test_3
+  Completed config 343: [ammf_(acc+E1)]-IF_fdet_55/custom_test_3
+  Completed config 342: [ammf_(acc+E1)]-IF_fdet_54/custom_test_3
+  Completed config 344: [ammf_(acc+E1)]-IF_fdet_56/custom_test_3
+  Completed config 345: [ammf_(acc+E1)]-IF_fdet_57/custom_test_3
+  Completed config 346: [ammf_(acc+E1)]-IF_fdet_58/custom_test_3
+  Completed config 347: [ammf_(acc+E1)]-IF_fdet_59/custom_test_3
+  Completed config 348: [ammf_(acc+E1)]-IF_fdet_60/custom_test_3
+  Completed config 349: [ammf_(acc+E1)]-IF_fdet_61/custom_test_3
+  Completed config 350: [ammf_(acc+E1)]-IF_fdet_62/custom_test_3
+  Completed config 351: [ammf_(acc+E1)]-IF_fdet_63/custom_test_3
+  Completed config 352: [ammf_(acc+E1)]-IF_fdet_64/custom_test_3
+  Completed config 353: [ammf_(acc+E1)]-IF_fdet_65/custom_test_3
+  Completed config 354: [ammf_(acc+E1)]-IF_fdet_66/custom_test_3
+  Completed config 355: [ammf_(acc+E1)]-IF_fdet_67/custom_test_3
+  Completed config 356: [ammf_(acc+E1)]-IF_fdet_68/custom_test_3
+  Completed config 357: [ammf_(acc+E1)]-IF_fdet_69/custom_test_3
+  Completed config 358: [ammf_(acc+E1)]-IF_fdet_70/custom_test_3
+  Completed config 359: [ammf_(acc+E1)]-IF_fdet_71/custom_test_3
+  Completed config 360: [ammf_(acc+E1)]-IF_fdet_72/custom_test_3
+  Completed config 361: [ammf_(acc+E1)]-IF_fdet_73/custom_test_3
+  Completed config 362: [ammf_(acc+E1)]-IF_fdet_74/custom_test_3
+  Completed config 363: [ammf_(acc+E1)]-IF_fdet_75/custom_test_3
+  Completed config 364: [ammf_(acc+E1)]-IF_fdet_76/custom_test_3
+  Completed config 365: [ammf_(acc+E1)]-IF_fdet_77/custom_test_3
+  Completed config 366: [ammf_(acc+E1)]-IF_fdet_78/custom_test_3
+  Completed config 367: [ammf_(acc+E1)]-IF_fdet_79/custom_test_3
+  Completed config 368: [ammf_(acc+E1)]-IF_fdet_80/custom_test_3
+  Completed config 369: [ammf_(acc+E1)]-IF_fdet_81/custom_test_3
+  Completed config 370: [ammf_(acc+E1)]-IF_fdet_82/custom_test_3
+  Completed config 371: [ammf_(acc+E1)]-IF_fdet_83/custom_test_3
+  Completed config 372: [ammf_(acc+E1)]-IF_fdet_84/custom_test_3
+  Completed config 373: [ammf_(acc+E1)]-IF_fdet_85/custom_test_3
+  Completed config 374: [ammf_(acc+E1)]-IF_fdet_86/custom_test_3
+  Completed config 375: [ammf_(acc+E1)]-IF_fdet_87/custom_test_3
+  Completed config 376: [ammf_(acc+E1)]-IF_fdet_88/custom_test_3
+  Completed config 377: [ammf_(acc+E1)]-IF_fdet_89/custom_test_3
+  Completed config 379: [ammf_(acc+E1)]-IF_fdet_91/custom_test_3
+  Completed config 378: [ammf_(acc+E1)]-IF_fdet_90/custom_test_3
+  Completed config 380: [ammf_(acc+E1)]-IF_fdet_92/custom_test_3
+  Completed config 381: [ammf_(acc+E1)]-IF_fdet_93/custom_test_3
+  Completed config 382: [ammf_(acc+E1)]-IF_fdet_94/custom_test_3
+  Completed config 383: [ammf_(acc+E1)]-IF_fdet_95/custom_test_3
+  Completed config 384: [ammf_(acc+E1)]-IF_fdet_96/custom_test_3
+  Completed config 385: [ammf_(acc+E1)]-IF_fdet_97/custom_test_3
+  Completed config 386: [ammf_(acc+E1)]-IF_fdet_98/custom_test_3
+  Completed config 387: [ammf_(acc+E1)]-IF_fdet_99/custom_test_3
+  Completed config 388: [ammf_(acc+E1)]-IF_fdet_100/custom_test_3
+  Completed config 389: [ammf_(acc+E1)]-IF_fdet_101/custom_test_3
+  Completed config 390: [ammf_(acc+E1)]-IF_fdet_102/custom_test_3
+  Completed config 391: [ammf_(acc+E1)]-IF_fdet_103/custom_test_3
+  Completed config 392: [ammf_(acc+E1)]-IF_fdet_104/custom_test_3
+  Completed config 393: [ammf_(acc+E1)]-IF_fdet_105/custom_test_3
+  Completed config 394: [ammf_(acc+E1)]-IF_fdet_106/custom_test_3
+  Completed config 395: [ammf_(acc+E1)]-IF_fdet_107/custom_test_3
+  Completed config 397: [ammf_(acc+E1)]-IF_fdet_109/custom_test_3
+  Completed config 396: [ammf_(acc+E1)]-IF_fdet_108/custom_test_3
+  Completed config 398: [ammf_(acc+E1)]-IF_fdet_110/custom_test_3
+  Completed config 399: [ammf_(acc+E1)]-IF_fdet_111/custom_test_3
+  Completed config 400: [ammf_(acc+E1)]-IF_fdet_112/custom_test_3
+  Completed config 401: [ammf_(acc+E1)]-IF_fdet_113/custom_test_3
+  Completed config 402: [ammf_(acc+E1)]-IF_fdet_114/custom_test_3
+  Completed config 403: [ammf_(acc+E1)]-IF_fdet_115/custom_test_3
+  Completed config 404: [ammf_(acc+E1)]-IF_fdet_116/custom_test_3
+  Completed config 405: [ammf_(acc+E1)]-IF_fdet_117/custom_test_3
+  Completed config 406: [ammf_(acc+E1)]-IF_fdet_118/custom_test_3
+  Completed config 407: [ammf_(acc+E1)]-IF_fdet_119/custom_test_3
+  Completed config 408: [ammf_(acc+E1)]-IF_fdet_120/custom_test_3
+  Completed config 409: [ammf_(acc+E1)]-IF_fdet_121/custom_test_3
+  Completed config 410: [ammf_(acc+E1)]-IF_fdet_122/custom_test_3
+  Completed config 411: [ammf_(acc+E1)]-IF_fdet_123/custom_test_3
+  Completed config 412: [ammf_(acc+E1)]-IF_fdet_124/custom_test_3
+  Completed config 413: [ammf_(acc+E1)]-IF_fdet_125/custom_test_3
+  Completed config 414: [ammf_(acc+E1)]-IF_fdet_126/custom_test_3
+  Completed config 415: [ammf_(acc+E1)]-IF_fdet_127/custom_test_3
+  Completed config 416: [ammf_(acc+E1)]-IF_fdet_128/custom_test_3
+  Completed config 417: [ammf_(acc+E1)]-IF_fdet_129/custom_test_3
+  Completed config 419: [ammf_(acc+E1)]-IF_fdet_131/custom_test_3
+  Completed config 418: [ammf_(acc+E1)]-IF_fdet_130/custom_test_3
+  Completed config 421: [ammf_(acc+E1)]-IF_fdet_133/custom_test_3
+  Completed config 420: [ammf_(acc+E1)]-IF_fdet_132/custom_test_3
+  Completed config 423: [ammf_(acc+E1)]-IF_fdet_135/custom_test_3
+  Completed config 422: [ammf_(acc+E1)]-IF_fdet_134/custom_test_3
+  Completed config 424: [ammf_(acc+E1)]-IF_fdet_136/custom_test_3
+  Completed config 425: [ammf_(acc+E1)]-IF_fdet_137/custom_test_3
+  Completed config 426: [ammf_(acc+E1)]-IF_fdet_138/custom_test_3
+  Completed config 427: [ammf_(acc+E1)]-IF_fdet_139/custom_test_3
+  Completed config 429: [ammf_(acc+E1)]-IF_fdet_141/custom_test_3
+  Completed config 428: [ammf_(acc+E1)]-IF_fdet_140/custom_test_3
+  Completed config 432: [ammf_(acc+E1)]-IF_fdet_144/custom_test_3
+  Completed config 431: [ammf_(acc+E1)]-IF_fdet_143/custom_test_3
+  Completed config 430: [ammf_(acc+E1)]-IF_fdet_142/custom_test_3
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_1.1_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-16 19:56:12

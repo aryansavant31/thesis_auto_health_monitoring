@@ -12,4 +12,7 @@ data/datasets/mass_sp_dm/*
 
 data/datasets/spring_particles/
 
+
+fault_detection/logs/asml/
+
 **/__pycache__/
