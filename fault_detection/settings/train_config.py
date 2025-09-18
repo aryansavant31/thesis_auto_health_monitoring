@@ -65,11 +65,11 @@ class AnomalyDetectorTrainConfig:
     # 2: Model parameters
         self.anom_type = 'IF'
         self.n_estimators = 1000
-        self.contam = 1e-20
+        self.contam = 0.01
         self.set_anom_config()
 
         # uncertainity parameters
-        self.ok_percentage = 0.99
+        self.ok_percentage = 1
 
         # run parameters
         self.domain_config = get_domain_config('time')
@@ -85,28 +85,28 @@ class AnomalyDetectorTrainConfig:
 
         self.train_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [True, {}],
+            'confusion_matrix_advance'      : [False, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
+            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
-            'pair_plot'                     : [True, {}],
+            'pair_plot'                     : [False, {}],
         }
 
         self.test_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [True, {}],
+            'confusion_matrix_advance'      : [False, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num':1}],
-            'anomaly_score_dist_simple-2'   : [True, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
+            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': True, 'bins':80}],
+            'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             #'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
-            'pair_plot'                     : [True, {}],
+            'pair_plot'                     : [False, {}],
         }
 
     def set_anom_config(self):
@@ -243,7 +243,7 @@ class AnomalyDetectorTrainSweep:
         """
         self.data_config = data_config
 
-        self.train_sweep_num = 4
+        self.train_sweep_num = 3
 
     # 1: Training parameters
         # dataset parameters
@@ -254,20 +254,21 @@ class AnomalyDetectorTrainSweep:
 
     # 2: Model parameters
         self.anom_type = ['IF']
-        self.n_estimators = [1000]
-        self.contam = [1e-7]
+        self.n_estimators = [2000, 2000, 2000, 2000]
+        self.contam = [0.01]
 
         # run parameters
-        self.domain_config = [get_domain_config('time')]
-        self.raw_data_norm = ['std']
+        self.domain_config = [get_domain_config('freq')]
+        self.raw_data_norm = [None]
         self.feat_configs = [
-            # [],
+            [],
+            [get_freq_feat_config('first_n_modes', n_modes=10)]
             #[get_time_feat_config('mean')], 
             # [get_time_feat_config('kurtosis')], 
             # [get_freq_feat_config('stdF')], 
             # [get_time_feat_config('max')],
             # [get_time_feat_config('peak_to_peak')], 
-            [get_time_feat_config('skewness')]
+            #[get_time_feat_config('skewness')]
 
         ]
         self.reduc_config = [None]
