@@ -67,12 +67,13 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
     best_pair = overall_means.idxmax()
 
     # Precision variation plot
-    fig, ax = plt.subplots(figsize=(15, 12), dpi=100)
+    fig, ax = plt.subplots(figsize=(14.2, 12), dpi=100)
     sns.boxplot(y='pair_label', x='precision', data=plot_df, ax=ax, color='skyblue', showfliers=False)
     sns.stripplot(y='pair_label', x='precision', data=plot_df, ax=ax, color='navy', size=6, jitter=True)
     ax.set_title(f'Precision Variation for Isolation Forest Hyperparameters (precision weight = {precison_weight}) : [{fault_level_caption}]', fontsize=11, pad=15)
     ax.set_xlabel('Precision')
     ax.set_ylabel('(n_trees, contam)')
+    ax.set_xlim(-0.05, 1.05)
     
     plt.grid(axis='y')
 
@@ -107,12 +108,13 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
     fig.savefig(os.path.join(os.path.dirname(excel_path), f'{book_name}_{fault_level}_precision.png'), dpi=700)
 
     # Recall variation plot
-    fig, ax = plt.subplots(figsize=(15, 12), dpi=100)
+    fig, ax = plt.subplots(figsize=(14, 12), dpi=100)
     sns.boxplot(y='pair_label', x='recall', data=plot_df, ax=ax, color='salmon', showfliers=False)
     sns.stripplot(y='pair_label', x='recall', data=plot_df, ax=ax, color='darkred', size=6, jitter=True)
     ax.set_title(f'Recall Variation for Isolation Forest Hyperparameters (recall weight = {recall_weight}) : [{fault_level_caption}]', fontsize=11, pad=15)
     ax.set_xlabel('Recall')
     ax.set_ylabel('(n_trees, contam)')
+    ax.set_xlim(-0.05, 1.05)
 
     plt.grid(axis='y')
 
@@ -152,7 +154,7 @@ if __name__ == "__main__":
 
     IF_histogram_plot(excel_path,
                       
-        fault_level = 'subtle', 
+        fault_level = 'medium', 
         precison_weight = 0.5,
         
         )

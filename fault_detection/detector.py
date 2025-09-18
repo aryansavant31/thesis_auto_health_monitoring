@@ -649,7 +649,7 @@ class TrainerAnomalyDetector:
         n_feats = len(feat_cols)
 
         df_sns = self.df.copy()
-        df_sns['pred_label'] = df_sns['pred_label'].map({0: 'OK', 1: 'NOK'})
+        df_sns['pred_label'] = df_sns['pred_label'].map({1: 'OK', -1: 'NOK'})
         # Dynamically set height (default is 2.5, you can adjust as needed)
         #height = max(2.5, min(2.5 + 0.5 * (n_feats - 2), 5.0))
 
