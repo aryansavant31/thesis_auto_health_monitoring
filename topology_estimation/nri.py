@@ -38,8 +38,9 @@ class NRI(LightningModule):
         final_beta=1.0, warmup_frac_beta=0.3,
         optimizer='adam', add_const_kld=False,
         loss_type_enc='kld', loss_type_dec='nll', prior=None,
-        is_enc_warmup=True, warmup_acc_cutoff=0.75,
-        final_gamma=0.5, warmup_frac_gamma=0.3
+        is_enc_warmup=True, warmup_acc_cutoff=0.75, sustain_enc_warmup=True,
+        final_gamma=0.5, warmup_frac_gamma=0.3,
+        dec_loss_stabilize_steps=20, dec_loss_bound_update_interval=10, dec_loss_window_size=30,
     ):
         self.lr_enc = lr_enc
         self.lr_dec = lr_dec
@@ -51,16 +52,24 @@ class NRI(LightningModule):
         self.prior = prior
         self.loss_type_encoder = loss_type_enc
         self.loss_type_decoder = loss_type_dec
+
+        # warmup parameters
         self.is_enc_warmup = is_enc_warmup
         self.warmup_acc_cutoff = warmup_acc_cutoff
+        self.sustain_enc_warmup = sustain_enc_warmup
         self.final_gamma = final_gamma
         self.warmup_frac_gamma = warmup_frac_gamma
+
+        self.dec_loss_stabilize_steps = dec_loss_stabilize_steps 
+        self.dec_loss_bound_update_interval = dec_loss_bound_update_interval
+        self.dec_loss_window_size = dec_loss_window_size
 
         print(f"\nTraining parameters set to: \nlr_enc={self.lr_enc}, \nlr_dec={self.lr_dec}, " 
               f"\nfinal_beta={self.final_beta}, \nwarmup_frac={self.warmup_frac_beta}, "
               f"\noptimizer={self.optimizer}, \nloss_type_encoder={self.loss_type_encoder}, \nloss_type_decoder={self.loss_type_decoder}, \nprior={self.prior}, \nadd_const_kld={self.add_const_kld}"
-              f"\nis_enc_warmup: {self.is_enc_warmup}, \nwarmup_acc_cutoff: {self.warmup_acc_cutoff}\n, "
-              f"\nfinal_gamma: {self.final_gamma}, \nwarmup_frac_gamma: {self.warmup_frac_gamma}\n")
+              f"\nis_enc_warmup: {self.is_enc_warmup}, \nwarmup_acc_cutoff: {self.warmup_acc_cutoff}, \nsustain_enc_warmup: {self.sustain_enc_warmup}, "
+              f"\nfinal_gamma: {self.final_gamma}, \nwarmup_frac_gamma: {self.warmup_frac_gamma}, "
+              f"\ndec_loss_stabilize_steps: {self.dec_loss_stabilize_steps}, \ndec_loss_bound_update_interval: {self.dec_loss_bound_update_interval}, \ndec_loss_window_size: {self.dec_loss_window_size}\n")
         
     def set_input_example_for_graph(self, n_nodes):
         self.example_input_array = torch.rand((1, n_nodes, self.encoder.n_comps, self.encoder.n_dims))
@@ -231,8 +240,32 @@ class NRI(LightningModule):
         self.add_const_kld = checkpoint['add_const_kld']
         self.is_enc_warmup = checkpoint['is_enc_warmup']
         self.warmup_acc_cutoff = checkpoint['warmup_acc_cutoff']
+        self.sustain_enc_warmup = checkpoint['sustain_enc_warmup']
         self.final_gamma = checkpoint['final_gamma']
         self.warmup_frac_gamma = checkpoint['warmup_frac_gamma']
+        self.dec_loss_stabilize_steps = checkpoint['dec_loss_stabilize_steps']
+        self.dec_loss_bound_update_interval = checkpoint['dec_loss_bound_update_interval']
+        self.dec_loss_window_size = checkpoint['dec_loss_window_size']
+
+        # load previous training data
+        self.train_losses = checkpoint['train_losses']
+        self.train_accuracies = checkpoint['train_accuracies']
+        self.train_entropys = checkpoint['train_entropys']
+        self.train_gains = checkpoint['train_gains']
+
+        self.custom_step = checkpoint['custom_step']
+        self.custom_current_epoch = checkpoint['custom_current_epoch']
+        self.beta_scheduler = checkpoint['beta_scheduler']
+        self.gamma_scheduler = checkpoint['gamma_scheduler']
+        self.temp_scheduler = checkpoint['temp_scheduler']
+
+        self.is_decoder_stabilized = checkpoint['is_decoder_stabilized']
+        self.decoder_stabilization_counter = checkpoint['decoder_stabilization_counter']
+        self.enc_warmup_end_step = checkpoint.get('enc_warmup_end_step', None)
+        self.dec_stabilize_step = checkpoint.get('dec_stabilize_step', None)
+        self.decoder_loss_upper_bound = checkpoint['decoder_loss_upper_bound']
+        self.decoder_loss_lower_bound = checkpoint['decoder_loss_lower_bound']
+        self.recent_decoder_losses = checkpoint['recent_decoder_losses']
 
         # rebuild model
         self.build_model()
@@ -256,8 +289,33 @@ class NRI(LightningModule):
         checkpoint['add_const_kld'] = self.add_const_kld
         checkpoint['is_enc_warmup'] = self.is_enc_warmup
         checkpoint['warmup_acc_cutoff'] = self.warmup_acc_cutoff
+        checkpoint['sustain_enc_warmup'] = self.sustain_enc_warmup
         checkpoint['final_gamma'] = self.final_gamma
         checkpoint['warmup_frac_gamma'] = self.warmup_frac_gamma
+        checkpoint['dec_loss_stabilize_steps'] = self.dec_loss_stabilize_steps
+        checkpoint['dec_loss_bound_update_interval'] = self.dec_loss_bound_update_interval
+        checkpoint['dec_loss_window_size'] = self.dec_loss_window_size
+
+        # save training data
+        checkpoint['train_losses'] = self.train_losses
+        checkpoint['train_accuracies'] = self.train_accuracies
+        checkpoint['train_entropys'] = self.train_entropys
+        checkpoint['train_gains'] = self.train_gains
+
+        checkpoint['custom_step'] = self.custom_step
+        checkpoint['custom_current_epoch'] = self.custom_current_epoch
+        checkpoint['beta_scheduler'] = self.beta_scheduler
+        checkpoint['gamma_scheduler'] = self.gamma_scheduler
+        checkpoint['temp_scheduler'] = self.temp_scheduler
+
+        checkpoint['is_decoder_stabilized'] = self.is_decoder_stabilized
+        checkpoint['decoder_stabilization_counter'] = self.decoder_stabilization_counter
+        checkpoint['enc_warmup_end_step'] = getattr(self, 'enc_warmup_end_step', None)
+        checkpoint['dec_stabilize_step'] = getattr(self, 'dec_stabilize_step', None)
+        checkpoint['decoder_loss_upper_bound'] = self.decoder_loss_upper_bound
+        checkpoint['decoder_loss_lower_bound'] = self.decoder_loss_lower_bound
+        checkpoint['recent_decoder_losses'] = self.recent_decoder_losses
+
     
     def configure_optimizers(self):
         # get params from encoder and decoder
@@ -281,62 +339,94 @@ class NRI(LightningModule):
         """
         super().on_train_start()
 
-        # initialze scehdulers
-        self.beta_scheduler = BetaScheduler(
-            total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
-            final_beta=self.final_beta,
-            warmup_frac=self.warmup_frac_beta
-        )
+        if getattr(self, "custom_step", 0) == 0:
+            self.custom_step = -1  # will be incremented to 0 in first training step
+            self.custom_current_epoch = -1  # will be incremented to 0 in first epoch start
 
-        self.gamma_scheduler = BetaScheduler(
-            total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
-            final_beta=self.final_gamma,
-            warmup_frac=self.warmup_frac_gamma
-        )
+            # initialze scehdulers
+            self.beta_scheduler = BetaScheduler(
+                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
+                final_beta=self.final_beta,
+                warmup_frac=self.warmup_frac_beta
+            )
 
-        self.temp_scheduler = TempScheduler(
-            init_tau=self.init_temp,
-            min_tau=self.min_temp,
-            decay=self.decay_temp
-        )
+            self.gamma_scheduler = BetaScheduler(
+                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
+                final_beta=self.final_gamma,
+                warmup_frac=self.warmup_frac_gamma
+            )
 
-        self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
-        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
-        self.run_type = "train"
+            self.temp_scheduler = TempScheduler(
+                init_tau=self.init_temp,
+                min_tau=self.min_temp,
+                decay=self.decay_temp
+            )
 
-        self.n_steps_per_epoch = len(self.trainer.train_dataloader)
-        self.gamma = 1
-        
-        self.encoder.init_input_processors()
-        self.decoder.init_input_processors()
+            self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
+            self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
+            self.run_type = "train"
 
-        self.train_losses = {
-            'nri/train_losses': [],
-            'enc/train_losses': [],
-            'enc/train_warmup_losses': [],
-            'dec/train_losses': [],
-            'nri/val_losses': [],
-            'enc/val_losses': [],
-            'enc/val_warmup_losses': [],
-            'dec/val_losses': [],
-        }
-        self.train_accuracies = {
-            'enc/train_edge_accuracy': [],
-            'enc/val_edge_accuracy': [],
-        }
-        self.train_entropys = {
-            'enc/train_entropy': [],
-            'enc/val_entropy': [],
-        }
-        self.train_gains = {
-            'enc_loss/beta': [],
-            'enc_warmup_loss/gamma': [],
-            'dec_loss/alpha': [],
-            'nri_loss/delta': [],
-            'dec/temp': [],
-        }
+            self.n_steps_per_epoch = len(self.trainer.train_dataloader)
+            self.is_decoder_stabilized = False
+            self.decoder_stabilization_counter = 0
+            
+            self.decoder_loss_upper_bound = None
+            self.decoder_loss_lower_bound = None
+            self.recent_decoder_losses = []
+            
+            self.encoder.init_input_processors()
+            self.decoder.init_input_processors()
 
-        self.start_time = time.time()
+            self.train_losses = {
+                'nri/train_losses': [],
+                'enc/train_losses': [],
+                'enc/train_warmup_losses': [],
+                'dec/train_losses': [],
+                'nri/val_losses': [],
+                'enc/val_losses': [],
+                'enc/val_warmup_losses': [],
+                'dec/val_losses': [],
+            }
+            self.train_accuracies = {
+                'enc/train_edge_accuracy': [],
+                'enc/val_edge_accuracy': [],
+            }
+            self.train_entropys = {
+                'enc/train_entropy': [],
+                'enc/val_entropy': [],
+            }
+            self.train_gains = {
+                'enc_loss/beta': [],
+                'enc_warmup_loss/gamma': [],
+                'dec_loss/alpha': [],
+                'nri_loss/delta': [],
+                'dec/temp': [],
+            }
+            self.start_time = time.time()
+
+        else:
+            # Only load few variables
+            self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
+            self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
+            self.run_type = "train"
+
+            self.n_steps_per_epoch = len(self.trainer.train_dataloader)
+            self.encoder.init_input_processors()
+            self.decoder.init_input_processors()
+
+            self.start_time = time.time()
+
+            print(f"Resuming training from global step {self.custom_step} at epoch {self.custom_current_epoch}.")
+
+    def on_train_batch_start(self, batch, batch_idx):
+        super().on_train_batch_start(batch, batch_idx)
+
+        self.custom_step += 1
+
+    def on_train_epoch_start(self):
+        super().on_train_epoch_start()
+
+        self.custom_current_epoch += 1
 
     def _encoder_warmup_loss(self, relations, edge_pred, edge_accuracy):
         """
@@ -351,14 +441,22 @@ class NRI(LightningModule):
             enc_pred = edge_pred.view(-1, edge_pred.size(-1))   # (batch_size * n_edges, n_types)
             ce_loss_encoder = F.cross_entropy(enc_pred, enc_target)
 
-            if self.global_step > 0:
+            if self.custom_step > 0:
                 if edge_accuracy > self.warmup_acc_cutoff:
+                    if self.is_enc_warmup:
+                        self.enc_warmup_end_step = self.custom_step
+                        warmup_text = f"Warmup may re-enable if edge accuracy drops below cutoff {self.warmup_acc_cutoff}." if self.sustain_enc_warmup else "Encoder warmup disabled for the rest of training."
+                        print(f"\nEncoder warmup completed at step {self.enc_warmup_end_step}. {warmup_text}\n")
+
                     self.is_enc_warmup = False
                     ce_loss_encoder = 0.0
-                    print(f"\nEncoder warmup completed at step {self.global_step}. Encoder warmup disabled for the rest of training.\n")
                     
+                else:
+                    if not self.is_enc_warmup:
+                        print(f"\nEncoder warmup re-enabled at step {self.custom_step} as edge accuracy dropped below cutoff {self.warmup_acc_cutoff}.")
+                    self.is_enc_warmup = True
         else:
-            print("Warning: relations not provided for encoder cross-entropy loss calculation. So encoder warmup is disabled.") if self.global_step == 0 else None
+            print("Warning: relations not provided for encoder cross-entropy loss calculation. So encoder warmup is disabled.") if self.custom_step == 0 else None
             self.is_enc_warmup = False
             ce_loss_encoder = 0.0
 
@@ -394,14 +492,18 @@ class NRI(LightningModule):
                 )
             loss_encoder = mean_kl_per_sample
 
-        beta = self.beta_scheduler(self.global_step) if self.is_beta_annealing else 1.0
+        beta = self.beta_scheduler(self.custom_step) if self.is_beta_annealing else 1.0
 
         # encoder warmup loss
-        if self.is_enc_warmup:        
-            ce_loss_encoder = self._encoder_warmup_loss(relations, edge_pred, edge_accuracy)
-            gamma = self.gamma_scheduler(self.global_step)
+        if self.is_enc_warmup or self.sustain_enc_warmup:  
+            if self.is_decoder_stabilized:      
+                ce_loss_encoder = self._encoder_warmup_loss(relations, edge_pred, edge_accuracy)
+                gamma = self.gamma_scheduler(self.custom_step)
+            else:
+                ce_loss_encoder = torch.tensor(0.0, device=self.device)
+                gamma = 0
         else:
-            ce_loss_encoder = 0.0
+            ce_loss_encoder = torch.tensor(0.0, device=self.device)
             gamma = 0
 
         # entropy calculation
@@ -415,8 +517,37 @@ class NRI(LightningModule):
         elif self.loss_type_decoder == 'mse':
             loss_decoder = F.mse_loss(x_pred, target)
 
-        # total loss calulation
 
+        if self.is_enc_warmup:
+
+            # check if decoder is stabilized (stabilized just for once) (only used for training)
+            if not self.is_decoder_stabilized:
+            
+                # add on to recent decoder losses till 
+                self.recent_decoder_losses.append(loss_decoder.item())
+                if len(self.recent_decoder_losses) > self.dec_loss_window_size:
+                    self.recent_decoder_losses.pop(0)
+
+                # update bounds every bound_update_interval steps
+                if self.custom_step % self.dec_loss_bound_update_interval == 0 and len(self.recent_decoder_losses) == self.dec_loss_window_size:
+                    self.decoder_loss_upper_bound = max(self.recent_decoder_losses)
+                    self.decoder_loss_lower_bound = min(self.recent_decoder_losses)
+
+                if self.decoder_loss_upper_bound is not None and self.decoder_loss_lower_bound is not None:
+
+                    if self.decoder_loss_lower_bound <= loss_decoder.item() <= self.decoder_loss_upper_bound:
+                        self.decoder_stabilization_counter += 1
+                        print(f"Step {self.custom_step}: Decoder stabilization counter: {self.decoder_stabilization_counter}/{self.dec_loss_stabilize_steps}")
+
+                        if self.decoder_stabilization_counter >= self.dec_loss_stabilize_steps:
+                            self.is_decoder_stabilized = True
+                            self.dec_stabilize_step = self.custom_step
+                            print(f"\nDecoder stabilized at step {self.dec_stabilize_step}. Starting encoder warmup.\n")
+                    else:
+                        self.decoder_stabilization_counter = 0
+       
+
+        # total loss calulation
         loss = (beta*loss_encoder) + (gamma*ce_loss_encoder) + loss_decoder
 
         # make dict
@@ -456,7 +587,7 @@ class NRI(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        # if self.current_epoch == 0 and batch_idx == 0:
+        # if self.custom_current_epoch == 0 and batch_idx == 0:
         #     self.start_time = time.time()
 
         log_data, self.decoder_plot_data_train, _ = self._forward_pass(batch, batch_idx)
@@ -477,7 +608,7 @@ class NRI(LightningModule):
         # log every n steps
         self.n = 5
 
-        if (self.global_step) % self.n == 0:
+        if (self.custom_step) % self.n == 0:
             self.log_dict(
                 log_dict,
                 on_step=True,
@@ -486,13 +617,13 @@ class NRI(LightningModule):
                 logger=True
             )
         # else:
-        #     print(f"Step {self.global_step}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
+        #     print(f"Step {self.custom_step}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
             
         return log_data['loss']
     
     def on_train_batch_end(self, outputs, batch, batch_idx):
 
-        if (self.global_step) % self.n == 0:
+        if (self.custom_step) % self.n == 0:
             # log losses
             self.train_losses['nri/train_losses'].append(self.train_log_data['loss'].item())
             self.train_losses['enc/train_losses'].append(self.train_log_data['loss_encoder'].item())
@@ -503,6 +634,8 @@ class NRI(LightningModule):
 
             if self.is_enc_warmup:
                 self.train_losses['enc/train_warmup_losses'].append(self.train_log_data['ce_loss_encoder'].item())
+            else:
+                self.train_losses['enc/train_warmup_losses'].append(0.0)
 
             # log entropies
             self.train_entropys['enc/train_entropy'].append(self.train_log_data['entropy_per_edge'].item())
@@ -516,7 +649,7 @@ class NRI(LightningModule):
             self.train_gains['dec_loss/alpha'].append(1)
             self.train_gains['nri_loss/delta'].append(1)
 
-            print(f"Step {self.global_step}, Epoch {self.current_epoch+1}/{self.trainer.max_epochs}, Batch {batch_idx+1}/{len(self.trainer.train_dataloader)}")
+            print(f"\nStep {self.custom_step}, Epoch {self.custom_current_epoch+1}/{self.trainer.max_epochs}, Batch {batch_idx+1}/{len(self.trainer.train_dataloader)}")
             print(
                 f"temp: {self.train_log_data['temp']:,.4f}, "
                 f"beta: {self.train_log_data['beta']:,.4f}, "
@@ -528,7 +661,6 @@ class NRI(LightningModule):
                 f"dec_train_loss: {self.train_log_data['loss_decoder']:,.4f}, "
                 f"train_edge_accuracy: {self.train_log_data['edge_accuracy']:,.4f}, " # if self.train_log_data['edge_accuracy'] is not None else ""
             )
-            print("")
 
     
     def validation_step(self, batch, batch_idx):
@@ -578,7 +710,7 @@ class NRI(LightningModule):
         # self.train_losses['enc/train_losses'].append(self.trainer.callback_metrics['enc/train_loss'].item())
         # self.train_losses['dec/train_losses'].append(self.trainer.callback_metrics['dec/train_loss'].item())
 
-        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.global_step}")
+        print(f"\nEpoch {self.custom_current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.custom_step}")
         print(
             f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:,.4f}, " 
             f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:,.4f}, "
@@ -589,7 +721,7 @@ class NRI(LightningModule):
             )
 
         # make decoder output plot for training data
-        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
+        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
 
         # validation
         if self.trainer.val_dataloaders:
@@ -604,7 +736,7 @@ class NRI(LightningModule):
                 self.train_losses['enc/val_warmup_losses'].append(self.trainer.callback_metrics['enc/val_warmup_loss'].item())
 
             # make decoder output plot for val data
-            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
+            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
 
             print(
                 f"nri_val_loss: {self.train_losses['nri/val_losses'][-1]:,.4f}, " 
@@ -621,7 +753,7 @@ class NRI(LightningModule):
         self.training_time = time.time() - self.start_time
         self.hyperparams.update({
             'model_id': self.model_id,
-            'n_steps': self.global_step,
+            'n_steps': self.custom_step,
             'model_num': float(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
 
             # log train data
@@ -667,7 +799,7 @@ class NRI(LightningModule):
         Called at the end of training.
         """
         print(f"\nTraining completed in {self.training_time:.2f} seconds or {self.training_time / 60:.2f} minutes or {self.training_time / 60 / 60} hours.")
-        print(f"Total training steps: {self.global_step}")
+        print(f"Total training steps: {self.custom_step}")
 
         if self.logger:
 
@@ -707,6 +839,8 @@ class NRI(LightningModule):
         #     final_beta=self.final_beta,
         #     warmup_frac=self.warmup_frac_beta
         # )
+        self.custom_step = -1  # will be incremented to 0 in first test step
+
         self.is_beta_annealing = False  # no beta annealing during testing
         self.is_enc_warmup = False   # no encoder warmup during testing
 
@@ -725,6 +859,11 @@ class NRI(LightningModule):
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
+
+    def on_test_batch_start(self, batch, batch_idx, dataloader_idx = 0):
+        super().on_test_batch_start(batch, batch_idx, dataloader_idx)
+        self.custom_step += 1
+
   
     def test_step(self, batch, batch_idx):
         """
@@ -826,6 +965,8 @@ class NRI(LightningModule):
         """
         super().on_predict_start()
 
+        self.custom_step = -1  # will be incremented to 0 in first predict step
+
         self.is_beta_annealing = False  # no beta annealing during prediction
         self.is_enc_warmup = False   # no encoder warmup during prediction
 
@@ -844,6 +985,10 @@ class NRI(LightningModule):
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         
         self.start_time = time.time()
+
+    def on_predict_batch_start(self, batch, batch_idx, dataloader_idx = 0):
+        super().on_predict_batch_start(batch, batch_idx, dataloader_idx)
+        self.custom_step += 1
 
     def predict_step(self, batch, batch_idx):
         """
@@ -886,7 +1031,7 @@ class NRI(LightningModule):
         if self.logger:
             adj_mat_text = "##Predicted Adjacency Matrix\n"
             adj_mat_text += adj_df.to_markdown() + '\n'
-            self.logger.experiment.add_text(f"{self.model_id} + {self.run_type}", adj_mat_text, global_step=self.global_step)
+            self.logger.experiment.add_text(f"{self.model_id} + {self.run_type}", adj_mat_text, global_step=self.custom_step)
 
         print('\n' + 75*'-')
 
@@ -999,6 +1144,21 @@ class NRI(LightningModule):
         # plot decoder losses
         axes[i-j, 0].plot(train_steps, self.train_losses[f'dec/train_losses'], label='train loss', color='blue')
         axes[i-j, 0].plot(val_steps, self.train_losses[f'dec/val_losses'], label='val loss', color='cyan', linestyle='--', marker='o', markersize=4)
+
+        if hasattr(self, 'dec_stabilize_step'):
+            if self.dec_stabilize_step is not None:
+                axes[i-j, 0].axvline(
+                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
+                    label='decoder stabilization step'
+                )
+
+        if hasattr(self, 'enc_warmup_end_step'):
+            if self.enc_warmup_end_step is not None:
+                axes[i-j, 0].axvline(
+                    x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
+                    label='encoder assist end step'
+                )
+
         axes[i-j, 0].set_title(f'Decoder Losses ({self.loss_type_decoder.upper()})')
         axes[i-j, 0].set_ylabel('Loss (log)')
         axes[i-j, 0].set_yscale('log')
@@ -1037,7 +1197,7 @@ class NRI(LightningModule):
         # save loss plot if logger is avaialble
         if self.logger:
             fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/training_loss_plot", fig, global_step=self.custom_step, close=True)
             print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
@@ -1067,6 +1227,19 @@ class NRI(LightningModule):
 
         plt.plot(train_steps, self.train_accuracies[f'enc/train_edge_accuracy'], label='train accuracy', color='blue')
         plt.plot(val_steps, self.train_accuracies[f'enc/val_edge_accuracy'], label='val accuracy', color='orange', linestyle='--', marker='o', markersize=4)
+        if hasattr(self, 'dec_stabilize_step'):
+            if self.dec_stabilize_step is not None:
+                plt.axvline(
+                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
+                    label='encoder warmup start step'
+                )
+        if hasattr(self, 'enc_warmup_end_step'):
+            if self.enc_warmup_end_step is not None:
+                plt.axvline(
+                    x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
+                    label='encoder warmup end step'
+                )
+
         plt.title(f'Encoder Edge Prediction Accuracy : [{self.model_id}]', fontsize=10, pad=20)
         plt.xlabel('Steps')
         plt.ylabel('Accuracy')
@@ -1077,7 +1250,7 @@ class NRI(LightningModule):
         # save accuracy plot if logger is avaialble
         if self.logger:
             plt.savefig(os.path.join(self.logger.log_dir, f'edge_accuracy_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/edge_accuracy_plot", plt.gcf(), global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/edge_accuracy_plot", plt.gcf(), global_step=self.custom_step, close=True)
             print(f"\nEncoder edge accuracy (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nEncoder edge accuracy plot not logged as logging is disabled.\n")
@@ -1107,6 +1280,20 @@ class NRI(LightningModule):
 
         plt.plot(train_steps, self.train_entropys[f'enc/train_entropy'], label='train entropy', color='blue')
         # plt.plot(val_steps, self.train_entropys[f'enc/val_entropy'], label='val entropy', color='orange', linestyle='--')
+
+        if hasattr(self, 'dec_stabilize_step'):
+            if self.dec_stabilize_step is not None:
+                plt.axvline(
+                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
+                    label='encoder warmup start step'
+                )
+        if hasattr(self, 'enc_warmup_end_step'):
+            if self.enc_warmup_end_step is not None:
+                plt.axvline(
+                    x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
+                    label='encoder warmup end step'
+                )
+
         plt.title(f'Encoder Edge Prediction Entropy : [{self.model_id}]', fontsize=10, pad=20)
         plt.xlabel('Steps')
         plt.ylabel('Entropy')
@@ -1117,7 +1304,7 @@ class NRI(LightningModule):
         # save entropy plot if logger is avaialble
         if self.logger:
             plt.savefig(os.path.join(self.logger.log_dir, f'edge_entropy_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/edge_entropy_plot", plt.gcf(), global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/edge_entropy_plot", plt.gcf(), global_step=self.custom_step, close=True)
             print(f"\nEncoder edge entropy (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nEncoder edge entropy plot not logged as logging is disabled.\n")
@@ -1210,7 +1397,7 @@ class NRI(LightningModule):
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
 
             if is_end:
                 fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)

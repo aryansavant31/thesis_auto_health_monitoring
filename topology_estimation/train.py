@@ -207,6 +207,8 @@ class TopologyEstimationTrainHelper:
         """
         Prepare the testing environment before starting the testing process.
         """
+        ckpt_path = get_model_ckpt_path(self.train_log_path)
+
         # if logging enabled, initialize TensorBoard logger
         if self.tp_config.is_log:
             # get log path to save trained model
@@ -217,7 +219,7 @@ class TopologyEstimationTrainHelper:
             test_logger = None
             print("\nTesting environment set. Logging is disabled.")
         
-        return test_logger
+        return test_logger, ckpt_path
 
 class NRITrainPipeline(TopologyEstimationTrainHelper):
     def __init__(self, data_config:DataConfig, nri_config:NRITrainManager):
@@ -243,19 +245,23 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         # load relation matrices
         rec_rel, send_rel = self.rm.get_relation_matrix(self.train_loader)
 
-    # 2. Initialize the NRI model
+    # 2. Prepare model parameters and training environment
         enc_model_params = self.get_encoder_params()
         dec_model_params, dec_run_params = self.get_decoder_params()
 
-        nri_model = self._init_nri_model(
-            enc_model_params,
-            dec_model_params, dec_run_params,
-            rec_rel, send_rel, self.train_data_stats
-            )
+        train_logger, checkpoint_callback, ckpt_path_for_training = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
 
-    # 3. Train the NRI model
-        train_logger, checkpoint_callback, ckpt_path = self._prep_for_training(enc_model_params['n_comps'], dec_model_params['n_dims'])
-        
+    # 3. Initialize the NRI model
+        if self.tp_config.continue_training:
+            nri_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_training)
+        else:
+            nri_model = self._init_nri_model(
+                enc_model_params,
+                dec_model_params, dec_run_params,
+                rec_rel, send_rel, self.train_data_stats
+                )
+
+    # 4. Train the NRI model
         trainer = Trainer(
             accelerator=device,
             callbacks=[checkpoint_callback],
@@ -269,7 +275,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             )
 
         trainer.fit(model=nri_model, train_dataloaders=self.train_loader, 
-                    val_dataloaders=self.val_loader, ckpt_path=ckpt_path)
+                    val_dataloaders=self.val_loader)
         
         print('\n' + 75*'-')
 
@@ -279,10 +285,10 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
 
     # 4. Test the trained NRI model
         print("\nTESTING TRAINED NRI MODEL...")
-        trained_nri_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats)
-        
-        test_logger = self._prep_for_testing()
+        test_logger, ckpt_path_for_testing = self._prep_for_testing()
 
+        trained_nri_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_testing)
+        
         tester = Trainer(
             accelerator=device,
             logger=test_logger)
@@ -337,10 +343,16 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             loss_type_enc=self.tp_config.loss_type_enc,
             loss_type_dec=self.tp_config.loss_type_dec,
             prior = self.tp_config.prior,
+
+            # encoder warmup params
             is_enc_warmup=self.tp_config.is_enc_warmup,
             warmup_acc_cutoff=self.tp_config.warmup_acc_cutoff,
+            sustain_enc_warmup=self.tp_config.sustain_enc_warmup,
             final_gamma=self.tp_config.final_gamma,
-            warmup_frac_gamma=self.tp_config.warmup_frac_gamma
+            warmup_frac_gamma=self.tp_config.warmup_frac_gamma,
+            dec_loss_stabilize_steps=self.tp_config.dec_loss_stabilize_steps,
+            dec_loss_bound_update_interval=self.tp_config.dec_loss_bound_update_interval,
+            dec_loss_window_size=self.tp_config.dec_loss_window_size
             )
 
         # print model info
@@ -351,12 +363,14 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
 
         return nri_model
     
-    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats):
+    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats, ckpt_path):
         """
         Load the trained NRI model from the checkpoint path.
         """
-        trained_nri_model = NRI.load_from_checkpoint(get_model_ckpt_path(self.train_log_path))
+        trained_nri_model = NRI.load_from_checkpoint(ckpt_path)
 
+        # update hparams
+        trained_nri_model.hyperparams.update(self.tp_config.hyperparams)
         trained_nri_model.set_input_graph(rec_rel, send_rel)
 
         trained_nri_model.set_run_params(
@@ -369,7 +383,11 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             is_hard=self.tp_config.is_hard
             )
 
-        print("\nTrained NRI Model Loaded for testing.")
+        if self.tp_config.continue_training:
+            print(f"\nTrained NRI Model Loaded for continuing training.")
+        else:
+            print("\nTrained NRI Model Loaded for testing.")
+
         return trained_nri_model
     
     

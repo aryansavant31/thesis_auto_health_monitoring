@@ -340,7 +340,7 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 13 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains)
+        self.model_num = 17 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr)
         self.continue_training = False
         self.is_log = True
         
@@ -354,29 +354,38 @@ class NRITrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 20
+        self.max_epochs = 50
         self.optimizer = 'adam'
 
-            # encoder
-        self.lr_enc = 0.000015
+        ## encoder
+        self.lr_enc = 0.0002
         self.loss_type_enc = 'kld'
 
         self.is_beta_annealing = True
         self.final_beta = 0.000        # final value of beta after annealing
         self.warmup_frac_beta = 0.8     # fraction of total steps for warmup
 
-        self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
-        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
-        self.final_gamma = 0.3
-        self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup
-
-        # for kld loss
+        ### for kld loss
         self.prior = torch.tensor([0.5, 0.5])  # prior distribution for edge types
         self.add_const_kld = True               # this needs to be True, adds a constant term to the KL divergence
 
-            # decoder
-        self.lr_dec = 0.0001
+        ## decoder
+        self.lr_dec = 0.001
         self.loss_type_dec = 'mse'
+
+
+        # warmup parameters
+        self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
+
+        # if encoder warmup is True
+        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
+        self.sustain_enc_warmup = True  # if True, then re-enable encoder warmup if edge accuracy drops below cutoff during training
+        self.final_gamma = 0.3
+        self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup
+
+        self.dec_loss_stabilize_steps = 80  # Number of steps with constant loss to consider decoder stabilized
+        self.dec_loss_bound_update_interval = 5  # Interval (in steps) to update loss bounds. Less value means more frequent updates.
+        self.dec_loss_window_size = 200  # Window size for storing decoder loss. More value means longer memory.
 
     # 2: Encoder parameters
 
@@ -521,6 +530,7 @@ class NRITrainConfig:
             'warmup_frac_beta': self.warmup_frac_beta,
             'enc/is_enc_warmup': self.is_enc_warmup,
             'enc/warmup_acc_cutoff': self.warmup_acc_cutoff,
+            'enc/sustain_enc_warmup': self.sustain_enc_warmup,
             'enc/final_gamma': self.final_gamma,
             'enc/warmup_frac_gamma': self.warmup_frac_gamma,
             'enc/loss_type': self.loss_type_enc,
@@ -528,6 +538,9 @@ class NRITrainConfig:
             'n_edge_types': self.n_edge_types,
             'enc/prior': self.prior,
             'enc/add_const_kld': self.add_const_kld,
+            'dec/dec_loss_stabilize_steps': self.dec_loss_stabilize_steps,
+            'dec/dec_loss_bound_update_interval': self.dec_loss_bound_update_interval,
+            'dec/dec_loss_window_size': self.dec_loss_window_size,
 
             # encoder parameters
             'enc/pipeline_type': self.pipeline_type,
