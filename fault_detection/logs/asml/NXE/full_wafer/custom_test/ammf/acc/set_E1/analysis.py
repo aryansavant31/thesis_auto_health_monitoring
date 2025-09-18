@@ -78,7 +78,7 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
 
     for i, label in enumerate(ax.get_yticklabels()):
         if label.get_text().startswith('Group '):
-            ax.axhspan(i-0.05, i+0.05, color='grey', alpha=0.45)
+            ax.axhspan(i-0.05, i+0.05, color='black', alpha=0.45)
         if label.get_text() == best_pair:
             ax.axhspan(i-0.3, i+0.3, color='darkgreen', alpha=0.15, zorder=0)
 
@@ -104,7 +104,7 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
 
     plt.tight_layout()
     plt.show()
-    fig.savefig(os.path.join(os.path.dirname(__file__), f'{book_name}_{fault_level}_precision.png'), dpi=700)
+    fig.savefig(os.path.join(os.path.dirname(excel_path), f'{book_name}_{fault_level}_precision.png'), dpi=700)
 
     # Recall variation plot
     fig, ax = plt.subplots(figsize=(15, 12), dpi=100)
@@ -118,7 +118,7 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
 
     for i, label in enumerate(ax.get_yticklabels()):
         if label.get_text().startswith('Group '):
-            ax.axhspan(i-0.05, i+0.05, color='grey', alpha=0.45)
+            ax.axhspan(i-0.05, i+0.05, color='black', alpha=0.45)
         if label.get_text() == best_pair:
             ax.axhspan(i-0.3, i+0.3, color='darkgreen', alpha=0.15, zorder=0)
 
@@ -144,11 +144,11 @@ def IF_histogram_plot(excel_path, fault_level, precison_weight=0.5):
 
     plt.tight_layout()
     plt.show()
-    fig.savefig(os.path.join(os.path.dirname(__file__), f'{book_name}_{fault_level}_recall.png'), dpi=700)
+    fig.savefig(os.path.join(os.path.dirname(excel_path), f'{book_name}_{fault_level}_recall.png'), dpi=700)
     
 
 if __name__ == "__main__":
-    excel_path = os.path.join(os.path.dirname(__file__), 'iswp_1.1_2.xlsx')
+    excel_path = os.path.join(os.path.dirname(__file__), 'iswp_1.2', 'analysis', 'iswp_1.2.xlsx')
 
     IF_histogram_plot(excel_path,
                       
