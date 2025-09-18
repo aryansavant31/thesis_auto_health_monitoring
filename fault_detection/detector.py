@@ -426,9 +426,9 @@ class TrainerAnomalyDetector:
             with open(model_path, 'wb') as f:
                 pickle.dump(anomaly_detector, f)
 
-            # save dataframe
-            df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
-            self.df.to_pickle(df_path)  
+            # # save dataframe
+            # df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
+            # self.df.to_pickle(df_path)  
         
             print(f"\nModel saved at {model_path}")
         else:
@@ -609,9 +609,9 @@ class TrainerAnomalyDetector:
 
             self.logger.add_hparams(anomaly_detector.hparams, {})
 
-            # save dataframe
-            df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
-            self.df.to_pickle(df_path)  
+            # # save dataframe
+            # df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
+            # self.df.to_pickle(df_path)  
 
             print(f"\nTesting hyperparameters logged for tensorboard at {self.logger.log_dir}")
         else:

@@ -297,8 +297,8 @@ class DataSweep:
 
             self.healthy_configs = [
                 # {key: [get_augment_config('OG')] for key in e1_keys},
-                {key: [get_augment_config('OG')] for key in e1_keys},
-                # {key: [get_augment_config('gau', mean=0.0, std=0.001)] for key in e1_keys},
+                # {key: [get_augment_config('OG')] for key in e1_keys},
+                {key: [get_augment_config('gau', mean=0.0, std=0.0001)] for key in e1_keys},
                 # {key: [get_augment_config('gau', mean=0.0, std=0.01)] for key in e1_keys},
                 # {key: [get_augment_config('gau', mean=0.0, std=0.1)] for key in e1_keys},
                 # {key: [get_augment_config('gau', mean=0.0, std=0.3)] for key in e1_keys},
