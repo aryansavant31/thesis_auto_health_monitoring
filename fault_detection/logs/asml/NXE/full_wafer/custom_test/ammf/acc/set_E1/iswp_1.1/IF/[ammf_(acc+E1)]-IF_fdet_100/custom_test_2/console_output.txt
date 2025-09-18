@@ -1,0 +1,247 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.infer.py
+Base Name: [ammf_(acc+E1)]-IF_fdet_100/custom_test_2
+Start Time: 2025-09-18 01:59:56
+End Time: 2025-09-18 02:01:34
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting anomaly detector to custom_test...
+
+'Custom_test' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) E1_set01_M=mEK83    : [OG]
+  (2) E1_set01_M=mEO26    : [OG]
+  (3) E1_set01_M=mEP39    : [OG]
+  (4) E1_set01_M=mEP73    : [OG]
+  (5) E1_set01_M=mEV46    : [OG]
+  (6) E1_set01_M=mEZ94    : [OG]
+  (7) E1_set01_M=mFA30    : [OG]
+  (8) E1_set01_M=mFC17    : [OG]
+  (9) E1_set01_M=mFF18    : [OG]
+  (10) E1_set01_M=mFJ72    : [OG]
+  (11) E1_set01_M=mFL29    : [OG]
+  (12) E1_set01_M=mFM76    : [OG]
+  (13) E1_set01_M=mFQ18    : [OG]
+  (14) E1_set01_M=mFX20    : [OG]
+  (15) E1_set01_M=mFX70    : [OG]
+  (16) E1_set01_M=mFY86    : [OG]
+  (17) E1_set01_M=mGB62    : [OG]
+  (18) E1_set01_M=mGD45    : [OG]
+  (19) E1_set01_M=mGD96    : [OG]
+  (20) E1_set01_M=mGF06    : [OG]
+  (21) E1_set01_M=mGF37    : [OG]
+  (22) E1_set01_M=mGF62    : [OG]
+  (23) E1_set01_M=mGG38    : [OG]
+  (24) E1_set01_M=mGH51    : [OG]
+  (25) E1_set01_M=mGI48    : [OG]
+  (26) E1_set01_M=mGM63    : [OG]
+  (27) E1_set01_M=mGR15    : [OG]
+  (28) E1_set01_M=mGS15    : [OG]
+  (29) E1_set01_M=mGT99    : [OG]
+  (30) E1_set01_M=mGX70    : [OG]
+  (31) E1_set01_M=mHA09    : [OG]
+  (32) E1_set01_M=mHB89    : [OG]
+  (33) E1_set01_M=mHC14    : [OG]
+  (34) E1_set01_M=mHC51    : [OG]
+  (35) E1_set01_M=mHD92    : [OG]
+  (36) E1_set01_M=mHF87    : [OG]
+  (37) E1_set01_M=mHF95    : [OG]
+  (38) E1_set01_M=mHG72    : [OG]
+  (39) E1_set01_M=mHG90    : [OG]
+  (40) E1_set01_M=mHL47    : [OG]
+  (41) E1_set01_M=mHM40    : [OG]
+  (42) E1_set01_M=mHS02    : [OG]
+  (43) E1_set01_M=mHT43    : [OG]
+  (44) E1_set01_M=mHU18    : [OG]
+  (45) E1_set01_M=mHV81    : [OG]
+  (46) E1_set01_M=mHW09    : [OG]
+  (47) E1_set01_M=mHW86    : [OG]
+  (48) E1_set01_M=mHZ50    : [OG]
+  (49) E1_set01_M=mIB13    : [OG]
+  (50) E1_set01_M=mIC11    : [OG]
+  (51) E1_set01_M=mIC20    : [OG]
+  (52) E1_set01_M=mID45    : [OG]
+  (53) E1_set01_M=mIF20    : [OG]
+  (54) E1_set01_M=mIH25    : [OG]
+  (55) E1_set01_M=mIK48    : [OG]
+  (56) E1_set01_M=mIK66    : [OG]
+  (57) E1_set01_M=mIN28    : [OG]
+  (58) E1_set01_M=mIN36    : [OG]
+  (59) E1_set01_M=mIP47    : [OG]
+  (60) E1_set01_M=mIQ75    : [OG]
+  (61) E1_set01_M=mIR17    : [OG]
+  (62) E1_set01_M=mIR27    : [OG]
+  (63) E1_set01_M=mIU28    : [OG]
+  (64) E1_set01_M=mIU34    : [OG]
+  (65) E1_set01_M=mIU81    : [OG]
+  (66) E1_set01_M=mIU96    : [OG]
+  (67) E1_set01_M=mIV66    : [OG]
+  (68) E1_set01_M=mIW33    : [OG]
+  (69) E1_set01_M=mIX10    : [OG]
+  (70) E1_set01_M=mIX97    : [OG]
+  (71) E1_set01_M=mIY01    : [OG]
+  (72) E1_set01_M=mIZ81    : [OG]
+  (73) E1_set01_M=mJA07    : [OG]
+  (74) E1_set01_M=mJA16    : [OG]
+  (75) E1_set01_M=mJD47    : [OG]
+  (76) E1_set01_M=mJD49    : [OG]
+  (77) E1_set01_M=mJK48    : [OG]
+  (78) E1_set01_M=mJL74    : [OG]
+  (79) E1_set01_M=mJR91    : [OG]
+  (80) E1_set01_M=mJZ76    : [OG]
+  (81) E1_set01_M=mKA74    : [OG]
+  (82) E1_set01_M=mKG27    : [OG]
+  (83) E1_set01_M=mKH54    : [OG]
+  (84) E1_set01_M=mKH90    : [OG]
+  (85) E1_set01_M=mKI28    : [OG]
+  (86) E1_set01_M=mKJ81    : [OG]
+  (87) E1_set01_M=mKL05    : [OG]
+  (88) E1_set01_M=mKM26    : [OG]
+  (89) E1_set01_M=mKM58    : [OG]
+  (90) E1_set01_M=mKN34    : [OG]
+  (91) E1_set01_M=mKS53    : [OG]
+  (92) E1_set01_M=mKT03    : [OG]
+  (93) E1_set01_M=mKW33    : [OG]
+  (94) E1_set01_M=mat    : [OG]
+
+- **Unhealthy configs**
+  (1) (sim)_E1_set01_M=mAI26    : [glitch(prob=0.07, std_fac=1.5, add_next=True), gau(mean=0, std=0.0001, add_next=True), sine(freqs=[2, 4], std_facs=[1.3, 1.5], add_next=False)]
+  (2) (sim)_E1_set01_M=mAQ10    : [glitch(prob=0.02, std_fac=1.3, add_next=True), gau(mean=0, std=1e-05, add_next=True), sine(freqs=[1, 2, 5], std_facs=[1.3, 1, 1.5], add_next=False)]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) ammf   : [acc_rx, acc_ry, acc_rz, acc_x, acc_y, acc_z]
+
+Node group name: ammf
+Signal group name: acc
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 4,098
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[2500.0002, 2500.0002, 2500.0002, 2500.0002, 2500.0002, 2500.0002]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 4,098
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[2499.9998, 2499.9998, 2499.9998, 2499.9998, 2499.9998, 2499.9998]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 4604 
+Desired samples: 4604/4604 [OK=4508, NOK=96, UK=0],
+Remainder samples: 0 [OK=0, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 4604
+torch.Size([1, 1, 1000, 6])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+---------------------------------------------------------------------------
+
+Anomaly detector model loaded for 'custom_test' from C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_1\[ammf_(acc+E1)]-IF_fdet_100\anomaly_detector.pkl
+
+Model type: IsolationForest, Model ID: [ammf_(acc+E1)]-IF_fdet_100, No. of input features req.: 6000
+
+---------------------------------------------------------------------------
+Custom_test parameters saved to C:\AFD\fault_detection\logs\asml\NXE\full_wafer\custom_test\ammf\acc\set_E1\iswp_1.1\IF\[ammf_(acc+E1)]-IF_fdet_100\custom_test_2.
+
+Custom_test environment set. Custom_test will be logged at: C:\AFD\fault_detection\logs\asml\NXE\full_wafer\custom_test\ammf\acc\set_E1\iswp_1.1\IF\[ammf_(acc+E1)]-IF_fdet_100\custom_test_2
+
+---------------------------------------------------------------------------
+
+Testing anomaly detection model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Using components as features: [comp0_dim0, comp0_dim1, comp0_dim2, comp0_dim3...comp999_dim2, comp999_dim3, comp999_dim4, comp999_dim5]
+
+Test inference completed in 33.74 seconds
+
+NOK upper bound (at 100.0 percentile): -0.0006
+
+OK lower bound (from training): 0.0000
+
+NOK upper bound (from testing): -0.0006
+
+Dataframe is as follows:
+      comp0_dim0  comp0_dim1  comp0_dim2  ...    scores  pred_label  final_pred_label
+0       0.000017    0.000205   -0.000149  ...  0.133755           1                 1
+1      -0.000362   -0.000216    0.000120  ...  0.114827           1                 1
+2      -0.000220   -0.000113   -0.000183  ...  0.121226           1                 1
+3      -0.000040    0.000115   -0.000131  ...  0.127033           1                 1
+4       0.000156   -0.000226   -0.000174  ...  0.123022           1                 1
+...          ...         ...         ...  ...       ...         ...               ...
+4599    0.000456    0.000431    0.000401  ... -0.020817          -1                -1
+4600    0.000356    0.000426    0.000551  ... -0.021961          -1                -1
+4601    0.000407    0.000497    0.000236  ... -0.018668          -1                -1
+4602    0.000712    0.000754    0.000083  ... -0.007210          -1                -1
+4603    0.000389    0.000462    0.000484  ... -0.011184          -1                -1
+
+[4604 rows x 6005 columns]
+
+Test accuracy: 0.98
+Precision: 0.54, Recall: 1.00, F1-score: 0.70
+
+Testing hyperparameters logged for tensorboard at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\custom_test\ammf\acc\set_E1\iswp_1.1\IF\[ammf_(acc+E1)]-IF_fdet_100\custom_test_2
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX SIMPLE>>>>>>>>>>>>
+
+> Creating confusion matrix for [ammf_(acc+E1)]-IF_fdet_100 / custom_test_2...
+
+Confusion matrix logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\custom_test\ammf\acc\set_E1\iswp_1.1\IF\[ammf_(acc+E1)]-IF_fdet_100\custom_test_2
+
+
+===========================================================================
+
+Custom_test of anomaly detector '[ammf_(acc+E1)]-IF_fdet_100/custom_test_2' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-18 02:01:34
