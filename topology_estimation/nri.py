@@ -345,13 +345,13 @@ class NRI(LightningModule):
 
             # initialze scehdulers
             self.beta_scheduler = BetaScheduler(
-                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
+                total_steps=self.custom_max_epochs * len(self.trainer.train_dataloader), 
                 final_beta=self.final_beta,
                 warmup_frac=self.warmup_frac_beta
             )
 
             self.gamma_scheduler = BetaScheduler(
-                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
+                total_steps=self.custom_max_epochs * len(self.trainer.train_dataloader), 
                 final_beta=self.final_gamma,
                 warmup_frac=self.warmup_frac_gamma
             )
@@ -362,20 +362,12 @@ class NRI(LightningModule):
                 decay=self.decay_temp
             )
 
-            self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
-            self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
-            self.run_type = "train"
-
-            self.n_steps_per_epoch = len(self.trainer.train_dataloader)
             self.is_decoder_stabilized = False
             self.decoder_stabilization_counter = 0
             
             self.decoder_loss_upper_bound = None
             self.decoder_loss_lower_bound = None
             self.recent_decoder_losses = []
-            
-            self.encoder.init_input_processors()
-            self.decoder.init_input_processors()
 
             self.train_losses = {
                 'nri/train_losses': [],
@@ -403,21 +395,24 @@ class NRI(LightningModule):
                 'dec/temp': [],
             }
             self.start_time = time.time()
-
         else:
-            # Only load few variables
-            self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
-            self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
-            self.run_type = "train"
+            print(f"\nResuming training from global step {self.custom_step} at epoch {self.custom_current_epoch}.")
 
-            self.n_steps_per_epoch = len(self.trainer.train_dataloader)
-            self.encoder.init_input_processors()
-            self.decoder.init_input_processors()
+        # variables always to load
+        self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
+        self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
+        self.run_type = "train"
+        self.custom_max_epochs = self.trainer.max_epochs + self.custom_current_epoch + 1
 
-            self.start_time = time.time()
+        self.found_rep1 = False # for decoder output plot
 
-            print(f"Resuming training from global step {self.custom_step} at epoch {self.custom_current_epoch}.")
+        self.n_steps_per_epoch = len(self.trainer.train_dataloader)
+        self.encoder.init_input_processors()
+        self.decoder.init_input_processors()
 
+        self.start_time = time.time()
+
+        
     def on_train_batch_start(self, batch, batch_idx):
         super().on_train_batch_start(batch, batch_idx)
 
@@ -545,6 +540,8 @@ class NRI(LightningModule):
                             print(f"\nDecoder stabilized at step {self.dec_stabilize_step}. Starting encoder warmup.\n")
                     else:
                         self.decoder_stabilization_counter = 0
+
+        # alpha calculation
        
 
         # total loss calulation
@@ -563,6 +560,29 @@ class NRI(LightningModule):
             'edge_accuracy': edge_accuracy,
             'edge_accuracy_per_sample': edge_accuracy_per_sample
         }
+
+        # prepare data for decoder output plot
+        target_rep_num = 1001.0001
+
+        # find data with rep_num = 1001.0001
+        if target_rep_num in rep_num:
+            self.found_rep1 = True
+            target_idx = rep_num.tolist().index(target_rep_num)
+            x_pred_rep1 = x_pred[target_idx:target_idx+1]
+            x_var_rep1 = x_var[target_idx:target_idx+1]
+            target_rep1 = target[target_idx:target_idx+1]
+            rep_num_rep1 = rep_num[target_idx:target_idx+1]
+
+            self.decoder_plot_data_rep1 = {
+            'x_pred': x_pred_rep1,
+            'x_var': x_var_rep1,
+            'target': target_rep1,
+            'rep_num': rep_num_rep1,
+            }
+            print(f"\nFound rep_num = {target_rep_num} in batch {batch_idx} of epoch {self.current_epoch}. Decoder output plot will be made for this data.")
+
+        elif not self.found_rep1:
+            self.decoder_plot_data_rep1 = None 
 
         decoder_plot_data = {
             'x_pred': x_pred,
@@ -649,7 +669,7 @@ class NRI(LightningModule):
             self.train_gains['dec_loss/alpha'].append(1)
             self.train_gains['nri_loss/delta'].append(1)
 
-            print(f"\nStep {self.custom_step}, Epoch {self.custom_current_epoch+1}/{self.trainer.max_epochs}, Batch {batch_idx+1}/{len(self.trainer.train_dataloader)}")
+            print(f"\nStep {self.custom_step}, Epoch {self.custom_current_epoch+1}/{self.custom_max_epochs}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
             print(
                 f"temp: {self.train_log_data['temp']:,.4f}, "
                 f"beta: {self.train_log_data['beta']:,.4f}, "
@@ -710,7 +730,7 @@ class NRI(LightningModule):
         # self.train_losses['enc/train_losses'].append(self.trainer.callback_metrics['enc/train_loss'].item())
         # self.train_losses['dec/train_losses'].append(self.trainer.callback_metrics['dec/train_loss'].item())
 
-        print(f"\nEpoch {self.custom_current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.custom_step}")
+        print(f"\nEpoch {self.custom_current_epoch+1}/{self.custom_max_epochs} completed, Global Step: {self.custom_step}")
         print(
             f"nri_train_loss: {self.train_losses['nri/train_losses'][-1]:,.4f}, " 
             f"enc_train_loss: {self.train_losses['enc/train_losses'][-1]:,.4f}, "
@@ -721,7 +741,7 @@ class NRI(LightningModule):
             )
 
         # make decoder output plot for training data
-        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
+        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.custom_current_epoch+1 < self.custom_max_epochs else None
 
         # validation
         if self.trainer.val_dataloaders:
@@ -736,7 +756,7 @@ class NRI(LightningModule):
                 self.train_losses['enc/val_warmup_losses'].append(self.trainer.callback_metrics['enc/val_warmup_loss'].item())
 
             # make decoder output plot for val data
-            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
+            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.custom_current_epoch+1 < self.custom_max_epochs else None
 
             print(
                 f"nri_val_loss: {self.train_losses['nri/val_losses'][-1]:,.4f}, " 
@@ -835,11 +855,13 @@ class NRI(LightningModule):
 
         # initialze scehdulers
         # self.beta_scheduler = BetaScheduler(
-        #     total_steps=self.trainer.max_epochs * len(self.trainer.test_dataloaders), 
+        #     total_steps=self.custom_max_epochs * len(self.trainer.test_dataloaders), 
         #     final_beta=self.final_beta,
         #     warmup_frac=self.warmup_frac_beta
         # )
         self.custom_step = -1  # will be incremented to 0 in first test step
+
+        self.found_rep1 = False # for decoder output plot
 
         self.is_beta_annealing = False  # no beta annealing during testing
         self.is_enc_warmup = False   # no encoder warmup during testing
@@ -954,7 +976,11 @@ class NRI(LightningModule):
         print('\n' + 75*'-')
 
         # make decoder output plot
-        self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
+        if self.decoder_plot_data_rep1:
+            self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type)
+        else:
+            print(f"\nNo target rep num. Hence decoder output is made for first sample in the last test batch.")
+            self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
 
 
 # ====== Trainer.predict() method  ====== 
@@ -966,6 +992,8 @@ class NRI(LightningModule):
         super().on_predict_start()
 
         self.custom_step = -1  # will be incremented to 0 in first predict step
+
+        self.found_rep1 = False # for decoder output plot
 
         self.is_beta_annealing = False  # no beta annealing during prediction
         self.is_enc_warmup = False   # no encoder warmup during prediction
@@ -1149,7 +1177,7 @@ class NRI(LightningModule):
             if self.dec_stabilize_step is not None:
                 axes[i-j, 0].axvline(
                     x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
-                    label='decoder stabilization step'
+                    label='encoder assist start step'
                 )
 
         if hasattr(self, 'enc_warmup_end_step'):
@@ -1231,13 +1259,13 @@ class NRI(LightningModule):
             if self.dec_stabilize_step is not None:
                 plt.axvline(
                     x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
-                    label='encoder warmup start step'
+                    label='encoder assist start step'
                 )
         if hasattr(self, 'enc_warmup_end_step'):
             if self.enc_warmup_end_step is not None:
                 plt.axvline(
                     x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
-                    label='encoder warmup end step'
+                    label='encoder assist end step'
                 )
 
         plt.title(f'Encoder Edge Prediction Accuracy : [{self.model_id}]', fontsize=10, pad=20)
@@ -1285,13 +1313,13 @@ class NRI(LightningModule):
             if self.dec_stabilize_step is not None:
                 plt.axvline(
                     x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
-                    label='encoder warmup start step'
+                    label='encoder assist start step'
                 )
         if hasattr(self, 'enc_warmup_end_step'):
             if self.enc_warmup_end_step is not None:
                 plt.axvline(
                     x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
-                    label='encoder warmup end step'
+                    label='encoder assist end step'
                 )
 
         plt.title(f'Encoder Edge Prediction Entropy : [{self.model_id}]', fontsize=10, pad=20)
@@ -1333,7 +1361,7 @@ class NRI(LightningModule):
 
         if is_end:
             print("\n" + 12*"<" + f" DECODER OUTPUT PLOT ({type.upper()}) " + 12*">") if is_end else None
-            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.3f}' for {self.model_id}...")
+            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
@@ -1352,13 +1380,13 @@ class NRI(LightningModule):
         })
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=75)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 5, n_nodes * 3), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} : [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.4f} : [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
             dim_names = self.decoder.data_config.signal_types['group'][node_names[node]]
@@ -1376,19 +1404,23 @@ class NRI(LightningModule):
                 # plot ground truth, predictions, and confidence band
                 ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
                 ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
+
+                prediction_start_step = n_comps - self.decoder.final_pred_steps if self.decoder.is_burn_in else 0
+                ax.axvline(x=prediction_start_step - 1, color='green', linestyle=':', label='start of prediction', linewidth=1.8) if prediction_start_step > 0 else None
+
                 if self.decoder.show_conf_band:
                     ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
 
                 # Add labels and legend
                 #if node == n_nodes - 1:
-                ax.set_xlabel("components")
-                ax.set_ylabel(f"{dim_names[dim]} (SI units)")
+                ax.set_xlabel("timesteps")
+                ax.set_ylabel(f"{dim_names[dim]}")
                          
                 if node == 0 and dim == n_dims - 1:
                     ax.legend(loc="upper right")
 
                 # add node name as title for each row
-                ax.set_title(f"{node_names[node]}", fontsize=11)
+                ax.set_title(f"{node_names[node]} ({dim_names[dim]})", fontsize=11)
 
                 ax.grid(True)
 

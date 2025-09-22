@@ -17,6 +17,7 @@ from torch.utils.tensorboard import SummaryWriter
 from data.config import DataConfig
 from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
+from feature_extraction.selector import FeatureSelector
 
 # local imports
 from .settings.manager import AnomalyDetectorTrainManager, get_model_pickle_path
@@ -58,18 +59,32 @@ class AnomalyDetectorTrainPipeline:
     # 2. Initialize the anomaly detector model
         anomaly_detector = self._init_model(train_data_stats)
 
-    # 3. Train the anomaly detector model
+    # 3. Feature selection (if enabled)
+        if self.fdet_config.feat_select_config is not None:
+            feat_selector = FeatureSelector(self.fdet_config.feat_select_config)
+            anomaly_detector = feat_selector.select_features(anomaly_detector, train_loader)
+        else:
+            print("\nFeature selection is disabled.")
+            feat_selector = None
+
         train_logger = self._prep_for_training(anomaly_detector, train_loader)
 
+        # plot feature ranking
+        if feat_selector is not None:
+            if self.fdet_config.train_plots['feat_ranking_plot'][0]:
+                feat_selector.feat_ranking_histogram(logger=train_logger)
+
+    # 4. Train the anomaly detector model
         trainer = TrainerAnomalyDetector(logger=train_logger)
         trained_anomaly_detector = trainer.fit(anomaly_detector, train_loader)
 
         # plot the train results
         for plot_name, plot_config in self.fdet_config.train_plots.items():
-            if plot_config[0]:
-                getattr(trainer, plot_name.split('-')[0])(**plot_config[1])
+            if plot_name != 'feat_ranking_plot':  # already plotted
+                if plot_config[0]:
+                    getattr(trainer, plot_name.split('-')[0])(**plot_config[1])
 
-    # 4. Test the trained anomaly detector model
+    # 5. Test the trained anomaly detector model
         # update its data stats
         trained_anomaly_detector.data_stats = test_data_stats
         test_logger = self._prep_for_testing()

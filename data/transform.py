@@ -109,14 +109,14 @@ class DataNormalizer:
         if self.data_stats is None:
             min_val = data.min(dim=2, keepdim=True).values  
             max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
-            data_stats = {
+            self.data_stats = {
                 'mean': torch.mean(data, dim=(0, 2), keepdim=True),
                 'std': torch.std(data, dim=(0, 2), keepdim=True),
                 'min': torch.min(min_val, dim=0, keepdim=True).values,
                 'max': torch.max(max_val, dim=0, keepdim=True).values
             } 
-            for k in data_stats:
-                data_stats[k] = data_stats[k].squeeze(0)
+            for k in self.data_stats:
+                self.data_stats[k] = self.data_stats[k].squeeze(0)
 
         if self.norm_type == 'min_max':
             data = min_max_normalize(data, self.data_stats['min'], self.data_stats['max'])

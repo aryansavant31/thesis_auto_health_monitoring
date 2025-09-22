@@ -85,6 +85,6 @@ class ProcessRawMSDEdgeData:
                         self.convert_mat_to_hdf5(mat_file_path, processed_path, label)
 
 if __name__ == "__main__":
-    processor = ProcessRawMSDEdgeData(machine="M004", scenario="scene_1")
+    processor = ProcessRawMSDEdgeData(machine="M005", scenario="scene_1")
     processor.process_all()
     print("Edge adjacency matrices processed and saved.")

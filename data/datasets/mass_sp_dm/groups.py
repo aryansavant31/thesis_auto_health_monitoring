@@ -17,3 +17,13 @@ class MSDGroupMaker:
                        'mass_3': ['acc', 'pos', 'vel'],
                        'mass_4': ['acc', 'pos', 'vel'],}         
             }
+        
+        self.m005_all = {
+            'node_group_name'  : 'm005',  
+            'signal_group_name': 'apv',
+            'group' : {'mass_1': ['acc', 'pos', 'vel'],
+                       'mass_2': ['acc', 'pos', 'vel'],
+                       'mass_3': ['acc', 'pos', 'vel'],
+                       'mass_4': ['acc', 'pos', 'vel'],
+                       'mass_5': ['acc', 'pos', 'vel'],}         
+            }

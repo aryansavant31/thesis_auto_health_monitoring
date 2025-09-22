@@ -1,4 +1,4 @@
-function generate_dataset(machine_type, scenario, ds_type, ds_subtype)
+function adj = generate_dataset(machine_type, scenario, ds_type, ds_subtype)
 
     % Get dynamics outputs
     [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);

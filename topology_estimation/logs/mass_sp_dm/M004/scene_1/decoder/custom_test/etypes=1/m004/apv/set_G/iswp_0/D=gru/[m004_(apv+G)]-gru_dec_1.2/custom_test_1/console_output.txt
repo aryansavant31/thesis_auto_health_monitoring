@@ -1,0 +1,193 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.infer.py
+Base Name: [m004_(apv+G)]-gru_dec_1.2/custom_test_1
+Start Time: 2025-09-21 17:21:49
+End Time: Still running
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model to custom_test...
+
+'Custom_test' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+
+- **Unhealthy configs**
+  (1) series_mod_fault    : [OG]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 5000 
+Desired samples: 5000/5000 [OK=0, NOK=5000, UK=0],
+Remainder samples: 0 [OK=0, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 100
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (4, 4)
+     n1   n2   n3   n4
+n1  0.0  1.0  0.0  0.0
+n2  1.0  0.0  1.0  0.0
+n3  0.0  1.0  0.0  1.0
+n4  0.0  0.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  0.0  1.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  1.0  0.0  0.0  0.0
+e23  0.0  0.0  1.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  1.0  0.0  0.0
+e34  0.0  0.0  0.0  1.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  1.0  0.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  0.0  1.0  0.0  0.0
+e23  0.0  1.0  0.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  0.0  1.0  0.0
+e34  0.0  0.0  1.0  0.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+Decoder run parameters:
+---------------
+skip_first_edge_type: False
+pred_steps: 5
+is_burn_in: True
+final_pred_steps: 50
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+show_conf_band: False
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Relation matrices are overridden to make fully connected graph in decoder.
+
+Decoder model loaded for 'custom_test' from C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.2\checkpoints\best-model-epoch=45-val_loss=0.0002.ckpt
+
+Model type: Decoder, Model ID: [m004_(apv+G)]-gru_dec_1.2, No. of dimensions req.: 3
+
+---------------------------------------------------------------------------
+INFER LOG PATH C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.2\custom_test_1
+Custom_test parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.2\custom_test_1.
+
+Custom_test environment set. Custom_test will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.2\custom_test_1
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:420: Consider setting `persistent_workers=True` in 'test_dataloader' to speed up the dataloader worker initialization.
+Testing: |                                                                          | 0/? [00:00<?, ?it/s]
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer initialized with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                                    | 0/100 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                                       | 0/100 [00:00<?, ?it/s]
+Found rep_num = 1001.0001 in batch 0 of epoch 45. Decoder output plot will be made for this data.
+Testing DataLoader 0:   1%|4                                              | 1/100 [00:00<00:18,  5.42it/s]Testing DataLoader 0:   2%|9                                              | 2/100 [00:00<00:13,  7.01it/s]Testing DataLoader 0:   3%|#4                                             | 3/100 [00:00<00:12,  7.73it/s]Testing DataLoader 0:   4%|#8                                             | 4/100 [00:00<00:11,  8.17it/s]Testing DataLoader 0:   5%|##3                                            | 5/100 [00:00<00:11,  8.43it/s]Testing DataLoader 0:   6%|##8                                            | 6/100 [00:00<00:10,  8.58it/s]Testing DataLoader 0:   7%|###2                                           | 7/100 [00:00<00:10,  8.76it/s]Testing DataLoader 0:   8%|###7                                           | 8/100 [00:00<00:10,  8.85it/s]Testing DataLoader 0:   9%|####2                                          | 9/100 [00:01<00:10,  8.97it/s]Testing DataLoader 0:  10%|####6                                         | 10/100 [00:01<00:09,  9.06it/s]Testing DataLoader 0:  11%|#####                                         | 11/100 [00:01<00:09,  9.14it/s]Testing DataLoader 0:  12%|#####5                                        | 12/100 [00:01<00:09,  9.22it/s]Testing DataLoader 0:  13%|#####9                                        | 13/100 [00:01<00:09,  9.24it/s]Testing DataLoader 0:  14%|######4                                       | 14/100 [00:01<00:09,  9.25it/s]Testing DataLoader 0:  15%|######9                                       | 15/100 [00:01<00:09,  9.21it/s]Testing DataLoader 0:  16%|#######3                                      | 16/100 [00:01<00:09,  9.22it/s]Testing DataLoader 0:  17%|#######8                                      | 17/100 [00:01<00:09,  9.19it/s]Testing DataLoader 0:  18%|########2                                     | 18/100 [00:01<00:08,  9.17it/s]Testing DataLoader 0:  19%|########7                                     | 19/100 [00:02<00:08,  9.19it/s]Testing DataLoader 0:  20%|#########2                                    | 20/100 [00:02<00:08,  9.12it/s]Testing DataLoader 0:  21%|#########6                                    | 21/100 [00:02<00:08,  9.17it/s]Testing DataLoader 0:  22%|##########1                                   | 22/100 [00:02<00:08,  9.21it/s]Testing DataLoader 0:  23%|##########5                                   | 23/100 [00:02<00:08,  9.23it/s]Testing DataLoader 0:  24%|###########                                   | 24/100 [00:02<00:08,  9.23it/s]Testing DataLoader 0:  25%|###########5                                  | 25/100 [00:02<00:08,  9.28it/s]Testing DataLoader 0:  26%|###########9                                  | 26/100 [00:02<00:07,  9.29it/s]Testing DataLoader 0:  27%|############4                                 | 27/100 [00:02<00:07,  9.33it/s]Testing DataLoader 0:  28%|############8                                 | 28/100 [00:02<00:07,  9.34it/s]Testing DataLoader 0:  29%|#############3                                | 29/100 [00:03<00:07,  9.29it/s]Testing DataLoader 0:  30%|#############8                                | 30/100 [00:03<00:07,  9.30it/s]Testing DataLoader 0:  31%|##############2                               | 31/100 [00:03<00:07,  9.28it/s]Testing DataLoader 0:  32%|##############7                               | 32/100 [00:03<00:07,  9.21it/s]Testing DataLoader 0:  33%|###############1                              | 33/100 [00:03<00:07,  9.21it/s]Testing DataLoader 0:  34%|###############6                              | 34/100 [00:03<00:07,  9.21it/s]Testing DataLoader 0:  35%|################                              | 35/100 [00:03<00:07,  9.22it/s]Testing DataLoader 0:  36%|################5                             | 36/100 [00:03<00:06,  9.23it/s]Testing DataLoader 0:  37%|#################                             | 37/100 [00:04<00:06,  9.22it/s]Testing DataLoader 0:  38%|#################4                            | 38/100 [00:04<00:06,  9.20it/s]Testing DataLoader 0:  39%|#################9                            | 39/100 [00:04<00:06,  9.21it/s]Testing DataLoader 0:  40%|##################4                           | 40/100 [00:04<00:06,  9.23it/s]Testing DataLoader 0:  41%|##################8                           | 41/100 [00:04<00:06,  9.23it/s]Testing DataLoader 0:  42%|###################3                          | 42/100 [00:04<00:06,  9.25it/s]Testing DataLoader 0:  43%|###################7                          | 43/100 [00:04<00:06,  9.26it/s]Testing DataLoader 0:  44%|####################2                         | 44/100 [00:04<00:06,  9.28it/s]Testing DataLoader 0:  45%|####################7                         | 45/100 [00:04<00:05,  9.28it/s]Testing DataLoader 0:  46%|#####################1                        | 46/100 [00:04<00:05,  9.30it/s]Testing DataLoader 0:  47%|#####################6                        | 47/100 [00:05<00:05,  9.31it/s]Testing DataLoader 0:  48%|######################                        | 48/100 [00:05<00:05,  9.31it/s]Testing DataLoader 0:  49%|######################5                       | 49/100 [00:05<00:05,  9.32it/s]Testing DataLoader 0:  50%|#######################                       | 50/100 [00:05<00:05,  9.34it/s]Testing DataLoader 0:  51%|#######################4                      | 51/100 [00:05<00:05,  9.36it/s]Testing DataLoader 0:  52%|#######################9                      | 52/100 [00:05<00:05,  9.38it/s]Testing DataLoader 0:  53%|########################3                     | 53/100 [00:05<00:05,  9.40it/s]Testing DataLoader 0:  54%|########################8                     | 54/100 [00:05<00:04,  9.42it/s]Testing DataLoader 0:  55%|#########################3                    | 55/100 [00:05<00:04,  9.42it/s]Testing DataLoader 0:  56%|#########################7                    | 56/100 [00:05<00:04,  9.43it/s]Testing DataLoader 0:  57%|##########################2                   | 57/100 [00:06<00:04,  9.43it/s]Testing DataLoader 0:  58%|##########################6                   | 58/100 [00:06<00:04,  9.41it/s]Testing DataLoader 0:  59%|###########################1                  | 59/100 [00:06<00:04,  9.42it/s]Testing DataLoader 0:  60%|###########################6                  | 60/100 [00:06<00:04,  9.44it/s]Testing DataLoader 0:  61%|############################                  | 61/100 [00:06<00:04,  9.45it/s]Testing DataLoader 0:  62%|############################5                 | 62/100 [00:06<00:04,  9.45it/s]Testing DataLoader 0:  63%|############################9                 | 63/100 [00:06<00:03,  9.47it/s]Testing DataLoader 0:  64%|#############################4                | 64/100 [00:06<00:03,  9.48it/s]Testing DataLoader 0:  65%|#############################9                | 65/100 [00:06<00:03,  9.49it/s]Testing DataLoader 0:  66%|##############################3               | 66/100 [00:06<00:03,  9.48it/s]Testing DataLoader 0:  67%|##############################8               | 67/100 [00:07<00:03,  9.50it/s]Testing DataLoader 0:  68%|###############################2              | 68/100 [00:07<00:03,  9.51it/s]Testing DataLoader 0:  69%|###############################7              | 69/100 [00:07<00:03,  9.53it/s]Testing DataLoader 0:  70%|################################1             | 70/100 [00:07<00:03,  9.53it/s]Testing DataLoader 0:  71%|################################6             | 71/100 [00:07<00:03,  9.53it/s]Testing DataLoader 0:  72%|#################################1            | 72/100 [00:07<00:02,  9.51it/s]Testing DataLoader 0:  73%|#################################5            | 73/100 [00:07<00:02,  9.53it/s]Testing DataLoader 0:  74%|##################################            | 74/100 [00:07<00:02,  9.53it/s]Testing DataLoader 0:  75%|##################################5           | 75/100 [00:07<00:02,  9.54it/s]Testing DataLoader 0:  76%|##################################9           | 76/100 [00:07<00:02,  9.52it/s]Testing DataLoader 0:  77%|###################################4          | 77/100 [00:08<00:02,  9.53it/s]Testing DataLoader 0:  78%|###################################8          | 78/100 [00:08<00:02,  9.54it/s]Testing DataLoader 0:  79%|####################################3         | 79/100 [00:08<00:02,  9.54it/s]Testing DataLoader 0:  80%|####################################8         | 80/100 [00:08<00:02,  9.56it/s]Testing DataLoader 0:  81%|#####################################2        | 81/100 [00:08<00:01,  9.57it/s]Testing DataLoader 0:  82%|#####################################7        | 82/100 [00:08<00:01,  9.57it/s]Testing DataLoader 0:  83%|######################################1       | 83/100 [00:08<00:01,  9.57it/s]Testing DataLoader 0:  84%|######################################6       | 84/100 [00:08<00:01,  9.56it/s]Testing DataLoader 0:  85%|#######################################1      | 85/100 [00:08<00:01,  9.57it/s]Testing DataLoader 0:  86%|#######################################5      | 86/100 [00:08<00:01,  9.58it/s]Testing DataLoader 0:  87%|########################################      | 87/100 [00:09<00:01,  9.58it/s]Testing DataLoader 0:  88%|########################################4     | 88/100 [00:09<00:01,  9.59it/s]Testing DataLoader 0:  89%|########################################9     | 89/100 [00:09<00:01,  9.59it/s]Testing DataLoader 0:  90%|#########################################4    | 90/100 [00:09<00:01,  9.59it/s]Testing DataLoader 0:  91%|#########################################8    | 91/100 [00:09<00:00,  9.59it/s]Testing DataLoader 0:  92%|##########################################3   | 92/100 [00:09<00:00,  9.60it/s]Testing DataLoader 0:  93%|##########################################7   | 93/100 [00:09<00:00,  9.61it/s]Testing DataLoader 0:  94%|###########################################2  | 94/100 [00:09<00:00,  9.61it/s]Testing DataLoader 0:  95%|###########################################6  | 95/100 [00:09<00:00,  9.62it/s]Testing DataLoader 0:  96%|############################################1 | 96/100 [00:09<00:00,  9.61it/s]Testing DataLoader 0:  97%|############################################6 | 97/100 [00:10<00:00,  9.61it/s]Testing DataLoader 0:  98%|############################################# | 98/100 [00:10<00:00,  9.62it/s]Testing DataLoader 0:  99%|#############################################5| 99/100 [00:10<00:00,  9.63it/s]Testing DataLoader 0: 100%|#############################################| 100/100 [00:10<00:00,  9.63it/s]
+Testing completed in 15.01 seconds or 0.25 minutes or 0.004170133272806803 hours.
+
+test_loss: 0.0097
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.2\custom_test_1
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (CUSTOM_TEST_1) >>>>>>>>>>>>
+
+Creating decoder output plot for rep '1,001.0001' for [m004_(apv+G)]-gru_dec_1.2...
+
+Decoder output plot for rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\custom_test\etypes=1\m004\apv\set_G\iswp_0\D=gru\[m004_(apv+G)]-gru_dec_1.2\custom_test_1
+
+Testing DataLoader 0: 100%|#############################################| 100/100 [00:12<00:00,  7.98it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│         test_loss         │   0.009669055230915546    │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Custom_test of decoder model '[m004_(apv+G)]-gru_dec_1.2/custom_test_1' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: Still running

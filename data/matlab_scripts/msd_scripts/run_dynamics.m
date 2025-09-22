@@ -30,6 +30,7 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     freq = [f0]; % freq (hz)
     
     u_cells{M} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
+    u_cells{1} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
     
     u = @(t) cellfun(@(f) f(t), u_cells);  % returns M×1 vector at time t
     

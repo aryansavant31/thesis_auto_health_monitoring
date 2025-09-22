@@ -73,7 +73,7 @@ class ProcessRawMSDNodeData:
             self.convert_mat_to_hdf5(mat_file_path, processed_path, label)
 
 if __name__ == "__main__":
-    processor = ProcessRawMSDNodeData(machine='M004', 
+    processor = ProcessRawMSDNodeData(machine='M005', 
                                       scenario='scene_1',
     )
     processor.process_all()

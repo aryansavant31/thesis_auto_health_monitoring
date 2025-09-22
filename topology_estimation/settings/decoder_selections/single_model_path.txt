@@ -1,1 +1,1 @@
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.1\checkpoints\best-model-epoch=09-val_loss=0.0001.ckpt
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M005\scene_1\decoder\train\etypes=1\m005\apv\set_G\D=gru\tswp_0\[m005_(apv+G)]-gru_dec_1.1\checkpoints\best-model-epoch=43-val_loss=0.0052.ckpt

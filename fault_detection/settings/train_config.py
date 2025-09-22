@@ -63,9 +63,16 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_type = 'IF'
+        self.anom_type = 'SVC'
+        # IF parameters
         self.n_estimators = 1000
-        self.contam = 0.01
+        self.contam = 0.2       
+
+        # SVM parameters
+        self.kernel = 'rbf'
+        self.nu = 0.1
+        self.gamma = 'scale'
+
         self.set_anom_config()
 
         # uncertainity parameters
@@ -75,10 +82,13 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            #get_freq_feat_config('first_n_modes', n_modes=10)
-        ]  
+            # get_freq_feat_config('first_n_modes', n_modes=10)
+        ] 
         self.reduc_config = None
         self.feat_norm = None
+
+        # feature selection parameters
+        self.feat_select_config = None #get_reduc_config('LDA', n_feats=10, n_comps=1)  # feature selection config
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
@@ -93,7 +103,8 @@ class AnomalyDetectorTrainConfig:
             'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False}],
             'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
-            'pair_plot'                     : [False, {}],
+            'pair_plot'                     : [True, {}],
+            'feat_ranking_plot'          : [True, {}],
         }
 
         self.test_plots = {
@@ -112,6 +123,10 @@ class AnomalyDetectorTrainConfig:
     def set_anom_config(self):
         if self.anom_type == 'IF':
             self.anom_config = get_anom_config('IF', n_estimators=self.n_estimators, contam=self.contam)
+        elif self.anom_type == '1SVM':
+            self.anom_config = get_anom_config('1SVM', kernel=self.kernel, nu=self.nu, gamma=self.gamma)
+        elif self.anom_type == 'SVC':
+            self.anom_config = get_anom_config('SVC')
 
     def get_hparams(self):
         """
@@ -120,6 +135,7 @@ class AnomalyDetectorTrainConfig:
         domain_str = self._get_config_str([self.domain_config])
         feat_str = self._get_config_str(self.feat_configs)
         reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
+        feat_select_str = self._get_config_str([self.feat_select_config]) if self.feat_select_config else 'None'
 
         init_hparams = {
             'model_num': self.model_num,
@@ -134,7 +150,8 @@ class AnomalyDetectorTrainConfig:
             'raw_data_norm': self.raw_data_norm,
             'feats': f"[{feat_str}]",
             'reduc': reduc_str,
-            'feat_norm': self.feat_norm
+            'feat_norm': self.feat_norm,
+            'feat_select': feat_select_str,
         }
         hparams = {**init_hparams, **self.anom_config}
 
@@ -157,7 +174,7 @@ class AnomalyDetectorTrainConfig:
         config_strings = []
 
         for config in configs:
-            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type']])
             if additional_keys:
                 config_strings.append(f"{config['type']}({additional_keys})")
             else:
@@ -225,6 +242,11 @@ def get_anom_config(anom_type, **kwargs):
         anom_config['IF/bootstrap'] = kwargs.get('bootstrap', False)
         anom_config['IF/warm_start'] = kwargs.get('warm_start', False)
         anom_config['IF/max_features'] = kwargs.get('max_features', 1.0)
+
+    elif anom_type == 'SVC':
+        anom_config['SVC/kernel'] = kwargs.get('kernel', 'rbf')
+        anom_config['SVC/C'] = kwargs.get('C', 1.0)
+        anom_config['SVC/gamma'] = kwargs.get('gamma', 'scale')
 
         # hyperparameters for isolation forest
 

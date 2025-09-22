@@ -7,7 +7,7 @@ import os, sys
 
 # other imports
 from sklearn.ensemble import IsolationForest
-from sklearn.svm import OneClassSVM
+from sklearn.svm import OneClassSVM, SVC
 import time
 import numpy as np
 import pickle
@@ -17,10 +17,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve
 import torch
+import inspect
 
 # global imports
 from data.transform import DomainTransformer, DataNormalizer
 from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureExtractor, FeatureReducer
+from feature_extraction import ff, tf
 
 # local imports
 from .settings.manager import AnomalyDetectorTrainManager
@@ -57,6 +59,12 @@ class AnomalyDetector:
                                      max_iter=anom_config['1SVM/max_iter'],
                                      coef0=anom_config['1SVM/coef0'],
                                      degree=anom_config['1SVM/degree'])
+
+        elif anom_config['anom_type'] == 'SVC':
+            self.model = SVC(kernel=anom_config['SVC/kernel'],
+                             C=anom_config['SVC/C'],
+                             gamma=anom_config['SVC/gamma'],
+                            )
             
     def set_run_params(self, data_config, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
@@ -76,9 +84,6 @@ class AnomalyDetector:
         self._feat_norm = feat_norm
         self._feat_configs = feat_configs
         self._reduc_config = reduc_config
-
-        
-        self._feat_names = self._get_feature_names() if self._feat_configs else None
 
         self.data_stats = data_stats
         self.domain_config = domain_config
@@ -108,15 +113,20 @@ class AnomalyDetector:
                 feat_names.extend(feat_config['feat_list'])
 
         return feat_names
+
             
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
         
         self._domain = self.domain_config['type']
+        self._feat_names = self._get_feature_names() if self._feat_configs else None
 
         domain_str = self._get_config_str([self.domain_config])
         feat_str = self._get_config_str(self._feat_configs) if self._feat_configs else 'None'
         reduc_str = self._get_config_str([self._reduc_config]) if self._reduc_config else 'None'
+
+        # update hparams for feat string
+        self.hparams['feats'] = f"[{feat_str}]"
 
         self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self._data_config)
         # if self._domain == 'time':
@@ -174,7 +184,7 @@ class AnomalyDetector:
         config_strings = []
 
         for config in configs:
-            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type', 'feat_list']])
+            additional_keys = ', '.join([f"{key}={value}" for key, value in config.items() if key not in ['fs', 'type']])
             if additional_keys:
                 config_strings.append(f"{config['type']}({additional_keys})")
             else:
@@ -219,7 +229,7 @@ class AnomalyDetector:
 class TrainerAnomalyDetector:
     def __init__(self, logger:SummaryWriter=None):
         self.logger = logger
-
+       
     def process_input_data(self, anomaly_detector:AnomalyDetector, data_loader, get_data_shape=False):
         """
         Parameters
@@ -356,7 +366,10 @@ class TrainerAnomalyDetector:
 
         # fit the model
         print("\nFitting anomaly detection model...")
-        anomaly_detector.model.fit(self.df[self.comp_cols])
+        if anomaly_detector.hparams['anom_type'] == 'SVC':
+            anomaly_detector.model.fit(self.df[self.comp_cols], self.df['given_label'])
+        else:
+            anomaly_detector.model.fit(self.df[self.comp_cols])
 
         # calculate and print the training time
         training_time = time.time() - start_time
@@ -1059,7 +1072,7 @@ class TrainerAnomalyDetector:
             for bin_idx, samples in bin_samples.items():
                 if samples:
                     low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                    sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+                    sample_info = ", ".join([f"{idx} ({float(self.df.loc[idx, 'rep_num']):,.4f})" for idx in samples])
                     text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [{color}]**: {sample_info}\n"
         
         write_bin_samples(indices_ok, scores_ok, bins_edges, "OK", "blue")
@@ -1266,7 +1279,7 @@ class TrainerAnomalyDetector:
             for bin_idx, samples in bin_samples.items():
                 if samples:
                     low, high = bins_edges[bin_idx], bins_edges[bin_idx + 1]
-                    sample_info = ", ".join([f"{idx} ({float(df.loc[idx, 'rep_num']):,.3f})" for idx in samples])
+                    sample_info = ", ".join([f"{idx} ({float(df.loc[idx, 'rep_num']):,.4f})" for idx in samples])
                     text += f"- **Bin {bin_idx} ({low-shift:.5f}, {high-shift:.5f}) [{color}]**: {sample_info}\n"
 
         write_bin_samples(indices_tn, scores_tn, bins_edges, "True Negative (OK, correct)", "blue")

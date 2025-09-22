@@ -91,18 +91,22 @@ def get_time_feat_config(feat_type, **kwargs):
 
     return config
 
-def get_reduc_config(reduc_type, **kwargs):
+def get_reduc_config(reduc_type, n_feats=None, **kwargs):
     """
     Parameters
     ----------
     reduc_type : str
         The type of feature reduction to be used (e.g., 'PCA').
+    n_feats : int
+        Number of features to select (if using feature selection).
     **kwargs : dict
         For all options of `reduc_type`:
         - `PCA`: **n_comps** (_int_) (number of components to keep)
+    
     """
     config = {}
     config['type'] = reduc_type
+    config['n_feats'] = n_feats if n_feats is not None else 5  # default to 5 features if not specified
 
     if reduc_type == 'PCA':
         config['n_comps'] = kwargs.get('n_comps', 5)  # default to 5 components if not specified

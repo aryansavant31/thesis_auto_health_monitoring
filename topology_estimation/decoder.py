@@ -64,7 +64,7 @@ class Decoder(LightningModule):
     def set_hyperparams(self, hyperparams):
         self.hyperparams = hyperparams
 
-    def set_input_graph(self, rec_rel, send_rel, make_edge_matrix=False, **kwargs):
+    def set_input_graph(self, rec_rel, send_rel, make_edge_matrix=False, always_fully_connected_rel=False, **kwargs):
         """
         Set the relationship matrices defining the input graph structure to encoder.
         
@@ -86,6 +86,29 @@ class Decoder(LightningModule):
             self.set_edge_matrix(edge_matrix)
             print(f"\nEdge matrix is created from relation matrices and set to decoder.")
 
+        if always_fully_connected_rel:
+            n_nodes = rec_rel.shape[1]
+            n_edges = rec_rel.shape[0]
+            rec_rel_fc = torch.zeros((n_edges, n_nodes), device=rec_rel.device)
+            send_rel_fc = torch.zeros((n_edges, n_nodes), device=send_rel.device)
+
+            edge_idx = 0
+            for sender in range(n_nodes):
+                for receiver in range(n_nodes):
+                    if sender != receiver:
+                        rec_rel_fc[edge_idx, receiver] = 1
+                        send_rel_fc[edge_idx, sender] = 1
+                        edge_idx += 1
+
+            # override the relation matrices to make fully connected graph
+            self.rec_rel = rec_rel_fc
+            self.send_rel = send_rel_fc
+
+            print(f"\nRelation matrices are overridden to make fully connected graph in decoder.")
+        else:
+            print(f"\nGiven relation matrices are set to decoder.")
+
+            
     def set_edge_matrix(self, edge_matrix):
         """
         Set the edge matrix to decoder.
@@ -491,6 +514,11 @@ class Decoder(LightningModule):
         self.loss_type = checkpoint["loss_type"]
         self.momentum = checkpoint["momentum"]
 
+        # load training data
+        self.train_losses = checkpoint["train_losses"]
+        self.custom_step = checkpoint['custom_step']
+        self.custom_current_epoch = checkpoint['custom_current_epoch']
+
         # rebuild the model with the restored attributes
         self.build_model()
 
@@ -519,6 +547,11 @@ class Decoder(LightningModule):
         checkpoint["loss_type"] = self.loss_type
         checkpoint["momentum"] = self.momentum
 
+        # save training data
+        checkpoint["train_losses"] = self.train_losses
+        checkpoint['custom_step'] = self.custom_step
+        checkpoint['custom_current_epoch'] = self.custom_current_epoch
+
     def configure_optimizers(self):
         if self.optimizer == 'adam':
             return Adam(self.parameters(), lr=self.lr)
@@ -527,25 +560,45 @@ class Decoder(LightningModule):
         
 # ====== Trainer.fit() methods  ======
         
-    def on_fit_start(self):
+    def on_train_start(self):
         """
         Called at the start of training.
         """
         super().on_fit_start()
+
+        if getattr(self, "custom_step", 0) == 0:
+            self.custom_step = -1  # will be incremented to 0 in first training step
+            self.custom_current_epoch = -1  # will be incremented to 0 in first epoch start
+            self.custom_max_epochs = self.trainer.max_epochs
         
+            self.train_losses = {
+                'train_losses': [],
+                'val_losses': [],
+            }
+
+        # varaibles to always load
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'decoder'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = "train"
 
-        self.init_input_processors()
+        self.found_rep1 = False # for decoder output plot
+        self.n_steps_per_epoch = len(self.trainer.train_dataloader)
+        self.custom_max_epochs = self.trainer.max_epochs + self.custom_current_epoch + 1
 
-        self.train_losses = {
-            'train_losses': [],
-            'val_losses': [],
-        }
+        self.init_input_processors()
+        
         self.start_time = time.time()
 
-    
+    def on_train_batch_start(self, batch, batch_idx):
+        super().on_train_batch_start(batch, batch_idx)
+
+        self.custom_step += 1
+
+    def on_train_epoch_start(self):
+        super().on_train_epoch_start()
+
+        self.custom_current_epoch += 1
+        
     def _forward_pass(self, batch, batch_idx):
         """
         Perform a forward pass through the model.
@@ -562,7 +615,7 @@ class Decoder(LightningModule):
         # Loss calculation
         if self.loss_type == 'nll':
             loss = nll_gaussian(x_pred, target, x_var)
-        if self.loss_type == 'mse':
+        elif self.loss_type == 'mse':
 
             if self.is_burn_in:
                 new_target = target[:, :, -self.final_pred_steps:, :]
@@ -570,6 +623,32 @@ class Decoder(LightningModule):
                 
             loss = F.mse_loss(x_pred, target)
 
+        elif self.loss_type == 'mae':
+            loss = F.l1_loss(x_pred, target)
+
+        # prepare data for decoder output plot
+        target_rep_num = 1001.0001
+
+        # find data with rep_num = 1001.0001
+        if target_rep_num in rep_num:
+            self.found_rep1 = True
+            target_idx = rep_num.tolist().index(target_rep_num)
+            x_pred_rep1 = x_pred[target_idx:target_idx+1]
+            x_var_rep1 = x_var[target_idx:target_idx+1]
+            target_rep1 = target[target_idx:target_idx+1]
+            rep_num_rep1 = rep_num[target_idx:target_idx+1]
+
+            self.decoder_plot_data_rep1 = {
+            'x_pred': x_pred_rep1,
+            'x_var': x_var_rep1,
+            'target': target_rep1,
+            'rep_num': rep_num_rep1,
+            }
+            print(f"\nFound rep_num = {target_rep_num} in batch {batch_idx} of epoch {self.custom_current_epoch}. Decoder output plot will be made for this data.")
+
+        elif not self.found_rep1:
+            self.decoder_plot_data_rep1 = None
+            
         decoder_plot_data = {
             'x_pred': x_pred,
             'x_var': x_var,
@@ -592,19 +671,33 @@ class Decoder(LightningModule):
             - relations : torch.Tensor, shape (batch_size, n_edges)
         """
 
-        # if self.current_epoch == 0 and batch_idx == 0:
+        # if self.custom_current_epoch == 0 and batch_idx == 0:
         #     self.start_time = time.time()
 
         loss, self.decoder_plot_data_train = self._forward_pass(batch, batch_idx)
+        self.train_loss = loss.item()
 
-        self.log_dict(
-            {'train_loss': loss},
-            on_step=False,
-            on_epoch=True,
-            prog_bar=False,
-            logger=True
-        )     
+        # log every n steps
+        self.n = 5
+
+        if (self.custom_step) % self.n == 0:
+            self.log_dict(
+                {'train_loss': loss},
+                on_step=True,
+                on_epoch=False,
+                prog_bar=False,
+                logger=True
+            )     
+
         return loss
+    
+    def on_train_batch_end(self, outputs, batch, batch_idx):
+        if (self.custom_step) % self.n == 0:
+            self.train_losses['train_losses'].append(self.train_loss)
+
+            print(f"\nStep {self.custom_step}, Epoch {self.custom_current_epoch+1}/{self.custom_max_epochs}, Batch {batch_idx}/{len(self.trainer.train_dataloader)}")
+            print(f"train_loss: {self.train_loss:,.4f}")
+
     
     def validation_step(self, batch, batch_idx):
         """
@@ -634,23 +727,26 @@ class Decoder(LightningModule):
         """
         Called at the end of each training epoch. Updates the training losses.
         """
-        self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
-        print(f"\nEpoch {self.current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.global_step}")
+        #self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
+
+        print(f"\nEpoch {self.custom_current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.custom_step}")
         train_loss_str = f"train_loss: {self.train_losses['train_losses'][-1]:,.4f}"
 
         # make decoder output plot for training data
-        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
+        self.decoder_output_plot(**self.decoder_plot_data_train, type='train', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
 
+        # validation
         if self.trainer.val_dataloaders:
             self.train_losses['val_losses'].append(self.trainer.callback_metrics['val_loss'].item())
             val_loss_str = f", val_loss: {self.train_losses['val_losses'][-1]:,.4f}"
 
             # make decoder output plot for val data
-            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.current_epoch+1 < self.trainer.max_epochs else None
+            self.decoder_output_plot(**self.decoder_plot_data_val, type='val', is_end=False) if self.custom_current_epoch+1 < self.trainer.max_epochs else None
         else:
             val_loss_str = ""
         
-        print(f"{train_loss_str}{val_loss_str}")
+        print(f"{train_loss_str}{val_loss_str}"
+              "\n\n" + 75*'-' + '\n')
 
         # update hparams
         self.training_time = time.time() - self.start_time
@@ -658,7 +754,7 @@ class Decoder(LightningModule):
             'model_id': self.model_id,
             'model_num': float(self.logger.log_dir.split('_')[-1]) if self.logger else 0,
             'training_time': self.training_time,
-            'n_steps': self.global_step,
+            'n_steps': self.custom_step,
             'train_loss': self.train_losses['train_losses'][-1],
             'val_loss': self.train_losses['val_losses'][-1] if self.trainer.val_dataloaders else None,
         })
@@ -668,7 +764,7 @@ class Decoder(LightningModule):
         Called at the end of training. 
         """
         print(f"\nTraining completed in {self.training_time:.2f} seconds or {self.training_time / 60:.2f} minutes or {self.training_time / 60 / 60} hours.")
-        print(f"Total training steps: {self.global_step}")
+        print(f"Total training steps: {self.custom_step}")
         
         if self.logger:
             
@@ -696,12 +792,19 @@ class Decoder(LightningModule):
         super().on_test_start()
         self.init_input_processors()
 
+        self.custom_step = -1  # will be incremented to 0 in first test step
+        self.found_rep1 = False # for decoder output plot
+ 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
 
         self.start_time = time.time()
+
+    def on_test_batch_start(self, batch, batch_idx, dataloader_idx = 0):
+        super().on_test_batch_start(batch, batch_idx, dataloader_idx)
+        self.custom_step += 1
 
     def test_step(self, batch, batch_idx):
         """
@@ -722,7 +825,7 @@ class Decoder(LightningModule):
             {'test_loss': loss},
             on_step=False,
             on_epoch=True,
-            prog_bar=True,
+            prog_bar=False,
             logger=True
         )
         return loss
@@ -752,7 +855,11 @@ class Decoder(LightningModule):
         print('\n' + 75*'-')
 
         # make decoder output plot
-        self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
+        if self.decoder_plot_data_rep1:
+            self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type)
+        else:
+            print(f"\nNo target rep num. Hence decoder output is made for first sample in the last test batch.")
+            self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
     
 
 # ====== Trainer.predict() method  ====== 
@@ -761,12 +868,19 @@ class Decoder(LightningModule):
         super().on_predict_start()
         self.init_input_processors()
 
+        self.custom_step = -1  # will be incremented to 0 in first predict step
+        self.found_rep1 = False # for decoder output plot
+
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
 
         self.start_time = time.time()
+
+    def on_predict_batch_start(self, batch, batch_idx, dataloader_idx = 0):
+        super().on_predict_batch_start(batch, batch_idx, dataloader_idx)
+        self.custom_step += 1
 
     def predict_step(self, batch, batch_idx):
         """
@@ -810,7 +924,8 @@ class Decoder(LightningModule):
         print("\n" + 12*"<" + " TRAINING LOSS PLOT (TRAIN + VAL) " + 12*">")
         print(f"\nCreating training loss plot for {self.model_id}...")
 
-        epochs = range(1, len(self.train_losses[f'train_losses']) + 1)
+        train_steps = [step * self.n for step in range(1, len(self.train_losses['train_losses']) + 1)]
+        val_steps = [epoch * self.n_steps_per_epoch for epoch in range(1, len(self.train_losses['val_losses']) + 1)]
 
         # update font settings for plots
         plt.rcParams.update({
@@ -823,12 +938,12 @@ class Decoder(LightningModule):
         plt.figure(figsize=(8, 6), dpi=100)
 
         # plot nri losses
-        plt.plot(epochs, self.train_losses[f'train_losses'], label='train loss', color='blue')
-        plt.plot(epochs, self.train_losses[f'val_losses'], label='val loss', color='orange', linestyle='--')
-        plt.title(F"Train and Validation Losses : [{self.model_id}]")
-        plt.ylabel('Loss')
-        plt.xlabel('Epochs')
-        # plt.yscale('log')
+        plt.plot(train_steps, self.train_losses[f'train_losses'], label='train loss', color='blue')
+        plt.plot(val_steps, self.train_losses[f'val_losses'], label='val loss', color='orange', linestyle='--', marker='o', markersize=4)
+        plt.title(F"Train and Validation Losses ({self.loss_type.upper()}) : [{self.model_id}]")
+        plt.ylabel('Loss (Log Scale)')
+        plt.xlabel('Steps')
+        plt.yscale('log')
         plt.legend()
         plt.grid(True)
 
@@ -836,7 +951,7 @@ class Decoder(LightningModule):
         if self.logger:
             fig = plt.gcf()
             fig.savefig(os.path.join(self.logger.log_dir, f'training_loss_plot_({self.model_id}).png'), dpi=500)
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/training_loss_plot", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/training_loss_plot", fig, global_step=self.custom_step, close=True)
             print(f"\nTraining loss (train + val) plot logged at {self.logger.log_dir}\n")
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
@@ -865,7 +980,7 @@ class Decoder(LightningModule):
 
         if is_end:
             print("\n" + 12*"<" + f" DECODER OUTPUT PLOT ({type.upper()}) " + 12*">") if is_end else None
-            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.3f}' for {self.model_id}...")
+            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
@@ -884,13 +999,13 @@ class Decoder(LightningModule):
         })
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 4, n_nodes * 3), sharex=False, sharey=False, dpi=75)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 5, n_nodes * 3), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.3f} : [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.4f} : [{self.model_id} / {type}]", fontsize=16)
 
         for node in range(n_nodes):
             dim_names = self.data_config.signal_types['group'][node_names[node]]
@@ -910,19 +1025,23 @@ class Decoder(LightningModule):
                 # plot ground truth, predictions, and confidence band
                 ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
                 ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
+
+                prediction_start_step = n_comps - self.final_pred_steps if self.is_burn_in else 0
+                ax.axvline(x=prediction_start_step - 1, color='green', linestyle=':', label='start of prediction', linewidth=1.8) if prediction_start_step > 0 else None
+
                 if self.show_conf_band:
                     ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="relative confidence")
 
                 # Add labels and legend
                 #if node == n_nodes - 1:
-                ax.set_xlabel("components")
-                ax.set_ylabel(f"{dim_names[dim]} (SI units)")
+                ax.set_xlabel("timesteps")
+                ax.set_ylabel(f"{dim_names[dim]}")
                          
                 if node == 0 and dim == n_dims - 1:
                     ax.legend(loc="upper right")
 
                 # add node name as title for each row
-                ax.set_title(f"{node_names[node]}", fontsize=11)
+                ax.set_title(f"{node_names[node]} ({dim_names[dim]})", fontsize=11)
 
                 ax.grid(True)
 
@@ -931,7 +1050,7 @@ class Decoder(LightningModule):
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.global_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
 
             if is_end:
                 fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)

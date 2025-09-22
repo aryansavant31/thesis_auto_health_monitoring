@@ -415,29 +415,34 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         # load relation matrices
         rec_rel, send_rel = self.rm.get_relation_matrix(self.train_loader)
 
-    # 2. Initialize the Decoder model
+    # 2. Prepare model parameters and training environment
         dec_model_params, dec_run_params = self.get_decoder_params()
-        
-        decoder_model = self._init_decoder_model(
-            dec_model_params, dec_run_params, 
-            rec_rel, send_rel, self.train_data_stats)
+        train_logger, checkpoint_callback, ckpt_path_for_training = self._prep_for_training(dec_model_params['n_dims'])
+    
+    # 3. Initialize the Decoder model
+        if self.tp_config.continue_training:
+            decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_training)
+        else:
+            decoder_model = self._init_decoder_model(
+                dec_model_params, dec_run_params, 
+                rec_rel, send_rel, self.train_data_stats
+                )
 
     # 3. Train the Decoder model
-        train_logger, checkpoint_callback, ckpt_path = self._prep_for_training(dec_model_params['n_dims'])
-        
         trainer = Trainer(
             accelerator=device,
             callbacks=[checkpoint_callback], 
             logger=train_logger,
             max_epochs=1 if fast_dev_run else self.tp_config.max_epochs, 
-            enable_progress_bar=True,
+            enable_progress_bar=False,
             log_every_n_steps=1,
             num_sanity_val_steps=0,
             limit_train_batches=1 if fast_dev_run else None,
             limit_val_batches=1 if fast_dev_run else None 
             )
+        
         trainer.fit(model=decoder_model, train_dataloaders=self.train_loader,
-                    val_dataloaders=self.val_loader, ckpt_path=ckpt_path)
+                    val_dataloaders=self.val_loader)
         
         print('\n' + 75*'-')
 
@@ -447,9 +452,10 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
 
     # 4. Test the trained Decoder model
         print("\nTESTING TRAINED DECODER MODEL...")
-        trained_decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats)
+        test_logger, ckpt_path_for_testing = self._prep_for_testing()
 
-        test_logger = self._prep_for_testing()
+        trained_decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_testing)
+
         tester = Trainer(
             accelerator=device,
             logger=test_logger)
@@ -480,7 +486,12 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
 
         # set other params
         decoder_model.set_hyperparams(self.tp_config.hyperparams)
-        decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.train_loader.batch_size)
+        decoder_model.set_input_graph(
+            rec_rel, send_rel, 
+            make_edge_matrix=True, 
+            always_fully_connected_rel=self.tp_config.always_fully_connected_rel,
+            batch_size=self.train_loader.batch_size
+            )
 
         decoder_model.set_run_params(
             **dec_run_params, 
@@ -504,13 +515,18 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         print('\n' + 75*'-')
         return decoder_model
     
-    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats):
+    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats, ckpt_path):
         """
         Load the trained Decoder model from the checkpoint path.
         """
-        trained_decoder_model = Decoder.load_from_checkpoint(get_model_ckpt_path(self.train_log_path))
+        trained_decoder_model = Decoder.load_from_checkpoint(ckpt_path)
 
-        trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.train_loader.batch_size)
+        trained_decoder_model.set_input_graph(
+            rec_rel, send_rel, 
+            make_edge_matrix=True, 
+            always_fully_connected_rel=self.tp_config.always_fully_connected_rel,
+            batch_size=self.train_loader.batch_size
+            )
 
         trained_decoder_model.set_run_params(
             **dec_run_params, 

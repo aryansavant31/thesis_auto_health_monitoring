@@ -305,7 +305,12 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
         })
 
         # update the model with new run params and custom data statistics
-        trained_decoder_model.set_input_graph(rec_rel, send_rel, make_edge_matrix=True, batch_size=self.custom_loader.batch_size)
+        trained_decoder_model.set_input_graph(
+            rec_rel, send_rel, 
+            make_edge_matrix=True, 
+            always_fully_connected_rel=self.tp_config.always_fully_connected_rel,
+            batch_size=self.custom_loader.batch_size
+            )
 
         trained_decoder_model.set_run_params(
             **dec_run_params, 
