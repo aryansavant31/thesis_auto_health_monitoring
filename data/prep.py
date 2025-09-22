@@ -16,6 +16,7 @@ import h5py
 from torch.utils.data import Subset
 from collections import defaultdict
 from scipy.interpolate import interp1d
+import random
 
 # local imports
 from .config import DataConfig
@@ -326,28 +327,61 @@ class DataPreprocessor:
         if self.package == 'topology_estimation' and val_rt == 0:
             raise ValueError("Validation set is required for topology estimation. Please provide a non-zero validation ratio.")
         
+        # find index of rep_num == 1,001.0001
+        target_rep_num = 1001.0001
+        rep_nums = [dataset[i][-1].item() for i in range(len(dataset))]
+
+        if target_rep_num in rep_nums:
+            target_index = rep_nums.index(target_rep_num)
+            print(f"\nTarget rep_num {target_rep_num} found at index {target_index}. This sample will be included in the test set.")
+        else:
+            target_index = None
+            print(f"\nTarget rep_num {target_rep_num} not found in the dataset.")
+
+        # remove target index from pool and keep it for test set
+        if target_index is not None:
+            non_target_indices = [i for i in range(total_samples) if i != target_index]
+            
+        # calculate number of samples for each set
         train_total = int(train_rt * total_samples)
         test_total = int(test_rt * total_samples)
         val_total = int(val_rt * total_samples)
         remainder_samples = total_samples - train_total - test_total - val_total
 
-        if self.package == 'topology_estimation':
-            shuffle_data_loader = True
+        # shuffle the indices
+        random.shuffle(non_target_indices)
 
-            if train_total + test_total + val_total < total_samples:
-                train_set, test_set, val_set, remain_dataset = random_split(dataset, [train_total, test_total, val_total, remainder_samples])
-            else:
-                train_set, test_set, val_set = random_split(dataset, [train_total, test_total, val_total])
+        train_indices = non_target_indices[:train_total]
+        if target_index is not None:
+            test_indices = [target_index] + non_target_indices[train_total : train_total+test_total-1]
+        else:
+            test_indices = non_target_indices[train_total:train_total + test_total]
+        val_indices = non_target_indices[train_total+test_total : train_total+test_total+val_total] 
+        remain_indices = non_target_indices[train_total+test_total+val_total:]
 
-        elif self.package == 'fault_detection':
-            shuffle_data_loader = False
+        train_set = Subset(dataset, train_indices)
+        test_set = Subset(dataset, test_indices)
+        val_set = Subset(dataset, val_indices) if val_total > 0 else None
+        remain_dataset = Subset(dataset, remain_indices) if len(remain_indices) > 0 else None
 
-            if train_total + test_total < total_samples:
-                train_set, test_set, remain_dataset = random_split(dataset, [train_total, test_total, remainder_samples])
-            else:
-                train_set, test_set = random_split(dataset, [train_total, test_total])
+        # # split the dataset
+        # if self.package == 'topology_estimation':
+        #     shuffle_data_loader = True
 
-            val_set = None  # No validation set for fault detection
+        #     if train_total + test_total + val_total < total_samples:
+        #         train_set, test_set, val_set, remain_dataset = random_split(dataset, [train_total, test_total, val_total, remainder_samples])
+        #     else:
+        #         train_set, test_set, val_set = random_split(dataset, [train_total, test_total, val_total])
+
+        # elif self.package == 'fault_detection':
+        #     shuffle_data_loader = False
+
+        #     if train_total + test_total < total_samples:
+        #         train_set, test_set, remain_dataset = random_split(dataset, [train_total, test_total, remainder_samples])
+        #     else:
+        #         train_set, test_set = random_split(dataset, [train_total, test_total])
+
+        #     val_set = None  # No validation set for fault detection
 
         # get dataset statistics
         train_data_stats = self._get_dataset_stats(train_set)
@@ -355,11 +389,16 @@ class DataPreprocessor:
         val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
 
         # create dataloaders
+
+        if self.package == 'topology_estimation':
+            shuffle_data_loader = True
+        elif self.package == 'fault_detection':
+            shuffle_data_loader = False
         
         train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data_loader, drop_last=True, num_workers=num_workers, persistent_workers=True)
         test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers, persistent_workers=True)
         val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, drop_last=True, num_workers=num_workers, persistent_workers=True) if val_set is not None else None
-        remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remainder_samples > 0 else None
+        remain_loader = DataLoader(remain_dataset, batch_size=1, shuffle=False, drop_last=False) if remain_dataset is not None else None
 
         # get number of OK and NOK samples in each set
         train_label_counts, n_train = self._get_label_counts(train_loader)
@@ -369,7 +408,7 @@ class DataPreprocessor:
         else: 
             val_label_counts, n_val = {1: 0, -1: 0, 0: 0}, 0
 
-        if remainder_samples > 0:
+        if remain_loader is not None:
             rem_label_counts, _ = self._get_label_counts(remain_loader)
         else:
             rem_label_counts = {1: 0, -1: 0, 0: 0}
@@ -646,7 +685,7 @@ class DataPreprocessor:
                     segmented_rep_nums = []
                     for rep_num in rep_num_list:
                         for seg_num in range(len(data_segments) // len(rep_num_list)): # iterate over number of segments per rep
-                            segmented_rep_nums.append(float(f"{rep_num:02d}{ds_subtype_idx+1:03d}.{seg_num+1:03d}"))
+                            segmented_rep_nums.append(float(f"{rep_num:02d}{ds_subtype_idx+1:03d}.{seg_num+1:04d}"))
                             
                     # store segments and rep numbers
                     node_dim_collect[node_type][ds_subtype][dim_idx].append(data_segments)

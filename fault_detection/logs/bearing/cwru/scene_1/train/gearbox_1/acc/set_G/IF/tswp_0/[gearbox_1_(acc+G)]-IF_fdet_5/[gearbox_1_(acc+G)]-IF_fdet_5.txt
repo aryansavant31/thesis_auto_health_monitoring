@@ -1,0 +1,1 @@
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\healthy_unhealthy\(OK):0_N[OG] + (NOK):0_B-007[OG]\[anom] IF\gearbox: (acc)\T1000, Tmax = 244,739\time\(anom) [no_feat] [no_reduc]\tswp_0\anom (comps = 1000)

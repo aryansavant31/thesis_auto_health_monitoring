@@ -44,13 +44,22 @@ class DecoderTrainConfig:
 
         final_pred_steps : int
             Number of final steps to use as prediction inputs if `is_burn_in` is True.
+
+        3: Sparsifier Attributes
+        -----------------------
+        - **_Sparsifier parameters_**
+
+        always_fully_connected_rel : bool
+            - if True, then relation matrices are set to fully connected graph in every batch. 
+            - However, edge matrix adapts to the sparsifier config. 
+            - If False, then relation matrices are set as per the sparsifier output.
         """
         self.ext = ExtraSettings()
         self.data_config = data_config
 
     # 1: Training parameters   
 
-        self.model_num = 14
+        self.model_num = 1  # 15 [test failed due to error](correct tp: mae loss, long prediction horizon), 16 - incorrect
         self.continue_training = False
         self.is_log = True
         
@@ -64,15 +73,15 @@ class DecoderTrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 15
+        self.max_epochs = 50
         self.lr = 0.001
         self.optimizer = 'adam'
         self.momentum = 0.9
-        self.loss_type = 'mse'
+        self.loss_type = 'mae'
 
     # 2: Decoder parameters
 
-        self.msg_out_size = 64
+        self.msg_out_size = 128
     
         # embedding function parameters 
         self.edge_mlp_config = {'mlp': 'edge_nri_og'}
@@ -98,7 +107,7 @@ class DecoderTrainConfig:
         self.skip_first_edge_type = False
         self.pred_steps = 10
         self.is_burn_in = True
-        self.final_pred_steps = 30
+        self.final_pred_steps = 50
         self.is_dynamic_graph = False
 
         # if dynamic graph is true
@@ -112,7 +121,8 @@ class DecoderTrainConfig:
 
     # 3: Sparsifier parameters
 
-        self.spf_config = get_spf_config('no_spf', is_expert=False)
+        self.spf_config = get_spf_config('vanilla', is_expert=True)
+        self.always_fully_connected_rel = True # if True, then relation matrices are set to fully connected graph in every batch. However, edge matrix adapts to the sparsifier config. If False, then relation matrices are set as per the sparsifier output.
 
         self.spf_domain_config = get_domain_config('time')
         self.spf_raw_data_norm = None 
@@ -181,6 +191,7 @@ class DecoderTrainConfig:
 
             # sparsifier parameters
             'spf/config': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            'spf/always_fully_connected_rel': self.always_fully_connected_rel,
             'spf/domain': spf_domain_str,
             'spf/raw_data_norm': self.spf_raw_data_norm,
             'spf/feats': f"[{spf_feat_str}]",
@@ -340,7 +351,7 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 17 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr)
+        self.model_num = 18 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr), 18 (lower accuracy cutoff)
         self.continue_training = False
         self.is_log = True
         
@@ -378,7 +389,7 @@ class NRITrainConfig:
         self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
 
         # if encoder warmup is True
-        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
+        self.warmup_acc_cutoff = 0.8   # accuracy cutoff for encoder warmup
         self.sustain_enc_warmup = True  # if True, then re-enable encoder warmup if edge accuracy drops below cutoff during training
         self.final_gamma = 0.3
         self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup

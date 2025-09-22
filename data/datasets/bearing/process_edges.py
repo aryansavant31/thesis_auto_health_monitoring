@@ -8,8 +8,9 @@ class AdjacencyMatrixGenerator:
 
     def generate_matrix(self, seed=None):
         np.random.seed(seed)
-        mat = np.random.randint(0, 2, size=(5, 5))
-        np.fill_diagonal(mat, 0)  # No self-loops
+        mat = np.random.randint(0, 2, size=(5, 5, 1))
+        for i in range(mat.shape[2]):
+            np.fill_diagonal(mat[:, :, i], 0)  # No self-loops
         return mat
 
     def process(self):

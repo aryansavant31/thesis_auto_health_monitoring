@@ -214,7 +214,7 @@ class DecoderInferConfig:
         self.skip_first_edge_type = False
         self.pred_steps = 5
         self.is_burn_in = True
-        self.final_pred_steps = 10
+        self.final_pred_steps = 50
         self.is_dynamic_graph = False
 
         # if dynamic graph is true
@@ -226,6 +226,7 @@ class DecoderInferConfig:
 
     # Sparsifier parameters 
         self.spf_config = get_spf_config('vanilla', is_expert=True)
+        self.always_fully_connected_rel = True # if True, then relation matrices are set to fully connected graph in every batch. However, edge matrix adapts to the sparsifier config. If False, then relation matrices are set as per the sparsifier output.
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 
@@ -268,6 +269,7 @@ class DecoderInferConfig:
 
             # sparsifier parameters
             f'spf/config/{self.run_type}': f"{self.spf_config['type']} (expert={self.spf_config['is_expert']})" if self.spf_config['type'] != 'no_spf' else 'no_spf',
+            f'spf/always_fully_connected_rel/{self.run_type}': self.always_fully_connected_rel,
             f'spf/domain/{self.run_type}': spf_domain_str,
             f'spf/raw_data_norm/{self.run_type}': self.spf_raw_data_norm,
             f'spf/feats/{self.run_type}': f"[{spf_feat_str}]",

@@ -1,0 +1,222 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.train.py
+Base Name: [gearbox_1_(acc+G)]-IF_fdet_5
+Start Time: 2025-09-22 18:28:52
+End Time: 2025-09-22 18:30:31
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) 0_N    : [OG]
+
+- **Unhealthy configs**
+  (1) 0_B-007    : [OG]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) gearbox   : [acc]
+
+Node group name: gearbox_1
+Signal group name: acc
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 243,938
+
+No data interpolation applied.
+
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 244,739
+
+No data interpolation applied.
+
+No 'fs_matrix' recieved from the data. Hence, using the currently set 'fs' in data_config. Current fs:
+[[48000]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+Target rep_num 1001.0001 found at index 0. This sample will be included in the test set.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 487 
+Train: 389/389 [OK=191, NOK=198, UK=0], Test: 97/97 [OK=51, NOK=46, UK=0], Val: 0/0 [OK=0, NOK=0, UK=0],
+Remainder: 1 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 389
+torch.Size([1, 1, 1000, 1])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 97
+torch.Size([1, 1, 1000, 1]) 
+
+---------------------------------------------------------------------------
+
+Anomaly Detector Model Initialized with the following configurations:
+Model type: IsolationForest
+Number of trees in the forest: 1000
+Contamination: 0.03
+
+---------------------------------------------------------------------------
+
+Feature selection is disabled.
+'Version 1' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Next model number folder will be: [gearbox_1_(acc+G)]-IF_fdet_5
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5
+
+---------------------------------------------------------------------------
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp996_dim0, comp997_dim0, comp998_dim0, comp999_dim0]
+
+Fitting anomaly detection model...
+
+Model fitted successfully in 1.28 seconds
+
+Training inference completed in 0.13 seconds
+
+Training accuracy: 0.52
+
+OK lower bound (at 100.0 percentile): 0.0001
+
+NOK upper bound (at 100.0 percentile): -0.0002
+
+Dataframe is as follows:
+     comp0_dim0  comp1_dim0  comp2_dim0  comp3_dim0  ...    rep_num    scores  pred_label  final_pred_label
+0      0.024617   -0.006676   -0.005424    0.017315  ...  1001.0005  0.109023           1                 1
+1      0.130385    0.078022    0.023991   -0.034630  ...  1001.0158  0.016097           1                 1
+2     -0.018358    0.029415    0.046938    0.049859  ...  1001.0172  0.030374           1                 1
+3      0.139772    0.085532    0.016689   -0.047356  ...  1001.0198  0.110801           1                 1
+4      0.261812    0.214248    0.110566   -0.007719  ...  1001.0047 -0.003837          -1                -1
+..          ...         ...         ...         ...  ...        ...       ...         ...               ...
+384    0.043183    0.044644    0.040263    0.028998  ...  1001.0035  0.026160           1                 1
+385    0.023156   -0.014186   -0.051111   -0.081569  ...  1001.0235  0.056057           1                 1
+386    0.030041   -0.021279   -0.056743   -0.078648  ...  1001.0067  0.051708           1                 1
+387    0.160842    0.221341    0.265150    0.262438  ...  1001.0083  0.028750           1                 1
+388    0.002295    0.010639    0.022739    0.028372  ...  1001.0009  0.035475           1                 1
+
+[389 rows x 1005 columns]
+
+Training hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5
+
+Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5\anomaly_detector.pkl
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX SIMPLE>>>>>>>>>>>>
+
+> Creating confusion matrix for [gearbox_1_(acc+G)]-IF_fdet_5 / train...
+
+Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5
+
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5\test
+
+Testing anomaly detection model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp996_dim0, comp997_dim0, comp998_dim0, comp999_dim0]
+
+Test inference completed in 0.14 seconds
+
+NOK upper bound (at 100.0 percentile): -0.0028
+
+OK lower bound (from training): 0.0001
+
+NOK upper bound (from testing): -0.0028
+
+Dataframe is as follows:
+    comp0_dim0  comp1_dim0  comp2_dim0  comp3_dim0  ...    rep_num    scores  pred_label  final_pred_label
+0     0.053197    0.088662    0.099718    0.058621  ...  1001.0001  0.106276           1                 1
+1     0.102013    0.142276    0.176280    0.184416  ...  1001.0030  0.030006           1                 1
+2    -0.043601    0.011265    0.044644    0.020236  ...  1001.0074  0.114717           1                 1
+3    -0.022113   -0.096798   -0.114321   -0.081151  ...  1001.0178  0.116488           1                 1
+4    -0.017941   -0.030458   -0.008970    0.029206  ...  1001.0123  0.113030           1                 1
+..         ...         ...         ...         ...  ...        ...       ...         ...               ...
+92    0.026286    0.062167    0.100344    0.122457  ...  1001.0193  0.040290           1                 1
+93    0.068426    0.056535    0.044435    0.032335  ...  1001.0098  0.104559           1                 1
+94   -0.122457   -0.320225   -0.434963   -0.448940  ...  1001.0071 -0.002819          -1                -1
+95   -0.004798    0.028998    0.025034    0.016689  ...  1001.0175  0.115113           1                 1
+96    0.247001    0.108271   -0.029623   -0.134140  ...  1001.0145  0.042621           1                 1
+
+[97 rows x 1005 columns]
+
+Test accuracy: 0.56
+Precision: 1.00, Recall: 0.07, F1-score: 0.12
+
+Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX SIMPLE>>>>>>>>>>>>
+
+> Creating confusion matrix for [gearbox_1_(acc+G)]-IF_fdet_5 / test...
+
+Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_5\test
+
+
+===========================================================================
+
+Fault detection model '[gearbox_1_(acc+G)]-IF_fdet_5' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-22 18:30:31
