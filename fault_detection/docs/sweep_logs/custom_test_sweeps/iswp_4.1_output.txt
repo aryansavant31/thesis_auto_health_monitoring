@@ -1,0 +1,56 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_infer.py
+Base Name: iswp_4.1
+Start Time: 2025-09-23 12:10:06
+End Time: 2025-09-23 12:15:23
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model inference sweep...
+
+Processing 3 data groups
+
+Data Config Sweep Summary:
+Run type: custom_test
+------------------------------
+Total combinations: 3
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{'E1_set01_M=mEK83': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mat': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  unhealthy_configs: 3 values -> [{'(sim)_E1_set01_M=mAI26': [{'type': 'gau', 'mean': 0, 'snr_db': 35, 'add_next': True}, {'type': 'glitch', 'prob': 0.1, 'std_fac': 2, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [1.7, 2], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'gau', 'mean': 0, 'snr_db': 35, 'add_next': True}, {'type': 'glitch', 'prob': 0.05, 'std_fac': 2, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [1.7, 2.4, 2], 'add_next': False}]}, {'(sim)_E1_set01_M=mAI26': [{'type': 'gau', 'mean': 0, 'snr_db': 35, 'add_next': True}, {'type': 'glitch', 'prob': 0.07, 'std_fac': 1.5, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [1.3, 1.5], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'gau', 'mean': 0, 'snr_db': 35, 'add_next': True}, {'type': 'glitch', 'prob': 0.02, 'std_fac': 1.3, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [1.3, 1, 1.5], 'add_next': False}]}, {'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.0015, 'std_fac': 0.8, 'add_next': True}, {'type': 'sine', 'freqs': [2, 4], 'std_facs': [0.6, 0.8], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.005, 'std_fac': 0.9, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 5], 'std_facs': [0.6, 0.7, 0.5], 'add_next': False}]}]
+  window_length: 1 values -> [1000]
+
+Parameter Sweep Summary:
+Total combinations: 1
+
+Parameters and their values:
+  batch_size: 1 values -> [1]
+  cutoff_freq: 1 values -> [0]
+
+Number of models selected: 1
+Selected models are as follows:
+------------------------------
+  Model 1: [ammf_(acc+E1)]-IF_fdet_715
+
+Parallelizing 3 fault detection configurations across 8 workers...
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_715/custom_test_1
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_715/custom_test_2
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_715/custom_test_3
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_4.1_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-23 12:15:23

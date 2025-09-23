@@ -810,7 +810,7 @@ class DataPreprocessor:
                 augmented_data = data
             # gaussian noise
             if augment_config['type'] == 'gau':
-                augmented_data = add_gaussian_noise(data, augment_config['mean'], augment_config['std'])
+                augmented_data = add_gaussian_noise(data, augment_config['mean'], augment_config['snr_db'])
             # sine wave (freq modulation)
             elif augment_config['type'] == 'sine':
                 augmented_data = add_sine_waves(data, augment_config['freqs'], augment_config['std_facs'], fs)

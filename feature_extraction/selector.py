@@ -30,7 +30,7 @@ class FeatureSelector:
 
         print(f"\n>> Feature selector initialized with {self.feat_select_config['type'].upper()}")
 
-    def select_features(self, anomaly_detector:AnomalyDetector, data_loader):
+    def select_features(self, anomaly_detector:AnomalyDetector, data_loader, data_config):
         """
         Select features based on importance scores from PCA. 
         """
@@ -66,15 +66,15 @@ class FeatureSelector:
             data, freq_bins = anomaly_detector.domain_transformer.transform(time_data_all)
 
             # Extract features from data
-            all_feat_names = [name for name, obj in inspect.getmembers(ff, inspect.isfunction) if name not in ['kp_value_batch', 'get_freq_amp', 'get_freq_psd', 'first_n_modes']]
+            all_feat_names = [name for name, obj in inspect.getmembers(ff, inspect.isfunction) if name not in ['kp_value_batch', 'get_freq_amp', 'get_freq_psd', 'first_n_modes', 'kurtosis']]
             freq_feat_configs = [
                 {'type': feat} for feat in all_feat_names
             ]
-            feat_data = FrequencyFeatureExtractor(freq_feat_configs).extract(data, freq_bins)
+            feat_data = FrequencyFeatureExtractor(freq_feat_configs, data_config).extract(data, freq_bins)
 
              
         # Normalize features
-        feat_data_norm = DataNormalizer(norm_type="std").normalize(feat_data)
+        feat_data = DataNormalizer(norm_type="std").normalize(feat_data)
 
         # convert np data into pd dataframe
         feat_name_cols = [f"{feat}_{dim}" for feat in all_feat_names for dim in range(n_dims)]
@@ -83,7 +83,7 @@ class FeatureSelector:
         #     n_remaining_feats = n_comps * n_dims - len(feat_name_cols)
         #     feat_name_cols.extend([f"ext_feat{idx+1}_dim{dim}" for idx in range(n_remaining_feats) for dim in range(n_dims)])
 
-        feat_data_np = feat_data_norm.view(feat_data_norm.size(0)*feat_data_norm.size(1), feat_data_norm.size(2)*feat_data_norm.size(3)).detach().numpy() # shape (total_samples*n_nodes, n_components*n_dims)
+        feat_data_np = feat_data.view(feat_data.size(0)*feat_data.size(1), feat_data.size(2)*feat_data.size(3)).detach().numpy() # shape (total_samples*n_nodes, n_components*n_dims)
         print("feat_Data_np shape:", feat_data_np.shape)
         feat_data_df = pd.DataFrame(feat_data_np, columns=feat_name_cols)
 
@@ -185,7 +185,6 @@ class FeatureSelector:
         plt.ylabel("Feature")
         plt.title(f"Feature Importance Ranking (Using {self.feat_select_config['type'].upper()})")
         plt.tight_layout()
-        plt.show()
 
         if logger: 
             fig = feat_rank_plot.get_figure()

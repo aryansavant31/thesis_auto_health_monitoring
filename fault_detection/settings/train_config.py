@@ -53,7 +53,7 @@ class AnomalyDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 1
+        self.model_num = 715
         self.is_log = True
 
         # dataset parameters
@@ -63,10 +63,10 @@ class AnomalyDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Model parameters
-        self.anom_type = 'SVC'
+        self.anom_type = 'IF'
         # IF parameters
-        self.n_estimators = 1000
-        self.contam = 0.2       
+        self.n_estimators = 2000
+        self.contam = 0.0001  
 
         # SVM parameters
         self.kernel = 'rbf'
@@ -82,13 +82,35 @@ class AnomalyDetectorTrainConfig:
         self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            # get_freq_feat_config('first_n_modes', n_modes=10)
+            # obvious fault feat
+            # get_time_feat_config('rms'),
+            # get_time_feat_config('wilson_amplitude'),
+            # get_time_feat_config('variance'),
+            # get_time_feat_config('sixth_moment'),
+            # get_time_feat_config('fifth_moment'),
+            # get_time_feat_config('difference_variance'),
+            # get_time_feat_config('std'),
+            # get_time_feat_config('energy'),
+            # get_time_feat_config('sq_root_abs'),
+            # get_time_feat_config('mean')
+
+            # # medium fault feat
+            # get_time_feat_config('mean'),
+            # get_time_feat_config('std'),
+            # get_time_feat_config('energy'),
+            # get_time_feat_config('rms'),
+            # get_time_feat_config('max'),
+            # get_time_feat_config('hist_lower_bound'),
+            # get_time_feat_config('mean_abs_modif1'),
+            # get_time_feat_config('min'),
+            # get_time_feat_config('hist_upper_bound'),
+            # get_time_feat_config('mean_abs')
         ] 
         self.reduc_config = None
         self.feat_norm = None
 
         # feature selection parameters
-        self.feat_select_config = None #get_reduc_config('LDA', n_feats=10, n_comps=1)  # feature selection config
+        self.feat_select_config = get_reduc_config('LDA', n_feats=10, n_comps=1)  # feature selection config
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
@@ -100,7 +122,7 @@ class AnomalyDetectorTrainConfig:
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
             'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
@@ -265,7 +287,7 @@ class AnomalyDetectorTrainSweep:
         """
         self.data_config = data_config
 
-        self.train_sweep_num = 3
+        self.train_sweep_num = 4
 
     # 1: Training parameters
         # dataset parameters
@@ -276,8 +298,8 @@ class AnomalyDetectorTrainSweep:
 
     # 2: Model parameters
         self.anom_type = ['IF']
-        self.n_estimators = [2000, 2000, 2000, 2000]
-        self.contam = [0.01]
+        self.n_estimators = [10, 10, 10, 50, 50, 50, 100, 100, 100, 500, 500, 500, 1000, 1000, 1000, 2000, 2000, 2000]
+        self.contam = [1e-40, 1e-20, 1e-15, 1e-05, 1e0-3, 0.01, 0.1, 0.3]
 
         # run parameters
         self.domain_config = [get_domain_config('freq')]
@@ -295,6 +317,7 @@ class AnomalyDetectorTrainSweep:
         ]
         self.reduc_config = [None]
         self.feat_norm = [None]
+        self.feat_select_config = [None, get_reduc_config('LDA', n_feats=10, n_comps=1)]
 
 
 if __name__ == "__main__":

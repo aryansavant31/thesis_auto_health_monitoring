@@ -1,6 +1,6 @@
 import numpy as np
 
-def add_gaussian_noise(signal, mean=0.0, std=0.01):
+def add_gaussian_noise(signal, mean=0.0, snr_db=10):
     """
     Adds Gaussian noise to the input signal.
 
@@ -18,7 +18,11 @@ def add_gaussian_noise(signal, mean=0.0, std=0.01):
     noisy_signal : np.ndarray, shape (n_samples, n_timesteps)
         Signal with added Gaussian noise
     """
-    noise = np.random.normal(mean, std, signal.shape)
+    signal_power = np.mean(signal ** 2)
+    snr_linear = 10 ** (snr_db / 10)
+    noise_power = signal_power / snr_linear
+    noise_std = np.sqrt(noise_power)
+    noise = np.random.normal(mean, noise_std, signal.shape)
     return signal + noise
 
 def add_sine_waves(signal, freqs=[10.0], std_factors=[5.0], fs=1000.0):

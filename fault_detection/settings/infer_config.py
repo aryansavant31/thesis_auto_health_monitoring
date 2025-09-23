@@ -35,7 +35,7 @@ class AnomalyDetectorInferConfig:
         self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
-        self.version = 1
+        self.version = 2
         
         self.num_workers = 1
         self.batch_size = 1
@@ -50,7 +50,7 @@ class AnomalyDetectorInferConfig:
             'confusion_matrix_simple'              : [True, {}],
             'confusion_matrix_advance'      : [False, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'num': 1, 'bins':80}],
+            'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num': 1, 'bins':80}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [False, {'is_pred':False, 'is_log_x': False}],
             'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False, 'bins': 80}],
@@ -106,11 +106,12 @@ class AnomalyDetectorInferSweep:
     def __init__(self, data_config: DataConfig):
         """
         Infer sweep 1 - feature robustness agaisnt noise
+        4.1 - testing model trained on healthy data with no feature, PSD and ranked time features on 3 levels of fault
         """
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 3.1
+        self.infer_sweep_num = 4.1
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 
