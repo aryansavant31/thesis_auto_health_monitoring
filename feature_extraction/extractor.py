@@ -15,6 +15,7 @@ from sklearn.decomposition import PCA
 
 # global import
 from data.config import DataConfig
+from data.transform import DataNormalizer
 
 # local imports
 from . import tf # time features
@@ -68,9 +69,13 @@ class TimeFeatureExtractor:
             elif hasattr(tf, feat_type):
                 feat_fn = getattr(tf, feat_type)
                 features = feat_fn(time_data)  
-                features_list.append(features)
+
+                # normalize features b/w 0 and 1
+                features_norm = DataNormalizer('min_max').normalize(features)
+                features_list.append(features_norm)
             else:
                 raise ValueError(f"Unknown time feature extraction type: {feat_type}")
+            
             
         # concatenate all features into a single tensor
         final_tensor = torch.cat(features_list, axis=2)  # shape: (batch_size, n_nodes, n_components, n_dims)

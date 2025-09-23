@@ -248,6 +248,7 @@ def min_max_normalize(data, min, max):
 
     """
     norm_data = (data - min) / (max - min + 1e-8)
+
     return norm_data
 
 def std_normalize(data, mean, std):

@@ -62,7 +62,7 @@ class AnomalyDetectorTrainPipeline:
     # 3. Feature selection (if enabled)
         if self.fdet_config.feat_select_config is not None:
             feat_selector = FeatureSelector(self.fdet_config.feat_select_config)
-            anomaly_detector = feat_selector.select_features(anomaly_detector, train_loader)
+            anomaly_detector = feat_selector.select_features(anomaly_detector, train_loader, self.data_config)
         else:
             print("\nFeature selection is disabled.")
             feat_selector = None
@@ -86,7 +86,6 @@ class AnomalyDetectorTrainPipeline:
 
     # 5. Test the trained anomaly detector model
         # update its data stats
-        trained_anomaly_detector.data_stats = test_data_stats
         test_logger = self._prep_for_testing()
 
         # test the trained model
@@ -163,7 +162,7 @@ class AnomalyDetectorTrainPipeline:
         req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()
         run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params and key not in ['data_config']}
 
-        anomaly_detector.set_run_params(**run_config, data_config=self.data_config, data_stats=train_data_stats)
+        anomaly_detector.set_run_params(**run_config, data_config=self.data_config)
 
         # print model info
         print("\nAnomaly Detector Model Initialized with the following configurations:")

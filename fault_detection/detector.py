@@ -36,6 +36,7 @@ class AnomalyDetector:
 
         self.ok_lower_bound = None
         self.nok_upper_bound = None
+        self.data_stats = None
 
         if anom_config['anom_type'] == 'IF':
             self.model = IsolationForest(contamination=anom_config['IF/contam'], 
@@ -66,7 +67,7 @@ class AnomalyDetector:
                              gamma=anom_config['SVC/gamma'],
                             )
             
-    def set_run_params(self, data_config, domain_config, data_stats=None, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
+    def set_run_params(self, data_config, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
         Set the run parameters for the anomaly detection model
 
@@ -85,7 +86,6 @@ class AnomalyDetector:
         self._feat_configs = feat_configs
         self._reduc_config = reduc_config
 
-        self.data_stats = data_stats
         self.domain_config = domain_config
 
     def _get_feature_names(self):
@@ -253,68 +253,94 @@ class TrainerAnomalyDetector:
         label_list = []
         rep_num_list = []
 
-        anomaly_detector.init_input_processors(is_verbose = not get_data_shape)
-
-        for idx, (time_data, label, rep_num) in enumerate(data_loader):
-            # domain transform data (mandatory)
-            if anomaly_detector._domain == 'time':
-                data = anomaly_detector.domain_transformer.transform(time_data)
-            elif anomaly_detector._domain == 'freq':
-                data, freq_bins = anomaly_detector.domain_transformer.transform(time_data)
-
-            # normalize raw data (optional)
-            if anomaly_detector.raw_data_normalizer:
-                if anomaly_detector._domain == 'time':
-                    data = anomaly_detector.raw_data_normalizer.normalize(data)
-                elif anomaly_detector._domain == 'freq':
-                    print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not get_data_shape and idx == 0 else None
-
-            # extract features from data (optional)
-            is_fex = False
-            if anomaly_detector._domain == 'time':
-                if anomaly_detector.time_fex:
-                    data = anomaly_detector.time_fex.extract(data)
-                    is_fex = True
-            elif anomaly_detector._domain == 'freq':
-                if anomaly_detector.freq_fex:
-                    data = anomaly_detector.freq_fex.extract(data, freq_bins)
-                    is_fex = True
-
-            # normalize features (optional : if feat_norm is provided)
-            if anomaly_detector.feat_normalizer:
-                if is_fex:
-                    data = anomaly_detector.feat_normalizer.normalize(data)
-                else:
-                    print("\nNo features extracted, so feature normalization is skipped.") if not get_data_shape and idx == 0 else None
-
-            # reduce features (optional : if reduc_config is provided)
-            if anomaly_detector.feat_reducer:
-                data = anomaly_detector.feat_reducer.reduce(data)
- 
-            n_comps = data.shape[2] 
-            n_dims = data.shape[3]
-
-            # get data shape if required (used to get log path)
-            if get_data_shape:   
-                return n_comps, n_dims
-
-            # convert data to numpy array for fitting
-            data_np = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (batch size * n_nodes, n_components*n_dims)
-
-            # match n_samples of labels with data
-            label_np = np.repeat(label.view(-1).numpy(), data.size(1))  # shape (batch size*n_nodes,) (0 for OK, 1 for NOK, -1 for UK)
-
+        for time_data, label, rep_num in data_loader:
+            label_np = np.repeat(label.view(-1).numpy(), time_data.size(1))
             # match n_samples of rep_num with data
-            rep_num = np.repeat(rep_num.view(-1).numpy(), data.size(1))
-            
-            # # make labels optimized for sklearn models (convert label to 1 for normal data and -1 for anomalies)
-            # label_skl = np.where(label_np == 0, 1, -1)  # assuming 0 is normal and 1 is anomaly
+            rep_num = np.repeat(rep_num.view(-1).numpy(), time_data.size(1))
 
-            data_list.append(data_np)
+            data_list.append(time_data)
             label_list.append(label_np)
             rep_num_list.append(rep_num)
 
-        data_np_all, label_np_all, rep_num_np_all = np.vstack(data_list), np.hstack(label_list), np.hstack(rep_num_list)
+        time_data_all = torch.vstack(data_list)  # shape (total_samples, n_nodes, n_timesteps, n_dims)
+        label_np_all = np.hstack(label_list)  # shape (total_samples*n_nodes,)
+        rep_num_np_all = np.hstack(rep_num_list)
+
+        # calcualte data stats
+        if anomaly_detector.data_stats is None:
+            min_val = time_data_all.min(dim=2, keepdim=True).values  
+            max_val = time_data_all.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
+            anomaly_detector.data_stats = {
+                'mean': torch.mean(time_data_all, dim=(0, 2), keepdim=True),
+                'std': torch.std(time_data_all, dim=(0, 2), keepdim=True),
+                'min': torch.min(min_val, dim=0, keepdim=True).values,
+                'max': torch.max(max_val, dim=0, keepdim=True).values
+            } 
+            for k in anomaly_detector.data_stats:
+                anomaly_detector.data_stats[k] = anomaly_detector.data_stats[k].squeeze(0)
+
+        anomaly_detector.init_input_processors(is_verbose = not get_data_shape)
+
+        # for idx, (time_data, label, rep_num) in enumerate(data_loader):
+        # domain transform data (mandatory)
+        if anomaly_detector._domain == 'time':
+            data = anomaly_detector.domain_transformer.transform(time_data_all)
+        elif anomaly_detector._domain == 'freq':
+            data, freq_bins = anomaly_detector.domain_transformer.transform(time_data_all)
+
+        # normalize raw data (optional)
+        if anomaly_detector.raw_data_normalizer:
+            if anomaly_detector._domain == 'time':
+                data = anomaly_detector.raw_data_normalizer.normalize(data)
+            elif anomaly_detector._domain == 'freq':
+                print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not get_data_shape else None
+
+        # extract features from data (optional)
+        is_fex = False
+        if anomaly_detector._domain == 'time':
+            if anomaly_detector.time_fex:
+                data = anomaly_detector.time_fex.extract(data)
+                is_fex = True
+        elif anomaly_detector._domain == 'freq':
+            if anomaly_detector.freq_fex:
+                data = anomaly_detector.freq_fex.extract(data, freq_bins)
+                is_fex = True
+
+        # normalize features (optional : if feat_norm is provided)
+        if anomaly_detector.feat_normalizer:
+            if is_fex:
+                data = anomaly_detector.feat_normalizer.normalize(data)
+            else:
+                print("\nNo features extracted, so feature normalization is skipped.") if not get_data_shape else None
+
+        # reduce features (optional : if reduc_config is provided)
+        if anomaly_detector.feat_reducer:
+            data = anomaly_detector.feat_reducer.reduce(data)
+
+        n_comps = data.shape[2] 
+        n_dims = data.shape[3]
+
+        # get data shape if required (used to get log path)
+        if get_data_shape:   
+            return n_comps, n_dims
+
+        # convert data to numpy array for fitting
+        data_np_all = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (total_samples * n_nodes, n_components*n_dims)
+
+        #     # match n_samples of labels with data
+        #     label_np = np.repeat(label.view(-1).numpy(), data.size(1))  # shape (batch size*n_nodes,) (0 for OK, 1 for NOK, -1 for UK)
+
+        #     # match n_samples of rep_num with data
+        #     rep_num = np.repeat(rep_num.view(-1).numpy(), data.size(1))
+            
+        #     # # make labels optimized for sklearn models (convert label to 1 for normal data and -1 for anomalies)
+        #     # label_skl = np.where(label_np == 0, 1, -1)  # assuming 0 is normal and 1 is anomaly
+
+        #     data_list.append(data_np)
+        #     label_list.append(label_np)
+        #     rep_num_list.append(rep_num)
+
+        # data_np_all, label_np_all, rep_num_np_all = np.vstack(data_list), np.hstack(label_list), np.hstack(rep_num_list)
 
         # add datashape to hparams
         anomaly_detector.hparams['n_comps'] = str(int(n_comps))
@@ -662,7 +688,7 @@ class TrainerAnomalyDetector:
         n_feats = len(feat_cols)
 
         df_sns = self.df.copy()
-        df_sns['pred_label'] = df_sns['pred_label'].map({1: 'OK', -1: 'NOK'})
+        df_sns['given_label'] = df_sns['given_label'].map({1: 'OK', -1: 'NOK'})
         # Dynamically set height (default is 2.5, you can adjust as needed)
         #height = max(2.5, min(2.5 + 0.5 * (n_feats - 2), 5.0))
 
@@ -673,7 +699,7 @@ class TrainerAnomalyDetector:
         # else:
         palette = ['#1f77b4', '#ff7f0e']
 
-        pair_plot = sns.pairplot(df_sns, vars=feat_cols, hue='pred_label', hue_order=['OK', 'NOK'], palette=palette, height=2.5)
+        pair_plot = sns.pairplot(df_sns, vars=feat_cols, hue='given_label', hue_order=['OK', 'NOK'], palette=palette, height=2.5)
         pair_plot.figure.suptitle(f"Pair Plot of Features : [{self.model_id} / {self.run_type}]", y=0.99, fontsize=13)
         plt.tight_layout(rect=[0, 0, 0.93, 0.99])  # Reserve space for the title
         # plt.subplots_adjust(right=0.94)
