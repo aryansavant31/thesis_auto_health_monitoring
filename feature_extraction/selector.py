@@ -131,6 +131,8 @@ class FeatureSelector:
         self.top_n = self.feat_select_config['n_feats']
         top_feats = self.feat_ranking.head(self.top_n).index.tolist()
 
+        return top_feats
+
     def LDA_based_ranking(self, feat_data_df, labels):
         # fit LDA model
         self.feat_selector.fit(feat_data_df, labels)
