@@ -43,14 +43,8 @@ class TopologyEstimationTrainHelper:
             DataLoader for the test data.
         val_loader : DataLoader
             DataLoader for the validation data.
-        train_data_stats : dict
-            Statistics of the training data.
-        test_data_stats : dict
-            Statistics of the test data.
-        val_data_stats : dict
-            Statistics of the validation data.
         """
-        train_data, test_data, val_data = self.data_preprocessor.get_training_data_package(
+        self.train_loader, self.test_loader, self.val_loader = self.data_preprocessor.get_training_data_package(
             self.data_config, 
             batch_size=self.tp_config.batch_size,
             train_rt=self.tp_config.train_rt,
@@ -58,10 +52,6 @@ class TopologyEstimationTrainHelper:
             val_rt=self.tp_config.val_rt,
             num_workers=self.tp_config.num_workers,
             )
-        # unpack data_loaders and data_stats
-        self.train_loader, self.train_data_stats = train_data
-        self.test_loader, self.test_data_stats = test_data
-        self.val_loader, self.val_data_stats = val_data
 
     # def load_relation_matrix_loaders(self):
     #     """
@@ -98,7 +88,7 @@ class TopologyEstimationTrainHelper:
         pre_enc = Encoder()
         for key, value in enc_model_params.items():
             setattr(pre_enc, key, value)
-        pre_enc.set_run_params(data_config=self.data_config, data_stats=self.train_data_stats)
+        pre_enc.set_run_params(data_config=self.data_config)
         pre_enc.init_input_processors(is_verbose=False)
         n_comps, n_dims = pre_enc.process_input_data(next(iter(self.train_loader))[0], get_data_shape=True)
 
@@ -253,12 +243,12 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
 
     # 3. Initialize the NRI model
         if self.tp_config.continue_training:
-            nri_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_training)
+            nri_model = self._load_model(dec_run_params, rec_rel, send_rel, ckpt_path_for_training)
         else:
             nri_model = self._init_nri_model(
                 enc_model_params,
                 dec_model_params, dec_run_params,
-                rec_rel, send_rel, self.train_data_stats
+                rec_rel, send_rel
                 )
 
     # 4. Train the NRI model
@@ -287,7 +277,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         print("\nTESTING TRAINED NRI MODEL...")
         test_logger, ckpt_path_for_testing = self._prep_for_testing()
 
-        trained_nri_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_testing)
+        trained_nri_model = self._load_model(dec_run_params, rec_rel, send_rel, ckpt_path_for_testing)
         
         tester = Trainer(
             accelerator=device,
@@ -299,7 +289,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
     def _init_nri_model(
         self, enc_model_params, 
         dec_model_params, dec_run_params, 
-        rec_rel, send_rel, train_data_stats
+        rec_rel, send_rel
     ):
         """
         Initialize the NRI model with the given parameters.
@@ -324,7 +314,6 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         nri_model.set_run_params(
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
-            data_stats=train_data_stats, 
             init_temp=self.tp_config.init_temp,
             min_temp=self.tp_config.min_temp,
             decay_temp=self.tp_config.decay_temp,
@@ -354,6 +343,9 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
             dec_loss_bound_update_interval=self.tp_config.dec_loss_bound_update_interval,
             dec_loss_window_size=self.tp_config.dec_loss_window_size
             )
+        
+        # fit normalziers
+        nri_model.fit_normalizers(self.train_loader)
 
         # print model info
         print("\n" + 75*'-')
@@ -363,7 +355,7 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
 
         return nri_model
     
-    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats, ckpt_path):
+    def _load_model(self, dec_run_params, rec_rel, send_rel, ckpt_path):
         """
         Load the trained NRI model from the checkpoint path.
         """
@@ -376,7 +368,6 @@ class NRITrainPipeline(TopologyEstimationTrainHelper):
         trained_nri_model.set_run_params(
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
-            data_stats=test_data_stats, 
             init_temp=self.tp_config.init_temp,
             min_temp=self.tp_config.min_temp,
             decay_temp=0, 
@@ -421,11 +412,11 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
     
     # 3. Initialize the Decoder model
         if self.tp_config.continue_training:
-            decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_training)
+            decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, ckpt_path_for_training)
         else:
             decoder_model = self._init_decoder_model(
                 dec_model_params, dec_run_params, 
-                rec_rel, send_rel, self.train_data_stats
+                rec_rel, send_rel
                 )
 
     # 3. Train the Decoder model
@@ -454,7 +445,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         print("\nTESTING TRAINED DECODER MODEL...")
         test_logger, ckpt_path_for_testing = self._prep_for_testing()
 
-        trained_decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, self.test_data_stats, ckpt_path_for_testing)
+        trained_decoder_model = self._load_model(dec_run_params, rec_rel, send_rel, ckpt_path_for_testing)
 
         tester = Trainer(
             accelerator=device,
@@ -465,7 +456,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
 
     def _init_decoder_model(
         self, dec_model_params:dict, dec_run_params:dict, 
-        rec_rel, send_rel, train_data_stats
+        rec_rel, send_rel
     ):
         """
         Initialize the Decoder model with the given parameters.
@@ -496,7 +487,6 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         decoder_model.set_run_params(
             **dec_run_params, 
             data_config=self.data_config, 
-            data_stats=train_data_stats
             )
         
         # set training params
@@ -506,6 +496,9 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
             loss_type=self.tp_config.loss_type,
             momentum=self.tp_config.momentum
             )
+        
+        # fit normalziers if not loaded from checkpoint
+        decoder_model.fit_normalizers(self.train_loader)
 
         print("\n" + 75*'-')
         print("\nDecoder Model Initialized with the following configurations:")
@@ -515,7 +508,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
         print('\n' + 75*'-')
         return decoder_model
     
-    def _load_model(self, dec_run_params, rec_rel, send_rel, test_data_stats, ckpt_path):
+    def _load_model(self, dec_run_params, rec_rel, send_rel, ckpt_path):
         """
         Load the trained Decoder model from the checkpoint path.
         """
@@ -530,8 +523,7 @@ class DecoderTrainPipeline(TopologyEstimationTrainHelper):
 
         trained_decoder_model.set_run_params(
             **dec_run_params, 
-            data_config=self.data_config, 
-            data_stats=test_data_stats
+            data_config=self.data_config,
             )
 
         print("\nTrained Decoder Model Loaded for testing.")

@@ -20,12 +20,12 @@ from console_logger import ConsoleLogger
 from feature_extraction.selector import FeatureSelector
 
 # local imports
-from .settings.manager import AnomalyDetectorTrainManager, get_model_pickle_path
-from .detector import AnomalyDetector, TrainerAnomalyDetector
+from .settings.manager import FaultDetectorTrainManager, get_model_pickle_path
+from .detector import FaultDetector, TrainerFaultDetector
 
 
-class AnomalyDetectorTrainPipeline:
-    def __init__(self, data_config:DataConfig, fdet_config:AnomalyDetectorTrainManager):
+class FaultDetectorTrainPipeline:
+    def __init__(self, data_config:DataConfig, fdet_config:FaultDetectorTrainManager):
         """
         Initialize the anomaly detector training main class.
 
@@ -33,7 +33,7 @@ class AnomalyDetectorTrainPipeline:
         ----------
         data_config : DataConfig
             The data configuration object.
-        fdet_config : AnomalyDetectorTrainManager
+        fdet_config : FaultDetectorTrainManager
             The anomaly detector training configuration object.
         """
         self.data_config = data_config
@@ -45,38 +45,35 @@ class AnomalyDetectorTrainPipeline:
         Main method to train the anomaly detector.
         """
     # 1. Load data
-        train_data, test_data, _, = self.data_preprocessor.get_training_data_package(
+        train_loader, test_loader, val_loader, = self.data_preprocessor.get_training_data_package(
             self.data_config, 
             batch_size=self.fdet_config.batch_size,
             train_rt=self.fdet_config.train_rt,
-            test_rt=self.fdet_config.test_rt
+            test_rt=self.fdet_config.test_rt,
+            val_rt=self.fdet_config.val_rt,
             )
 
-        # unpack data_loaders and data_stats
-        train_loader, train_data_stats = train_data
-        test_loader, test_data_stats = test_data
-
     # 2. Initialize the anomaly detector model
-        anomaly_detector = self._init_model(train_data_stats)
+        fault_detector = self._init_model()
 
     # 3. Feature selection (if enabled)
-        if self.fdet_config.feat_select_config is not None:
-            feat_selector = FeatureSelector(self.fdet_config.feat_select_config)
-            anomaly_detector = feat_selector.select_features(anomaly_detector, train_loader, self.data_config)
+        if self.fdet_config.feat_selector_config is not None:
+            feat_selector = FeatureSelector(self.fdet_config.feat_selector_config)
+            fault_detector = feat_selector.select_features(fault_detector, train_loader, self.data_config, self.fdet_config.n_feats)
         else:
             print("\nFeature selection is disabled.")
             feat_selector = None
 
-        train_logger = self._prep_for_training(anomaly_detector, train_loader)
+        train_logger = self._prep_for_training(fault_detector, train_loader)
 
         # plot feature ranking
         if feat_selector is not None:
             if self.fdet_config.train_plots['feat_ranking_plot'][0]:
-                feat_selector.feat_ranking_histogram(logger=train_logger)
+                feat_selector.feat_ranking_boxplot(logger=train_logger)
 
     # 4. Train the anomaly detector model
-        trainer = TrainerAnomalyDetector(logger=train_logger)
-        trained_anomaly_detector = trainer.fit(anomaly_detector, train_loader)
+        trainer = TrainerFaultDetector(logger=train_logger)
+        trained_fault_detector = trainer.fit(fault_detector, train_loader, val_loader)
 
         # plot the train results
         for plot_name, plot_config in self.fdet_config.train_plots.items():
@@ -89,8 +86,8 @@ class AnomalyDetectorTrainPipeline:
         test_logger = self._prep_for_testing()
 
         # test the trained model
-        tester = TrainerAnomalyDetector(logger=test_logger)
-        tester.test(trained_anomaly_detector, test_loader)
+        tester = TrainerFaultDetector(logger=test_logger)
+        tester.test(trained_fault_detector, test_loader)
 
         # plot the test results
         for plot_name, plot_config in self.fdet_config.test_plots.items():
@@ -98,7 +95,7 @@ class AnomalyDetectorTrainPipeline:
                 getattr(tester, plot_name.split('-')[0])(**plot_config[1])
 
 
-    def _prep_for_training(self, anomaly_detector, train_loader):
+    def _prep_for_training(self, fault_detector, train_loader):
         """
         Prepare the training environment before starting the training process.
         """
@@ -106,7 +103,7 @@ class AnomalyDetectorTrainPipeline:
         if self.fdet_config.is_log:
 
             # get log path to save trained model
-            n_comp, n_dims = TrainerAnomalyDetector().process_input_data(anomaly_detector, train_loader, get_data_shape=True)
+            n_comp, n_dims = TrainerFaultDetector().process_train_data(fault_detector, train_loader, get_data_shape=True)
             self.train_log_path = self.fdet_config.get_train_log_path(n_comp, n_dims)
             
             self.fdet_config.save_params()
@@ -147,7 +144,7 @@ class AnomalyDetectorTrainPipeline:
         
         return test_logger
 
-    def _init_model(self, train_data_stats):
+    def _init_model(self):
         """
         Load the anomaly detector model and set the requried run params.
         """
@@ -156,33 +153,33 @@ class AnomalyDetectorTrainPipeline:
             'max_timesteps': f"{int(self.data_config.max_timesteps):,}", 
             })
         
-        anomaly_detector = AnomalyDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
-        anomaly_detector.ok_percentage = self.fdet_config.ok_percentage
+        fault_detector = FaultDetector(self.fdet_config.anom_config, self.fdet_config.hparams)
+        fault_detector.ok_percentage = self.fdet_config.ok_percentage
         
-        req_run_params = inspect.signature(anomaly_detector.set_run_params).parameters.keys()
+        req_run_params = inspect.signature(fault_detector.set_run_params).parameters.keys()
         run_config = {key: value for key, value in self.fdet_config.__dict__.items() if key in req_run_params and key not in ['data_config']}
 
-        anomaly_detector.set_run_params(**run_config, data_config=self.data_config)
+        fault_detector.set_run_params(**run_config, data_config=self.data_config)
 
         # print model info
         print("\nAnomaly Detector Model Initialized with the following configurations:")
-        anomaly_detector.print_model_info()
+        fault_detector.print_model_info()
         print('\n' + 75*'-')
 
-        return anomaly_detector
+        return fault_detector
     
     # def _load_model(self, train_log_path, test_data_stats):
     #     """
     #     Load the anomaly detector model from the saved pickle file.
     #     """
     #     # load trained model
-    #     trained_anomaly_detector = AnomalyDetector.load_from_pickle(get_model_pickle_path(train_log_path))
+    #     trained_fault_detector = FaultDetector.load_from_pickle(get_model_pickle_path(train_log_path))
 
     #     # update its data stats
-    #     trained_anomaly_detector.data_stats = test_data_stats
+    #     trained_fault_detector.data_stats = test_data_stats
 
     #     print("\nTrained anomaly Detector model loaded for testing:")
-    #     return trained_anomaly_detector
+    #     return trained_fault_detector
         
 
 if __name__ == "__main__":
@@ -190,12 +187,12 @@ if __name__ == "__main__":
     console_logger = ConsoleLogger()
 
     data_config = DataConfig(run_type="train")
-    fdet_config = AnomalyDetectorTrainManager(data_config)
+    fdet_config = FaultDetectorTrainManager(data_config)
 
     with console_logger.capture_output():
         print("\nStarting fault detection model training...")
 
-        train_pipeline = AnomalyDetectorTrainPipeline(data_config, fdet_config)
+        train_pipeline = FaultDetectorTrainPipeline(data_config, fdet_config)
         train_pipeline.train()
 
         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']

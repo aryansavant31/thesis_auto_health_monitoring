@@ -8,7 +8,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 # global imports
 from data.config import DataConfig
 
-class AnomalyDetectorInferConfig:
+class FaultDetectorInferConfig:
     def __init__(self, data_config:DataConfig, run_type, selected_model_path=None):
         """
         Parameters
@@ -102,7 +102,7 @@ class AnomalyDetectorInferConfig:
 
         return ', '.join(config_strings)
     
-class AnomalyDetectorInferSweep:
+class FaultDetectorInferSweep:
     def __init__(self, data_config: DataConfig):
         """
         Infer sweep 1 - feature robustness agaisnt noise

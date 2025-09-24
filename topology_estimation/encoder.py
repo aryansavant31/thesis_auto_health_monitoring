@@ -304,6 +304,9 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.feat_configs = None
         self.reduc_config = None
 
+        self.raw_data_normalizer = None
+        self.feat_normalizer = None
+
 
     def set_hyperparams(self, hyperparams):
         self.hyperparams = hyperparams
@@ -324,7 +327,7 @@ class Encoder(LightningModule, MessagePassingLayers):
         self.send_rel = send_rel
 
  
-    def set_run_params(self, data_config, data_stats):
+    def set_run_params(self, data_config):
         """
         Set the run parameters for the encoder model
 
@@ -333,7 +336,6 @@ class Encoder(LightningModule, MessagePassingLayers):
         domain_config : str
             Domain configuration of the data (e.g., 'time', 'frequency')
         """
-        self.data_stats = data_stats
         self.data_config = data_config
         self.domain = self.domain_config['type']
         self.feat_names = self._get_feature_names() if self.feat_configs else None
@@ -508,16 +510,16 @@ class Encoder(LightningModule, MessagePassingLayers):
         reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
 
         self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self.data_config)
-        # if self.domain == 'time':
         print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None 
-        # elif self.domain == 'freq':
-        #     print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None 
-
+       
         # initialize raw data normalizers
         if self.raw_data_norm:
             if not self.feat_configs or self.domain == 'time': # have raw data normalization for both doamin if no feature extraction. But if feature extraction, only allow time domain
-                self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm, data_stats=self.data_stats)
-                print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None 
+                if self.raw_data_normalizer is None:
+                    self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm)
+                    print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None 
+                else:
+                    print(f"\n>> Raw data normalizer loaded from checkpoint with '{self.raw_data_norm}' normalization") if is_verbose else None
             else:
                 self.raw_data_normalizer = None
                 print(f"\n>> Raw data normalization skipped due to data domain being '{self.domain}' ({self.domain} data cannot be normalized before feature extraction.") if is_verbose else None
@@ -528,8 +530,11 @@ class Encoder(LightningModule, MessagePassingLayers):
         # initialize feature normalizer
         if self.feat_norm:
             if self.feat_configs:
-                self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
-                print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization") if is_verbose else None
+                if self.feat_normalizer is None:
+                    self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
+                    print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization") if is_verbose else None
+                else:
+                    print(f"\n>> Feature normalizer loaded from checkpoint with '{self.feat_norm}' normalization") if is_verbose else None
             else:
                 self.feat_normalizer = None
                 print(f"\n>> Feature normalization skipped as no feature extraction is applied.") if is_verbose else None 
@@ -579,6 +584,52 @@ class Encoder(LightningModule, MessagePassingLayers):
                 config_strings.append(f"{config['type']}")
 
         return ', '.join(config_strings)
+    
+    def fit_normalizers(self, data_loader):
+        """
+        Fit the normalizers (raw data normalizer and feature normalizer) using the training data.
+
+        Parameters
+        ----------
+        data_loader : torch.utils.data.DataLoader
+            DataLoader for the training data.
+        """
+        print(f"\nFitting normalizers for encoder model...") 
+
+        all_time_data = []
+
+        for time_data, _, _, _ in data_loader:
+            all_time_data.append(time_data)
+
+        all_time_data = torch.cat(all_time_data, dim=0)  # shape: (n_samples, n_nodes, n_timesteps, n_dims)
+
+        self.init_input_processors(verbose=False)
+
+        # domain transform data (mandatory)
+        if self.domain == 'time':
+            data = self.domain_transformer.transform(all_time_data)
+        elif self.domain == 'freq':
+            data, freq_bins = self.domain_transformer.transform(all_time_data)
+
+        # fit raw data normalizer (optional)
+        if self.raw_data_normalizer:
+            self.raw_data_normalizer.fit(data)
+            data = self.raw_data_normalizer.transform(data)
+
+        # extract features from data (optional)
+        if self.domain == 'time':
+            if self.time_fex:
+                data = self.time_fex.extract(data)
+        elif self.domain == 'freq':
+            if self.freq_fex:
+                data = self.freq_fex.extract(data, freq_bins)
+
+        # fit feature normalizer (optional : if feat_norm is provided)
+        if self.feat_normalizer:
+            self.feat_normalizer.fit(data)
+
+        print(f"\n>> Normalizers fitted using {all_time_data.size(0)} samples")
+        print('\n' + 75*'-')
 
     def process_input_data(self, time_data, get_data_shape=False):
         """
@@ -607,7 +658,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         # normalize raw data (optional)
         if self.raw_data_normalizer:
-            data = self.raw_data_normalizer.normalize(data)
+            data = self.raw_data_normalizer.transform(data)
 
         # extract features from data (optional)
         if self.domain == 'time':
@@ -619,7 +670,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         # normalize features (optional : if feat_norm is provided)
         if self.feat_normalizer:
-            data = self.feat_normalizer.normalize(data)
+            data = self.feat_normalizer.transform(data)
 
         # reduce features (optional : if reduc_config is provided)
         if self.feat_reducer:

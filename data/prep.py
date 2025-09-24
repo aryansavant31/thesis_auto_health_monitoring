@@ -277,7 +277,7 @@ class DataPreprocessor:
 
         print('\n' + 75*'-')
 
-        return (custom_loader, data_stats)
+        return custom_loader
     
     def get_training_data_package(self, data_config:DataConfig, train_rt=0.8, test_rt=0.2, val_rt=0, batch_size=10, num_workers=1):
         """
@@ -324,8 +324,8 @@ class DataPreprocessor:
         if train_rt + test_rt + val_rt > 1:
             raise ValueError("The sum of train, test, and validation ratios must not exceed 1.")
         
-        if self.package == 'topology_estimation' and val_rt == 0:
-            raise ValueError("Validation set is required for topology estimation. Please provide a non-zero validation ratio.")
+        if val_rt == 0:
+            raise ValueError("Validation set is required. Please provide a non-zero validation ratio.")
         
         # find index of rep_num == 1,001.0001
         target_rep_num = 1001.0001
@@ -383,10 +383,10 @@ class DataPreprocessor:
 
         #     val_set = None  # No validation set for fault detection
 
-        # get dataset statistics
-        train_data_stats = self._get_dataset_stats(train_set)
-        test_data_stats = self._get_dataset_stats(test_set)
-        val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
+        # # get dataset statistics
+        # train_data_stats = self._get_dataset_stats(train_set)
+        # test_data_stats = self._get_dataset_stats(test_set)
+        # val_data_stats = self._get_dataset_stats(val_set) if val_set is not None else None
 
         # create dataloaders
 
@@ -425,7 +425,7 @@ class DataPreprocessor:
         
         print('\n' + 75*'-')
 
-        return (train_loader, train_data_stats), (test_loader, test_data_stats), (val_loader, val_data_stats)
+        return train_loader, test_loader, val_loader
         
     def print_loader_stats(self, loader, type):
         dataiter = iter(loader)

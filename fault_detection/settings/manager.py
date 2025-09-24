@@ -22,11 +22,11 @@ from collections import defaultdict
 from data.config import DataConfig, DataSweep
 
 # local imports
-from .train_config import AnomalyDetectorTrainConfig, AnomalyDetectorTrainSweep
-from .infer_config import AnomalyDetectorInferConfig, AnomalyDetectorInferSweep
+from .train_config import FaultDetectorTrainConfig, FaultDetectorTrainSweep
+from .infer_config import FaultDetectorInferConfig, FaultDetectorInferSweep
 
 
-class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
+class FaultDetectorTrainManager(FaultDetectorTrainConfig):
     def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
@@ -220,7 +220,7 @@ class AnomalyDetectorTrainManager(AnomalyDetectorTrainConfig):
                 print("Stopped training.")
                 sys.exit()  # Exit the program gracefully
 
-class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
+class FaultDetectorInferManager(FaultDetectorInferConfig):
     def __init__(self, data_config:DataConfig, run_type, infer_sweep_num=0, selected_model_path=None):
         super().__init__(data_config, run_type, selected_model_path)
 
@@ -418,7 +418,7 @@ class AnomalyDetectorInferManager(AnomalyDetectorInferConfig):
                 print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully  
 
-class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
+class FaultDetectorTrainSweepManager(FaultDetectorTrainSweep):
     def __init__(self, data_configs:list):
         self.data_configs = data_configs
 
@@ -429,7 +429,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
         Returns
         -------
         list
-            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+            List of FaultDetectorTrainConfig objects with different parameter combinations
         """
         train_configs = []
         idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
@@ -437,7 +437,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
         
         for data_config in self.data_configs: 
 
-            AnomalyDetectorTrainSweep.__init__(self, data_config)
+            FaultDetectorTrainSweep.__init__(self, data_config)
             
             node_group_change = data_config.signal_types['node_group_name'] != train_configs[-1].data_config.signal_types['node_group_name'] if train_configs else False
             signal_group_change = data_config.signal_types['signal_group_name'] != train_configs[-1].data_config.signal_types['signal_group_name'] if train_configs else False
@@ -475,7 +475,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
                 idx += 1
 
                 # Create base config
-                train_config = AnomalyDetectorTrainManager(self.data_config, train_sweep_num=self.train_sweep_num)
+                train_config = FaultDetectorTrainManager(self.data_config, train_sweep_num=self.train_sweep_num)
 
                 # Update parameters based on current combination
                 for param_name, param_value in zip(param_names, combo):
@@ -538,7 +538,7 @@ class AnomalyDetectorTrainSweepManager(AnomalyDetectorTrainSweep):
         for param_name, param_values in sweep_dict.items():
             print(f"  {param_name}: {len(param_values)} values -> {param_values}") 
 
-class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
+class FaultDetectorInferSweepManager(FaultDetectorInferSweep):
     def __init__(self, data_configs:list, run_type):
         self.data_configs = data_configs
         self.run_type = run_type
@@ -550,7 +550,7 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
         Returns
         -------
         list
-            List of AnomalyDetectorTrainConfig objects with different parameter combinations
+            List of FaultDetectorTrainConfig objects with different parameter combinations
         """
         infer_configs = []
         idx_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
@@ -558,7 +558,7 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
         
         for data_config in self.data_configs: 
 
-            AnomalyDetectorInferSweep.__init__(self, data_config)
+            FaultDetectorInferSweep.__init__(self, data_config)
             
             node_group_change = data_config.signal_types['node_group_name'] != infer_configs[-1].data_config.signal_types['node_group_name'] if infer_configs else False
             signal_group_change = data_config.signal_types['signal_group_name'] != infer_configs[-1].data_config.signal_types['signal_group_name'] if infer_configs else False
@@ -584,7 +584,7 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
 
                 # Create base config
                 try:
-                    infer_config = AnomalyDetectorInferManager(
+                    infer_config = FaultDetectorInferManager(
                         self.data_config, 
                         run_type=self.run_type, 
                         infer_sweep_num=self.infer_sweep_num,
@@ -636,7 +636,7 @@ class AnomalyDetectorInferSweepManager(AnomalyDetectorInferSweep):
                         
         return infer_configs
     
-    # def _is_data_model_match(self, infer_config:AnomalyDetectorInferManager):
+    # def _is_data_model_match(self, infer_config:FaultDetectorInferManager):
     #     #model_id = os.path.basename(os.path.dirname(model_path)).split('-')[0].strip('[]')
 
     #     node_group_model = infer_config.log_config.data_config.signal_types['node_group_name']
@@ -845,7 +845,7 @@ def get_selected_model_path(is_multi=False):
     
 
 def load_log_config(model_path):
-    log_config = AnomalyDetectorTrainManager(DataConfig())
+    log_config = FaultDetectorTrainManager(DataConfig())
 
     log_config_path = os.path.join(os.path.dirname(model_path), 'train_config.pkl')
 

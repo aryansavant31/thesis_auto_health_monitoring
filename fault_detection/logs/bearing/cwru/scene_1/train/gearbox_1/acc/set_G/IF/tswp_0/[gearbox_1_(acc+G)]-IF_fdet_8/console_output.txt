@@ -1,8 +1,8 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.train.py
 Base Name: [gearbox_1_(acc+G)]-IF_fdet_8
-Start Time: 2025-09-22 18:43:56
-End Time: 2025-09-22 18:44:29
+Start Time: 2025-09-24 03:15:05
+End Time: 2025-09-24 03:15:38
 
 CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
 GPUs Detected: 1
@@ -24,6 +24,7 @@ Dataset selections:
 
 - **Healthy configs**
   (1) 0_N    : [OG]
+  (2) 1_N    : [OG]
 
 - **Unhealthy configs**
   (1) 0_B-007    : [OG]
@@ -43,7 +44,7 @@ Signal group name: acc
 
 For ds_type 'OK' and others....
 ---------------------------------------------
-Maximum timesteps across all node types: 243,938
+Maximum timesteps across all node types: 483,903
 
 No data interpolation applied.
 
@@ -68,38 +69,32 @@ Target rep_num 1001.0001 found at index 0. This sample will be included in the t
 
 [1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
 ------------------------------------------------------------
-Total samples: 487 
-Train: 389/389 [OK=193, NOK=196, UK=0], Test: 97/97 [OK=50, NOK=47, UK=0], Val: 0/0 [OK=0, NOK=0, UK=0],
-Remainder: 1 [OK=0, NOK=0, UK=0]
+Total samples: 970 
+Train: 679/679 [OK=502, NOK=177, UK=0], Test: 97/97 [OK=75, NOK=22, UK=0], Val: 193/194 [OK=149, NOK=44, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
 
 train_data_loader statistics:
-Number of batches: 389
+Number of batches: 679
 torch.Size([1, 1, 1000, 1])  => (batch_size, n_nodes, n_timesteps, n_dims)
 
 test_data_loader statistics:
 Number of batches: 97
 torch.Size([1, 1, 1000, 1]) 
 
+val_data_loader statistics:
+Number of batches: 193
+torch.Size([1, 1, 1000, 1]) 
+
 ---------------------------------------------------------------------------
 
 Anomaly Detector Model Initialized with the following configurations:
 Model type: IsolationForest
-Number of trees in the forest: 1000
-Contamination: 0.48
+Number of trees in the forest: 2000
+Contamination: 0.0001
 
 ---------------------------------------------------------------------------
 
-Initializing feature selector for anomaly detection model...
-
->> Feature selector initialized with LDA
-
-Starting feature selection...
-feat_Data_np shape: (389, 37)
-
-Top 10 features selected: ['peak_value', 'variance', 'mean_abs', 'max', 'min', 'difference_variance', 'rms', 'skewness', 'normalized_std', 'peak_to_peak']
-Feature selection completed. Updating the anomaly detector model to use selected features
-
----------------------------------------------------------------------------
+Feature selection is disabled.
 'Version 1' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_1'.
 (a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Next model number folder will be: [gearbox_1_(acc+G)]-IF_fdet_8
 Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8.
@@ -108,65 +103,62 @@ Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Pro
 
 ---------------------------------------------------------------------------
 
-<<<<<<<<<<<< FEATURE RANKING PLOT>>>>>>>>>>>>
-
-> Creating feature ranking for [gearbox_1_(acc+G)]-IF_fdet_8 / train...
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\feature_extraction\selector.py:181: FutureWarning: 
-
-Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `y` variable to `hue` and set `legend=False` for the same effect.
-
-  feat_rank_plot = sns.barplot(x=self.feat_ranking.values, y=self.feat_ranking.index, palette="viridis")
-
-Feature ranking plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8
-
-
 Initializing input processors for anomaly detection model...
 
 >> Domain transformer initialized: time(cutoff_freq=0)
 
 >> No raw data normalization is applied
 
->> No feature normalization is applied
+>> Feature normalizer loaded with 'std' normalization
 
->> Time feature extractor initialized with features: from_ranks(feat_list=['peak_value', 'variance', 'mean_abs', 'max', 'min', 'difference_variance', 'rms', 'skewness', 'normalized_std', 'peak_to_peak'])
+>> No time feature extraction is applied
 
 >> No feature reduction is applied
 
 ---------------------------------------------------------------------------
 
-Feature names: ['peak_value_0', 'variance_0', 'mean_abs_0', 'max_0', 'min_0', 'difference_variance_0', 'rms_0', 'skewness_0', 'normalized_std_0', 'peak_to_peak_0']
+No features extracted, so feature normalization is skipped.
+
+Using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp996_dim0, comp997_dim0, comp998_dim0, comp999_dim0]
 
 Fitting anomaly detection model...
 
-Model fitted successfully in 1.41 seconds
+Model fitted successfully in 2.91 seconds
 
-Training inference completed in 0.13 seconds
+Tuning contamination parameter using validation data...
 
-Training accuracy: 0.70
+Using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp996_dim0, comp997_dim0, comp998_dim0, comp999_dim0]
 
-OK lower bound (at 100.0 percentile): 0.0002
+Best threshold: 0.0852 with db_ok: 0.0658, db_nok: 0.0658
+Validation Precision: 1.0000, Recall: 1.0000, F1-Score: 1.0000
 
-NOK upper bound (at 100.0 percentile): -0.0001
+Training inference completed in 0.16 seconds
+
+Training accuracy: 1.00
+
+OK lower bound (at 100.0 percentile): 0.0597
+
+NOK upper bound could not be determined as there are no samples predicted as NOK.
 
 Dataframe is as follows:
-     peak_value_0  variance_0  mean_abs_0     max_0  ...    rep_num    scores  pred_label  final_pred_label
-0        0.230520    0.005158    0.058084  0.262855  ...  1001.0094  0.009279           1                 1
-1        0.194117    0.005314    0.060658  0.205278  ...  1001.0032  0.027434           1                 1
-2        0.209346    0.005984    0.063831  0.194221  ...  1001.0196 -0.015747          -1                -1
-3        0.298529    0.012282    0.093133  0.340252  ...  1001.0156 -0.157218          -1                -1
-4        0.193908    0.005205    0.059335  0.200271  ...  1001.0169  0.047600           1                 1
-..            ...         ...         ...       ...  ...        ...       ...         ...               ...
-384      0.474496    0.016280    0.100446  0.517366  ...  1001.0171 -0.080685          -1                -1
-385      0.369979    0.014259    0.099950  0.439761  ...  1001.0140 -0.080417          -1                -1
-386      0.389381    0.013935    0.096262  0.419317  ...  1001.0187 -0.069469          -1                -1
-387      0.423385    0.017448    0.107433  0.474183  ...  1001.0199  0.006267           1                 1
-388      0.205069    0.005632    0.062223  0.211119  ...  1001.0218  0.019958           1                 1
+     comp0_dim0  comp1_dim0  comp2_dim0  ...    scores  pred_label  final_pred_label
+0      0.067174    0.047564    0.038385  ...  0.044317           1               0.5
+1      0.005007    0.030041    0.068426  ...  0.030460           1               0.5
+2     -0.046104    0.012934    0.082403  ...  0.027910           1               0.5
+3     -0.023991   -0.017106   -0.000626  ...  0.013862           1               0.5
+4      0.053823    0.089705    0.109940  ...  0.015930           1               0.5
+..          ...         ...         ...  ...       ...         ...               ...
+497    0.067383    0.089913    0.101596  ...  0.040796           1               0.5
+498    0.125795    0.097006    0.045061  ...  0.031523           1               0.5
+499   -0.019401   -0.014394   -0.043183  ...  0.018526           1               0.5
+500    0.021279   -0.018775   -0.025242  ...  0.041099           1               0.5
+501    0.018984   -0.033170   -0.083655  ...  0.016053           1               0.5
 
-[389 rows x 15 columns]
+[502 rows x 1005 columns]
 
 Training hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8
 
-Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\anomaly_detector.pkl
+Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\fault_detector.pkl
 
 ---------------------------------------------------------------------------
 
@@ -175,6 +167,76 @@ Model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detectio
 > Creating confusion matrix for [gearbox_1_(acc+G)]-IF_fdet_8 / train...
 
 Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 1 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train and '100%' NOK)
+
+Creating anomaly score distribution plot for [gearbox_1_(acc+G)]-IF_fdet_8 / train...
+## Bin details for Anomaly Score Distribution Advance 1 (100% OK of train, 100% NOK) 
+-------------------------
+### Total True Negative (OK, correct) samples: 501
+---------- Samples in True Negative (OK, correct) bins ----------
+- **Bin 0 (-0.08521, -0.08402) [blue]**: 41 (1,002.0365)
+- **Bin 2 (-0.08283, -0.08163) [blue]**: 193 (1,002.0055)
+- **Bin 3 (-0.08163, -0.08044) [blue]**: 45 (1,002.0101), 118 (1,002.0115), 160 (1,002.0292), 325 (1,002.0063)
+- **Bin 4 (-0.08044, -0.07924) [blue]**: 111 (1,002.0353), 273 (1,002.0123), 291 (1,002.0079)
+- **Bin 5 (-0.07924, -0.07805) [blue]**: 92 (1,002.0448), 302 (1,002.0403), 310 (1,002.0351)
+- **Bin 6 (-0.07805, -0.07685) [blue]**: 110 (1,002.0114), 282 (1,002.0262), 444 (1,002.0455)
+- **Bin 7 (-0.07685, -0.07566) [blue]**: 65 (1,002.0354), 125 (1,002.0175), 136 (1,002.0070), 253 (1,002.0147), 265 (1,002.0213), 292 (1,002.0145), 313 (1,002.0379), 397 (1,002.0301), 398 (1,002.0087), 419 (1,002.0240), 486 (1,002.0153)
+- **Bin 8 (-0.07566, -0.07446) [blue]**: 7 (1,002.0424), 39 (1,002.0158), 61 (1,002.0431), 76 (1,002.0136), 199 (1,002.0313), 299 (1,002.0457), 362 (1,002.0413), 394 (1,002.0010), 429 (1,002.0471)
+- **Bin 9 (-0.07446, -0.07327) [blue]**: 109 (1,002.0325), 139 (1,002.0281), 140 (1,002.0049), 171 (1,002.0003), 234 (1,002.0131), 303 (1,002.0054), 311 (1,002.0433), 318 (1,002.0359), 366 (1,002.0261), 489 (1,002.0270), 494 (1,002.0103)
+- **Bin 10 (-0.07327, -0.07207) [blue]**: 5 (1,002.0330), 9 (1,002.0034), 46 (1,002.0452), 59 (1,002.0322), 79 (1,002.0477), 80 (1,002.0327), 81 (1,002.0008), 141 (1,002.0237), 176 (1,002.0139), 177 (1,002.0321), 206 (1,002.0335), 294 (1,002.0367), 306 (1,002.0026), 323 (1,002.0400), 360 (1,002.0134), 400 (1,002.0011), 410 (1,002.0089), 482 (1,002.0392)
+- **Bin 11 (-0.07207, -0.07088) [blue]**: 3 (1,002.0218), 34 (1,002.0167), 72 (1,002.0275), 105 (1,002.0408), 106 (1,002.0197), 297 (1,002.0337), 335 (1,002.0090), 354 (1,002.0161), 357 (1,002.0185), 365 (1,002.0023), 379 (1,002.0231), 404 (1,002.0427), 406 (1,002.0035), 409 (1,002.0387), 417 (1,002.0453), 421 (1,002.0221), 436 (1,002.0346), 450 (1,002.0362), 473 (1,002.0410)
+- **Bin 12 (-0.07088, -0.06968) [blue]**: 6 (1,002.0201), 95 (1,002.0411), 126 (1,002.0349), 164 (1,002.0004), 249 (1,002.0032), 262 (1,002.0226), 276 (1,002.0374), 293 (1,002.0219), 336 (1,002.0166), 371 (1,002.0019), 374 (1,002.0434), 375 (1,002.0441), 408 (1,002.0036), 440 (1,002.0033), 483 (1,002.0468)
+- **Bin 13 (-0.06968, -0.06849) [blue]**: 4 (1,002.0191), 26 (1,002.0013), 30 (1,002.0183), 85 (1,002.0088), 103 (1,002.0463), 137 (1,002.0460), 252 (1,002.0393), 261 (1,002.0058), 288 (1,002.0111), 308 (1,002.0236), 339 (1,002.0407), 377 (1,002.0384), 385 (1,002.0288), 426 (1,002.0398), 453 (1,002.0268), 493 (1,002.0044), 501 (1,002.0148)
+- **Bin 14 (-0.06849, -0.06729) [blue]**: 11 (1,002.0444), 15 (1,002.0422), 20 (1,002.0195), 31 (1,002.0104), 97 (1,002.0024), 114 (1,002.0085), 121 (1,002.0014), 157 (1,002.0174), 194 (1,002.0071), 203 (1,002.0210), 217 (1,002.0077), 268 (1,002.0450), 300 (1,002.0293), 314 (1,002.0064), 358 (1,001.0233), 381 (1,002.0135), 392 (1,002.0454), 451 (1,002.0128)
+- **Bin 15 (-0.06729, -0.06610) [blue]**: 18 (1,002.0395), 123 (1,002.0162), 138 (1,002.0266), 145 (1,002.0102), 151 (1,002.0294), 152 (1,002.0037), 163 (1,002.0253), 169 (1,002.0456), 216 (1,002.0138), 219 (1,002.0257), 257 (1,002.0269), 258 (1,002.0344), 260 (1,002.0296), 263 (1,002.0254), 266 (1,002.0116), 348 (1,002.0284), 350 (1,002.0462), 399 (1,002.0242), 420 (1,002.0447), 448 (1,002.0127), 461 (1,002.0329), 468 (1,002.0204), 499 (1,002.0186)
+- **Bin 16 (-0.06610, -0.06490) [blue]**: 12 (1,002.0215), 38 (1,002.0376), 62 (1,002.0470), 94 (1,002.0107), 116 (1,002.0110), 117 (1,002.0042), 124 (1,002.0272), 129 (1,002.0474), 148 (1,002.0386), 183 (1,002.0372), 196 (1,002.0371), 214 (1,002.0472), 255 (1,002.0338), 289 (1,002.0333), 295 (1,002.0341), 356 (1,002.0256), 369 (1,001.0178), 378 (1,002.0300), 418 (1,002.0397), 460 (1,002.0421), 492 (1,002.0265)
+- **Bin 17 (-0.06490, -0.06371) [blue]**: 19 (1,002.0169), 27 (1,002.0212), 57 (1,002.0332), 64 (1,002.0129), 66 (1,002.0001), 69 (1,002.0430), 128 (1,002.0360), 165 (1,002.0121), 195 (1,001.0235), 202 (1,002.0015), 224 (1,002.0228), 233 (1,002.0396), 243 (1,002.0140), 244 (1,002.0308), 254 (1,002.0173), 270 (1,002.0099), 322 (1,002.0446), 346 (1,002.0072), 367 (1,002.0306), 383 (1,002.0018), 401 (1,002.0179), 407 (1,002.0078), 487 (1,002.0309)
+- **Bin 18 (-0.06371, -0.06251) [blue]**: 8 (1,002.0020), 33 (1,002.0352), 40 (1,001.0057), 82 (1,002.0068), 84 (1,002.0046), 88 (1,002.0319), 93 (1,002.0130), 167 (1,002.0060), 174 (1,002.0030), 181 (1,002.0119), 227 (1,002.0109), 230 (1,002.0059), 235 (1,002.0461), 239 (1,002.0124), 242 (1,002.0144), 267 (1,002.0345), 278 (1,002.0031), 382 (1,002.0234), 445 (1,002.0443), 469 (1,002.0358), 476 (1,002.0066), 485 (1,002.0017)
+- **Bin 19 (-0.06251, -0.06132) [blue]**: 77 (1,002.0091), 133 (1,002.0047), 150 (1,002.0459), 162 (1,002.0002), 178 (1,002.0440), 190 (1,002.0286), 192 (1,002.0259), 198 (1,002.0150), 229 (1,002.0391), 256 (1,002.0192), 345 (1,002.0194), 380 (1,002.0260), 393 (1,002.0287), 439 (1,002.0402), 471 (1,002.0180), 477 (1,002.0323)
+- **Bin 20 (-0.06132, -0.06012) [blue]**: 42 (1,002.0267), 107 (1,001.0231), 115 (1,002.0252), 130 (1,002.0200), 155 (1,002.0277), 170 (1,002.0141), 231 (1,002.0094), 264 (1,002.0007), 279 (1,001.0181), 286 (1,002.0476), 321 (1,002.0117), 425 (1,002.0289), 441 (1,002.0428), 456 (1,001.0010)
+- **Bin 21 (-0.06012, -0.05893) [blue]**: 63 (1,002.0276), 86 (1,002.0243), 87 (1,002.0132), 91 (1,002.0075), 159 (1,002.0028), 179 (1,002.0435), 182 (1,002.0040), 228 (1,002.0022), 246 (1,001.0130), 259 (1,002.0112), 309 (1,002.0426), 438 (1,002.0258), 462 (1,002.0336), 463 (1,002.0475), 495 (1,002.0232)
+- **Bin 22 (-0.05893, -0.05774) [blue]**: 22 (1,002.0189), 23 (1,002.0438), 90 (1,002.0073), 104 (1,001.0106), 208 (1,001.0031), 221 (1,001.0063), 290 (1,002.0108), 296 (1,002.0317), 301 (1,002.0176), 328 (1,001.0069), 340 (1,001.0221), 351 (1,002.0203), 402 (1,002.0363), 405 (1,002.0086), 411 (1,002.0177), 415 (1,002.0198), 443 (1,001.0081), 449 (1,002.0279), 480 (1,002.0083)
+- **Bin 23 (-0.05774, -0.05654) [blue]**: 2 (1,002.0432), 16 (1,002.0098), 25 (1,002.0377), 135 (1,002.0048), 154 (1,001.0114), 241 (1,001.0214), 326 (1,002.0370), 332 (1,001.0105), 334 (1,002.0233), 403 (1,002.0415), 427 (1,001.0118), 434 (1,002.0156), 458 (1,002.0375), 475 (1,001.0217)
+- **Bin 24 (-0.05654, -0.05535) [blue]**: 10 (1,002.0206), 13 (1,002.0394), 14 (1,002.0331), 32 (1,002.0285), 56 (1,002.0207), 73 (1,002.0080), 99 (1,002.0436), 122 (1,002.0295), 134 (1,002.0155), 156 (1,001.0241), 168 (1,001.0175), 184 (1,001.0061), 188 (1,002.0399), 225 (1,002.0465), 304 (1,002.0469), 315 (1,002.0355), 319 (1,002.0347), 337 (1,001.0065), 395 (1,001.0219)
+- **Bin 25 (-0.05535, -0.05415) [blue]**: 1 (1,002.0414), 17 (1,002.0482), 50 (1,001.0037), 70 (1,001.0154), 127 (1,002.0152), 147 (1,001.0108), 149 (1,002.0113), 158 (1,002.0383), 172 (1,002.0118), 173 (1,002.0246), 210 (1,001.0237), 245 (1,001.0002), 275 (1,002.0095), 312 (1,002.0312), 316 (1,001.0080), 359 (1,002.0388), 373 (1,001.0126), 387 (1,002.0097), 413 (1,002.0416)
+- **Bin 26 (-0.05415, -0.05296) [blue]**: 29 (1,002.0230), 67 (1,002.0339), 71 (1,001.0129), 101 (1,002.0334), 131 (1,002.0464), 207 (1,002.0390), 209 (1,002.0029), 232 (1,001.0229), 238 (1,001.0059), 251 (1,002.0106), 342 (1,001.0203), 491 (1,002.0282), 498 (1,002.0348)
+- **Bin 27 (-0.05296, -0.05176) [blue]**: 78 (1,001.0027), 89 (1,001.0064), 186 (1,001.0016), 205 (1,002.0467), 236 (1,001.0132), 272 (1,001.0115), 285 (1,002.0051), 317 (1,002.0225), 320 (1,001.0211), 344 (1,001.0085), 390 (1,001.0094), 416 (1,001.0041), 428 (1,002.0385), 496 (1,001.0024)
+- **Bin 28 (-0.05176, -0.05057) [blue]**: 44 (1,001.0048), 74 (1,001.0089), 75 (1,001.0146), 83 (1,002.0304), 100 (1,001.0160), 132 (1,002.0199), 144 (1,001.0176), 269 (1,002.0157), 271 (1,002.0290), 281 (1,002.0126), 283 (1,001.0074), 338 (1,002.0100), 370 (1,001.0225), 386 (1,001.0012), 431 (1,001.0173), 435 (1,002.0056), 437 (1,002.0164), 464 (1,001.0174), 481 (1,002.0368)
+- **Bin 29 (-0.05057, -0.04937) [blue]**: 68 (1,001.0239), 153 (1,002.0342), 191 (1,002.0181), 200 (1,001.0082), 215 (1,002.0350), 218 (1,002.0222), 223 (1,001.0017), 324 (1,001.0040), 384 (1,001.0067)
+- **Bin 30 (-0.04937, -0.04818) [blue]**: 24 (1,001.0044), 28 (1,001.0111), 48 (1,002.0154), 49 (1,001.0056), 52 (1,001.0070), 96 (1,001.0194), 161 (1,002.0380), 327 (1,001.0215), 330 (1,001.0086), 331 (1,001.0050), 333 (1,001.0136), 389 (1,001.0036), 422 (1,001.0091), 424 (1,002.0038), 433 (1,001.0075), 452 (1,001.0238), 488 (1,002.0172)
+- **Bin 31 (-0.04818, -0.04698) [blue]**: 108 (1,002.0423), 113 (1,001.0022), 146 (1,001.0100), 166 (1,001.0188), 175 (1,002.0074), 204 (1,001.0033), 347 (1,001.0054), 363 (1,001.0071), 368 (1,001.0234), 412 (1,001.0156), 432 (1,001.0230), 472 (1,001.0030), 490 (1,001.0140)
+- **Bin 32 (-0.04698, -0.04579) [blue]**: 35 (1,001.0226), 58 (1,001.0032), 102 (1,001.0116), 187 (1,001.0007), 280 (1,001.0066), 430 (1,002.0178), 465 (1,001.0068)
+- **Bin 33 (-0.04579, -0.04459) [blue]**: 54 (1,001.0046), 212 (1,002.0366), 213 (1,001.0120), 250 (1,002.0170), 274 (1,001.0190), 287 (1,001.0043), 307 (1,001.0023), 341 (1,002.0298), 376 (1,001.0072), 396 (1,001.0128), 447 (1,001.0191), 454 (1,001.0029), 455 (1,001.0018), 466 (1,001.0192), 474 (1,001.0143), 478 (1,002.0437)
+- **Bin 34 (-0.04459, -0.04340) [blue]**: 36 (1,001.0026), 55 (1,001.0169), 98 (1,001.0212), 120 (1,001.0200), 226 (1,001.0121), 284 (1,001.0204), 353 (1,001.0123), 442 (1,001.0198), 497 (1,001.0133), 500 (1,001.0195)
+- **Bin 35 (-0.04340, -0.04220) [blue]**: 21 (1,001.0095), 53 (1,001.0153), 142 (1,001.0236), 211 (1,001.0103), 305 (1,001.0088), 349 (1,001.0218), 457 (1,002.0274)
+- **Bin 36 (-0.04220, -0.04101) [blue]**: 37 (1,001.0151), 43 (1,001.0087), 51 (1,001.0199), 119 (1,001.0138), 247 (1,001.0207), 277 (1,001.0240), 329 (1,001.0147), 414 (1,001.0161), 484 (1,001.0152)
+- **Bin 37 (-0.04101, -0.03981) [blue]**: 0 (1,001.0003), 112 (1,001.0141), 143 (1,001.0142), 222 (1,002.0133), 240 (1,001.0183), 388 (1,001.0242), 391 (1,001.0243), 446 (1,001.0172), 470 (1,001.0135)
+- **Bin 38 (-0.03981, -0.03862) [blue]**: 47 (1,001.0049), 60 (1,001.0119), 180 (1,001.0210), 185 (1,001.0019), 361 (1,001.0180), 364 (1,001.0092), 372 (1,001.0058), 423 (1,001.0098), 479 (1,001.0005)
+- **Bin 39 (-0.03862, -0.03742) [blue]**: 352 (1,001.0232), 355 (1,001.0179)
+- **Bin 40 (-0.03742, -0.03623) [blue]**: 459 (1,001.0202), 467 (1,001.0222)
+- **Bin 42 (-0.03503, -0.03384) [blue]**: 220 (1,001.0224), 298 (1,001.0206)
+- **Bin 43 (-0.03384, -0.03265) [blue]**: 189 (1,001.0028)
+- **Bin 44 (-0.03265, -0.03145) [blue]**: 343 (1,001.0145)
+- **Bin 46 (-0.03026, -0.02906) [blue]**: 237 (1,001.0187)
+- **Bin 47 (-0.02906, -0.02787) [blue]**: 248 (1,001.0131)
+- **Bin 48 (-0.02787, -0.02667) [blue]**: 201 (1,001.0096)
+
+### Total True Positive (NOK, correct) samples: 0
+---------- Samples in True Positive (NOK, correct) bins ----------
+
+### Total False Positive (OK, misclassified) samples: 0
+---------- Samples in False Positive (OK, misclassified) bins ----------
+
+### Total False Negative (NOK, misclassified) samples: 0
+---------- Samples in False Negative (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0255 (DB = 0.0852)No DB delta NOK
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8
 
 
 <<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
@@ -194,42 +256,44 @@ Initializing input processors for anomaly detection model...
 
 >> No raw data normalization is applied
 
->> No feature normalization is applied
+>> Feature normalizer loaded with 'std' normalization
 
->> Time feature extractor initialized with features: from_ranks(feat_list=['peak_value', 'variance', 'mean_abs', 'max', 'min', 'difference_variance', 'rms', 'skewness', 'normalized_std', 'peak_to_peak'])
+>> No time feature extraction is applied
 
 >> No feature reduction is applied
 
 ---------------------------------------------------------------------------
 
-Feature names: ['peak_value_0', 'variance_0', 'mean_abs_0', 'max_0', 'min_0', 'difference_variance_0', 'rms_0', 'skewness_0', 'normalized_std_0', 'peak_to_peak_0']
+No features extracted, so feature normalization is skipped.
 
-Test inference completed in 0.16 seconds
+Using components as features: [comp0_dim0, comp1_dim0, comp2_dim0, comp3_dim0...comp996_dim0, comp997_dim0, comp998_dim0, comp999_dim0]
 
-NOK upper bound (at 100.0 percentile): -0.0011
+Test inference completed in 0.14 seconds
 
-OK lower bound (from training): 0.0002
+NOK upper bound (at 100.0 percentile): 0.1170
 
-NOK upper bound (from testing): -0.0011
+OK lower bound (from training): 0.0597
+
+NOK upper bound (from testing): 0.1170
 
 Dataframe is as follows:
-    peak_value_0  variance_0  mean_abs_0     max_0  ...    rep_num    scores  pred_label  final_pred_label
-0       0.208198    0.005641    0.061736  0.217794  ...  1001.0001  0.032717           1                 1
-1       0.201731    0.005367    0.060330  0.194012  ...  1001.0188  0.005429           1                 1
-2       0.530613    0.024915    0.126339  0.537393  ...  1001.0055 -0.040268          -1                -1
-3       0.186294    0.005010    0.059038  0.193804  ...  1001.0084  0.012546           1                 1
-4       0.224679    0.004926    0.056634  0.218420  ...  1001.0038  0.025846           1                 1
-..           ...         ...         ...       ...  ...        ...       ...         ...               ...
-92      0.212475    0.005650    0.062710  0.220506  ...  1001.0133  0.035997           1                 1
-93      0.518201    0.028392    0.137087  0.597057  ...  1001.0154 -0.094560          -1                -1
-94      0.191926    0.005313    0.058871  0.195890  ...  1001.0011  0.016916           1                 1
-95      0.419838    0.024219    0.129668  0.406174  ...  1001.0148 -0.013510          -1                -1
-96      0.324606    0.015877    0.107440  0.332742  ...  1001.0110 -0.051647          -1                -1
+    comp0_dim0  comp1_dim0  comp2_dim0  ...    scores  pred_label  final_pred_label
+0     0.053197    0.088662    0.099718  ...  0.039789           1               0.5
+1     0.129342    0.076979    0.015646  ...  0.036002           1               0.5
+2    -0.044226   -0.015855    0.028163  ...  0.039280           1               0.5
+3     0.000626    0.034839    0.090122  ...  0.016081           1               0.5
+4     0.052988    0.049650    0.075102  ...  0.023304           1               0.5
+..         ...         ...         ...  ...       ...         ...               ...
+92   -0.101596   -0.062793   -0.025242  ...  0.026441           1               0.5
+93    0.082403    0.063002    0.012726  ...  0.050165           1               0.5
+94    0.025660    0.049859    0.076979  ...  0.157388          -1              -0.5
+95    0.125795    0.106185    0.045687  ...  0.015790           1               0.5
+96    0.079482    0.067591    0.025242  ...  0.031272           1               0.5
 
-[97 rows x 15 columns]
+[97 rows x 1005 columns]
 
-Test accuracy: 0.68
-Precision: 0.67, Recall: 0.68, F1-score: 0.67
+Test accuracy: 1.00
+Precision: 1.00, Recall: 1.00, F1-score: 1.00
 
 Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\test
 
@@ -242,10 +306,70 @@ Testing hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Project
 Confusion matrix logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\test
 
 
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 1 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train and '100%' NOK)
+
+Creating anomaly score distribution plot for [gearbox_1_(acc+G)]-IF_fdet_8 / test...
+## Bin details for Anomaly Score Distribution Advance 1 (100% OK of train, 100% NOK) 
+-------------------------
+### Total True Negative (OK, correct) samples: 75
+---------- Samples in True Negative (OK, correct) bins ----------
+- **Bin 0 (-0.08521, -0.08130) [blue]**: 79 (1,002.0419)
+- **Bin 1 (-0.08130, -0.07738) [blue]**: 87 (1,002.0235)
+- **Bin 2 (-0.07738, -0.07346) [blue]**: 33 (1,002.0406), 81 (1,002.0142), 88 (1,002.0478)
+- **Bin 3 (-0.07346, -0.06954) [blue]**: 13 (1,002.0483), 41 (1,002.0052), 45 (1,002.0479), 49 (1,002.0223), 50 (1,002.0297), 59 (1,002.0093), 68 (1,002.0445), 73 (1,002.0305), 76 (1,002.0137)
+- **Bin 4 (-0.06954, -0.06562) [blue]**: 3 (1,002.0420), 8 (1,002.0314), 9 (1,002.0241), 21 (1,002.0096), 27 (1,002.0065), 31 (1,002.0244), 44 (1,002.0122), 47 (1,002.0105), 53 (1,002.0146), 57 (1,002.0214), 60 (1,002.0151), 62 (1,002.0278), 67 (1,002.0182), 95 (1,002.0067)
+- **Bin 5 (-0.06562, -0.06170) [blue]**: 4 (1,002.0378), 7 (1,002.0280), 12 (1,002.0081), 15 (1,001.0164), 23 (1,002.0307), 63 (1,002.0364), 74 (1,002.0320), 90 (1,002.0316)
+- **Bin 6 (-0.06170, -0.05778) [blue]**: 5 (1,002.0458), 6 (1,002.0328), 39 (1,002.0163), 54 (1,001.0112), 58 (1,002.0227), 77 (1,001.0083), 92 (1,001.0102)
+- **Bin 7 (-0.05778, -0.05386) [blue]**: 11 (1,001.0021), 16 (1,002.0016), 17 (1,001.0162), 19 (1,001.0052), 20 (1,002.0311), 34 (1,001.0076), 36 (1,001.0077), 61 (1,002.0012), 64 (1,002.0273), 78 (1,001.0079), 96 (1,001.0227)
+- **Bin 8 (-0.05386, -0.04995) [blue]**: 28 (1,001.0051), 35 (1,001.0099), 51 (1,002.0216), 75 (1,002.0324), 83 (1,001.0150), 84 (1,001.0170), 91 (1,002.0045)
+- **Bin 9 (-0.04995, -0.04603) [blue]**: 1 (1,001.0110), 10 (1,001.0220), 37 (1,001.0125), 48 (1,001.0165), 70 (1,001.0193)
+- **Bin 10 (-0.04603, -0.04211) [blue]**: 0 (1,001.0001), 2 (1,001.0157), 66 (1,001.0060), 82 (1,002.0481)
+- **Bin 11 (-0.04211, -0.03819) [blue]**: 24 (1,001.0201), 65 (1,001.0149)
+- **Bin 12 (-0.03819, -0.03427) [blue]**: 69 (1,001.0171), 86 (1,001.0004), 93 (1,001.0148)
+
+### Total True Positive (NOK, correct) samples: 21
+---------- Samples in True Positive (NOK, correct) bins ----------
+- **Bin 29 (0.02843, 0.03235) [orange]**: 32 (1,001.0156)
+- **Bin 33 (0.04410, 0.04802) [orange]**: 43 (1,001.0142), 46 (1,001.0244)
+- **Bin 34 (0.04802, 0.05194) [orange]**: 80 (1,001.0161)
+- **Bin 36 (0.05586, 0.05978) [orange]**: 52 (1,001.0020), 56 (1,001.0120)
+- **Bin 37 (0.05978, 0.06370) [orange]**: 18 (1,001.0096), 29 (1,001.0176)
+- **Bin 38 (0.06370, 0.06762) [orange]**: 22 (1,001.0018), 40 (1,001.0168), 72 (1,001.0172)
+- **Bin 39 (0.06762, 0.07154) [orange]**: 38 (1,001.0150), 85 (1,001.0084)
+- **Bin 40 (0.07154, 0.07545) [orange]**: 94 (1,001.0068)
+- **Bin 41 (0.07545, 0.07937) [orange]**: 14 (1,001.0182), 26 (1,001.0094)
+- **Bin 42 (0.07937, 0.08329) [orange]**: 42 (1,001.0026)
+- **Bin 43 (0.08329, 0.08721) [orange]**: 55 (1,001.0005)
+- **Bin 45 (0.09113, 0.09505) [orange]**: 30 (1,001.0157)
+- **Bin 47 (0.09897, 0.10289) [orange]**: 71 (1,001.0194)
+- **Bin 48 (0.10289, 0.10680) [orange]**: 25 (1,001.0071)
+
+### Total False Positive (OK, misclassified) samples: 0
+---------- Samples in False Positive (OK, misclassified) bins ----------
+
+### Total False Negative (NOK, misclassified) samples: 0
+---------- Samples in False Negative (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0255 (DB = 0.0852)
+DB delta NOK (100% NOK): 0.0318 (DB = 0.0852)
+
+
+Anomaly score distribution plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\test
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for [gearbox_1_(acc+G)]-IF_fdet_8 / test...
+
+Pair plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\bearing\cwru\scene_1\train\gearbox_1\acc\set_G\IF\tswp_0\[gearbox_1_(acc+G)]-IF_fdet_8\test
+
+
 ===========================================================================
 
 Fault detection model '[gearbox_1_(acc+G)]-IF_fdet_8' training completed.
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-22 18:44:29
+Log saved at: 2025-09-24 03:15:38

@@ -70,9 +70,7 @@ class TimeFeatureExtractor:
                 feat_fn = getattr(tf, feat_type)
                 features = feat_fn(time_data)  
 
-                # normalize features b/w 0 and 1
-                features_norm = DataNormalizer('min_max').normalize(features)
-                features_list.append(features_norm)
+                features_list.append(features)
             else:
                 raise ValueError(f"Unknown time feature extraction type: {feat_type}")
             

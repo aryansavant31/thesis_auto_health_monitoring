@@ -10,12 +10,12 @@ from data.prep import DataPreprocessor
 from console_logger import ConsoleLogger
 
 # local imports
-from .settings.manager import AnomalyDetectorInferManager, get_model_pickle_path
-from .detector import AnomalyDetector, TrainerAnomalyDetector
+from .settings.manager import FaultDetectorInferManager, get_model_pickle_path
+from .detector import FaultDetector, TrainerFaultDetector
 
 
-class AnomalyDetectorInferPipeline:
-    def __init__(self, data_config:DataConfig, fdet_config:AnomalyDetectorInferManager):
+class FaultDetectorInferPipeline:
+    def __init__(self, data_config:DataConfig, fdet_config:FaultDetectorInferManager):
         """
         Initialize the anomaly detector prediction main class.
 
@@ -23,7 +23,7 @@ class AnomalyDetectorInferPipeline:
         ----------
         data_config : DataConfig
             The data configuration object.
-        fdet_config : AnomalyDetectorPredictManager
+        fdet_config : FaultDetectorPredictManager
             The anomaly detector prediction configuration object.
         """
         self.data_config = data_config
@@ -45,19 +45,18 @@ class AnomalyDetectorInferPipeline:
             (Only returned if run_type is 'predict').
         """
         # 1. Load data
-        custom_data = self.data_preprocessor.get_custom_data_package(
+        custom_loader = self.data_preprocessor.get_custom_data_package(
             self.data_config, self.fdet_config.batch_size)
-        custom_loader, custom_data_stats = custom_data
 
         # 2. Load the anomaly detector model
-        anomaly_detector = self._load_model(custom_data_stats)
+        fault_detector = self._load_model()
 
         # 3. Infer using the anomaly detector model
         logger = self._prep_for_inference()
 
-        tester = TrainerAnomalyDetector(logger=logger)
+        tester = TrainerFaultDetector(logger=logger)
         if self.fdet_config.run_type == 'custom_test':
-            tester.test(anomaly_detector, custom_loader)
+            tester.test(fault_detector, custom_loader)
 
             # plot the test results
             for plot_name, plot_config in self.fdet_config.test_plots.items():
@@ -65,13 +64,13 @@ class AnomalyDetectorInferPipeline:
                     getattr(tester, plot_name.split('-')[0])(**plot_config[1])
                 
         elif self.fdet_config.run_type == 'predict':
-            preds = tester.predict(anomaly_detector, custom_loader)
+            preds = tester.predict(fault_detector, custom_loader)
             
-            tester.anomaly_score_dist(is_pred=True, bins=100)
+            tester.anomaly_score_dist_simple(is_pred=True, bins=100)
 
             return preds
 
-    def _load_model(self, data_stats):
+    def _load_model(self):
         """
         Load the anomaly detector model from the checkpoint path.
 
@@ -82,27 +81,26 @@ class AnomalyDetectorInferPipeline:
 
         Returns
         -------
-        AnomalyDetector
+        FaultDetector
             The loaded anomaly detector model.
         """
-        anomaly_detector = AnomalyDetector.load_from_pickle(self.fdet_config.selected_model_path)
+        fault_detector = FaultDetector.load_from_pickle(self.fdet_config.selected_model_path)
 
         # update the model with custom data statistics and domain config
-        anomaly_detector.data_stats = data_stats
-        anomaly_detector.domain_config = self.fdet_config.domain_config
-        anomaly_detector.nok_percentage = self.fdet_config.nok_percentage
+        fault_detector.domain_config = self.fdet_config.domain_config
+        fault_detector.nok_percentage = self.fdet_config.nok_percentage
 
         # update hparams with new values
-        anomaly_detector.hparams.update(self.fdet_config.infer_hparams)
-        anomaly_detector.hparams.update({
+        fault_detector.hparams.update(self.fdet_config.infer_hparams)
+        fault_detector.hparams.update({
             f"max_timesteps/{self.fdet_config.run_type}" : f"{int(self.data_config.max_timesteps):,}"
             })
 
         print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.selected_model_path}")
-        print(f"\nModel type: {type(anomaly_detector.model).__name__}, Model ID: {anomaly_detector.hparams['model_id']}, No. of input features req.: {anomaly_detector.model.n_features_in_ if hasattr(anomaly_detector.model, 'n_features_in_') else 'Unknown'}")
+        print(f"\nModel type: {type(fault_detector.model).__name__}, Model ID: {fault_detector.hparams['model_id']}, No. of input features req.: {fault_detector.model.n_features_in_ if hasattr(fault_detector.model, 'n_features_in_') else 'Unknown'}")
         print('\n' + 75*'-')
         
-        return anomaly_detector    
+        return fault_detector    
     
     def _prep_for_inference(self):
         """
@@ -146,12 +144,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     data_config = DataConfig(run_type=args.run_type)
-    fdet_config = AnomalyDetectorInferManager(data_config, run_type=args.run_type)
+    fdet_config = FaultDetectorInferManager(data_config, run_type=args.run_type)
 
     with console_logger.capture_output():
         print(f"\nStarting anomaly detector to {args.run_type}...")
 
-        infer_pipeline = AnomalyDetectorInferPipeline(data_config, fdet_config)
+        infer_pipeline = FaultDetectorInferPipeline(data_config, fdet_config)
         if args.run_type == 'custom_test':
             infer_pipeline.infer()
 

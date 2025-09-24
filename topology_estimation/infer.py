@@ -38,15 +38,11 @@ class TopologyEstimationInferHelper:
         ----------
         custom_loader : DataLoader
             DataLoader for the custom data.
-        custom_data_stats : dict
-            Statistics of the custom data.
         """
-        custom_data = self.data_preprocessor.get_custom_data_package(
+        self.custom_loader = self.data_preprocessor.get_custom_data_package(
             self.data_config, 
             batch_size=self.tp_config.batch_size,
             )
-        # unpack data_loaders and data_stats
-        self.custom_loader, self.custom_data_stats = custom_data
 
     # def load_relation_matrix_loaders(self):
     #     """
@@ -150,7 +146,7 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
         
         nri_model = self._load_model(
             dec_run_params, 
-            rec_rel, send_rel, self.custom_data_stats
+            rec_rel, send_rel
             )
 
         # infer using the nri model
@@ -170,7 +166,7 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
         return preds
 
     
-    def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
+    def _load_model(self, dec_run_params, rec_rel, send_rel):
         """
         Load the NRI model from the checkpoint path.
 
@@ -182,8 +178,6 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
             Receiver relation matrix that indicate which edges are on reciever end of nodes.
         send_rel : torch.Tensor, shape (n_edges, n_nodes)
             Sender relation matrix that indicate which edges are senders of nodes.
-        data_stats : dict
-            Statistics of the custom data.
 
         Returns
         -------
@@ -209,7 +203,6 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
         trained_nri_model.set_run_params(
             dec_run_params=dec_run_params, 
             data_config=self.data_config, 
-            data_stats=data_stats, 
             init_temp=self.tp_config.init_temp,
             min_temp=self.tp_config.min_temp,
             decay_temp=self.tp_config.decay_temp,
@@ -254,7 +247,7 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
         dec_run_params = self.get_decoder_params()
         decoder_model = self._load_model(
             dec_run_params, 
-            rec_rel, send_rel, self.custom_data_stats
+            rec_rel, send_rel
             )
 
         # infer using the decoder model
@@ -273,7 +266,7 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
 
         return preds
         
-    def _load_model(self, dec_run_params, rec_rel, send_rel, data_stats):
+    def _load_model(self, dec_run_params, rec_rel, send_rel):
         """
         Load the Decoder model from the checkpoint path.
 
@@ -285,8 +278,6 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
             Receiver relation matrix that indicate which edges are on reciever end of nodes.
         send_rel : torch.Tensor, shape (n_edges, n_nodes)
             Sender relation matrix that indicate which edges are senders of nodes.
-        data_stats : dict
-            Statistics of the custom data.
 
         Returns
         -------
@@ -314,8 +305,7 @@ class DecoderInferPipeline(TopologyEstimationInferHelper):
 
         trained_decoder_model.set_run_params(
             **dec_run_params, 
-            data_config=self.data_config, 
-            data_stats=data_stats
+            data_config=self.data_config,
             )
 
         print(f"\nDecoder model loaded for '{self.tp_config.run_type}' from {self.tp_config.selected_model_path}")

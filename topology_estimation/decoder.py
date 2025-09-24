@@ -61,6 +61,9 @@ class Decoder(LightningModule):
         self.feat_configs = None
         self.reduc_config = None
 
+        self.raw_data_normalizer = None
+        self.feat_normalizer = None
+
     def set_hyperparams(self, hyperparams):
         self.hyperparams = hyperparams
 
@@ -122,7 +125,7 @@ class Decoder(LightningModule):
         self.edge_matrix = edge_matrix
 
     def set_run_params(
-        self, data_config:DataConfig, data_stats, 
+        self, data_config:DataConfig,
         skip_first_edge_type=False, pred_steps=1,
         is_burn_in=False, final_pred_steps=1, is_dynamic_graph=False,
         encoder=None, temp=None, is_hard=False, show_conf_band=True
@@ -141,7 +144,6 @@ class Decoder(LightningModule):
                 So if graph is dynamic, it means the graph can change from timestep 'burnin_step' (40) onwards.
         """
         self.is_hard = is_hard
-        self.data_stats = data_stats
         self.data_config = data_config
         self.skip_first_edge_type = skip_first_edge_type  # skip edge type = 0
         self.pred_steps = pred_steps
@@ -206,69 +208,74 @@ class Decoder(LightningModule):
         self.var_output_layer = nn.Linear(self.output_layer_size, self.n_dims) 
 
     
-    def init_input_processors(self):
-        print(f"\nInitializing input processors for decoder model...") 
+    def init_input_processors(self, is_verbose=True):
+        print(f"\nInitializing input processors for decoder model...") if is_verbose else None
 
         domain_str = self._get_config_str([self.domain_config])
         feat_str = self._get_config_str(self.feat_configs) if self.feat_configs else 'None'
         reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
 
         self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self.data_config)
-        #if self.domain == 'time':
-        print(f"\n>> Domain transformer initialized: {domain_str}") 
-        # elif self.domain == 'freq':
-        #     print(f"\n>> Domain transformer initialized for 'frequency' domain") 
+        print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None 
 
         # initialize raw data normalizers
         if self.raw_data_norm:
             if not self.feat_configs or self.domain == 'time': # have raw data normalization for both doamin if no feature extraction. But if feature extraction, only allow time domain
-                self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm, data_stats=self.data_stats)
-                print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") 
+                
+                if self.raw_data_normalizer is None:
+                    self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm)
+                    print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None 
+                else:
+                    print(f"\n>> Raw data normalizer loaded from checkpoint with '{self.raw_data_norm}' normalization") if is_verbose else None
             else:
                 self.raw_data_normalizer = None
-                print(f"\n>> Raw data normalization skipped due to data domain being '{self.domain}' ({self.domain} data cannot be normalized before feature extraction.")
+                print(f"\n>> Raw data normalization skipped due to data domain being '{self.domain}' ({self.domain} data cannot be normalized before feature extraction.") if is_verbose else None
         else:
             self.raw_data_normalizer = None
-            print("\n>> No raw data normalization is applied") 
+            print("\n>> No raw data normalization is applied") if is_verbose else None 
 
         # initialize feature normalizer
         if self.feat_norm:
             if self.feat_configs:
-                self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
-                print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization")
+                
+                if self.feat_normalizer is None:
+                    self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
+                    print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization") if is_verbose else None
+                else:
+                    print(f"\n>> Feature normalizer loaded from checkpoint with '{self.feat_norm}' normalization") if is_verbose else None
             else:
                 self.feat_normalizer = None
-                print(f"\n>> Feature normalization skipped as no feature extraction is applied.") 
+                print(f"\n>> Feature normalization skipped as no feature extraction is applied.") if is_verbose else None 
         else:
             self.feat_normalizer = None
-            print("\n>> No feature normalization is applied") 
+            print("\n>> No feature normalization is applied") if is_verbose else None 
 
         # define feature objects
         if self.domain == 'time':
             if self.feat_configs:
                 self.time_fex = TimeFeatureExtractor(self.feat_configs)
-                print(f"\n>> Time feature extractor initialized with features: {feat_str}") 
+                print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None 
             else:
                 self.time_fex = None
-                print("\n>> No time feature extraction is applied") 
+                print("\n>> No time feature extraction is applied") if is_verbose else None 
 
         elif self.domain == 'freq':
             if self.feat_configs:
                 self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
-                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") 
+                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None 
             else:
                 self.freq_fex = None
-                print("\n>> No frequency feature extraction is applied") 
+                print("\n>> No frequency feature extraction is applied") if is_verbose else None 
         
         # define feature reducer
         if self.reduc_config:
             self.feat_reducer = FeatureReducer(reduc_config=self.reduc_config)
-            print(f"\n>> Feature reducer initialized with '{reduc_str}' reduction") 
+            print(f"\n>> Feature reducer initialized with '{reduc_str}' reduction") if is_verbose else None 
         else:
             self.feat_reducer = None
-            print("\n>> No feature reduction is applied") 
+            print("\n>> No feature reduction is applied") if is_verbose else None 
 
-        print('\n' + 75*'-')
+        print('\n' + 75*'-') if is_verbose else None
 
     def _get_config_str(self, configs:list):
         """
@@ -374,6 +381,53 @@ class Decoder(LightningModule):
 
         return edge_matrix
     
+    def fit_normalizers(self, data_loader):
+        """
+        Fit the normalizers (raw data normalizer and feature normalizer) using the training data.
+
+        Parameters
+        ----------
+        data_loader : torch.utils.data.DataLoader
+            DataLoader for the training data.
+        """
+        print(f"\nFitting normalizers for decoder model...") 
+
+        all_time_data = []
+
+        for time_data, _, _, _ in data_loader:
+            all_time_data.append(time_data)
+
+        all_time_data = torch.cat(all_time_data, dim=0)  # shape: (n_samples, n_nodes, n_timesteps, n_dims)
+
+        self.init_input_processors(verbose=False)
+
+        # domain transform data (mandatory)
+        if self.domain == 'time':
+            data = self.domain_transformer.transform(all_time_data)
+        elif self.domain == 'freq':
+            data, freq_bins = self.domain_transformer.transform(all_time_data)
+
+        # fit raw data normalizer (optional)
+        if self.raw_data_normalizer:
+            self.raw_data_normalizer.fit(data)
+            data = self.raw_data_normalizer.transform(data)
+
+        # extract features from data (optional)
+        if self.domain == 'time':
+            if self.time_fex:
+                data = self.time_fex.extract(data)
+        elif self.domain == 'freq':
+            if self.freq_fex:
+                data = self.freq_fex.extract(data, freq_bins)
+
+        # fit feature normalizer (optional : if feat_norm is provided)
+        if self.feat_normalizer:
+            self.feat_normalizer.fit(data)
+
+        print(f"\n>> Normalizers fitted using {all_time_data.size(0)} samples")
+
+        print('\n' + 75*'-')
+    
     def process_input_data(self, time_data):
         """
         Parameters
@@ -394,7 +448,7 @@ class Decoder(LightningModule):
 
         # normalize raw data (optional)
         if self.raw_data_normalizer:
-            data = self.raw_data_normalizer.normalize(data)
+            data = self.raw_data_normalizer.transform(data)
 
         # extract features from data (optional)
         if self.domain == 'time':
@@ -406,7 +460,7 @@ class Decoder(LightningModule):
 
         # normalize features (optional : if feat_norm is provided)
         if self.feat_normalizer:
-            data = self.feat_normalizer.normalize(data)
+            data = self.feat_normalizer.transform(data)
 
         # reduce features (optional : if reduc_config is provided)
         if self.feat_reducer:
@@ -507,6 +561,8 @@ class Decoder(LightningModule):
         self.feat_norm = checkpoint["feat_norm"]
         self.feat_configs = checkpoint["feat_configs"]
         self.reduc_config = checkpoint["reduc_config"]
+        self.raw_data_normalizer = checkpoint["raw_data_normalizer"]
+        self.feat_normalizer = checkpoint["feat_normalizer"]
 
         # train params
         self.lr = checkpoint["lr"]
@@ -540,6 +596,8 @@ class Decoder(LightningModule):
         checkpoint["feat_norm"] = self.feat_norm
         checkpoint["feat_configs"] = self.feat_configs
         checkpoint["reduc_config"] = self.reduc_config
+        checkpoint["raw_data_normalizer"] = self.raw_data_normalizer
+        checkpoint["feat_normalizer"] = self.feat_normalizer
 
         # train params
         checkpoint["lr"] = self.lr

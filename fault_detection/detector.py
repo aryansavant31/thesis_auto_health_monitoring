@@ -15,7 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, f1_score, precision_score, recall_score
 import torch
 import inspect
 
@@ -25,21 +25,21 @@ from feature_extraction.extractor import FrequencyFeatureExtractor, TimeFeatureE
 from feature_extraction import ff, tf
 
 # local imports
-from .settings.manager import AnomalyDetectorTrainManager
+from .settings.manager import FaultDetectorTrainManager
 
-class AnomalyDetector:
+class FaultDetector:
     def __init__(self, anom_config, hparams):
         self.anom_config = anom_config
         self.hparams = hparams
         self.ok_percentage = 1
         self.nok_percentage = 1
 
-        self.ok_lower_bound = None
-        self.nok_upper_bound = None
-        self.data_stats = None
+        self.ok_upper_bound = None
+        self.nok_lower_bound = None
+        self.threshold = None
 
         if anom_config['anom_type'] == 'IF':
-            self.model = IsolationForest(contamination=anom_config['IF/contam'], 
+            self.anom_model = IsolationForest(contamination=anom_config['IF/contam'], 
                                          random_state=anom_config['IF/seed'],
                                          n_jobs=anom_config['IF/n_jobs'], 
                                          n_estimators=anom_config['IF/n_estimators'],
@@ -50,7 +50,7 @@ class AnomalyDetector:
                                          max_features=anom_config['IF/max_features'])
             
         elif anom_config['anom_type'] == '1SVM':
-            self.model = OneClassSVM(kernel=anom_config['1SVM/kernel'],  
+            self.anom_model = OneClassSVM(kernel=anom_config['1SVM/kernel'],  
                                      gamma=anom_config['1SVM/gamma'],
                                      nu=anom_config['1SVM/nu'],
                                      shrinking=anom_config['1SVM/is_shrinking'],
@@ -62,10 +62,13 @@ class AnomalyDetector:
                                      degree=anom_config['1SVM/degree'])
 
         elif anom_config['anom_type'] == 'SVC':
-            self.model = SVC(kernel=anom_config['SVC/kernel'],
+            self.anom_model = SVC(kernel=anom_config['SVC/kernel'],
                              C=anom_config['SVC/C'],
                              gamma=anom_config['SVC/gamma'],
                             )
+            
+        self.raw_data_normalizer = None
+        self.feat_normalizer = None
             
     def set_run_params(self, data_config, domain_config, raw_data_norm=None, feat_norm=None, feat_configs=[], reduc_config=None):
         """
@@ -80,11 +83,11 @@ class AnomalyDetector:
         raw_data_norm : str, optional
             Normalization type for raw data (e.g., 'min_max', 'standard')
         """
-        self._data_config = data_config
-        self._raw_data_norm = raw_data_norm
-        self._feat_norm = feat_norm
-        self._feat_configs = feat_configs
-        self._reduc_config = reduc_config
+        self.data_config = data_config
+        self.raw_data_norm = raw_data_norm
+        self.feat_norm = feat_norm
+        self.feat_configs = feat_configs
+        self.reduc_config = reduc_config
 
         self.domain_config = domain_config
 
@@ -92,16 +95,16 @@ class AnomalyDetector:
         """
         Get the names of the features that will be used in the anomaly detection model.
         """
-        # non_rank_feats = [feat_config['type'] for feat_config in self._feat_configs if feat_config['type'] not in ['from_ranks', 'first_n_modes', 'full_spectrum']]
-        # first_n_freq_feats = [f"freq{freq_bin+1}" for feat_config in self._feat_configs if feat_config['type'] == 'first_n_modes' for freq_bin in range(feat_config['n_modes'])] 
-        # first_n_modes_feats = [f"mode{mode+1}" for feat_config in self._feat_configs if feat_config['type'] == 'first_n_modes' for mode in range(feat_config['n_modes'])]
+        # non_rank_feats = [feat_config['type'] for feat_config in self.feat_configs if feat_config['type'] not in ['from_ranks', 'first_n_modes', 'full_spectrum']]
+        # first_n_freq_feats = [f"freq{freq_bin+1}" for feat_config in self.feat_configs if feat_config['type'] == 'first_n_modes' for freq_bin in range(feat_config['n_modes'])] 
+        # first_n_modes_feats = [f"mode{mode+1}" for feat_config in self.feat_configs if feat_config['type'] == 'first_n_modes' for mode in range(feat_config['n_modes'])]
 
-        # rank_feats = next((feat_config['feat_list'] for feat_config in self._feat_configs if feat_config['type'] == 'from_ranks'), [])
+        # rank_feats = next((feat_config['feat_list'] for feat_config in self.feat_configs if feat_config['type'] == 'from_ranks'), [])
 
-        # Order the feature names according to the order in self._feat_configs
+        # Order the feature names according to the order in self.feat_configs
         feat_names = []
 
-        for feat_config in self._feat_configs:
+        for feat_config in self.feat_configs:
             if feat_config['type'] not in ['from_ranks', 'first_n_modes', 'full_spectrum']:
                 feat_names.append(feat_config['type'])
 
@@ -118,57 +121,65 @@ class AnomalyDetector:
     def init_input_processors(self, is_verbose=True):
         print(f"\nInitializing input processors for anomaly detection model...") if is_verbose else None
         
-        self._domain = self.domain_config['type']
-        self._feat_names = self._get_feature_names() if self._feat_configs else None
+        self.domain = self.domain_config['type']
+        self.feat_names = self._get_feature_names() if self.feat_configs else None
 
         domain_str = self._get_config_str([self.domain_config])
-        feat_str = self._get_config_str(self._feat_configs) if self._feat_configs else 'None'
-        reduc_str = self._get_config_str([self._reduc_config]) if self._reduc_config else 'None'
+        feat_str = self._get_config_str(self.feat_configs) if self.feat_configs else 'None'
+        reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
 
         # update hparams for feat string
         self.hparams['feats'] = f"[{feat_str}]"
 
-        self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self._data_config)
-        # if self._domain == 'time':
+
+        # initialize domain transformer
+        self.domain_transformer = DomainTransformer(domain_config=self.domain_config, data_config=self.data_config)
         print(f"\n>> Domain transformer initialized: {domain_str}") if is_verbose else None
-        # elif self._domain == 'freq':
-        #     print(f"\n>> Domain transformer initialized for 'frequency' domain") if is_verbose else None
+
 
         # initialize data normalizers
-        if self._raw_data_norm:
-            self.raw_data_normalizer = DataNormalizer(norm_type=self._raw_data_norm, data_stats=self.data_stats)
-            print(f"\n>> Raw data normalizer initialized with '{self._raw_data_norm}' normalization") if is_verbose else None
+        if self.raw_data_norm:
+            if self.raw_data_normalizer is None:
+                self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm)
+                print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None
+            else:
+                print(f"\n>> Raw data normalizer loaded with '{self.raw_data_norm}' normalization") if is_verbose else None
         else:
             self.raw_data_normalizer = None
             print("\n>> No raw data normalization is applied") if is_verbose else None
 
-        if self._feat_norm:
-            self.feat_normalizer = DataNormalizer(norm_type=self._feat_norm)
-            print(f"\n>> Feature normalizer initialized with '{self._feat_norm}' normalization") if is_verbose else None
+        if self.feat_norm:
+            if self.feat_normalizer is None:
+                self.feat_normalizer = DataNormalizer(norm_type=self.feat_norm)
+                print(f"\n>> Feature normalizer initialized with '{self.feat_norm}' normalization") if is_verbose else None
+            else:
+                print(f"\n>> Feature normalizer loaded with '{self.feat_norm}' normalization") if is_verbose else None
         else:
             self.feat_normalizer = None
             print("\n>> No feature normalization is applied") if is_verbose else None
 
+
         # define feature objects
-        if self._domain == 'time':
-            if self._feat_configs:
-                self.time_fex = TimeFeatureExtractor(self._feat_configs)
+        if self.domain == 'time':
+            if self.feat_configs:
+                self.time_fex = TimeFeatureExtractor(self.feat_configs)
                 print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.time_fex = None
                 print("\n>> No time feature extraction is applied") if is_verbose else None
 
-        elif self._domain == 'freq':
-            if self._feat_configs:
-                self.freq_fex = FrequencyFeatureExtractor(self._feat_configs, data_config=self._data_config)
+        elif self.domain == 'freq':
+            if self.feat_configs:
+                self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
                 print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.freq_fex = None
                 print("\n>> No frequency feature extraction is applied") if is_verbose else None
         
+
         # define feature reducer
-        if self._reduc_config:
-            self.feat_reducer = FeatureReducer(reduc_config=self._reduc_config)
+        if self.reduc_config:
+            self.feat_reducer = FeatureReducer(reduc_config=self.reduc_config)
             print(f"\n>> Feature reducer initialized with '{reduc_str}' reduction") if is_verbose else None
         else:
             self.feat_reducer = None
@@ -196,18 +207,18 @@ class AnomalyDetector:
         """
         Print the model information such as number of input features, support vectors, kernel type, etc.
         """
-        print("Model type:", type(self.model).__name__)
+        print("Model type:", type(self.anom_model).__name__)
         
         if self.anom_config['anom_type'] == 'IF':
-            print("Number of trees in the forest:", self.model.n_estimators)
-            print("Contamination:", self.model.contamination)
+            print("Number of trees in the forest:", self.anom_model.n_estimators)
+            print("Contamination:", self.anom_model.contamination)
         
         elif self.anom_config['anom_type'] == '1SVM':
-            # print("Number of support vectors:", self.model.n_support_)
-            # print("Support vectors shape:", self.model.support_vectors_.shape)
-            print("Kernel:", self.model.kernel)
-            print("Gamma:", self.model.gamma)
-            print("Nu:", self.model.nu)
+            # print("Number of support vectors:", self.anom_model.n_support_)
+            # print("Support vectors shape:", self.anom_model.support_vectors_.shape)
+            print("Kernel:", self.anom_model.kernel)
+            print("Gamma:", self.anom_model.gamma)
+            print("Nu:", self.anom_model.nu)
 
     @staticmethod
     def load_from_pickle(model_path):
@@ -226,15 +237,35 @@ class AnomalyDetector:
             return pickle.load(f)
 
     
-class TrainerAnomalyDetector:
+class TrainerFaultDetector:
     def __init__(self, logger:SummaryWriter=None):
         self.logger = logger
+
+    def accumulate_data(self, data_loader):
+        data_list = []
+        label_list = []
+        rep_num_list = []
+
+        for time_data, label, rep_num in data_loader:
+            label_np = np.repeat(label.view(-1).numpy(), time_data.size(1))
+            rep_num = np.repeat(rep_num.view(-1).numpy(), time_data.size(1))
+
+            data_list.append(time_data)
+            label_list.append(label_np)
+            rep_num_list.append(rep_num)
+
+        time_data_all = torch.vstack(data_list)  # shape (total_samples, n_nodes, n_timesteps, n_dims)
+        label_np_all = np.hstack(label_list)  # shape (total_samples*n_nodes,)
+        rep_num_np_all = np.hstack(rep_num_list)
+
+        return time_data_all, label_np_all, rep_num_np_all
+
        
-    def process_input_data(self, anomaly_detector:AnomalyDetector, data_loader, get_data_shape=False):
+    def process_train_data(self, fault_detector:FaultDetector, train_loader, get_data_shape=False):
         """
         Parameters
         ----------
-        anomaly_detector : AnomalyDetector
+        fault_detector : FaultDetector
             The anomaly detection model to be trained.
         loader : DataLoader
             DataLoader containing the training data.
@@ -249,74 +280,55 @@ class TrainerAnomalyDetector:
         label_np : np.ndarray
             Numpy array of shape (batch_size,) containing the labels for each sample.
         """
-        data_list = []
-        label_list = []
-        rep_num_list = []
+        fault_detector.init_input_processors(is_verbose = not get_data_shape)
 
-        for time_data, label, rep_num in data_loader:
-            label_np = np.repeat(label.view(-1).numpy(), time_data.size(1))
-            # match n_samples of rep_num with data
-            rep_num = np.repeat(rep_num.view(-1).numpy(), time_data.size(1))
+        # collect all data from the loader
+        time_data, label_np, rep_num_np = self.accumulate_data(train_loader)
 
-            data_list.append(time_data)
-            label_list.append(label_np)
-            rep_num_list.append(rep_num)
+    # 1. isolate healthy data 
+        time_data_ok = time_data[label_np == 1]  # shape (total_healthy_samples, n_nodes, n_timesteps, n_dims)
+        label_np_ok = label_np[label_np == 1]
+        rep_num_np_ok = rep_num_np[label_np == 1]
+        
+    # 2. domain transform over ok data (mandatory)
+        if fault_detector.domain == 'time':
+            data = fault_detector.domain_transformer.transform(time_data_ok)
+        elif fault_detector.domain == 'freq':
+            data, freq_bins = fault_detector.domain_transformer.transform(time_data_ok)
 
-        time_data_all = torch.vstack(data_list)  # shape (total_samples, n_nodes, n_timesteps, n_dims)
-        label_np_all = np.hstack(label_list)  # shape (total_samples*n_nodes,)
-        rep_num_np_all = np.hstack(rep_num_list)
+    # 3. normalize raw data (optional)
+        if fault_detector.raw_data_normalizer:
+            if fault_detector.domain == 'time':
+                fault_detector.raw_data_normalizer.fit(data)
+                data = fault_detector.raw_data_normalizer.transform(data)
 
-        # calcualte data stats
-        if anomaly_detector.data_stats is None:
-            min_val = time_data_all.min(dim=2, keepdim=True).values  
-            max_val = time_data_all.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
-            anomaly_detector.data_stats = {
-                'mean': torch.mean(time_data_all, dim=(0, 2), keepdim=True),
-                'std': torch.std(time_data_all, dim=(0, 2), keepdim=True),
-                'min': torch.min(min_val, dim=0, keepdim=True).values,
-                'max': torch.max(max_val, dim=0, keepdim=True).values
-            } 
-            for k in anomaly_detector.data_stats:
-                anomaly_detector.data_stats[k] = anomaly_detector.data_stats[k].squeeze(0)
-
-        anomaly_detector.init_input_processors(is_verbose = not get_data_shape)
-
-        # for idx, (time_data, label, rep_num) in enumerate(data_loader):
-        # domain transform data (mandatory)
-        if anomaly_detector._domain == 'time':
-            data = anomaly_detector.domain_transformer.transform(time_data_all)
-        elif anomaly_detector._domain == 'freq':
-            data, freq_bins = anomaly_detector.domain_transformer.transform(time_data_all)
-
-        # normalize raw data (optional)
-        if anomaly_detector.raw_data_normalizer:
-            if anomaly_detector._domain == 'time':
-                data = anomaly_detector.raw_data_normalizer.normalize(data)
-            elif anomaly_detector._domain == 'freq':
+            elif fault_detector.domain == 'freq':
                 print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not get_data_shape else None
 
-        # extract features from data (optional)
+    # 4. extract features from data (optional)
         is_fex = False
-        if anomaly_detector._domain == 'time':
-            if anomaly_detector.time_fex:
-                data = anomaly_detector.time_fex.extract(data)
+        if fault_detector.domain == 'time':
+            if fault_detector.time_fex:
+                data = fault_detector.time_fex.extract(data)
                 is_fex = True
-        elif anomaly_detector._domain == 'freq':
-            if anomaly_detector.freq_fex:
-                data = anomaly_detector.freq_fex.extract(data, freq_bins)
+        elif fault_detector.domain == 'freq':
+            if fault_detector.freq_fex:
+                data = fault_detector.freq_fex.extract(data, freq_bins)
                 is_fex = True
 
-        # normalize features (optional : if feat_norm is provided)
-        if anomaly_detector.feat_normalizer:
+    # 5. normalize features (optional : if feat_norm is provided)
+        if fault_detector.feat_normalizer:
             if is_fex:
-                data = anomaly_detector.feat_normalizer.normalize(data)
+                fault_detector.feat_normalizer.fit(data)
+                data = fault_detector.feat_normalizer.transform(data)
             else:
                 print("\nNo features extracted, so feature normalization is skipped.") if not get_data_shape else None
 
-        # reduce features (optional : if reduc_config is provided)
-        if anomaly_detector.feat_reducer:
-            data = anomaly_detector.feat_reducer.reduce(data)
-
+    # 6. reduce features (optional : if reduc_config is provided)
+        if fault_detector.feat_reducer:
+            data = fault_detector.feat_reducer.reduce(data)
+        
+    # 7. Rest of the preparation
         n_comps = data.shape[2] 
         n_dims = data.shape[3]
 
@@ -325,31 +337,16 @@ class TrainerAnomalyDetector:
             return n_comps, n_dims
 
         # convert data to numpy array for fitting
-        data_np_all = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (total_samples * n_nodes, n_components*n_dims)
-
-        #     # match n_samples of labels with data
-        #     label_np = np.repeat(label.view(-1).numpy(), data.size(1))  # shape (batch size*n_nodes,) (0 for OK, 1 for NOK, -1 for UK)
-
-        #     # match n_samples of rep_num with data
-        #     rep_num = np.repeat(rep_num.view(-1).numpy(), data.size(1))
-            
-        #     # # make labels optimized for sklearn models (convert label to 1 for normal data and -1 for anomalies)
-        #     # label_skl = np.where(label_np == 0, 1, -1)  # assuming 0 is normal and 1 is anomaly
-
-        #     data_list.append(data_np)
-        #     label_list.append(label_np)
-        #     rep_num_list.append(rep_num)
-
-        # data_np_all, label_np_all, rep_num_np_all = np.vstack(data_list), np.hstack(label_list), np.hstack(rep_num_list)
+        data_np = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (total_samples * n_nodes, n_components*n_dims)
 
         # add datashape to hparams
-        anomaly_detector.hparams['n_comps'] = str(int(n_comps))
-        anomaly_detector.hparams['n_dims'] = str(int(n_dims))
-        anomaly_detector.hparams['n_comps_total'] = str(int(n_comps*n_dims))
+        fault_detector.hparams['n_comps'] = str(int(n_comps))
+        fault_detector.hparams['n_dims'] = str(int(n_dims))
+        fault_detector.hparams['n_comps_total'] = str(int(n_comps*n_dims))
 
         # convert np data into pd dataframe
-        if anomaly_detector._feat_names and anomaly_detector.feat_reducer is None:
-            self.comp_cols = [f"{feat}_{dim}" for feat in anomaly_detector._feat_names for dim in range(n_dims)]
+        if fault_detector.feat_names and fault_detector.feat_reducer is None:
+            self.comp_cols = [f"{feat}_{dim}" for feat in fault_detector.feat_names for dim in range(n_dims)]
 
             if len(self.comp_cols) != n_comps * n_dims:
                 n_remaining_feats = n_comps * n_dims - len(self.comp_cols)
@@ -359,24 +356,197 @@ class TrainerAnomalyDetector:
 
         else:
             self.comp_cols = [f"comp{comp}_dim{dim}" for comp in range(n_comps) for dim in range(n_dims)]
-            if anomaly_detector.feat_reducer:
+            if fault_detector.feat_reducer:
                 print(f"\nReduced feature names: {self.comp_cols}")
             else:
                 print(f"\nUsing components as features: [{', '.join(self.comp_cols[:4])}...{', '.join(self.comp_cols[-4:])}]")
 
-        df = pd.DataFrame(data_np_all, columns=self.comp_cols)
-        df['given_label'] = label_np_all
-        df['rep_num'] = rep_num_np_all
+        df = pd.DataFrame(data_np, columns=self.comp_cols)
+        df['given_label'] = label_np_ok
+        df['rep_num'] = rep_num_np_ok
 
         return df
     
-    def fit(self, anomaly_detector:AnomalyDetector, train_loader):
+    def process_infer_data(self, fault_detector:FaultDetector, data_loader, is_val=False):
+        """
+        Parameters
+        ----------
+        fault_detector : FaultDetector
+            The anomaly detection model to be trained.
+        loader : DataLoader
+            DataLoader containing the training data.
+            data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+                Input **time** data tensor containing the trajectory data
+
+        Returns
+        -------
+        data_np : np.ndarray
+            Numpy array of shape (batch_size * n_nodes, n_components * n_dims) ready for fitting.
+            (shape meaning (total number of signals/samples, total number of features))
+        label_np : np.ndarray
+            Numpy array of shape (batch_size,) containing the labels for each sample.
+        """
+        fault_detector.init_input_processors(is_verbose = not is_val)
+
+        # collect all data from the loader
+        time_data, label_np, rep_num_np = self.accumulate_data(data_loader)
+    
+    # 1. domain transform over ok data (mandatory)
+        if fault_detector.domain == 'time':
+            data = fault_detector.domain_transformer.transform(time_data)
+        elif fault_detector.domain == 'freq':
+            data, freq_bins = fault_detector.domain_transformer.transform(time_data)
+
+    # 2. normalize raw data (optional)
+        if fault_detector.raw_data_normalizer:
+            if fault_detector.domain == 'time':
+                data = fault_detector.raw_data_normalizer.transform(data)
+
+            elif fault_detector.domain == 'freq':
+                print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not is_val else None
+
+    # 3. extract features from data (optional)
+        is_fex = False
+        if fault_detector.domain == 'time':
+            if fault_detector.time_fex:
+                data = fault_detector.time_fex.extract(data)
+                is_fex = True
+        elif fault_detector.domain == 'freq':
+            if fault_detector.freq_fex:
+                data = fault_detector.freq_fex.extract(data, freq_bins)
+                is_fex = True
+
+    # 4. normalize features (optional : if feat_norm is provided)
+        if fault_detector.feat_normalizer:
+            if is_fex:
+                data = fault_detector.feat_normalizer.transform(data)
+            else:
+                print("\nNo features extracted, so feature normalization is skipped.") if not is_val else None
+
+    # 5. reduce features (optional : if reduc_config is provided)
+        if fault_detector.feat_reducer:
+            data = fault_detector.feat_reducer.reduce(data)
+        
+    # 6. Rest of the preparation
+        n_comps = data.shape[2] 
+        n_dims = data.shape[3]
+
+        # convert data to numpy array for fitting
+        data_np = data.view(data.size(0)*data.size(1), data.size(2)*data.size(3)).detach().numpy() # shape (total_samples * n_nodes, n_components*n_dims)
+
+        # # add datashape to hparams
+        # fault_detector.hparams['n_comps'] = str(int(n_comps))
+        # fault_detector.hparams['n_dims'] = str(int(n_dims))
+        # fault_detector.hparams['n_comps_total'] = str(int(n_comps*n_dims))
+
+        # convert np data into pd dataframe
+        if fault_detector.feat_names and fault_detector.feat_reducer is None:
+            self.comp_cols = [f"{feat}_{dim}" for feat in fault_detector.feat_names for dim in range(n_dims)]
+
+            if len(self.comp_cols) != n_comps * n_dims:
+                n_remaining_feats = n_comps * n_dims - len(self.comp_cols)
+                self.comp_cols.extend([f"ext_feat{idx+1}_dim{dim}" for idx in range(n_remaining_feats) for dim in range(n_dims)])
+
+            print(f"\nFeature names: {self.comp_cols}")
+
+        else:
+            self.comp_cols = [f"comp{comp}_dim{dim}" for comp in range(n_comps) for dim in range(n_dims)]
+            if fault_detector.feat_reducer:
+                print(f"\nReduced feature names: {self.comp_cols}")
+            else:
+                print(f"\nUsing components as features: [{', '.join(self.comp_cols[:4])}...{', '.join(self.comp_cols[-4:])}]")
+
+        df = pd.DataFrame(data_np, columns=self.comp_cols)
+        df['given_label'] = label_np
+        df['rep_num'] = rep_num_np
+
+        return df
+    
+    def tune_threshold(self, fault_detector:FaultDetector, val_loader):
+        """
+        Tune the contamination parameter of the anomaly detection model using validation data.
+
+        Parameters
+        ----------
+        fault_detector : FaultDetector
+            The anomaly detection model to be tuned.
+        val_loader : DataLoader
+            DataLoader containing the validation data.
+            data : torch.Tensor, shape (batch_size, n_nodes, n_timesteps, n_dims)
+                Input data tensor containing the trajectory data
+        """
+        print("\nTuning contamination parameter using validation data...")
+
+        # process validation data
+        val_df = self.process_infer_data(fault_detector, val_loader, is_val=True)
+
+        # get raw anomaly scores
+        scores = - fault_detector.anom_model.decision_function(val_df[self.comp_cols])  # higher scores indicate more abnormal
+        val_df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+
+        valid_rows = val_df['given_label'] != 0
+        filtered_df = val_df[valid_rows]
+
+        mean_ok_score = filtered_df[filtered_df['given_label'] == 1]['scores'].mean()
+        mean_nok_score = filtered_df[filtered_df['given_label'] == -1]['scores'].mean()
+
+        best_f1, best_precison, best_recall = -1, -1, -1
+        best_db, best_db_ok, best_db_nok = -1, -1, -1
+        best_thresh = None
+
+        for thresh in np.linspace(val_df['scores'].min(), val_df['scores'].max(), num=200):
+
+            filtered_df['pred_label'] = np.where(filtered_df['scores'] > thresh, -1, 1)  # -1 for anomaly, 1 for normal
+
+            metrics = self.get_pred_metrics(filtered_df)
+
+            db_delta_ok = thresh - mean_ok_score
+            db_delta_nok = mean_nok_score - thresh
+            db_combined = min(db_delta_ok, db_delta_nok)
+
+            if (metrics['f1_score'] > best_f1) or (metrics['f1_score'] == best_f1 and db_combined > best_db):
+                best_f1 = metrics['f1_score']
+                best_precison = metrics['precision']
+                best_recall = metrics['recall']
+                best_db = db_combined
+                best_db_ok = db_delta_ok
+                best_db_nok = db_delta_nok
+                best_thresh = thresh
+
+        fault_detector.threshold = best_thresh
+
+        print(f"\nBest threshold: {best_thresh:.4f} with db_ok: {best_db_ok:.4f}, db_nok: {best_db_nok:.4f}")
+        print(f"Validation Precision: {best_precison:.4f}, Recall: {best_recall:.4f}, F1-Score: {best_f1:.4f}")
+
+
+    def get_pred_metrics(self, df):
+        tp = np.sum((df['pred_label'] == -1) & (df['given_label'] == -1))  # True Positives
+        fp = np.sum((df['pred_label'] == -1) & (df['given_label'] == 1))  # False Positives
+        fn = np.sum((df['pred_label'] == 1) & (df['given_label'] == -1))  # False Negatives
+        tn = np.sum((df['pred_label'] == 1) & (df['given_label'] == 1))  # True Negatives
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+        return {
+            'precision' : precision,
+            'recall' : recall,
+            'f1_score' : f1_score,
+            'tp' : int(tp),
+            'fp' : int(fp),
+            'fn' : int(fn),
+            'tn' : int(tn)
+            }
+        
+
+    def fit(self, fault_detector:FaultDetector, train_loader, val_loader):
         """
         Fit the anomaly detection model on the provided data.
 
         Parameters
         ----------
-        anomaly_detector : AnomalyDetector
+        fault_detector : FaultDetector
             The anomaly detection model to be trained.
         train_loader : DataLoader
             DataLoader containing the training data.
@@ -386,31 +556,36 @@ class TrainerAnomalyDetector:
         start_time = time.time()
 
     # 1. Process the input data
-        self.df = self.process_input_data(anomaly_detector, train_loader)
+        self.df = self.process_train_data(fault_detector, train_loader)
 
     # 2. Train model
 
         # fit the model
         print("\nFitting anomaly detection model...")
-        if anomaly_detector.hparams['anom_type'] == 'SVC':
-            anomaly_detector.model.fit(self.df[self.comp_cols], self.df['given_label'])
+        if fault_detector.hparams['anom_type'] == 'SVC':
+            fault_detector.anom_model.fit(self.df[self.comp_cols], self.df['given_label'])
         else:
-            anomaly_detector.model.fit(self.df[self.comp_cols])
+            fault_detector.anom_model.fit(self.df[self.comp_cols])
 
         # calculate and print the training time
         training_time = time.time() - start_time
         print(f"\nModel fitted successfully in {training_time:.2f} seconds")
 
+    # 3. Tune contamination for best threshold
+        self.tune_threshold(fault_detector, val_loader)
+        self.threshold = fault_detector.threshold if fault_detector.threshold is not None else 0
+    
+    # 4. Get training accuracy and other metrics
         start_time = time.time()
         # training accuracy and scores
-        self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
-        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
+        self.df['scores'] = scores - scores.min() + 1e-8  # shift scores to be non-negative
+        self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1)  
 
         infer_time = time.time() - start_time
         print(f"\nTraining inference completed in {infer_time:.2f} seconds")
 
-        # # preprocess pred label to match the given label notations
-        # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
+
         valid_rows = self.df['given_label'] != 0
 
         # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
@@ -420,40 +595,40 @@ class TrainerAnomalyDetector:
 
         print(f"\nTraining accuracy: {accuracy:.2f}")
 
-        # calculate ok_lower_bound
+        # calculate ok_upper_bound
         scores_pred_ok = self.df[self.df['pred_label'] == 1]['scores']
-        anomaly_detector.ok_lower_bound = np.percentile(scores_pred_ok, (1 - anomaly_detector.ok_percentage) * 100) if len(scores_pred_ok) > 0 else None
+        fault_detector.ok_upper_bound = np.percentile(scores_pred_ok, fault_detector.ok_percentage * 100) if len(scores_pred_ok) > 0 else None
         
-        # calculate nok_upper_bound
+        # calculate nok_lower_bound
         scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
-        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
+        fault_detector.nok_lower_bound = np.percentile(scores_pred_nok, (1 - fault_detector.nok_percentage) * 100) if len(scores_pred_nok) > 0 else None
 
         # assign is_final_pred
-        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(fault_detector,))
 
-        self.ok_percentage = anomaly_detector.ok_percentage
-        self.nok_percentage = anomaly_detector.nok_percentage
-        self.ok_lower_bound = anomaly_detector.ok_lower_bound
-        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+        self.ok_percentage = fault_detector.ok_percentage
+        self.nok_percentage = fault_detector.nok_percentage
+        self.ok_upper_bound = fault_detector.ok_upper_bound
+        self.nok_lower_bound = fault_detector.nok_lower_bound
 
-        print(f"\nOK lower bound (at {self.ok_percentage*100:.1f} percentile): {self.ok_lower_bound:.4f}" if anomaly_detector.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK.")
-        print(f"\nNOK upper bound (at {self.nok_percentage*100:.1f} percentile): {self.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+        print(f"\nOK upper bound (at {self.ok_percentage*100:.1f} percentile): {self.ok_upper_bound:.4f}" if fault_detector.ok_upper_bound is not None else "\nOK upper bound could not be determined as there are no samples predicted as OK.")
+        print(f"\nNOK lower bound (at {self.nok_percentage*100:.1f} percentile): {self.nok_lower_bound:.4f}" if fault_detector.nok_lower_bound is not None else "\nNOK lower bound could not be determined as there are no samples predicted as NOK.")
 
         print(f"\nDataframe is as follows:")
         print(self.df)
 
-    # 3. Log model information
-        self.model_type = type(anomaly_detector.model).__name__
+    # 5. Log model information
+        self.model_type = type(fault_detector.anom_model).__name__
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else self.model_type
         self.run_type = 'train'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
         # update hparams
-        anomaly_detector.hparams['train_accuracy'] = accuracy
-        anomaly_detector.hparams['model_id'] = self.model_id
-        anomaly_detector.hparams['training_time'] = training_time
-        anomaly_detector.hparams['model_num'] = int(self.logger.log_dir.split('_')[-1]) if self.logger else 0
-        anomaly_detector.hparams['db_delta_ok/train'] = anomaly_detector.ok_lower_bound
+        fault_detector.hparams['train_accuracy'] = accuracy
+        fault_detector.hparams['model_id'] = self.model_id
+        fault_detector.hparams['training_time'] = training_time
+        fault_detector.hparams['model_num'] = int(self.logger.log_dir.split('_')[-1]) if self.logger else 0
+        fault_detector.hparams['db_delta_ok/train'] = fault_detector.ok_upper_bound
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/train_accuracy", accuracy)
@@ -461,9 +636,9 @@ class TrainerAnomalyDetector:
             print(f"\nTraining hyperparameters logged for tensorboard at {self.logger.log_dir}")
 
             # save model
-            model_path = os.path.join(self.logger.log_dir, 'anomaly_detector.pkl')
+            model_path = os.path.join(self.logger.log_dir, 'fault_detector.pkl')
             with open(model_path, 'wb') as f:
-                pickle.dump(anomaly_detector, f)
+                pickle.dump(fault_detector, f)
 
             # # save dataframe
             # df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
@@ -476,15 +651,15 @@ class TrainerAnomalyDetector:
 
         print('\n' + 75*'-')
 
-        return anomaly_detector
+        return fault_detector
         
-    def predict(self, anomaly_detector:AnomalyDetector, predict_loader):
+    def predict(self, fault_detector:FaultDetector, predict_loader):
         """
         Predict anomalies in the provided data.
 
         Parameters
         ----------
-        anomaly_detector : AnomalyDetector
+        fault_detector : FaultDetector
             The anomaly detection model to be used for prediction.
         loader : DataLoader
             DataLoader containing the data to predict anomalies on.
@@ -504,12 +679,13 @@ class TrainerAnomalyDetector:
         print("\nPredicting anomalies using the trained model...")
 
     # 1. Process the input data
-        self.df = self.process_input_data(anomaly_detector, predict_loader)
+        self.df = self.process_infer_data(fault_detector, predict_loader)
 
     # 2. Predict anomalies
-        # scores
-        self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
-        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+        self.threshold = fault_detector.threshold if fault_detector.threshold is not None else 0
+        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
+        self.df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+        self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1) 
 
         infer_time = time.time() - start_time
         print(f"\nPrediction completed in {infer_time:.2f} seconds")
@@ -517,21 +693,21 @@ class TrainerAnomalyDetector:
         # # preprocess pred label to match the given label notations
         # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
 
-        # calculate nok_upper_bound
+        # calculate nok_lower_bound
         scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
-        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
-        print(f"\nNOK upper bound (at {anomaly_detector.nok_percentage*100:.1f} percentile): {anomaly_detector.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+        fault_detector.nok_lower_bound = np.percentile(scores_pred_nok, (1 - fault_detector.nok_percentage) * 100) if len(scores_pred_nok) > 0 else None
+        print(f"\nNOK lower bound (at {fault_detector.nok_percentage*100:.1f} percentile): {fault_detector.nok_lower_bound:.4f}" if fault_detector.nok_lower_bound is not None else "\nNOK lower bound could not be determined as there are no samples predicted as NOK.")
 
         # assign is_final_pred
-        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(fault_detector,))
 
-        self.ok_percentage = anomaly_detector.ok_percentage
-        self.nok_percentage = anomaly_detector.nok_percentage
-        self.ok_lower_bound = anomaly_detector.ok_lower_bound
-        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+        self.ok_percentage = fault_detector.ok_percentage
+        self.nok_percentage = fault_detector.nok_percentage
+        self.ok_upper_bound = fault_detector.ok_upper_bound
+        self.nok_lower_bound = fault_detector.nok_lower_bound
 
-        print(f"\nOK lower bound (from training): {self.ok_lower_bound:.4f}" if self.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK during training.")
-        print(f"\nNOK upper bound (from testing): {self.nok_upper_bound:.4f}" if self.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK during testing.")
+        print(f"\nOK upper bound (from training): {self.ok_upper_bound:.4f}" if self.ok_upper_bound is not None else "\nOK upper bound could not be determined as there are no samples predicted as OK during training.")
+        print(f"\nNOK lower bound (from testing): {self.nok_lower_bound:.4f}" if self.nok_lower_bound is not None else "\nNOK lower bound could not be determined as there are no samples predicted as NOK during testing.")
 
         print(f"\nDataframe is as follows:")
         print(self.df)
@@ -545,8 +721,8 @@ class TrainerAnomalyDetector:
 
     # 3. Log model information
 
-        self.model_type = type(anomaly_detector.model).__name__
-        self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
+        self.model_type = type(fault_detector.anom_model).__name__
+        self.model_id = fault_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
@@ -561,7 +737,7 @@ class TrainerAnomalyDetector:
                 'scores': scores,
                 'reps': rep_nums}
     
-    def test(self, anomaly_detector:AnomalyDetector, test_loader):
+    def test(self, fault_detector:FaultDetector, test_loader):
         """
         Test the anomaly detection model on the provided data.
         """
@@ -569,18 +745,17 @@ class TrainerAnomalyDetector:
         print("\nTesting anomaly detection model...")
 
     # 1. Process the input data
-        self.df = self.process_input_data(anomaly_detector, test_loader)
+        self.df = self.process_infer_data(fault_detector, test_loader)
 
     # 2. Predict anomalies
-        # scores
-        self.df['scores'] = anomaly_detector.model.decision_function(self.df[self.comp_cols])
-        self.df['pred_label'] = anomaly_detector.model.predict(self.df[self.comp_cols])
+        self.threshold = fault_detector.threshold if fault_detector.threshold is not None else 0
+        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
+        self.df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+        self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1) 
 
         infer_time = time.time() - start_time
         print(f"\nTest inference completed in {infer_time:.2f} seconds")
 
-        # # preprocess pred label to match the given label notations
-        # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
         valid_rows = self.df['given_label'] != 0
 
         # filter out rows where given_label is -1 (unknown) - not needed for accuracy calculation
@@ -589,64 +764,50 @@ class TrainerAnomalyDetector:
         # calculate test accuracy
         accuracy = np.mean(filtered_df['pred_label'] == filtered_df['given_label'])
 
-        # calculate nok_upper_bound
+        # calculate nok_lower_bound
         scores_pred_nok = self.df[self.df['pred_label'] == -1]['scores']
-        anomaly_detector.nok_upper_bound = np.percentile(scores_pred_nok, anomaly_detector.nok_percentage * 100) if len(scores_pred_nok) > 0 else None
-        print(f"\nNOK upper bound (at {anomaly_detector.nok_percentage*100:.1f} percentile): {anomaly_detector.nok_upper_bound:.4f}" if anomaly_detector.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK.")
+        fault_detector.nok_lower_bound = np.percentile(scores_pred_nok, (1 - fault_detector.nok_percentage) * 100) if len(scores_pred_nok) > 0 else None
+        print(f"\nNOK lower bound (at {fault_detector.nok_percentage*100:.1f} percentile): {fault_detector.nok_lower_bound:.4f}" if fault_detector.nok_lower_bound is not None else "\nNOK lower bound could not be determined as there are no samples predicted as NOK.")
 
         # assign is_final_pred
-        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(anomaly_detector,))
+        self.df['final_pred_label'] = self.df.apply(self._assign_final_pred, axis=1, args=(fault_detector,))
 
-        self.ok_percentage = anomaly_detector.ok_percentage
-        self.nok_percentage = anomaly_detector.nok_percentage
-        self.ok_lower_bound = anomaly_detector.ok_lower_bound
-        self.nok_upper_bound = anomaly_detector.nok_upper_bound
+        self.ok_percentage = fault_detector.ok_percentage
+        self.nok_percentage = fault_detector.nok_percentage
+        self.ok_upper_bound = fault_detector.ok_upper_bound
+        self.nok_lower_bound = fault_detector.nok_lower_bound
 
-        print(f"\nOK lower bound (from training): {self.ok_lower_bound:.4f}" if self.ok_lower_bound is not None else "\nOK lower bound could not be determined as there are no samples predicted as OK during training.")
-        print(f"\nNOK upper bound (from testing): {self.nok_upper_bound:.4f}" if self.nok_upper_bound is not None else "\nNOK upper bound could not be determined as there are no samples predicted as NOK during testing.")
+        print(f"\nOK upper bound (from training): {self.ok_upper_bound:.4f}" if self.ok_upper_bound is not None else "\nOK upper bound could not be determined as there are no samples predicted as OK during training.")
+        print(f"\nNOK lower bound (from testing): {self.nok_lower_bound:.4f}" if self.nok_lower_bound is not None else "\nNOK lower bound could not be determined as there are no samples predicted as NOK during testing.")
 
-        # calculate precison, recall, f1-score
-        tp = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == -1))  # True Positives
-        fp = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == 1))  # False Positives
-        fn = np.sum((filtered_df['pred_label'] == 1) & (filtered_df['given_label'] == -1))  # False Negatives
-        tn = np.sum((filtered_df['pred_label'] == -1) & (filtered_df['given_label'] == -1))  # True Negatives
-
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        pred_metrics = self.get_pred_metrics(filtered_df)
 
         print(f"\nDataframe is as follows:")
         print(self.df)
 
         print(f"\nTest accuracy: {accuracy:.2f}")
-        print(f"Precision: {precision:.2f}, Recall: {recall:.2f}, F1-score: {f1_score:.2f}")
+        print(f"Precision: {pred_metrics['precision']:.2f}, Recall: {pred_metrics['recall']:.2f}, F1-score: {pred_metrics['f1_score']:.2f}")
 
     # 3. Log model information
-        self.model_type = type(anomaly_detector.model).__name__
-        self.model_id = anomaly_detector.hparams.get('model_id', 'unknown_model')
+        self.model_type = type(fault_detector.anom_model).__name__
+        self.model_id = fault_detector.hparams.get('model_id', 'unknown_model')
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'test'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
         # update hparams
-        anomaly_detector.hparams['test_accuracy'] = accuracy
-        anomaly_detector.hparams['precision'] = precision
-        anomaly_detector.hparams['recall'] = recall
-        anomaly_detector.hparams['f1_score'] = f1_score
-        anomaly_detector.hparams['run_type'] = self.run_type
-        anomaly_detector.hparams['infer_time'] = infer_time
-        anomaly_detector.hparams['tp'] = int(tp)
-        anomaly_detector.hparams['fp'] = int(fp)
-        anomaly_detector.hparams['tn'] = int(tn)
-        anomaly_detector.hparams['fn'] = int(fn)
-        anomaly_detector.hparams[f'db_delta_nok/test'] = anomaly_detector.nok_upper_bound
+        fault_detector.hparams.update(pred_metrics)
+        fault_detector.hparams['test_accuracy'] = accuracy
+        fault_detector.hparams['run_type'] = self.run_type
+        fault_detector.hparams['infer_time'] = infer_time
+        fault_detector.hparams[f'db_delta_nok/test'] = fault_detector.nok_lower_bound
 
         if self.logger:
             self.logger.add_scalar(f"{self.tb_tag}/test_accuracy", accuracy)
-            self.logger.add_scalar(f"{self.tb_tag}/precision", precision)
-            self.logger.add_scalar(f"{self.tb_tag}/recall", recall)
-            self.logger.add_scalar(f"{self.tb_tag}/f1_score", f1_score)
+            self.logger.add_scalar(f"{self.tb_tag}/precision", pred_metrics['precision'])
+            self.logger.add_scalar(f"{self.tb_tag}/recall", pred_metrics['recall'])
+            self.logger.add_scalar(f"{self.tb_tag}/f1_score", pred_metrics['f1_score'])
 
-            self.logger.add_hparams(anomaly_detector.hparams, {})
+            self.logger.add_hparams(fault_detector.hparams, {})
 
             # # save dataframe
             # df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
@@ -658,17 +819,17 @@ class TrainerAnomalyDetector:
 
         print('\n' + 75*'-')
 
-    def _assign_final_pred(self, row, anomaly_detector):
+    def _assign_final_pred(self, row, fault_detector:FaultDetector):
             if row['pred_label'] == -1:
-                if anomaly_detector.nok_upper_bound is not None and row['scores'] <= anomaly_detector.nok_upper_bound:
+                if fault_detector.nok_lower_bound is not None and row['scores'] <= fault_detector.nok_lower_bound:
                     return -1
-                elif anomaly_detector.nok_upper_bound is not None and row['scores'] > anomaly_detector.nok_upper_bound:
+                elif fault_detector.nok_lower_bound is not None and row['scores'] > fault_detector.nok_lower_bound:
                     return -0.5
             
             if row['pred_label'] == 1:
-                if anomaly_detector.ok_lower_bound is not None and row['scores'] >= anomaly_detector.ok_lower_bound:
+                if fault_detector.ok_upper_bound is not None and row['scores'] >= fault_detector.ok_upper_bound:
                     return 1
-                elif anomaly_detector.ok_lower_bound is not None and row['scores'] < anomaly_detector.ok_lower_bound:
+                elif fault_detector.ok_upper_bound is not None and row['scores'] < fault_detector.ok_upper_bound:
                     return 0.5
             return np.nan
                 
@@ -688,7 +849,7 @@ class TrainerAnomalyDetector:
         n_feats = len(feat_cols)
 
         df_sns = self.df.copy()
-        df_sns['given_label'] = df_sns['given_label'].map({1: 'OK', -1: 'NOK'})
+        df_sns['pred_label'] = df_sns['pred_label'].map({1: 'OK', -1: 'NOK'})
         # Dynamically set height (default is 2.5, you can adjust as needed)
         #height = max(2.5, min(2.5 + 0.5 * (n_feats - 2), 5.0))
 
@@ -699,7 +860,7 @@ class TrainerAnomalyDetector:
         # else:
         palette = ['#1f77b4', '#ff7f0e']
 
-        pair_plot = sns.pairplot(df_sns, vars=feat_cols, hue='given_label', hue_order=['OK', 'NOK'], palette=palette, height=2.5)
+        pair_plot = sns.pairplot(df_sns, vars=feat_cols, hue='pred_label', hue_order=['OK', 'NOK'], palette=palette, height=2.5)
         pair_plot.figure.suptitle(f"Pair Plot of Features : [{self.model_id} / {self.run_type}]", y=0.99, fontsize=13)
         plt.tight_layout(rect=[0, 0, 0.93, 0.99])  # Reserve space for the title
         # plt.subplots_adjust(right=0.94)
@@ -951,8 +1112,8 @@ class TrainerAnomalyDetector:
         print("\n" + 12*"<" + f" ANOMALY SCORE DISTRIBUTION SIMPLE {num} ({label_col.upper()}) " + 12*">")
         print(f"\nCreating anomaly score distribution plot for {self.model_id} / {self.run_type}...")
 
-        ok_lower = self.ok_lower_bound if self.ok_lower_bound is not None else None
-        nok_upper = self.nok_upper_bound if self.nok_upper_bound is not None else None
+        ok_upper = self.ok_upper_bound if self.ok_upper_bound is not None else None
+        nok_lower = self.nok_lower_bound if self.nok_lower_bound is not None else None
 
         # separate scores for OK and NOK classes
         scores_ok = self.df[self.df[label_col] == 1]['scores']
@@ -960,36 +1121,36 @@ class TrainerAnomalyDetector:
         indices_ok = self.df[self.df[label_col] == 1].index
         indices_nok = self.df[self.df[label_col] == -1].index
 
-        if is_log_x:
-            # handle negative scores by shifting them to positive range
-            min_score_ok = scores_ok.min() if not scores_ok.empty else 0
-            min_score_nok = scores_nok.min() if not scores_nok.empty else 0
-            min_score = min(min_score_ok, min_score_nok)
+        # if is_log_x:
+        #     # handle negative scores by shifting them to positive range
+        #     min_score_ok = scores_ok.min() if not scores_ok.empty else 0
+        #     min_score_nok = scores_nok.min() if not scores_nok.empty else 0
+        #     min_score = min(min_score_ok, min_score_nok)
 
-            if min_score <= 0:
-                shift = abs(min_score) + 1 # boundary = 0 + shift = shift
-                scores_ok += shift
-                scores_nok += shift
-                ok_lower = ok_lower + shift if ok_lower is not None else None
-                nok_upper = nok_upper + shift if nok_upper is not None else None
-            else:
-                shift = 0
-        else:
-            shift = 0
+        #     if min_score <= 0:
+        #         shift = abs(min_score) + 1 # boundary = 0 + shift = shift
+        #         scores_ok += shift
+        #         scores_nok += shift
+        #         ok_upper = ok_upper + shift if ok_upper is not None else None
+        #         nok_lower = nok_lower + shift if nok_lower is not None else None
+        #     else:
+        #         shift = 0
+        # else:
+        shift = self.threshold
 
         # calculate means
         # mean_ok = np.mean(scores_ok)
         # mean_nok = np.mean(scores_nok)
 
         # db_delta values
-        db_delta_ok = ok_lower - shift if ok_lower is not None else None
-        db_delta_nok = shift - nok_upper if nok_upper is not None else None
+        db_delta_ok = shift - ok_upper if ok_upper is not None else None
+        db_delta_nok = nok_lower - shift if nok_lower is not None else None
 
-        ok_included = scores_ok[scores_ok >= ok_lower] if ok_lower is not None else scores_ok
-        ok_excluded = scores_ok[scores_ok < ok_lower] if ok_lower is not None else np.array([])
+        ok_included = scores_ok[scores_ok <= ok_upper] if ok_upper is not None else scores_ok
+        ok_excluded = scores_ok[scores_ok > ok_upper] if ok_upper is not None else np.array([])
         
-        nok_included = scores_nok[scores_nok <= nok_upper] if nok_upper is not None else scores_nok
-        nok_excluded = scores_nok[scores_nok > nok_upper] if nok_upper is not None else np.array([])
+        nok_included = scores_nok[scores_nok >= nok_lower] if nok_lower is not None else scores_nok
+        nok_excluded = scores_nok[scores_nok < nok_lower] if nok_lower is not None else np.array([])
         
         
         # # create bins and map sample indices to bins
@@ -1032,15 +1193,15 @@ class TrainerAnomalyDetector:
         # plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
         # plt.axvline(mean_nok, color='orange', linestyle='--', linewidth=1, label=f'Mean NOK: {mean_nok:.4f}')
         plt.axvline(shift, color='red', linestyle=':', linewidth=1.5, label=f'Boundary: {shift:.4f}')
-        plt.axvline(ok_lower, color='teal', linestyle=':', linewidth=1.5, label=f'OK Lower Bound (from train): {ok_lower:.4}') if ok_lower is not None else None
-        plt.axvline(nok_upper, color='brown', linestyle=':', linewidth=1.5, label=f'NOK Upper Bound: {nok_upper:.4}') if nok_upper is not None else None
+        plt.axvline(ok_upper, color='teal', linestyle=':', linewidth=1.5, label=f'OK upper bound (from train): {ok_upper:.4}') if ok_upper is not None else None
+        plt.axvline(nok_lower, color='brown', linestyle=':', linewidth=1.5, label=f'NOK lower bound: {nok_lower:.4}') if nok_lower is not None else None
         
         # db_delta_ok
-        if ok_lower is not None:
-            plt.hlines(y=5, xmin=min(ok_lower, shift), xmax=max(ok_lower, shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f}')
+        if ok_upper is not None:
+            plt.hlines(y=5, xmin=min(ok_upper, shift), xmax=max(ok_upper, shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f}')
         # db_delta_nok
-        if nok_upper is not None:
-            plt.hlines(y=8, xmin=min(nok_upper, shift), xmax=max(nok_upper, shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
+        if nok_lower is not None:
+            plt.hlines(y=8, xmin=min(nok_lower, shift), xmax=max(nok_lower, shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
 
          # Add bin indices on top of each bar for all histograms
         for i in range(len(bins_edges) - 1):
@@ -1148,8 +1309,8 @@ class TrainerAnomalyDetector:
         print(f"\nCreating anomaly score distribution plot for {self.model_id} / {self.run_type}...")
 
         df = self.df
-        ok_lower = self.ok_lower_bound if self.ok_lower_bound is not None else None
-        nok_upper = self.nok_upper_bound if self.nok_upper_bound is not None else None
+        ok_upper = self.ok_upper_bound if self.ok_upper_bound is not None else None
+        nok_lower = self.nok_lower_bound if self.nok_lower_bound is not None else None
 
         # Masks for each category
         tn_mask = (df['given_label'] == 1) & (df['pred_label'] == 1)  # True Negative (OK correctly classified)
@@ -1168,25 +1329,25 @@ class TrainerAnomalyDetector:
         indices_fp = df[fp_mask].index
         indices_fn = df[fn_mask].index
 
-        if is_log_x:
-            # Shift scores if needed
-            min_score = min([
-                scores_tn.min() if not scores_tn.empty else 0,
-                scores_tp.min() if not scores_tp.empty else 0,
-                scores_fp.min() if not scores_fp.empty else 0,
-                scores_fn.min() if not scores_fn.empty else 0
-            ])
-            shift = abs(min_score) + 1 if min_score <= 0 else 0
+        # if is_log_x:
+        #     # Shift scores if needed
+        #     min_score = min([
+        #         scores_tn.min() if not scores_tn.empty else 0,
+        #         scores_tp.min() if not scores_tp.empty else 0,
+        #         scores_fp.min() if not scores_fp.empty else 0,
+        #         scores_fn.min() if not scores_fn.empty else 0
+        #     ])
+        #     shift = abs(min_score) + 1 if min_score <= 0 else 0
             
-            scores_tn = scores_tn + shift
-            scores_tp = scores_tp + shift
-            scores_fp = scores_fp + shift
-            scores_fn = scores_fn + shift
-            ok_lower = ok_lower + shift if ok_lower is not None else None
-            nok_upper = nok_upper + shift if nok_upper is not None else None
+        #     scores_tn = scores_tn + shift
+        #     scores_tp = scores_tp + shift
+        #     scores_fp = scores_fp + shift
+        #     scores_fn = scores_fn + shift
+        #     ok_upper = ok_upper + shift if ok_upper is not None else None
+        #     nok_lower = nok_lower + shift if nok_lower is not None else None
 
-        else:
-            shift = 0
+        # else:
+        shift = self.threshold
 
         # Percentile cutoff for OK (from max to min)
         # ok_sorted = np.sort(scores_given_ok)[::-1]
@@ -1199,21 +1360,21 @@ class TrainerAnomalyDetector:
         # nok_included_max = nok_sorted[nok_cutoff_idx] if nok_sorted.size > 0 else None
 
         # db_delta values
-        db_delta_ok = ok_lower - shift if ok_lower is not None else None
-        db_delta_nok = shift - nok_upper if nok_upper is not None else None
+        db_delta_ok = shift - ok_upper if ok_upper is not None else None
+        db_delta_nok = nok_lower - shift if nok_lower is not None else None
 
         # Filter TN/TP samples based on percentile cutoffs
-        tn_included = scores_tn[scores_tn >= ok_lower] if ok_lower is not None else scores_tn
-        tn_excluded = scores_tn[scores_tn < ok_lower] if ok_lower is not None else np.array([])
+        tn_included = scores_tn[scores_tn <= ok_upper] if ok_upper is not None else scores_tn
+        tn_excluded = scores_tn[scores_tn > ok_upper] if ok_upper is not None else np.array([])
 
-        tp_included = scores_tp[scores_tp <= nok_upper] if nok_upper is not None else scores_tp
-        tp_excluded = scores_tp[scores_tp > nok_upper] if nok_upper is not None else np.array([])
+        tp_included = scores_tp[scores_tp >= nok_lower] if nok_lower is not None else scores_tp
+        tp_excluded = scores_tp[scores_tp < nok_lower] if nok_lower is not None else np.array([])
 
-        fn_included = scores_fn[scores_fn >= ok_lower] if ok_lower is not None else scores_fn
-        fn_excluded = scores_fn[scores_fn < ok_lower] if ok_lower is not None else np.array([])
+        fn_included = scores_fn[scores_fn <= ok_upper] if ok_upper is not None else scores_fn
+        fn_excluded = scores_fn[scores_fn > ok_upper] if ok_upper is not None else np.array([])
 
-        fp_included = scores_fp[scores_fp <= nok_upper] if nok_upper is not None else scores_fp
-        fp_excluded = scores_fp[scores_fp > nok_upper] if nok_upper is not None else np.array([])
+        fp_included = scores_fp[scores_fp >= nok_lower] if nok_lower is not None else scores_fp
+        fp_excluded = scores_fp[scores_fp < nok_lower] if nok_lower is not None else np.array([])
 
         # Combine all scores for bin edges
         all_scores = np.concatenate([tn_included, tn_excluded, tp_included, tp_excluded, scores_fp, scores_fn])
@@ -1243,15 +1404,15 @@ class TrainerAnomalyDetector:
 
         # vertical lines for boundary
         plt.axvline(shift, color='red', linestyle=':', linewidth=1.5, label=f'Boundary: {shift:.4f}')
-        plt.axvline(ok_lower, color='teal', linestyle=':', linewidth=1.5, label=f'OK Lower Bound (from train): {ok_lower:.4}') if ok_lower is not None else None
-        plt.axvline(nok_upper, color='brown', linestyle=':', linewidth=1.5, label=f'NOK Upper Bound: {nok_upper:.4}') if nok_upper is not None else None
+        plt.axvline(ok_upper, color='teal', linestyle=':', linewidth=1.5, label=f'OK upper bound (from train): {ok_upper:.4}') if ok_upper is not None else None
+        plt.axvline(nok_lower, color='brown', linestyle=':', linewidth=1.5, label=f'NOK lower bound: {nok_lower:.4}') if nok_lower is not None else None
 
         # db_delta_ok and db_delta_nok
         if db_delta_ok is not None:
-            plt.hlines(y=5, xmin=min(ok_lower, shift), xmax=max(ok_lower, shift), color='teal', linestyle='--', alpha=0.8, linewidth=1,
+            plt.hlines(y=5, xmin=min(ok_upper, shift), xmax=max(ok_upper, shift), color='teal', linestyle='--', alpha=0.8, linewidth=1,
                         label=f'DB delta OK ({self.ok_percentage * 100}% OK of train): {db_delta_ok:.4f}')
         if db_delta_nok is not None:
-            plt.hlines(y=8, xmin=min(nok_upper, shift), xmax=max(nok_upper, shift), color='brown', linestyle='--', alpha=0.6, linewidth=1,
+            plt.hlines(y=8, xmin=min(nok_lower, shift), xmax=max(nok_lower, shift), color='brown', linestyle='--', alpha=0.6, linewidth=1,
                         label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
 
         # Add bin indices on top of each bar for all histograms

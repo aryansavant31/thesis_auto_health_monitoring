@@ -55,13 +55,13 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'BER'
+        self.machine_type = 'cwru'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = BERGroupMaker().gb_acc1
         
-        self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
@@ -88,14 +88,14 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
         e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:50]
         self.healthy_configs   = {
-            # '0_N': [get_augment_config('OG')], 
-            # '1_N': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')], 
+            '1_N': [get_augment_config('OG')],
             #'series_tp': [get_augment_config('OG')]  
-            key: [get_augment_config('OG')] for key in e1_keys
+            # key: [get_augment_config('OG')] for key in e1_keys
         }
         
         self.unhealthy_configs = {
-            # '0_B-007': [get_augment_config('OG')],
+            '0_B-007': [get_augment_config('OG')],
             # obvious 
             # '(sim)_E1_set01_M=mAQ87': [
             #             # get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
@@ -113,16 +113,16 @@ class DataConfig:
             #             ],  
 
             # # medium
-            '(sim)_E1_set01_M=mAI26': [
-                        get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.07, std_fac=1.5, add_next=True),
-                        get_augment_config('sine', freqs=[2, 4], std_facs=[1.3, 1.5])
-                        ], 
-                    '(sim)_E1_set01_M=mAQ10': [
-                        get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.02, std_fac=1.3, add_next=True),
-                        get_augment_config('sine', freqs=[1, 2, 5], std_facs=[1.3, 1, 1.5])
-                        ],   
+            # '(sim)_E1_set01_M=mAI26': [
+            #             get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.07, std_fac=1.5, add_next=True),
+            #             get_augment_config('sine', freqs=[2, 4], std_facs=[1.3, 1.5])
+            #             ], 
+            #         '(sim)_E1_set01_M=mAQ10': [
+            #             get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.02, std_fac=1.3, add_next=True),
+            #             get_augment_config('sine', freqs=[1, 2, 5], std_facs=[1.3, 1, 1.5])
+            #             ],   
             
         }
 

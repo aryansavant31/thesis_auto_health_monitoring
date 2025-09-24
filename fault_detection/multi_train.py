@@ -8,8 +8,8 @@ from data.config import DataSweep
 from console_logger import ConsoleLogger
 
 # local imports
-from .settings.manager import AnomalyDetectorTrainSweepManager
-from .train import AnomalyDetectorTrainPipeline
+from .settings.manager import FaultDetectorTrainSweepManager
+from .train import FaultDetectorTrainPipeline
 
 
 def train_single_config(args):
@@ -34,7 +34,7 @@ def train_single_config(args):
     with console_logger_train.capture_output():
         print("\nStarting fault detection model training...")
 
-        train_pipeline = AnomalyDetectorTrainPipeline(fdet_config.data_config, fdet_config)
+        train_pipeline = FaultDetectorTrainPipeline(fdet_config.data_config, fdet_config)
         train_pipeline.train()
 
         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']
@@ -70,7 +70,7 @@ def train_single_config(args):
     
 #     print(f"\nProcessing group {group_idx + 1}")
 
-#     sweep_config = AnomalyDetectorSweepManager(data_config, make_model_num=False)
+#     sweep_config = FaultDetectorSweepManager(data_config, make_model_num=False)
     
 #     print("\nStarting fault detection model sweep for this group...")
 #     sweep_config.print_sweep_summary()
@@ -119,7 +119,7 @@ def multi_trainer_main(parallel_execution, max_workers=None):
         data_sweep.print_sweep_summary()
 
         # get all training configurations
-        sweep_manager = AnomalyDetectorTrainSweepManager(data_configs)
+        sweep_manager = FaultDetectorTrainSweepManager(data_configs)
         fdet_configs = sweep_manager.get_sweep_configs()
         sweep_manager.print_sweep_summary()
 
@@ -202,7 +202,7 @@ def multi_trainer_main(parallel_execution, max_workers=None):
             #     with console_logger_train.capture_output():
             #         print("\nStarting fault detection model training...")
 
-            #         train_pipeline = AnomalyDetectorTrainPipeline(fdet_config.data_config, fdet_config)
+            #         train_pipeline = FaultDetectorTrainPipeline(fdet_config.data_config, fdet_config)
             #         train_pipeline.train()
 
             #         base_name = os.path.basename(train_pipeline.train_log_path) if train_pipeline.train_log_path else fdet_config.anom_config['anom_type']

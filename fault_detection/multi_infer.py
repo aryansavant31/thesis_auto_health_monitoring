@@ -11,8 +11,8 @@ from data.config import DataSweep
 from console_logger import ConsoleLogger
 
 # local imports
-from .settings.manager import AnomalyDetectorInferSweepManager
-from .infer import AnomalyDetectorInferPipeline
+from .settings.manager import FaultDetectorInferSweepManager
+from .infer import FaultDetectorInferPipeline
 
 def make_fdet_results_dict(preds, model_name, results_dict):
     model_id = model_name.split('-')[0]
@@ -43,7 +43,7 @@ def infer_single_config(args):
     with console_logger_infer.capture_output():
         print(f"\nStarting anomaly detector to {run_type}...")
 
-        infer_pipeline = AnomalyDetectorInferPipeline(fdet_config.data_config, fdet_config)
+        infer_pipeline = FaultDetectorInferPipeline(fdet_config.data_config, fdet_config)
         if run_type == 'custom_test':
             infer_pipeline.infer()
 
@@ -97,7 +97,7 @@ def multi_inferer_main(run_type, parallel_execution, max_workers=None):
         data_sweep.print_sweep_summary()
 
         # get all inference configurations
-        sweep_manager = AnomalyDetectorInferSweepManager(data_configs=data_configs, run_type=run_type)
+        sweep_manager = FaultDetectorInferSweepManager(data_configs=data_configs, run_type=run_type)
         fdet_configs = sweep_manager.get_sweep_configs()
         sweep_manager.print_sweep_summary()
 

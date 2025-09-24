@@ -89,7 +89,7 @@ class NRI(LightningModule):
         self.encoder.set_input_graph(rec_rel, send_rel)
         self.decoder.set_input_graph(rec_rel, send_rel)
 
-    def set_run_params(self, dec_run_params, data_config, data_stats, 
+    def set_run_params(self, dec_run_params, data_config,
                        init_temp=1.0, min_temp=0.3, decay_temp=0.001, is_hard=True,
                        dynamic_rel=False):
         """
@@ -108,8 +108,8 @@ class NRI(LightningModule):
         self.is_hard = is_hard
         self.dynamic_rel = dynamic_rel
 
-        self.encoder.set_run_params(data_config=data_config, data_stats=data_stats)
-        self.decoder.set_run_params(**dec_run_params, data_config=data_config, data_stats=data_stats)
+        self.encoder.set_run_params(data_config=data_config)
+        self.decoder.set_run_params(**dec_run_params, data_config=data_config)
         
     def build_model(self):
         """
@@ -120,12 +120,28 @@ class NRI(LightningModule):
         for key, value in self.encoder_model_params.items():
             setattr(self.encoder, key, value)
         self.encoder.build_model()
+        self.encoder.raw_data_normalizer = self.encoder_raw_data_normalizer
+        self.encoder.feat_normalizer = self.encoder_feat_normalizer
 
         # build decoder
         self.decoder = Decoder()
         for key, value in self.decoder_model_params.items():
             setattr(self.decoder, key, value)
         self.decoder.build_model()
+        self.decoder.raw_data_normalizer = self.decoder_raw_data_normalizer
+        self.decoder.feat_normalizer = self.decoder_feat_normalizer
+
+    def fit_normalizers(self, train_loader):
+        """
+        Fit the normalizers of the encoder and decoder using training data.
+
+        Parameters
+        ----------
+        train_loader : DataLoader
+            DataLoader for the training dataset.
+        """
+        self.encoder.fit_normalizers(train_loader)
+        self.decoder.fit_normalizers(train_loader)
 
     def print_model_info(self):
         """
@@ -225,6 +241,10 @@ class NRI(LightningModule):
         # model params
         self.encoder_model_params = checkpoint['encoder_model_params']
         self.decoder_model_params = checkpoint['decoder_model_params']
+        self.encoder_raw_data_normalizer = checkpoint['encoder_raw_data_normalizer']
+        self.encoder_feat_normalizer = checkpoint['encoder_feat_normalizer']
+        self.decoder_raw_data_normalizer = checkpoint['decoder_raw_data_normalizer']
+        self.decoder_feat_normalizer = checkpoint['decoder_feat_normalizer']
         self.hyperparams = checkpoint["hyperparams"]
 
         # train params
@@ -274,6 +294,10 @@ class NRI(LightningModule):
         # model params
         checkpoint['encoder_model_params'] = self.encoder_model_params
         checkpoint['decoder_model_params'] = self.decoder_model_params
+        checkpoint['encoder_raw_data_normalizer'] = self.encoder.raw_data_normalizer
+        checkpoint['encoder_feat_normalizer'] = self.encoder.feat_normalizer
+        checkpoint['decoder_raw_data_normalizer'] = self.decoder.raw_data_normalizer
+        checkpoint['decoder_feat_normalizer'] = self.decoder.feat_normalizer
         checkpoint["hyperparams"] = self.hyperparams
 
         # train params

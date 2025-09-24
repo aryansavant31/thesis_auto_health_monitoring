@@ -13,6 +13,7 @@ import os
 from scipy.signal import butter, filtfilt
 import numpy as np
 import torch
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # local imports
 from .config import DataConfig
@@ -80,7 +81,7 @@ class DataNormalizer:
     """
     Normalize data based on the specified normalization type.
     """
-    def __init__(self, norm_type, data_stats=None):
+    def __init__(self, norm_type):
         """
         Parameters
         ----------
@@ -89,45 +90,90 @@ class DataNormalizer:
         data_stats : dict
             Statistics for normalization (e.g., mean, std, min, max).
         """
-        self.norm_type = norm_type
-        self.data_stats = data_stats
-
-    def normalize(self, data):
+        if norm_type == 'min_max':
+            self.scaler_cls = MinMaxScaler
+        elif norm_type == 'std':
+            self.scaler_cls = StandardScaler
+        else:
+            raise ValueError(f"Unknown normalization type: {norm_type}")
+        self.scalers = None
+    
+    def fit(self, data):
         """
-        Apply normalization to the data.
-        
+        Fit the scaler to the data for each node.
+
         Parameters
         ----------
-        data : torch.Tensor
-            Input data tensor of shape (batch_size, n_nodes, n_components, n_dims).
+        data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Input data tensor to fit the scaler.
         """
-        # transfer varaibles to data device
-        if self.data_stats is not None:
-            for k in self.data_stats:
-                self.data_stats[k] = self.data_stats[k].to(data.device)
+        batch_size, n_nodes, n_components, n_dims = data.shape
+        self.scalers = []
+        for node in range(n_nodes):
+            scaler = self.scaler_cls()
+            node_data = data[:, node, :, :].reshape(batch_size, n_components * n_dims).cpu().numpy()
+            scaler.fit(node_data)
+            self.scalers.append(scaler)
+    
+    def transform(self, data):
+        """
+        Apply normalization to each node data.
 
-        if self.data_stats is None:
-            min_val = data.min(dim=2, keepdim=True).values  
-            max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
-            self.data_stats = {
-                'mean': torch.mean(data, dim=(0, 2), keepdim=True),
-                'std': torch.std(data, dim=(0, 2), keepdim=True),
-                'min': torch.min(min_val, dim=0, keepdim=True).values,
-                'max': torch.max(max_val, dim=0, keepdim=True).values
-            } 
-            for k in self.data_stats:
-                self.data_stats[k] = self.data_stats[k].squeeze(0)
+        Parameters
+        ----------
+        data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Input data tensor to be normalized.
 
-        if self.norm_type == 'min_max':
-            data = min_max_normalize(data, self.data_stats['min'], self.data_stats['max'])
+        Returns
+        -------
+        norm_data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Normalized data tensor.
+        """
+        batch_size, n_nodes, n_components, n_dims = data.shape
+        norm_data = torch.zeros_like(data)
+        for node in range(n_nodes):
+            node_data = data[:, node, :, :].reshape(batch_size, n_components * n_dims).cpu().numpy()
+            norm_node_data = self.scalers[node].transform(node_data)
+            norm_node_data = torch.from_numpy(norm_node_data).view(batch_size, n_components, n_dims).to(data.device)
+            norm_data[:, node, :, :] = norm_node_data
+        return norm_data
 
-        elif self.norm_type == 'std':
-            data = std_normalize(data, self.data_stats['mean'], self.data_stats['std'])
+    # def normalize(self, data):
+    #     """
+    #     Apply normalization to the data.
+        
+    #     Parameters
+    #     ----------
+    #     data : torch.Tensor
+    #         Input data tensor of shape (batch_size, n_nodes, n_components, n_dims).
+    #     """
+    #     # transfer varaibles to data device
+    #     if self.data_stats is not None:
+    #         for k in self.data_stats:
+    #             self.data_stats[k] = self.data_stats[k].to(data.device)
 
-        else:
-            raise ValueError(f"Unknown normalization type: {self.norm_type}")
+    #     if self.data_stats is None:
+    #         min_val = data.min(dim=2, keepdim=True).values  
+    #         max_val = data.max(dim=2, keepdim=True).values  # Shape: (n_samples, n_nodes, 1, n_dims)
+    #         self.data_stats = {
+    #             'mean': torch.mean(data, dim=(0, 2), keepdim=True),
+    #             'std': torch.std(data, dim=(0, 2), keepdim=True),
+    #             'min': torch.min(min_val, dim=0, keepdim=True).values,
+    #             'max': torch.max(max_val, dim=0, keepdim=True).values
+    #         } 
+    #         for k in self.data_stats:
+    #             self.data_stats[k] = self.data_stats[k].squeeze(0)
 
-        return data 
+    #     if self.norm_type == 'min_max':
+    #         data = min_max_normalize(data, self.data_stats['min'], self.data_stats['max'])
+
+    #     elif self.norm_type == 'std':
+    #         data = std_normalize(data, self.data_stats['mean'], self.data_stats['std'])
+
+    #     else:
+    #         raise ValueError(f"Unknown normalization type: {self.norm_type}")
+
+    #     return data 
     
 def high_pass_filter(data, cutoff_freq, fs):
     """

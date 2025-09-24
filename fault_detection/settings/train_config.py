@@ -10,7 +10,7 @@ sys.path.insert(0, ROOT_DIR) if ROOT_DIR not in sys.path else None
 from data.config import DataConfig, get_domain_config
 from feature_extraction.settings.feature_config import get_freq_feat_config, get_time_feat_config, get_reduc_config
 
-class AnomalyDetectorTrainConfig:
+class FaultDetectorTrainConfig:
     def __init__(self, data_config:DataConfig):
         """
         Parameters
@@ -53,17 +53,18 @@ class AnomalyDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 715
+        self.model_num = 1
         self.is_log = True
 
         # dataset parameters
         self.batch_size  = 1
-        self.train_rt    = 0.8
-        self.test_rt     = 0.2
+        self.train_rt    = 0.7
+        self.test_rt     = 0.1
+        self.val_rt      = 0.2
         self.num_workers = 1
 
-    # 2: Model parameters
-        self.anom_type = 'IF'
+    # 2: Anom parameters
+        self.anom_type = '1SVM'
         # IF parameters
         self.n_estimators = 2000
         self.contam = 0.0001  
@@ -78,10 +79,11 @@ class AnomalyDetectorTrainConfig:
         # uncertainity parameters
         self.ok_percentage = 1
 
-        # run parameters
+    # Input process parameters
         self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
+            #get_freq_feat_config('first_n_modes', n_modes=5),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -107,10 +109,12 @@ class AnomalyDetectorTrainConfig:
             # get_time_feat_config('mean_abs')
         ] 
         self.reduc_config = None
-        self.feat_norm = None
+        self.feat_norm = 'std'
 
-        # feature selection parameters
-        self.feat_select_config = get_reduc_config('LDA', n_feats=10, n_comps=1)  # feature selection config
+    # Feature selection parameters
+        self.feat_selector_config = get_reduc_config('LDA', n_comps=1)  # feature selection config
+        self.n_splits = 5  # number of splits for feature selection
+        self.n_feats = 5  # number of features to select
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
@@ -136,10 +140,10 @@ class AnomalyDetectorTrainConfig:
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
             'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             #'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
-            'pair_plot'                     : [False, {}],
+            'pair_plot'                     : [True, {}],
         }
 
     def set_anom_config(self):
@@ -157,7 +161,7 @@ class AnomalyDetectorTrainConfig:
         domain_str = self._get_config_str([self.domain_config])
         feat_str = self._get_config_str(self.feat_configs)
         reduc_str = self._get_config_str([self.reduc_config]) if self.reduc_config else 'None'
-        feat_select_str = self._get_config_str([self.feat_select_config]) if self.feat_select_config else 'None'
+        feat_select_str = self._get_config_str([self.feat_selector_config]) if self.feat_selector_config else 'None'
 
         init_hparams = {
             'model_num': self.model_num,
@@ -174,6 +178,7 @@ class AnomalyDetectorTrainConfig:
             'reduc': reduc_str,
             'feat_norm': self.feat_norm,
             'feat_select': feat_select_str,
+            'n_splits': self.n_splits
         }
         hparams = {**init_hparams, **self.anom_config}
 
@@ -279,7 +284,7 @@ def get_anom_config(anom_type, **kwargs):
 
     return anom_config  
 
-class AnomalyDetectorTrainSweep:
+class FaultDetectorTrainSweep:
     def __init__(self, data_config:DataConfig):
         """
         Train Sweep 1: Obj is to evalaute consistency of results when using same models and data. (Does model interpret same data differently)
