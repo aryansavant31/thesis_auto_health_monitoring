@@ -68,8 +68,10 @@ class FaultDetectorTrainPipeline:
 
         # plot feature ranking
         if feat_selector is not None:
-            if self.fdet_config.train_plots['feat_ranking_plot'][0]:
+            if self.fdet_config.train_plots['feat_ranking_boxplot'][0]:
                 feat_selector.feat_ranking_boxplot(logger=train_logger)
+            if self.fdet_config.train_plots['feat_ranking_histogram'][0]:
+                feat_selector.feat_ranking_histogram(logger=train_logger)
 
     # 4. Train the anomaly detector model
         trainer = TrainerFaultDetector(logger=train_logger)
@@ -77,7 +79,7 @@ class FaultDetectorTrainPipeline:
 
         # plot the train results
         for plot_name, plot_config in self.fdet_config.train_plots.items():
-            if plot_name != 'feat_ranking_plot':  # already plotted
+            if plot_name not in ['feat_ranking_boxplot', 'feat_ranking_histogram']:  # already plotted
                 if plot_config[0]:
                     getattr(trainer, plot_name.split('-')[0])(**plot_config[1])
 

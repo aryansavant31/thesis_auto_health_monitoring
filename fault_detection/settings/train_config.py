@@ -53,7 +53,8 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 1
+        self.model_num = 7
+        self.train_sweep = 1
         self.is_log = True
 
         # dataset parameters
@@ -64,14 +65,14 @@ class FaultDetectorTrainConfig:
         self.num_workers = 1
 
     # 2: Anom parameters
-        self.anom_type = '1SVM'
+        self.anom_type = 'IF'
         # IF parameters
         self.n_estimators = 2000
-        self.contam = 0.0001  
+        self.contam = 1e-15  
 
         # SVM parameters
         self.kernel = 'rbf'
-        self.nu = 0.1
+        self.nu = 0.2
         self.gamma = 'scale'
 
         self.set_anom_config()
@@ -80,10 +81,10 @@ class FaultDetectorTrainConfig:
         self.ok_percentage = 1
 
     # Input process parameters
-        self.domain_config = get_domain_config('time')
+        self.domain_config = get_domain_config('freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            #get_freq_feat_config('first_n_modes', n_modes=5),
+            get_freq_feat_config('first_n_modes', n_modes=10),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -112,9 +113,9 @@ class FaultDetectorTrainConfig:
         self.feat_norm = 'std'
 
     # Feature selection parameters
-        self.feat_selector_config = get_reduc_config('LDA', n_comps=1)  # feature selection config
+        self.feat_selector_config = None #get_reduc_config('LDA', n_comps=1)  # feature selection config
         self.n_splits = 5  # number of splits for feature selection
-        self.n_feats = 5  # number of features to select
+        self.n_feats = 6  # number of features to select
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
@@ -130,12 +131,13 @@ class FaultDetectorTrainConfig:
             'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
-            'feat_ranking_plot'          : [True, {}],
+            'feat_ranking_boxplot'          : [True, {}],
+            'feat_ranking_histogram'        : [True, {}]
         }
 
         self.test_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [False, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
@@ -178,7 +180,8 @@ class FaultDetectorTrainConfig:
             'reduc': reduc_str,
             'feat_norm': self.feat_norm,
             'feat_select': feat_select_str,
-            'n_splits': self.n_splits
+            'n_splits': self.n_splits,
+            'n_feats': self.n_feats
         }
         hparams = {**init_hparams, **self.anom_config}
 

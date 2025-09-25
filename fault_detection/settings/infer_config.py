@@ -35,7 +35,7 @@ class FaultDetectorInferConfig:
         self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
-        self.version = 2
+        self.version = 1
         
         self.num_workers = 1
         self.batch_size = 1
@@ -48,7 +48,7 @@ class FaultDetectorInferConfig:
 
         self.test_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [False, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num': 1, 'bins':80}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
@@ -111,7 +111,7 @@ class FaultDetectorInferSweep:
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 4.1
+        self.infer_sweep_num = 5.2
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 

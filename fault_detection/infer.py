@@ -97,7 +97,7 @@ class FaultDetectorInferPipeline:
             })
 
         print(f"\nAnomaly detector model loaded for '{self.fdet_config.run_type}' from {self.fdet_config.selected_model_path}")
-        print(f"\nModel type: {type(fault_detector.model).__name__}, Model ID: {fault_detector.hparams['model_id']}, No. of input features req.: {fault_detector.model.n_features_in_ if hasattr(fault_detector.model, 'n_features_in_') else 'Unknown'}")
+        print(f"\nModel type: {type(fault_detector.anom_model).__name__}, Model ID: {fault_detector.hparams['model_id']}, No. of input features req.: {fault_detector.anom_model.n_features_in_ if hasattr(fault_detector.anom_model, 'n_features_in_') else 'Unknown'}")
         print('\n' + 75*'-')
         
         return fault_detector    

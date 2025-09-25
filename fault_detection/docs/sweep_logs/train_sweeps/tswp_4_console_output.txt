@@ -1,0 +1,1210 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_train.py
+Base Name: tswp_4
+Start Time: 2025-09-22 23:10:41
+End Time: 2025-09-24 14:22:50
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model training sweep...
+
+Processing 1 data groups
+
+Data Config Sweep Summary:
+Run type: train
+------------------------------
+Total combinations: 1
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{'E1_set01_M=mAI26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAS23': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAU64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBH22': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBI93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBJ96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBK70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBU17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBW64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCD86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF56': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF78': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCG89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCO66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCQ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCX30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCZ47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDD00': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDH60': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI82': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDJ62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDL40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDM53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDN98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDR32': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDS38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEE75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEK25': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
+  stride: 1 values -> [1000]
+  unhealthy_configs: 1 values -> [{'(sim)_E1_set01_M=mAQ87': [{'type': 'glitch', 'prob': 0.1, 'std_fac': 2, 'add_next': True}, {'type': 'sine', 'freqs': [3, 2], 'std_facs': [1.6, 2.2], 'add_next': False}], '(sim)_E1_set01_M=mAS23': [{'type': 'glitch', 'prob': 0.05, 'std_fac': 2, 'add_next': True}, {'type': 'sine', 'freqs': [1, 2, 3], 'std_facs': [1.8, 2.4, 2.1], 'add_next': False}]}]
+  window_length: 1 values -> [1000]
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_153
+
+Parameter Sweep Summary:
+Total combinations: 576
+
+Parameters and their values:
+  anom_type: 1 values -> ['IF']
+  batch_size: 1 values -> [1]
+  contam: 8 values -> [1e-40, 1e-20, 1e-15, 1e-05, -2.0, 0.01, 0.1, 0.3]
+  domain_config: 1 values -> [{'type': 'freq', 'cutoff_freq': 0}]
+  feat_configs: 2 values -> [[], [{'type': 'first_n_modes', 'n_modes': 10}]]
+  feat_norm: 1 values -> [None]
+  feat_select_config: 2 values -> [None, {'type': 'LDA', 'n_feats': 10}]
+  n_estimators: 18 values -> [10, 10, 10, 50, 50, 50, 100, 100, 100, 500, 500, 500, 1000, 1000, 1000, 2000, 2000, 2000]
+  num_workers: 1 values -> [1]
+  raw_data_norm: 1 values -> [None]
+  reduc_config: 1 values -> [None]
+  test_rt: 1 values -> [0.2]
+  train_rt: 1 values -> [0.8]
+Parallelizing 576 fault detection configurations across 8 workers...
+  Completed config 1: [ammf_(acc+E1)]-IF_fdet_153
+  Completed config 5: [ammf_(acc+E1)]-IF_fdet_157
+  Completed config 3: [ammf_(acc+E1)]-IF_fdet_155
+  Completed config 2: [ammf_(acc+E1)]-IF_fdet_154
+  Completed config 4: [ammf_(acc+E1)]-IF_fdet_156
+  Completed config 7: [ammf_(acc+E1)]-IF_fdet_159
+  Completed config 8: [ammf_(acc+E1)]-IF_fdet_160
+  Completed config 6: [ammf_(acc+E1)]-IF_fdet_158
+  Completed config 10: [ammf_(acc+E1)]-IF_fdet_162
+  Completed config 9: [ammf_(acc+E1)]-IF_fdet_161
+  Completed config 11: [ammf_(acc+E1)]-IF_fdet_163
+  Completed config 12: [ammf_(acc+E1)]-IF_fdet_164
+  Completed config 13: [ammf_(acc+E1)]-IF_fdet_165
+  Completed config 15: [ammf_(acc+E1)]-IF_fdet_167
+  Completed config 14: [ammf_(acc+E1)]-IF_fdet_166
+  Completed config 16: [ammf_(acc+E1)]-IF_fdet_168
+  Completed config 17: [ammf_(acc+E1)]-IF_fdet_169
+  Config 19 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 23 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 21 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 22 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 24 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 18: [ammf_(acc+E1)]-IF_fdet_170
+  Config 29 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 27 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 28 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 25 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 30 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 26 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 31 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 34 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 33 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 36 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 32 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 35 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 37: [ammf_(acc+E1)]-IF_fdet_189
+  Completed config 38: [ammf_(acc+E1)]-IF_fdet_190
+  Completed config 39: [ammf_(acc+E1)]-IF_fdet_191
+  Completed config 41: [ammf_(acc+E1)]-IF_fdet_193
+  Completed config 40: [ammf_(acc+E1)]-IF_fdet_192
+  Completed config 43: [ammf_(acc+E1)]-IF_fdet_195
+  Completed config 42: [ammf_(acc+E1)]-IF_fdet_194
+  Completed config 44: [ammf_(acc+E1)]-IF_fdet_196
+  Completed config 45: [ammf_(acc+E1)]-IF_fdet_197
+  Completed config 46: [ammf_(acc+E1)]-IF_fdet_198
+  Completed config 47: [ammf_(acc+E1)]-IF_fdet_199
+  Completed config 48: [ammf_(acc+E1)]-IF_fdet_200
+  Completed config 49: [ammf_(acc+E1)]-IF_fdet_201
+  Completed config 50: [ammf_(acc+E1)]-IF_fdet_202
+  Completed config 54: [ammf_(acc+E1)]-IF_fdet_206
+  Completed config 53: [ammf_(acc+E1)]-IF_fdet_205
+  Config 56 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 57 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 55 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 59 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 61 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 62 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 60 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 58 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 63 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 66 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 67 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 65 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 64 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 68 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 71 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 69 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 72 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 70 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 74: [ammf_(acc+E1)]-IF_fdet_226
+  Completed config 73: [ammf_(acc+E1)]-IF_fdet_225
+  Completed config 75: [ammf_(acc+E1)]-IF_fdet_227
+  Completed config 77: [ammf_(acc+E1)]-IF_fdet_229
+  Completed config 76: [ammf_(acc+E1)]-IF_fdet_228
+  Completed config 78: [ammf_(acc+E1)]-IF_fdet_230
+  Completed config 79: [ammf_(acc+E1)]-IF_fdet_231
+  Completed config 80: [ammf_(acc+E1)]-IF_fdet_232
+  Completed config 81: [ammf_(acc+E1)]-IF_fdet_233
+  Completed config 82: [ammf_(acc+E1)]-IF_fdet_234
+  Completed config 83: [ammf_(acc+E1)]-IF_fdet_235
+  Completed config 87: [ammf_(acc+E1)]-IF_fdet_239
+  Completed config 84: [ammf_(acc+E1)]-IF_fdet_236
+  Completed config 86: [ammf_(acc+E1)]-IF_fdet_238
+  Completed config 85: [ammf_(acc+E1)]-IF_fdet_237
+  Config 92 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 91 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 88: [ammf_(acc+E1)]-IF_fdet_240
+  Completed config 89: [ammf_(acc+E1)]-IF_fdet_241
+  Completed config 90: [ammf_(acc+E1)]-IF_fdet_242
+  Config 93 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 94 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 95 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 96 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 97 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 98 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 99 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 102 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 101 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 103 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 104 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 106 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 105 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 108 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 107 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 110: [ammf_(acc+E1)]-IF_fdet_262
+  Completed config 109: [ammf_(acc+E1)]-IF_fdet_261
+  Completed config 111: [ammf_(acc+E1)]-IF_fdet_263
+  Completed config 112: [ammf_(acc+E1)]-IF_fdet_264
+  Completed config 113: [ammf_(acc+E1)]-IF_fdet_265
+  Completed config 114: [ammf_(acc+E1)]-IF_fdet_266
+  Completed config 115: [ammf_(acc+E1)]-IF_fdet_267
+  Completed config 116: [ammf_(acc+E1)]-IF_fdet_268
+  Completed config 117: [ammf_(acc+E1)]-IF_fdet_269
+  Completed config 118: [ammf_(acc+E1)]-IF_fdet_270
+  Completed config 119: [ammf_(acc+E1)]-IF_fdet_271
+  Completed config 120: [ammf_(acc+E1)]-IF_fdet_272
+  Completed config 121: [ammf_(acc+E1)]-IF_fdet_273
+  Completed config 122: [ammf_(acc+E1)]-IF_fdet_274
+  Completed config 123: [ammf_(acc+E1)]-IF_fdet_275
+  Completed config 124: [ammf_(acc+E1)]-IF_fdet_276
+  Completed config 126: [ammf_(acc+E1)]-IF_fdet_278
+  Completed config 125: [ammf_(acc+E1)]-IF_fdet_277
+  Config 127 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 128 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 129 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 130 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 131 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 132 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 134 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 133 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 135 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 136 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 137 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 138 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 139 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 140 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 142 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 141 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 143 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 144 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 145: [ammf_(acc+E1)]-IF_fdet_297
+  Completed config 146: [ammf_(acc+E1)]-IF_fdet_298
+  Completed config 147: [ammf_(acc+E1)]-IF_fdet_299
+  Completed config 148: [ammf_(acc+E1)]-IF_fdet_300
+  Completed config 150: [ammf_(acc+E1)]-IF_fdet_302
+  Completed config 151: [ammf_(acc+E1)]-IF_fdet_303
+  Completed config 152: [ammf_(acc+E1)]-IF_fdet_304
+  Completed config 153: [ammf_(acc+E1)]-IF_fdet_305
+  Completed config 154: [ammf_(acc+E1)]-IF_fdet_306
+  Completed config 155: [ammf_(acc+E1)]-IF_fdet_307
+  Completed config 156: [ammf_(acc+E1)]-IF_fdet_308
+  Completed config 157: [ammf_(acc+E1)]-IF_fdet_309
+  Completed config 158: [ammf_(acc+E1)]-IF_fdet_310
+  Completed config 159: [ammf_(acc+E1)]-IF_fdet_311
+  Completed config 160: [ammf_(acc+E1)]-IF_fdet_312
+  Completed config 161: [ammf_(acc+E1)]-IF_fdet_313
+  Config 163 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 162: [ammf_(acc+E1)]-IF_fdet_314
+  Config 164 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 165 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 166 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 167 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 168 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 169 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 170 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 171 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 172 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 173 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 176 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 175 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 174 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 177 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 179 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 178 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 180 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 182: [ammf_(acc+E1)]-IF_fdet_334
+  Completed config 181: [ammf_(acc+E1)]-IF_fdet_333
+  Completed config 183: [ammf_(acc+E1)]-IF_fdet_335
+  Completed config 184: [ammf_(acc+E1)]-IF_fdet_336
+  Completed config 185: [ammf_(acc+E1)]-IF_fdet_337
+  Completed config 186: [ammf_(acc+E1)]-IF_fdet_338
+  Completed config 187: [ammf_(acc+E1)]-IF_fdet_339
+  Completed config 188: [ammf_(acc+E1)]-IF_fdet_340
+  Completed config 189: [ammf_(acc+E1)]-IF_fdet_341
+  Completed config 190: [ammf_(acc+E1)]-IF_fdet_342
+  Completed config 191: [ammf_(acc+E1)]-IF_fdet_343
+  Completed config 192: [ammf_(acc+E1)]-IF_fdet_344
+  Completed config 193: [ammf_(acc+E1)]-IF_fdet_345
+  Completed config 194: [ammf_(acc+E1)]-IF_fdet_346
+  Completed config 196: [ammf_(acc+E1)]-IF_fdet_348
+  Completed config 197: [ammf_(acc+E1)]-IF_fdet_349
+  Config 199 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 198: [ammf_(acc+E1)]-IF_fdet_350
+  Config 200 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 201 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 195: [ammf_(acc+E1)]-IF_fdet_347
+  Config 202 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 203 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 204 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 205 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 206 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 207 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 208 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 209 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 210 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 211 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 212 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 213 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 214 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 215 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 216 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 217: [ammf_(acc+E1)]-IF_fdet_369
+  Completed config 218: [ammf_(acc+E1)]-IF_fdet_370
+  Completed config 219: [ammf_(acc+E1)]-IF_fdet_371
+  Completed config 220: [ammf_(acc+E1)]-IF_fdet_372
+  Completed config 221: [ammf_(acc+E1)]-IF_fdet_373
+  Completed config 222: [ammf_(acc+E1)]-IF_fdet_374
+  Completed config 223: [ammf_(acc+E1)]-IF_fdet_375
+  Completed config 224: [ammf_(acc+E1)]-IF_fdet_376
+  Completed config 225: [ammf_(acc+E1)]-IF_fdet_377
+  Completed config 226: [ammf_(acc+E1)]-IF_fdet_378
+  Completed config 227: [ammf_(acc+E1)]-IF_fdet_379
+  Completed config 228: [ammf_(acc+E1)]-IF_fdet_380
+  Completed config 229: [ammf_(acc+E1)]-IF_fdet_381
+  Completed config 230: [ammf_(acc+E1)]-IF_fdet_382
+  Completed config 231: [ammf_(acc+E1)]-IF_fdet_383
+  Completed config 232: [ammf_(acc+E1)]-IF_fdet_384
+  Completed config 233: [ammf_(acc+E1)]-IF_fdet_385
+  Completed config 234: [ammf_(acc+E1)]-IF_fdet_386
+  Config 235 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 236 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 237 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 238 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 239 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 240 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 241 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 242 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 243 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 244 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 245 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 246 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 247 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 248 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 249 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 250 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 251 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 252 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 253: [ammf_(acc+E1)]-IF_fdet_405
+  Completed config 254: [ammf_(acc+E1)]-IF_fdet_406
+  Completed config 255: [ammf_(acc+E1)]-IF_fdet_407
+  Completed config 256: [ammf_(acc+E1)]-IF_fdet_408
+  Completed config 257: [ammf_(acc+E1)]-IF_fdet_409
+  Completed config 258: [ammf_(acc+E1)]-IF_fdet_410
+  Completed config 259: [ammf_(acc+E1)]-IF_fdet_411
+  Completed config 260: [ammf_(acc+E1)]-IF_fdet_412
+  Completed config 261: [ammf_(acc+E1)]-IF_fdet_413
+  Completed config 262: [ammf_(acc+E1)]-IF_fdet_414
+  Completed config 263: [ammf_(acc+E1)]-IF_fdet_415
+  Completed config 264: [ammf_(acc+E1)]-IF_fdet_416
+  Completed config 265: [ammf_(acc+E1)]-IF_fdet_417
+  Completed config 266: [ammf_(acc+E1)]-IF_fdet_418
+  Completed config 267: [ammf_(acc+E1)]-IF_fdet_419
+  Completed config 268: [ammf_(acc+E1)]-IF_fdet_420
+  Completed config 269: [ammf_(acc+E1)]-IF_fdet_421
+  Config 271 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 272 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 273 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 274 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 270: [ammf_(acc+E1)]-IF_fdet_422
+  Config 275 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 276 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 277 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 278 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 279 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 280 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 281 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 282 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 283 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 284 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 285 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 286 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 287 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 288 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 289 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 290 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 291 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 292 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 293 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 294 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 295 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 296 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 297 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 298 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 299 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 300 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 301 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 302 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 303 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 304 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 305 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 306 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 307 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 308 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 309 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 310 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 311 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 312 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 313 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 314 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 315 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 316 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 317 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 318 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 319 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 320 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 321 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 322 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 323 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 324 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 325 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 326 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 327 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 328 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 329 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 330 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 331 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 332 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 333 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 334 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 335 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 336 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 337 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 338 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 339 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 340 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 342 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 341 failed with error: The 'contamination' parameter of IsolationForest must be a str among {'auto'} or a float in the range (0.0, 0.5]. Got -2.0 instead.
+  Config 343 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 344 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 345 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 346 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 347 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 348 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 349 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 350 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 351 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 352 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 353 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 354 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 355 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 356 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 357 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 358 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 359 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 360 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 361: [ammf_(acc+E1)]-IF_fdet_513
+  Completed config 362: [ammf_(acc+E1)]-IF_fdet_514
+  Completed config 363: [ammf_(acc+E1)]-IF_fdet_515
+  Completed config 364: [ammf_(acc+E1)]-IF_fdet_516
+  Completed config 366: [ammf_(acc+E1)]-IF_fdet_518
+  Completed config 365: [ammf_(acc+E1)]-IF_fdet_517
+  Completed config 367: [ammf_(acc+E1)]-IF_fdet_519
+  Completed config 368: [ammf_(acc+E1)]-IF_fdet_520
+  Completed config 369: [ammf_(acc+E1)]-IF_fdet_521
+  Completed config 370: [ammf_(acc+E1)]-IF_fdet_522
+  Completed config 371: [ammf_(acc+E1)]-IF_fdet_523
+  Completed config 372: [ammf_(acc+E1)]-IF_fdet_524
+  Completed config 373: [ammf_(acc+E1)]-IF_fdet_525
+  Completed config 374: [ammf_(acc+E1)]-IF_fdet_526
+  Completed config 376: [ammf_(acc+E1)]-IF_fdet_528
+  Completed config 377: [ammf_(acc+E1)]-IF_fdet_529
+  Completed config 378: [ammf_(acc+E1)]-IF_fdet_530
+  Config 379 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 375: [ammf_(acc+E1)]-IF_fdet_527
+  Config 380 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 381 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 382 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 383 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 384 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 385 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 386 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 387 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 388 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 389 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 390 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 391 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 392 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 393 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 394 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 395 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 396 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 397: [ammf_(acc+E1)]-IF_fdet_549
+  Completed config 398: [ammf_(acc+E1)]-IF_fdet_550
+  Completed config 399: [ammf_(acc+E1)]-IF_fdet_551
+  Completed config 400: [ammf_(acc+E1)]-IF_fdet_552
+  Completed config 401: [ammf_(acc+E1)]-IF_fdet_553
+  Completed config 402: [ammf_(acc+E1)]-IF_fdet_554
+  Completed config 403: [ammf_(acc+E1)]-IF_fdet_555
+  Completed config 404: [ammf_(acc+E1)]-IF_fdet_556
+  Completed config 405: [ammf_(acc+E1)]-IF_fdet_557
+  Completed config 406: [ammf_(acc+E1)]-IF_fdet_558
+  Completed config 407: [ammf_(acc+E1)]-IF_fdet_559
+  Completed config 408: [ammf_(acc+E1)]-IF_fdet_560
+  Completed config 409: [ammf_(acc+E1)]-IF_fdet_561
+  Completed config 410: [ammf_(acc+E1)]-IF_fdet_562
+  Completed config 411: [ammf_(acc+E1)]-IF_fdet_563
+  Completed config 412: [ammf_(acc+E1)]-IF_fdet_564
+  Completed config 413: [ammf_(acc+E1)]-IF_fdet_565
+  Completed config 414: [ammf_(acc+E1)]-IF_fdet_566
+  Config 415 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 416 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 417 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 418 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 419 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 420 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 421 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 422 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 423 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 424 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 425 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 426 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 427 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 428 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 429 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 430 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 431 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 432 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 433: [ammf_(acc+E1)]-IF_fdet_585
+  Completed config 434: [ammf_(acc+E1)]-IF_fdet_586
+  Completed config 435: [ammf_(acc+E1)]-IF_fdet_587
+  Completed config 436: [ammf_(acc+E1)]-IF_fdet_588
+  Completed config 437: [ammf_(acc+E1)]-IF_fdet_589
+  Completed config 438: [ammf_(acc+E1)]-IF_fdet_590
+  Completed config 439: [ammf_(acc+E1)]-IF_fdet_591
+  Completed config 440: [ammf_(acc+E1)]-IF_fdet_592
+  Completed config 441: [ammf_(acc+E1)]-IF_fdet_593
+  Completed config 442: [ammf_(acc+E1)]-IF_fdet_594
+  Completed config 443: [ammf_(acc+E1)]-IF_fdet_595
+  Completed config 444: [ammf_(acc+E1)]-IF_fdet_596
+  Completed config 445: [ammf_(acc+E1)]-IF_fdet_597
+  Completed config 446: [ammf_(acc+E1)]-IF_fdet_598
+  Completed config 447: [ammf_(acc+E1)]-IF_fdet_599
+  Completed config 448: [ammf_(acc+E1)]-IF_fdet_600
+  Completed config 449: [ammf_(acc+E1)]-IF_fdet_601
+  Completed config 450: [ammf_(acc+E1)]-IF_fdet_602
+  Config 451 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 452 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 453 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 454 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 455 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 456 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 457 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 458 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 459 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 460 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 461 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 462 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 463 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 464 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 465 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 466 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 467 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 468 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 469: [ammf_(acc+E1)]-IF_fdet_621
+  Completed config 470: [ammf_(acc+E1)]-IF_fdet_622
+  Completed config 471: [ammf_(acc+E1)]-IF_fdet_623
+  Completed config 472: [ammf_(acc+E1)]-IF_fdet_624
+  Completed config 473: [ammf_(acc+E1)]-IF_fdet_625
+  Completed config 474: [ammf_(acc+E1)]-IF_fdet_626
+  Completed config 475: [ammf_(acc+E1)]-IF_fdet_627
+  Completed config 476: [ammf_(acc+E1)]-IF_fdet_628
+  Completed config 477: [ammf_(acc+E1)]-IF_fdet_629
+  Completed config 478: [ammf_(acc+E1)]-IF_fdet_630
+  Completed config 479: [ammf_(acc+E1)]-IF_fdet_631
+  Completed config 480: [ammf_(acc+E1)]-IF_fdet_632
+  Completed config 481: [ammf_(acc+E1)]-IF_fdet_633
+  Completed config 482: [ammf_(acc+E1)]-IF_fdet_634
+  Completed config 483: [ammf_(acc+E1)]-IF_fdet_635
+  Completed config 484: [ammf_(acc+E1)]-IF_fdet_636
+  Completed config 485: [ammf_(acc+E1)]-IF_fdet_637
+  Completed config 486: [ammf_(acc+E1)]-IF_fdet_638
+  Config 487 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 488 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 489 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 490 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 491 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 492 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 493 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 494 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 495 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 496 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 497 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 498 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 499 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 500 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 501 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 502 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 503 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 504 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 505: [ammf_(acc+E1)]-IF_fdet_657
+  Completed config 506: [ammf_(acc+E1)]-IF_fdet_658
+  Completed config 507: [ammf_(acc+E1)]-IF_fdet_659
+  Completed config 508: [ammf_(acc+E1)]-IF_fdet_660
+  Completed config 509: [ammf_(acc+E1)]-IF_fdet_661
+  Completed config 510: [ammf_(acc+E1)]-IF_fdet_662
+  Completed config 511: [ammf_(acc+E1)]-IF_fdet_663
+  Completed config 512: [ammf_(acc+E1)]-IF_fdet_664
+  Completed config 513: [ammf_(acc+E1)]-IF_fdet_665
+  Completed config 514: [ammf_(acc+E1)]-IF_fdet_666
+  Completed config 515: [ammf_(acc+E1)]-IF_fdet_667
+  Completed config 516: [ammf_(acc+E1)]-IF_fdet_668
+  Completed config 518: [ammf_(acc+E1)]-IF_fdet_670
+  Completed config 519: [ammf_(acc+E1)]-IF_fdet_671
+  Completed config 520: [ammf_(acc+E1)]-IF_fdet_672
+  Completed config 517: [ammf_(acc+E1)]-IF_fdet_669
+  Config 523 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 522: [ammf_(acc+E1)]-IF_fdet_674
+  Config 524 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 521: [ammf_(acc+E1)]-IF_fdet_673
+  Config 525 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 526 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 527 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 528 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 529 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 530 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 531 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 532 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 533 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 534 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 535 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 536 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 537 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 538 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 539 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 540 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 541: [ammf_(acc+E1)]-IF_fdet_693
+  Completed config 542: [ammf_(acc+E1)]-IF_fdet_694
+  Completed config 543: [ammf_(acc+E1)]-IF_fdet_695
+  Completed config 544: [ammf_(acc+E1)]-IF_fdet_696
+  Completed config 545: [ammf_(acc+E1)]-IF_fdet_697
+  Completed config 546: [ammf_(acc+E1)]-IF_fdet_698
+  Completed config 548: [ammf_(acc+E1)]-IF_fdet_700
+  Completed config 549: [ammf_(acc+E1)]-IF_fdet_701
+  Completed config 550: [ammf_(acc+E1)]-IF_fdet_702
+  Completed config 547: [ammf_(acc+E1)]-IF_fdet_699
+  Completed config 552: [ammf_(acc+E1)]-IF_fdet_704
+  Completed config 553: [ammf_(acc+E1)]-IF_fdet_705
+  Completed config 554: [ammf_(acc+E1)]-IF_fdet_706
+  Completed config 555: [ammf_(acc+E1)]-IF_fdet_707
+  Completed config 551: [ammf_(acc+E1)]-IF_fdet_703
+  Completed config 556: [ammf_(acc+E1)]-IF_fdet_708
+  Completed config 558: [ammf_(acc+E1)]-IF_fdet_710
+  Config 559 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 560 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 561 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 562 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Completed config 557: [ammf_(acc+E1)]-IF_fdet_709
+  Config 563 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 564 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 565 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 566 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 567 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 568 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 569 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 570 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 571 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 572 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 573 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 574 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 575 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 576 failed with error: FrequencyFeatureExtractor.__init__() missing 1 required positional argument: 'data_config'
+  Config 149 failed with error: DataLoader worker (pid(s) 1127848) exited unexpectedly
+  Config 100 failed with error: DataLoader worker (pid(s) 1275624) exited unexpectedly
+  Config 52 failed with error: DataLoader worker (pid(s) 1269756) exited unexpectedly
+  Config 51 failed with error: DataLoader worker (pid(s) 1282672) exited unexpectedly
+  Config 20 failed with error: A process in the process pool was terminated abruptly while the future was running or pending.
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\train_sweeps\tswp_4_console_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-24 14:22:50

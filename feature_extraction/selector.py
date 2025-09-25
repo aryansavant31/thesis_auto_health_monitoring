@@ -185,7 +185,7 @@ class FeatureSelector:
         # Aggregate - sum across dimensions and PCs
         feat_importance = (
             loadings_df.groupby("parent")
-                    .sum()   # sum across dimensions
+                    .mean()   # mean across dimensions
                     .sum(axis=1)  # sum across PCs
         )
 
@@ -210,7 +210,7 @@ class FeatureSelector:
         # Aggregate - sum across dimensions
         feat_ranking = (
             importance_df.groupby("feature")['importance']
-                    .sum()   # sum across dimensions
+                    .mean()   # mean across dimensions
                     .sort_values(ascending=False)
         )
         return feat_ranking
@@ -254,14 +254,55 @@ class FeatureSelector:
         sns.boxplot(y='feature_annot', x='importance', data=plot_df, ax=ax, color='skyblue', showfliers=False)
         sns.stripplot(y='feature_annot', x='importance', data=plot_df, ax=ax, color='navy', size=6, jitter=True)
         plt.xlabel("Importance Score")
-        plt.ylabel(f"Feature (count)")
+        plt.ylabel(f"Features (count)")
         plt.title(f"Feature Importance Distribution (# feature occurence in top {self.top_n} rank / {self.n_splits} splits) ({self.feat_selector_config['type'].upper()}) : [{model_id}]", pad=15)
         plt.tight_layout()
 
         if logger:
-            plt.savefig(os.path.join(logger.log_dir, f'feat_ranks_variance({tb_tag}_{run_type}).png'), dpi=500)
+            plt.savefig(os.path.join(logger.log_dir, f'feat_ranks_variance({model_id}_{run_type}).png'), dpi=500)
             logger.add_figure(f"{tb_tag}/{model_id}/{run_type}/feat_ranks_variance", plt.gcf(), close=True)
             print(f"\nFeature ranking plot with variance logged at {logger.log_dir}\n")
         else:
             plt.show()
             print("\nFeature ranking plot with variance displayed.\n")
+
+    
+    def feat_ranking_histogram(self, logger=None):
+        if not hasattr(self, 'feat_scores_all'):
+            raise ValueError("Feature ranking data not available. Please run select_features() first.")
+
+        model_id = os.path.basename(logger.log_dir) if logger else 'model'
+        run_type = 'train'
+        tb_tag = model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if logger else 'feat_selection'
+
+        feat_means = {feat: np.mean(info['score']) for feat, info in self.feat_scores_all.items()}
+        feat_counts = {feat: info['count'] for feat, info in self.feat_scores_all.items()}
+
+        # sort features by count
+        sorted_feats = sorted(feat_counts, key=feat_counts.get, reverse=True)
+        means_sorted = [feat_means[feat] for feat in sorted_feats]
+        counts_sorted = [feat_counts[feat] for feat in sorted_feats]
+        labels_sorted = [f"{feat} ({feat_counts[feat]})" for feat in sorted_feats]
+
+        # update font settings for plots
+        plt.rcParams.update({
+            "text.usetex": False,   # No external LaTeX
+            "font.family": "serif",
+            "mathtext.fontset": "cm",  # Computer Modern math
+        })
+
+        plt.figure(figsize=(14, 9))
+        plt.barh(labels_sorted, means_sorted, color='skyblue', edgecolor='navy')
+        plt.xlabel("Mean Importance Score")
+        plt.ylabel(f"Features (count)")
+        plt.title(f"Mean Feature Importance (# feature occurence in top {self.top_n} rank / {self.n_splits} splits) ({self.feat_selector_config['type'].upper()}) : [{model_id}]", pad=15)
+        plt.gca().invert_yaxis()
+        plt.tight_layout()
+
+        if logger:
+            plt.savefig(os.path.join(logger.log_dir, f'feat_ranks_hist({model_id}_{run_type}).png'), dpi=500)
+            logger.add_figure(f"{tb_tag}/{model_id}/{run_type}/feat_ranks_hist", plt.gcf(), close=True)
+            print(f"\nFeature ranking plot with mean score logged at {logger.log_dir}\n")
+        else:
+            plt.show()
+            print("\nFeature ranking plot with mean score displayed.\n")

@@ -3,8 +3,6 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
-import statsmodels.api as sm
-from statsmodels.formula.api import ols
 import matplotlib.patches as mpatches
 
 

@@ -481,8 +481,8 @@ class TrainerFaultDetector:
         val_df = self.process_infer_data(fault_detector, val_loader, is_val=True)
 
         # get raw anomaly scores
-        scores = - fault_detector.anom_model.decision_function(val_df[self.comp_cols])  # higher scores indicate more abnormal
-        val_df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+        # scores = - fault_detector.anom_model.score_samples(val_df[self.comp_cols])  # higher scores indicate more abnormal
+        val_df['scores'] = - fault_detector.anom_model.score_samples(val_df[self.comp_cols]) # scores - scores.min()  + 1e-8  # shift scores to be non-negative
 
         valid_rows = val_df['given_label'] != 0
         filtered_df = val_df[valid_rows]
@@ -578,8 +578,8 @@ class TrainerFaultDetector:
     # 4. Get training accuracy and other metrics
         start_time = time.time()
         # training accuracy and scores
-        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
-        self.df['scores'] = scores - scores.min() + 1e-8  # shift scores to be non-negative
+        # scores = - fault_detector.anom_model.score_samples(self.df[self.comp_cols])
+        self.df['scores'] = - fault_detector.anom_model.score_samples(self.df[self.comp_cols]) #scores - scores.min() + 1e-8  # shift scores to be non-negative
         self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1)  
 
         infer_time = time.time() - start_time
@@ -683,8 +683,8 @@ class TrainerFaultDetector:
 
     # 2. Predict anomalies
         self.threshold = fault_detector.threshold if fault_detector.threshold is not None else 0
-        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
-        self.df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+        #scores = - fault_detector.anom_model.score_samples(self.df[self.comp_cols])
+        self.df['scores'] = - fault_detector.anom_model.score_samples(self.df[self.comp_cols]) #scores - scores.min()  + 1e-8  # shift scores to be non-negative
         self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1) 
 
         infer_time = time.time() - start_time
@@ -749,8 +749,8 @@ class TrainerFaultDetector:
 
     # 2. Predict anomalies
         self.threshold = fault_detector.threshold if fault_detector.threshold is not None else 0
-        scores = - fault_detector.anom_model.decision_function(self.df[self.comp_cols])
-        self.df['scores'] = scores - scores.min()  + 1e-8  # shift scores to be non-negative
+        #scores = - fault_detector.anom_model.score_samples(self.df[self.comp_cols])
+        self.df['scores'] = - fault_detector.anom_model.score_samples(self.df[self.comp_cols]) #scores - scores.min()  + 1e-8  # shift scores to be non-negative
         self.df['pred_label'] = np.where(self.df['scores'] > fault_detector.threshold, -1, 1) 
 
         infer_time = time.time() - start_time
@@ -821,15 +821,15 @@ class TrainerFaultDetector:
 
     def _assign_final_pred(self, row, fault_detector:FaultDetector):
             if row['pred_label'] == -1:
-                if fault_detector.nok_lower_bound is not None and row['scores'] <= fault_detector.nok_lower_bound:
+                if fault_detector.nok_lower_bound is not None and row['scores'] >= fault_detector.nok_lower_bound:
                     return -1
-                elif fault_detector.nok_lower_bound is not None and row['scores'] > fault_detector.nok_lower_bound:
+                elif fault_detector.nok_lower_bound is not None and row['scores'] < fault_detector.nok_lower_bound:
                     return -0.5
             
             if row['pred_label'] == 1:
-                if fault_detector.ok_upper_bound is not None and row['scores'] >= fault_detector.ok_upper_bound:
+                if fault_detector.ok_upper_bound is not None and row['scores'] <= fault_detector.ok_upper_bound:
                     return 1
-                elif fault_detector.ok_upper_bound is not None and row['scores'] < fault_detector.ok_upper_bound:
+                elif fault_detector.ok_upper_bound is not None and row['scores'] > fault_detector.ok_upper_bound:
                     return 0.5
             return np.nan
                 

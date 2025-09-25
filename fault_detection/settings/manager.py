@@ -30,7 +30,10 @@ class FaultDetectorTrainManager(FaultDetectorTrainConfig):
     def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
-        self.train_sweep_num = train_sweep_num
+        if self.train_sweep is None:
+            self.train_sweep_num = train_sweep_num
+        else:
+            self.train_sweep_num = self.train_sweep
         
     def get_train_log_path(self, n_components, n_dim, always_next_version=False):
         """
@@ -803,7 +806,7 @@ def get_model_pickle_path(log_path):
     """
     Returns the path to the training parameters pickle file.
     """
-    model_path = os.path.join(log_path, 'anomaly_detector.pkl')
+    model_path = os.path.join(log_path, 'fault_detector.pkl')
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Training parameters file not found: {model_path}. Please check the log path.")
     
