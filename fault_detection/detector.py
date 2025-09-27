@@ -160,7 +160,7 @@ class FaultDetector:
 
 
         # define feature objects
-        if self.domain == 'time':
+        if self.domain in ['time', 'time+freq']:
             if self.feat_configs:
                 self.time_fex = TimeFeatureExtractor(self.feat_configs)
                 print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None
@@ -168,7 +168,7 @@ class FaultDetector:
                 self.time_fex = None
                 print("\n>> No time feature extraction is applied") if is_verbose else None
 
-        elif self.domain == 'freq':
+        if self.domain in ['freq', 'time+freq']:
             if self.feat_configs:
                 self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
                 print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None
@@ -292,15 +292,17 @@ class TrainerFaultDetector:
         
     # 2. domain transform over ok data (mandatory)
         if fault_detector.domain == 'time':
-            data = fault_detector.domain_transformer.transform(time_data_ok)
+            time_data = fault_detector.domain_transformer.transform(time_data_ok)
         elif fault_detector.domain == 'freq':
-            data, freq_bins = fault_detector.domain_transformer.transform(time_data_ok)
+            freq_data, freq_bins = fault_detector.domain_transformer.transform(time_data_ok)
+        elif fault_detector.domain == 'time+freq':
+            time_data, freq_data, freq_bins = fault_detector.domain_transformer.transform(time_data_ok)
 
     # 3. normalize raw data (optional)
         if fault_detector.raw_data_normalizer:
-            if fault_detector.domain == 'time':
-                fault_detector.raw_data_normalizer.fit(data)
-                data = fault_detector.raw_data_normalizer.transform(data)
+            if fault_detector.domain in ['time', 'time+freq']:
+                fault_detector.raw_data_normalizer.fit(time_data)
+                time_data = fault_detector.raw_data_normalizer.transform(time_data)
 
             elif fault_detector.domain == 'freq':
                 print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not get_data_shape else None
@@ -309,11 +311,17 @@ class TrainerFaultDetector:
         is_fex = False
         if fault_detector.domain == 'time':
             if fault_detector.time_fex:
-                data = fault_detector.time_fex.extract(data)
+                data = fault_detector.time_fex.extract(time_data)
                 is_fex = True
         elif fault_detector.domain == 'freq':
             if fault_detector.freq_fex:
-                data = fault_detector.freq_fex.extract(data, freq_bins)
+                data = fault_detector.freq_fex.extract(freq_data, freq_bins)
+                is_fex = True
+        elif fault_detector.domain == 'time+freq':
+            if fault_detector.time_fex and fault_detector.freq_fex:
+                time_feats = fault_detector.time_fex.extract(time_data)
+                freq_feats = fault_detector.freq_fex.extract(freq_data, freq_bins)
+                data = torch.cat([time_feats, freq_feats], axis=2)  # shape (batch_size, n_nodes, n_components, n_dims)
                 is_fex = True
 
     # 5. normalize features (optional : if feat_norm is provided)
@@ -393,14 +401,16 @@ class TrainerFaultDetector:
     
     # 1. domain transform over ok data (mandatory)
         if fault_detector.domain == 'time':
-            data = fault_detector.domain_transformer.transform(time_data)
+            time_data = fault_detector.domain_transformer.transform(time_data)
         elif fault_detector.domain == 'freq':
-            data, freq_bins = fault_detector.domain_transformer.transform(time_data)
+            freq_data, freq_bins = fault_detector.domain_transformer.transform(time_data)
+        elif fault_detector.domain == 'time+freq':
+            time_data, freq_data, freq_bins = fault_detector.domain_transformer.transform(time_data)
 
     # 2. normalize raw data (optional)
         if fault_detector.raw_data_normalizer:
             if fault_detector.domain == 'time':
-                data = fault_detector.raw_data_normalizer.transform(data)
+                time_data = fault_detector.raw_data_normalizer.transform(time_data)
 
             elif fault_detector.domain == 'freq':
                 print("\nFrequency data cannot be normalized before feature extraction, hence skipping raw data normalization.") if not is_val else None
@@ -409,11 +419,17 @@ class TrainerFaultDetector:
         is_fex = False
         if fault_detector.domain == 'time':
             if fault_detector.time_fex:
-                data = fault_detector.time_fex.extract(data)
+                data = fault_detector.time_fex.extract(time_data)
                 is_fex = True
         elif fault_detector.domain == 'freq':
             if fault_detector.freq_fex:
-                data = fault_detector.freq_fex.extract(data, freq_bins)
+                data = fault_detector.freq_fex.extract(freq_data, freq_bins)
+                is_fex = True
+        elif fault_detector.domain == 'time+freq':
+            if fault_detector.time_fex and fault_detector.freq_fex:
+                time_feats = fault_detector.time_fex.extract(time_data)
+                freq_feats = fault_detector.freq_fex.extract(freq_data, freq_bins)
+                data = torch.cat([time_feats, freq_feats], axis=2)  # shape (batch_size, n_nodes, n_components, n_dims)
                 is_fex = True
 
     # 4. normalize features (optional : if feat_norm is provided)

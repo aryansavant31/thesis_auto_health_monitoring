@@ -55,13 +55,13 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'BER'
+        self.machine_type = 'cwru'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_acc
+        self.signal_types = BERGroupMaker().gb_acc1
         
-        self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
@@ -88,16 +88,16 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
         e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
         self.healthy_configs   = {
-            # '0_N': [get_augment_config('OG')], 
-            # '1_N': [get_augment_config('OG')],
+            '0_N': [get_augment_config('OG')], 
+            '1_N': [get_augment_config('OG')],
             #'series_tp': [get_augment_config('OG')]  
-            key: [get_augment_config('OG')] for key in e1_keys
+            #key: [get_augment_config('OG')] for key in e1_keys
             #key: [get_augment_config('gau', mean=0, snr_db=6)] for key in e1_keys
 
         }
         
         self.unhealthy_configs = {
-            # '0_B-007': [get_augment_config('OG')],
+            '0_B-007': [get_augment_config('OG')],
             # obvious 
             # '(sim)_E1_set01_M=mAQ87': [
             #             # get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
@@ -114,25 +114,25 @@ class DataConfig:
             #             get_augment_config('sine', freqs=[1, 2, 3], std_facs=[1.8, 2.4, 2.1])
             #             ],  
 
-            # medium
-            '(sim)_E1_set01_M=mAQ87': [
-                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
-                        get_augment_config('sine', freqs=[3, 2], std_facs=[2, 2.3]),
+            # # medium
+            # '(sim)_E1_set01_M=mAQ87': [
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
+            #             get_augment_config('sine', freqs=[3, 2], std_facs=[2, 2.3]),
 
-                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
-                        get_augment_config('sine', freqs=[2, 4], std_facs=[2.3, 2]),
-                        ], 
-                    '(sim)_E1_set01_M=mAS23': [
-                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.02, std_fac=2.3, add_next=True),
-                        get_augment_config('sine', freqs=[1, 2, 3], std_facs=[2, 1.9, 2.5]),
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
+            #             get_augment_config('sine', freqs=[2, 4], std_facs=[2.3, 2]),
+            #             ], 
+            #         '(sim)_E1_set01_M=mAS23': [
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.02, std_fac=2.3, add_next=True),
+            #             get_augment_config('sine', freqs=[1, 2, 3], std_facs=[2, 1.9, 2.5]),
 
-                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
-                        get_augment_config('sine', freqs=[1, 2, 4], std_facs=[2.2, 2.4, 2.5]),
-                        ],   
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
+            #             get_augment_config('sine', freqs=[1, 2, 4], std_facs=[2.2, 2.4, 2.5]),
+            #             ],   
                     
             
         }
@@ -578,6 +578,7 @@ def get_domain_config(domain_type, **kwargs):
         Additional parameters for the domain configuration.
         - `time`: **cutoff_freq** (for high pass filter)
         - `freq`: **cutoff_freq** (for high pass filter)
+        - `time+freq`: **cutoff_freq** (for high pass filter)
     """
     config = {}
     config['type'] = domain_type
@@ -586,6 +587,9 @@ def get_domain_config(domain_type, **kwargs):
         config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency for time domain
         
     elif domain_type == 'freq':
+        config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency
+
+    elif domain_type == 'time+freq':
         config['cutoff_freq'] = kwargs.get('cutoff_freq', 0)  # default cutoff frequency
        
     return config 

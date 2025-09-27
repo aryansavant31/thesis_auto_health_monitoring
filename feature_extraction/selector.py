@@ -109,6 +109,10 @@ class FeatureSelector:
                 # extract features from data
                 feat_data, all_feat_names = self.extract_all_freq_features(data, freq_bins)
 
+            elif fault_detector.domain == 'time+freq':
+                time_data, freq_mag, freq_bin = fault_detector.domain_transformer.transform(time_data)
+                feat_data, all_feat_names = self.extract_all_time_features(time_data)
+
             # isolate healthy feature data
             feat_data_ok = feat_data[label == 1]
 

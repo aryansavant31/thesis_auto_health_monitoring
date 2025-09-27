@@ -63,7 +63,7 @@ class TimeFeatureExtractor:
                         features = feat_fn(time_data)  
                         features_list.append(features)
                     else:
-                        raise ValueError(f"Unknown time feature name in ranks: {feature_name}")
+                        print(f"Unknown time feature name in ranks: {feature_name}. Skipping...")
 
             # 2. features apart from ranks
             elif hasattr(tf, feat_type):
@@ -72,7 +72,7 @@ class TimeFeatureExtractor:
 
                 features_list.append(features)
             else:
-                raise ValueError(f"Unknown time feature extraction type: {feat_type}")
+                print(f"Unknown time feature extraction type: {feat_type}. Skipping...")
             
             
         # concatenate all features into a single tensor
@@ -134,7 +134,7 @@ class FrequencyFeatureExtractor:
 
                         features_list.append(features)
                     else:
-                        raise ValueError(f"Unknown time feature name in ranks: {feature_name}")
+                        print(f"Unknown frequency feature name in ranks: {feature_name}. Skipping...")
 
             # 2. first n modes
             elif feat_type == 'first_n_modes':
@@ -167,7 +167,7 @@ class FrequencyFeatureExtractor:
 
                 features_list.append(features)   
             else:
-                raise ValueError(f"Unknown frequency feature extraction type: {feat_config['type']}")
+                print(f"Unknown frequency feature extraction type: {feat_config['type']}. Skipping...")
 
         # concatenate all features into a single tensor
         final_tensor = torch.cat(features_list, axis=2)  # shape: (batch_size, n_nodes, n_components, n_dims)

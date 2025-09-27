@@ -76,6 +76,13 @@ class DomainTransformer:
             freq_mag, freq_bin = to_freq_domain(time_data, self.fs)
             return freq_mag, freq_bin
         
+        elif self.domain == 'time+freq':
+            if self.domain_config['cutoff_freq'] > 0:
+                time_data = high_pass_filter(time_data, self.domain_config['cutoff_freq'], self.fs)
+   
+            freq_mag, freq_bin = to_freq_domain(time_data, self.fs)
+            return time_data, freq_mag, freq_bin
+        
     
 class DataNormalizer:
     """

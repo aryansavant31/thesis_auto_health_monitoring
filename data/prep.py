@@ -349,6 +349,7 @@ class DataPreprocessor:
         remainder_samples = total_samples - train_total - test_total - val_total
 
         # shuffle the indices
+        random.seed(42)
         random.shuffle(non_target_indices)
 
         train_indices = non_target_indices[:train_total]
