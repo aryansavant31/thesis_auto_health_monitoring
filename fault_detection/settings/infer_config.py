@@ -111,7 +111,7 @@ class FaultDetectorInferSweep:
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 5.2
+        self.infer_sweep_num = 1.1
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 

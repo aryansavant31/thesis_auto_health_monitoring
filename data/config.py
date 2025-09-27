@@ -55,18 +55,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'BER'
-        self.machine_type = 'cwru'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = BERGroupMaker().gb_acc1
+        self.signal_types = NXEGroupMaker().pob_los_ctrl
         
-        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 1000
-        self.stride             = 1000
+        self.window_length      = 8000
+        self.stride             = 8000
 
         self.use_custom_max_timesteps = False
         self.max_timesteps     = 10000
@@ -88,16 +88,16 @@ class DataConfig:
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
         e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')], 
-            '1_N': [get_augment_config('OG')],
+            # '0_N': [get_augment_config('OG')], 
+            # '1_N': [get_augment_config('OG')],
             #'series_tp': [get_augment_config('OG')]  
-            #key: [get_augment_config('OG')] for key in e1_keys
+            key: [get_augment_config('OG')] for key in e1_keys
             #key: [get_augment_config('gau', mean=0, snr_db=6)] for key in e1_keys
 
         }
         
         self.unhealthy_configs = {
-            '0_B-007': [get_augment_config('OG')],
+            #'0_B-007': [get_augment_config('OG')],
             # obvious 
             # '(sim)_E1_set01_M=mAQ87': [
             #             # get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
@@ -114,7 +114,7 @@ class DataConfig:
             #             get_augment_config('sine', freqs=[1, 2, 3], std_facs=[1.8, 2.4, 2.1])
             #             ],  
 
-            # # medium
+            # # # medium
             # '(sim)_E1_set01_M=mAQ87': [
             #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
             #             get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
@@ -123,6 +123,10 @@ class DataConfig:
             #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
             #             get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
             #             get_augment_config('sine', freqs=[2, 4], std_facs=[2.3, 2]),
+
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.07, std_fac=2.2, add_next=True),
+            #             get_augment_config('sine', freqs=[2, 4, 5], std_facs=[2.3, 2, 2]),
             #             ], 
             #         '(sim)_E1_set01_M=mAS23': [
             #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
@@ -132,7 +136,40 @@ class DataConfig:
             #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
             #             get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
             #             get_augment_config('sine', freqs=[1, 2, 4], std_facs=[2.2, 2.4, 2.5]),
-            #             ],   
+
+            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+            #             get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
+            #             get_augment_config('sine', freqs=[1, 3, 5, 7], std_facs=[1.6, 2.1, 1.8, 2.3]),
+            #             ],  
+            # 
+            # POB LOS
+            # medium
+            '(sim)_E1_set01_M=mAQ87': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
+                        get_augment_config('sine', freqs=[200, 60], std_facs=[2, 2.3]),
+
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        # get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
+                        get_augment_config('sine', freqs=[75, 420], std_facs=[2.3, 2]),
+
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.07, std_fac=2.2, add_next=True),
+                        get_augment_config('sine', freqs=[150, 40, 320], std_facs=[2.3, 2, 2]),
+                        ], 
+                    '(sim)_E1_set01_M=mAS23': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        # get_augment_config('glitch', prob=0.02, std_fac=2.3, add_next=True),
+                        get_augment_config('sine', freqs=[25, 290, 315], std_facs=[2, 1.9, 2.5]),
+
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
+                        get_augment_config('sine', freqs=[100, 425, 45], std_facs=[2.2, 2.4, 2.5]),
+
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        # get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
+                        get_augment_config('sine', freqs=[55, 125, 270, 465], std_facs=[1.6, 2.1, 1.8, 2.3]),
+                        ],   
                     
             
         }
@@ -338,9 +375,9 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [NXEGroupMaker().ammf_acc]
-        self.window_length = [1000]
-        self.stride = [1000]
+        self.signal_types = [NXEGroupMaker().pob_los_ctrl]
+        self.window_length = [8000]
+        self.stride = [8000]
 
 
         if self.run_type == 'train':
@@ -376,10 +413,10 @@ class DataSweep:
 
             self.healthy_configs = [
                 # no noise
-                # {key: [get_augment_config('OG')] for key in e1_keys}
+                {key: [get_augment_config('OG')] for key in e1_keys}
 
-                # level 1 noise
-                {key: [get_augment_config('gau', mean=0.0, snr_db=6)] for key in e1_keys},
+                # # level 1 noise
+                # {key: [get_augment_config('gau', mean=0.0, snr_db=2)] for key in e1_keys},
 
                 # # level 3 noise
                 # {key: [get_augment_config('gau', mean=0.0, std=0.0001)] for key in e1_keys},
@@ -390,47 +427,75 @@ class DataSweep:
             ]
 
             self.unhealthy_configs = [
-                # # obvious fault
-                # {
-                #      '(sim)_E1_set01_M=mAI26': [
-                #         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                #         get_augment_config('glitch', prob=0.1, std_fac=3, add_next=True),
-                #         get_augment_config('sine', freqs=[2, 4], std_facs=[3, 3.2])
-                #         ], 
-                #     '(sim)_E1_set01_M=mAQ10': [
-                #         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                #         get_augment_config('glitch', prob=0.05, std_fac=2.8, add_next=True),
-                #         get_augment_config('sine', freqs=[1, 2, 5], std_facs=[3, 3.4, 3.1])
-                #         ],
-                # },
+                # obvious fault
+                {
+                     '(sim)_E1_set01_M=mAI26': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.1, std_fac=3, add_next=True),
+                        get_augment_config('sine', freqs=[290, 478], std_facs=[3, 3.2])
+                        ], 
+                    '(sim)_E1_set01_M=mAQ10': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.05, std_fac=2.8, add_next=True),
+                        get_augment_config('sine', freqs=[106, 50, 535], std_facs=[3, 3.4, 3.1])
+                        ],
+                },
 
                 # medium fault
                 {
                     '(sim)_E1_set01_M=mAI26': [
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         get_augment_config('glitch', prob=0.1, std_fac=2, add_next=True),
-                        get_augment_config('sine', freqs=[2, 4], std_facs=[2, 2])
+                        get_augment_config('sine', freqs=[267, 434], std_facs=[2, 2])
                         ], 
                     '(sim)_E1_set01_M=mAQ10': [
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         get_augment_config('glitch', prob=0.05, std_fac=2, add_next=True),
-                        get_augment_config('sine', freqs=[1, 2, 5], std_facs=[2, 2.4, 2])
+                        get_augment_config('sine', freqs=[100, 223, 500], std_facs=[2, 2.4, 2])
                         ],
                 },
 
-                # # subtle fault
-                # {
-                #     '(sim)_E1_set01_M=mAI26': [
-                #         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                #         get_augment_config('glitch', prob=0.07, std_fac=1.5, add_next=True),
-                #         get_augment_config('sine', freqs=[2, 4], std_facs=[1.3, 1.5])
-                #         ], 
-                #     '(sim)_E1_set01_M=mAQ10': [
-                #         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                #         get_augment_config('glitch', prob=0.02, std_fac=1.3, add_next=True),
-                #         get_augment_config('sine', freqs=[1, 2, 5], std_facs=[1.3, 1, 1.5])
-                #         ], 
-                # }
+                # subtle fault
+                {
+                    '(sim)_E1_set01_M=mAI26': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.07, std_fac=1.5, add_next=True),
+                        get_augment_config('sine', freqs=[200, 400], std_facs=[1.3, 1.5])
+                        ], 
+                    '(sim)_E1_set01_M=mAQ10': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.02, std_fac=1.3, add_next=True),
+                        get_augment_config('sine', freqs=[25, 290, 500], std_facs=[1.3, 1, 1.5])
+                        ], 
+                },
+
+                # subtler fault
+                {
+                    '(sim)_E1_set01_M=mAI26': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.07, std_fac=0.7, add_next=True),
+                        get_augment_config('sine', freqs=[256, 325], std_facs=[0.9, 0.8])
+                        ], 
+                    '(sim)_E1_set01_M=mAQ10': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.02, std_fac=0.7, add_next=True),
+                        get_augment_config('sine', freqs=[100, 200, 55], std_facs=[1, 0.9, 0.8])
+                        ], 
+                },
+
+                # more subtler fault
+                {
+                    '(sim)_E1_set01_M=mAI26': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.07, std_fac=0.7, add_next=True),
+                        get_augment_config('sine', freqs=[256, 300], std_facs=[0.5, 0.6])
+                        ], 
+                    '(sim)_E1_set01_M=mAQ10': [
+                        # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
+                        get_augment_config('glitch', prob=0.02, std_fac=0.7, add_next=True),
+                        get_augment_config('sine', freqs=[150, 200, 55], std_facs=[0.5, 0.4, 0.5])
+                        ], 
+                }
 
         
             ]

@@ -59,7 +59,7 @@ class FeatureSelector:
         return data_splits, label_splits
     
     def extract_all_time_features(self, data):
-        all_feat_names = [name for name, obj in inspect.getmembers(tf, inspect.isfunction)]
+        all_feat_names = [name for name, obj in inspect.getmembers(tf, inspect.isfunction) if name not in ['eo', 'fifth_moment_normalized']]
         time_feat_configs = [
             {'type': feat} for feat in all_feat_names
         ]
@@ -133,7 +133,7 @@ class FeatureSelector:
 
             # create dataframe for feature data
             feat_data_df = pd.DataFrame(feat_data_scaled, columns=feat_name_cols)
-
+            #print(feat_data_df.columns[feat_data_df.isna().any()]).tolist()
 
         # Perform feature ranking
             if self.feat_selector_config['type'] == 'PCA':
@@ -198,6 +198,7 @@ class FeatureSelector:
         return feat_ranking
 
     def LDA_based_ranking(self, feat_data_df, labels):
+
         # fit LDA model
         self.feat_selector.fit(feat_data_df, labels)
 

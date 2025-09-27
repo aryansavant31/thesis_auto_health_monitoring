@@ -53,7 +53,7 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 1
+        self.model_num = 4
         self.train_sweep = 1
         self.is_log = True
 
@@ -84,7 +84,7 @@ class FaultDetectorTrainConfig:
         self.domain_config = get_domain_config('time+freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=5),
+            get_freq_feat_config('first_n_modes', n_modes=3),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -266,7 +266,7 @@ def get_anom_config(anom_type, **kwargs):
         anom_config['IF/n_estimators'] = kwargs.get('n_estimators', 100)
         anom_config['IF/seed'] = kwargs.get('seed', 42)
         anom_config['IF/contam'] = kwargs.get('contam', 'auto')
-        anom_config['IF/n_jobs'] = kwargs.get('n_jobs', -1)
+        anom_config['IF/n_jobs'] = kwargs.get('n_jobs', 1)
         anom_config['IF/verbose'] = kwargs.get('verbose', 0)
         anom_config['IF/max_samples'] = kwargs.get('max_samples', 'auto')
         anom_config['IF/bootstrap'] = kwargs.get('bootstrap', False)
