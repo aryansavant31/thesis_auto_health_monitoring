@@ -15,6 +15,7 @@ import time
 import numpy as np
 import pandas as pd
 import pickle
+import matplotlib.colors as mcolors
 
 # local imports
 from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
@@ -107,6 +108,7 @@ class NRI(LightningModule):
         self.decay_temp = decay_temp
         self.is_hard = is_hard
         self.dynamic_rel = dynamic_rel
+        self.data_config = data_config
 
         self.encoder.set_run_params(data_config=data_config)
         self.decoder.set_run_params(**dec_run_params, data_config=data_config)
@@ -120,16 +122,13 @@ class NRI(LightningModule):
         for key, value in self.encoder_model_params.items():
             setattr(self.encoder, key, value)
         self.encoder.build_model()
-        self.encoder.raw_data_normalizer = self.encoder_raw_data_normalizer
-        self.encoder.feat_normalizer = self.encoder_feat_normalizer
-
+        
         # build decoder
         self.decoder = Decoder()
         for key, value in self.decoder_model_params.items():
             setattr(self.decoder, key, value)
         self.decoder.build_model()
-        self.decoder.raw_data_normalizer = self.decoder_raw_data_normalizer
-        self.decoder.feat_normalizer = self.decoder_feat_normalizer
+        
 
     def fit_normalizers(self, train_loader):
         """
@@ -290,6 +289,11 @@ class NRI(LightningModule):
         # rebuild model
         self.build_model()
 
+        self.encoder.raw_data_normalizer = self.encoder_raw_data_normalizer
+        self.encoder.feat_normalizer = self.encoder_feat_normalizer
+        self.decoder.raw_data_normalizer = self.decoder_raw_data_normalizer
+        self.decoder.feat_normalizer = self.decoder_feat_normalizer
+
     def on_save_checkpoint(self, checkpoint):
         # model params
         checkpoint['encoder_model_params'] = self.encoder_model_params
@@ -369,13 +373,13 @@ class NRI(LightningModule):
 
             # initialze scehdulers
             self.beta_scheduler = BetaScheduler(
-                total_steps=self.custom_max_epochs * len(self.trainer.train_dataloader), 
+                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
                 final_beta=self.final_beta,
                 warmup_frac=self.warmup_frac_beta
             )
 
             self.gamma_scheduler = BetaScheduler(
-                total_steps=self.custom_max_epochs * len(self.trainer.train_dataloader), 
+                total_steps=self.trainer.max_epochs * len(self.trainer.train_dataloader), 
                 final_beta=self.final_gamma,
                 warmup_frac=self.warmup_frac_gamma
             )
@@ -426,6 +430,7 @@ class NRI(LightningModule):
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'nri_model'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'nri_model'
         self.run_type = "train"
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
         self.custom_max_epochs = self.trainer.max_epochs + self.custom_current_epoch + 1
 
         self.found_rep1 = False # for decoder output plot
@@ -480,6 +485,33 @@ class NRI(LightningModule):
             ce_loss_encoder = 0.0
 
         return ce_loss_encoder
+    
+    def apply_inverse_transform(self, x_pred, target):
+        n_comps_original = self.decoder.raw_data_normalizer.n_components_og  # set this to the original number of components used for fitting
+        n_comps_reduced = x_pred.shape[2]  # assuming shape is (batch_size, n_nodes, n_comps, n_dims)
+
+        pad_amount = n_comps_original - n_comps_reduced
+
+        if pad_amount > 0:
+            # Pad at the beginning of the components axis (axis=2)
+            # F.pad expects pad as (last_dim_pad_left, last_dim_pad_right, ..., first_dim_pad_left, first_dim_pad_right)
+            # For 4D: (dim3_left, dim3_right, dim2_left, dim2_right, dim1_left, dim1_right, dim0_left, dim0_right)
+            # So for axis=2, pad = (0, 0, pad_amount, 0, 0, 0, 0, 0)
+            pad = (0, 0, pad_amount, 0, 0, 0, 0, 0)
+            x_pred_padded = F.pad(x_pred, pad, "constant", 0)
+            target_padded = F.pad(target, pad, "constant", 0)
+        else:
+            x_pred_padded = x_pred
+            target_padded = target
+
+        # Inverse transform
+        x_pred_rep1_inv = self.decoder.raw_data_normalizer.inverse_transform(x_pred_padded)
+        target_rep1_inv = self.decoder.raw_data_normalizer.inverse_transform(target_padded)
+
+        # Slice out only the reduced components (i.e., remove the padded first components)
+        x_pred_inv = x_pred_rep1_inv[:, :, -n_comps_reduced:, :]
+        target_inv = target_rep1_inv[:, :, -n_comps_reduced:, :]
+        return x_pred_inv, target_inv
         
     def _forward_pass(self, batch, batch_idx):
         """
@@ -865,8 +897,12 @@ class NRI(LightningModule):
         self.training_loss_plot()
         self.edge_accuracy_plot()
         self.edge_entropy_plot()
-        self.decoder_output_plot(**self.decoder_plot_data_train, type='train')
-        self.decoder_output_plot(**self.decoder_plot_data_val, type='val') if self.trainer.val_dataloaders else None
+        for i, idxes in enumerate(self.subsystem_indices):
+            self.decoder_output_plot(**self.decoder_plot_data_train, type='train', subsystem=f"subsystem_{i+1}", node_split=idxes, is_end=True)
+
+        if self.trainer.val_dataloaders:   
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_val, type='val', subsystem=f"subsystem_{i+1}", node_split=idxes, is_end=True)
 
 
 # ====== Trainer.test() methods  ======
@@ -886,6 +922,7 @@ class NRI(LightningModule):
         self.custom_step = -1  # will be incremented to 0 in first test step
 
         self.found_rep1 = False # for decoder output plot
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
 
         self.is_beta_annealing = False  # no beta annealing during testing
         self.is_enc_warmup = False   # no encoder warmup during testing
@@ -1001,10 +1038,12 @@ class NRI(LightningModule):
 
         # make decoder output plot
         if self.decoder_plot_data_rep1:
-            self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type)
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type, subsystem=f"subsystem_{i+1}", node_split=idxes)
         else:
             print(f"\nNo target rep num. Hence decoder output is made for first sample in the last test batch.")
-            self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type, subsystem=f"subsystem_{i+1}", node_split=idxes)
 
 
 # ====== Trainer.predict() method  ====== 
@@ -1018,6 +1057,7 @@ class NRI(LightningModule):
         self.custom_step = -1  # will be incremented to 0 in first predict step
 
         self.found_rep1 = False # for decoder output plot
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
 
         self.is_beta_annealing = False  # no beta annealing during prediction
         self.is_enc_warmup = False   # no encoder warmup during prediction
@@ -1152,7 +1192,17 @@ class NRI(LightningModule):
 
         # create a figure with 3 subplots in a vertical grid
         i = 4 if self.train_losses[f'enc/train_warmup_losses'] != [] else 3
-        fig, axes = plt.subplots(i, 2, figsize=(18, i*3), dpi=100, sharex=True) #13
+        fig, axes = plt.subplots(i, 2, figsize=(18, i*3), dpi=100) #13
+
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"[{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
 
         j = i
         if self.train_losses[f'enc/train_warmup_losses'] != []:
@@ -1163,6 +1213,7 @@ class NRI(LightningModule):
             axes[i-j, 0].plot(train_warmup_steps, self.train_losses[f'enc/train_warmup_losses'], label='train loss', color='purple')
             axes[i-j, 0].plot(val_warmup_steps, self.train_losses[f'enc/val_warmup_losses'], label='val loss', color='magenta', linestyle='--', marker='o', markersize=4)
             axes[i-j, 0].set_title('Encoder Warmup Losses (CE)')
+            axes[i-j, 0].set_xlabel('Steps')
             axes[i-j, 0].set_ylabel('Loss')
             axes[i-j, 0].legend()
             axes[i-j, 0].grid(True)
@@ -1170,6 +1221,7 @@ class NRI(LightningModule):
             # plot encoder warmup gamma
             axes[i-j, 1].plot(train_steps, self.train_gains['enc_warmup_loss/gamma'], label='gamma', color='brown')
             axes[i-j, 1].set_title('Encoder Warmup Loss Gain (Gamma)')
+            axes[i-j, 1].set_xlabel('Steps')
             axes[i-j, 1].set_ylabel('Gamma')
             axes[i-j, 1].grid(True)
             axes[i-j, 1].legend()
@@ -1180,6 +1232,7 @@ class NRI(LightningModule):
         axes[i-j, 0].plot(train_steps, self.train_losses[f'enc/train_losses'], label='train loss', color='olive')
         axes[i-j, 0].plot(val_steps, self.train_losses[f'enc/val_losses'], label='val loss', color='green', linestyle='--', marker='o', markersize=4)
         axes[i-j, 0].set_title(f'Encoder Losses ({self.loss_type_encoder.upper()})')
+        axes[i-j, 0].set_xlabel('Steps')
         axes[i-j, 0].set_ylabel('Loss')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
@@ -1187,6 +1240,7 @@ class NRI(LightningModule):
         # plot encoder beta
         axes[i-j, 1].plot(train_steps, self.train_gains['enc_loss/beta'], label='beta', color='teal')
         axes[i-j, 1].set_title('Encoder Loss Gain (Beta)')
+        axes[i-j, 1].set_xlabel('Steps')
         axes[i-j, 1].set_ylabel('Beta')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
@@ -1213,6 +1267,7 @@ class NRI(LightningModule):
 
         axes[i-j, 0].set_title(f'Decoder Losses ({self.loss_type_decoder.upper()})')
         axes[i-j, 0].set_ylabel('Loss (log)')
+        axes[i-j, 0].set_xlabel('Steps')
         axes[i-j, 0].set_yscale('log')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
@@ -1220,6 +1275,7 @@ class NRI(LightningModule):
         # plot decoder gain
         axes[i-j, 1].plot(train_steps, self.train_gains['dec_loss/alpha'], label='alpha', color='navy')
         axes[i-j, 1].set_title('Decoder Loss Gain (Alpha)')
+        axes[i-j, 1].set_xlabel('Steps')
         axes[i-j, 1].set_ylabel('Alpha')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
@@ -1244,7 +1300,7 @@ class NRI(LightningModule):
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
 
-        fig.suptitle(f"Train and Validation Losses : [{self.model_id} / train]", fontsize=15) # 15
+        fig.suptitle(f"Train and Validation Losses", fontsize=15) # 15
 
         # save loss plot if logger is avaialble
         if self.logger:
@@ -1268,7 +1324,18 @@ class NRI(LightningModule):
         train_steps = [step * self.n for step in range(1, len(self.train_accuracies[f'enc/train_edge_accuracy']) + 1)]
         val_steps = [epoch * self.n_steps_per_epoch for epoch in range(1, len(self.train_accuracies[f'enc/val_edge_accuracy']) + 1)]
 
-        plt.figure(figsize=(8, 4), dpi=100)
+        fig = plt.figure(figsize=(8, 4), dpi=100)
+        ax = fig.gca()
+
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"[{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
 
         # update font settings for plots
         plt.rcParams.update({
@@ -1292,7 +1359,7 @@ class NRI(LightningModule):
                     label='encoder assist end step'
                 )
 
-        plt.title(f'Encoder Edge Prediction Accuracy : [{self.model_id}]', fontsize=10, pad=20)
+        plt.title(f'Encoder Edge Prediction Accuracy ({" ".join(self.run_type.capitalize().split('_'))})', fontsize=10, pad=20)
         plt.xlabel('Steps')
         plt.ylabel('Accuracy')
         plt.ylim(0, 1)
@@ -1321,7 +1388,18 @@ class NRI(LightningModule):
         train_steps = [step * self.n for step in range(1, len(self.train_entropys[f'enc/train_entropy']) + 1)]
         #val_steps = [epoch * self.n_steps_per_epoch for epoch in range(1, len(self.train_entropys[f'enc/val_entropy']) + 1)]
 
-        plt.figure(figsize=(8, 4), dpi=100)
+        fig = plt.figure(figsize=(8, 4), dpi=100)
+        ax = fig.gca()
+
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"[{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
 
         # update font settings for plots
         plt.rcParams.update({
@@ -1330,7 +1408,7 @@ class NRI(LightningModule):
             "mathtext.fontset": "cm",  # Computer Modern math
         })
 
-        plt.plot(train_steps, self.train_entropys[f'enc/train_entropy'], label='train entropy', color='blue')
+        plt.plot(train_steps, self.train_entropys[f'enc/train_entropy'], label='train entropy', color='green')
         # plt.plot(val_steps, self.train_entropys[f'enc/val_entropy'], label='val entropy', color='orange', linestyle='--')
 
         if hasattr(self, 'dec_stabilize_step'):
@@ -1346,7 +1424,7 @@ class NRI(LightningModule):
                     label='encoder assist end step'
                 )
 
-        plt.title(f'Encoder Edge Prediction Entropy : [{self.model_id}]', fontsize=10, pad=20)
+        plt.title(f'Encoder Edge Prediction Entropy ({" ".join(self.run_type.capitalize().split('_'))})', fontsize=10, pad=20)
         plt.xlabel('Steps')
         plt.ylabel('Entropy')
         # plt.ylim(0, 1)
@@ -1361,7 +1439,7 @@ class NRI(LightningModule):
         else:
             print("\nEncoder edge entropy plot not logged as logging is disabled.\n")
             
-    def decoder_output_plot(self, x_pred, x_var, target, rep_num, type:str, is_end=True, sample_idx=0):
+    def decoder_output_plot(self, x_pred, x_var, target, rep_num, type:str, subsystem="System Level", node_split=None, is_end=True, sample_idx=0):
         """
         Plot the decoder output for a given sample.
 
@@ -1375,6 +1453,8 @@ class NRI(LightningModule):
             Target node data for the decoder.
         rep_num : int
             rep label
+        node_split : list
+            List of node indices for each group.
         type : str
             Type of data (e.g., 'train', 'val', 'test', 'predict').
         is_end : bool, optional
@@ -1385,35 +1465,63 @@ class NRI(LightningModule):
 
         if is_end:
             print("\n" + 12*"<" + f" DECODER OUTPUT PLOT ({type.upper()}) " + 12*">") if is_end else None
-            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
+            print(f"\nCreating decoder output plot for {subsystem} for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
+
+        # apply inverse transform to get back to original data space
+        if self.decoder.raw_data_normalizer:
+            x_pred, target = self.apply_inverse_transform(x_pred, target)
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
         x_var = x_var.detach().cpu().numpy()
         target = target.detach().cpu().numpy()
 
+        if node_split is not None:
+            x_pred = x_pred[:, node_split, :, :]
+            x_var = x_var[:, node_split, :, :]
+            target = target[:, node_split, :, :]
+
         batch_size, n_nodes, n_comps, n_dims = x_pred.shape
 
-        node_names = [f"{node_name}" for node_name in self.decoder.data_config.signal_types['group'].keys()]
+        node_names_all = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
+        node_names = [node_names_all[i] for i in node_split] if node_split is not None else node_names_all
 
         # update font settings for plots
         plt.rcParams.update({
             "text.usetex": False,   # No external LaTeX
             "font.family": "serif",
             "mathtext.fontset": "cm",  # Computer Modern math
+            "font.size": 14,
+            'legend.fontsize': 10
         })
+
+        subplot_fontsize = max(14, int(12 - 0.5 * (n_nodes + n_dims) / 2))
+        suptitle_fontsize = subplot_fontsize + 4
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 5, n_nodes * 3), sharex=False, sharey=False, dpi=75)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 6, n_nodes * 4), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.4f} : [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Output Trajectories of {subsystem} ({" ".join(type.capitalize().split('_'))} data)", fontsize=suptitle_fontsize, y=0.98)
+        plt.tight_layout(rect=[0, 0, 0.93, 0.99])
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"(Sample {rep_num[sample_idx]:,.4f}): [{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
+
+        cmap = plt.cm.Paired  # or plt.cm.tab20, plt.cm.Set2, etc.
+        num_colors = cmap.N // 2  # Number of color pairs available 
 
         for node in range(n_nodes):
-            dim_names = self.decoder.data_config.signal_types['group'][node_names[node]]
+            dim_names = self.data_config.signal_types['group'][node_names[node]]
 
             for dim in range(n_dims):
                 ax = axes[node, dim]
@@ -1422,42 +1530,55 @@ class NRI(LightningModule):
                 timesteps = np.arange(n_comps)
                 gt = target[sample_idx, node, :, dim]  # ground truth
                 pred = x_pred[sample_idx, node, :, dim]  # predictions
-                conf_band_upper = pred + 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # upper confidence band
-                conf_band_lower = pred - 1.96 * np.sqrt(x_var[sample_idx, node, :, dim])  # lower confidence band
 
-                # plot ground truth, predictions, and confidence band
-                ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
-                ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
+                std_dev = np.sqrt(x_var[sample_idx, node, :, dim])  # standard deviation
+                conf_band_upper = pred + (pred * 1.96 * std_dev)  # upper confidence band
+                conf_band_lower = pred - (pred * 1.96 * std_dev)  # lower confidence band
+
+                # Pick a color pair for this dimension
+                base_color_gt = cmap(dim * 2 / cmap.N)
+                color_gt = tuple(np.array(mcolors.to_rgb(base_color_gt)) * 0.7)  # darken by 30%
+                color_pred = cmap((dim * 2 + 1) / cmap.N)
+
+                # Ground truth: dotted, lighter
+                ax.plot(timesteps, gt, label="ground truth", color=color_gt, linestyle=":", linewidth=2, alpha=1)
+                # Prediction: solid, more opaque
+                ax.plot(timesteps, pred, label="prediction", color=color_pred, linestyle="-", alpha=1.0)
 
                 prediction_start_step = n_comps - self.decoder.final_pred_steps if self.decoder.is_burn_in else 0
-                ax.axvline(x=prediction_start_step - 1, color='green', linestyle=':', label='start of prediction', linewidth=1.8) if prediction_start_step > 0 else None
+                if prediction_start_step > 0:
+                    ax.axvline(x=prediction_start_step - 1, color='red', linestyle=':', label='start of prediction', linewidth=1.8)
 
                 if self.decoder.show_conf_band:
-                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="confidence band")
+                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color=color_pred, alpha=0.2, label="relative confidence")
 
-                # Add labels and legend
-                #if node == n_nodes - 1:
                 ax.set_xlabel("timesteps")
-                ax.set_ylabel(f"{dim_names[dim]}")
-                         
-                if node == 0 and dim == n_dims - 1:
-                    ax.legend(loc="upper right")
-
-                # add node name as title for each row
-                ax.set_title(f"{node_names[node]} ({dim_names[dim]})", fontsize=11)
-
+                if dim_names[dim] == "acc":
+                    unit = " (m/s²)"
+                    measurement = "Acceleration"
+                elif dim_names[dim] == "vel":
+                    unit = " (m/s)"
+                    measurement = "Velocity"
+                elif dim_names[dim] == "pos":
+                    unit = " (m)"
+                    measurement = "Position"
+                else:
+                    unit = ""
+                ax.set_ylabel(f"{dim_names[dim]}{unit}")
+                ax.legend(loc="upper right")
+                ax.set_title(f"{" ".join(node_names[node].capitalize().split('_'))} ({measurement} v/s Timesteps)", fontsize=subplot_fontsize)
                 ax.grid(True)
 
         # adjust subplot spacing to prevent label overlap
-        plt.subplots_adjust(left=0.15, bottom=0.1, right=0.95, top=0.9, wspace=0.3, hspace=0.6)
+        plt.subplots_adjust(left=0.08, bottom=0.12, right=0.95, top=0.88, wspace=0.3, hspace=0.55)
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/{subsystem}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
 
             if is_end:
-                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)
-                print(f"\nDecoder output plot for rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
+                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{subsystem}_{type}_({self.model_id}).png'), dpi=500)
+                print(f"\nDecoder output plot for {subsystem} and rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
         else:
             if is_end:
                 print("\nDecoder output plot not logged as logging is disabled.\n")

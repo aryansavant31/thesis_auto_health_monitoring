@@ -200,7 +200,7 @@ class DecoderInferConfig:
         self.log_config = load_log_config(framework=DecoderInferConfig.framework, model_path=self.selected_model_path)
 
         self.is_log = True
-        self.version = 1
+        self.version = 5
         
         self.num_workers = 1
         self.batch_size = 50

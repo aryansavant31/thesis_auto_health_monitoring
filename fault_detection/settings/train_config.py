@@ -53,7 +53,7 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 4
+        self.model_num = 6
         self.train_sweep = 1
         self.is_log = True
 
@@ -81,10 +81,10 @@ class FaultDetectorTrainConfig:
         self.ok_percentage = 1
 
     # Input process parameters
-        self.domain_config = get_domain_config('time+freq')
+        self.domain_config = get_domain_config('time')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=3),
+            #get_freq_feat_config('first_n_modes', n_modes=2),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),

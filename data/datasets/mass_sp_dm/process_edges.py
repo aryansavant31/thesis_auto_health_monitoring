@@ -79,12 +79,17 @@ class ProcessRawMSDEdgeData:
                     print(f"No raw edges folder found for {ds_type}/{ds_subtype}. Creating default adjacency matrix.")
                     self.convert_mat_to_hdf5("default", processed_path, self.get_label(ds_type))
                 else:
-                    mat_files = self.find_mat_files()
-                    for mat_file_path, ds_type, ds_subtype in mat_files:
+                    # Only find mat files for this ds_subtype
+                    mat_files = []
+                    for root, _, files in os.walk(edges_path):
+                        for file in files:
+                            if file.endswith('_adj.mat'):
+                                mat_files.append(os.path.join(root, file))
+                    for mat_file_path in mat_files:
                         label = self.get_label(ds_type)
                         self.convert_mat_to_hdf5(mat_file_path, processed_path, label)
 
 if __name__ == "__main__":
-    processor = ProcessRawMSDEdgeData(machine="M005", scenario="scene_1")
+    processor = ProcessRawMSDEdgeData(machine="M012", scenario="scene_1")
     processor.process_all()
     print("Edge adjacency matrices processed and saved.")

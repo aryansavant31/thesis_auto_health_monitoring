@@ -1,0 +1,3336 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m012_(apv+G)]-gru_dec_1.1
+Start Time: 2025-09-29 09:53:12
+End Time: 2025-09-29 11:28:06
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) ds_1    : [OG]
+  (2) ds_2    : [OG]
+  (3) ds_3    : [OG]
+  (4) ds_4    : [OG]
+  (5) ds_5    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+  (5) mass_5   : [acc, pos, vel]
+  (6) mass_6   : [acc, pos, vel]
+  (7) mass_7   : [acc, pos, vel]
+  (8) mass_8   : [acc, pos, vel]
+  (9) mass_9   : [acc, pos, vel]
+  (10) mass_10   : [acc, pos, vel]
+  (11) mass_11   : [acc, pos, vel]
+  (12) mass_12   : [acc, pos, vel]
+
+Node group name: m012
+Signal group name: apv
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 100,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+Target rep_num 1001.0001 found at index 0. This sample will be included in the test set.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 450/500 [OK=450, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 12, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 12, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 9
+torch.Size([50, 12, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (12, 12)
+      n1   n2   n3   n4   n5   n6   n7   n8   n9  n10  n11  n12
+n1   0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+n2   1.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+n3   0.0  1.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+n4   0.0  0.0  1.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+n5   0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+n6   0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+n7   0.0  0.0  0.0  0.0  0.0  1.0  0.0  1.0  0.0  0.0  0.0  0.0
+n8   0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+n9   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0
+n10  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  1.0  0.0
+n11  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  1.0
+n12  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (132, 12)
+        n1   n2   n3   n4   n5   n6   n7   n8   n9  n10  n11  n12
+e12    0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e13    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e14    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e15    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e16    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e17    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e18    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e19    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e110   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e111   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e112   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e21    1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e23    0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e24    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e25    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e26    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e27    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e28    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e29    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e210   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e211   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e212   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e31    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e32    0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e34    0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e35    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e36    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e37    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e38    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e39    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e310   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e311   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e312   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e41    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e42    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e43    0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e45    0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e46    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e47    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e48    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e49    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e410   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e411   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e412   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e51    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e52    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e53    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e54    0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e56    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e57    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e58    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e59    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e510   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e511   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e512   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e61    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e62    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e63    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e64    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e65    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e67    0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+e68    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e69    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e610   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e611   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e612   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e71    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e72    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e73    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e74    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e75    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e76    0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0
+e78    0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0
+e79    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e710   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e711   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e712   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e81    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e82    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e83    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e84    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e85    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e86    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e87    0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+e89    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e810   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e811   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e812   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e91    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e92    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e93    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e94    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e95    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e96    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e97    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e98    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e910   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0
+e911   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e912   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e101   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e102   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e103   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e104   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e105   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e106   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e107   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e108   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e109   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0
+e1011  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0
+e1012  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e111   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e112   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e113   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e114   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e115   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e116   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e117   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e118   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e119   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1110  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0
+e1112  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0
+e121   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e122   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e123   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e124   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e125   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e126   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e127   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e128   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e129   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1210  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1211  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (132, 12)
+        n1   n2   n3   n4   n5   n6   n7   n8   n9  n10  n11  n12
+e12    1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e13    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e14    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e15    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e16    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e17    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e18    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e19    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e110   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e111   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e112   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e21    0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e23    0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e24    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e25    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e26    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e27    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e28    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e29    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e210   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e211   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e212   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e31    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e32    0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e34    0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e35    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e36    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e37    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e38    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e39    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e310   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e311   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e312   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e41    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e42    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e43    0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e45    0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e46    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e47    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e48    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e49    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e410   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e411   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e412   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e51    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e52    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e53    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e54    0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e56    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e57    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e58    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e59    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e510   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e511   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e512   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e61    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e62    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e63    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e64    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e65    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e67    0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0  0.0
+e68    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e69    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e610   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e611   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e612   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e71    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e72    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e73    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e74    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e75    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e76    0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+e78    0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0  0.0
+e79    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e710   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e711   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e712   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e81    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e82    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e83    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e84    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e85    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e86    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e87    0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0  0.0
+e89    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e810   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e811   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e812   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e91    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e92    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e93    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e94    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e95    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e96    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e97    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e98    0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e910   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0  0.0
+e911   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e912   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e101   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e102   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e103   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e104   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e105   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e106   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e107   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e108   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e109   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0
+e1011  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0  0.0
+e1012  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e111   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e112   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e113   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e114   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e115   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e116   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e117   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e118   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e119   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1110  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0
+e1112  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0  0.0
+e121   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e122   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e123   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e124   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e125   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e126   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e127   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e128   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e129   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1210  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0
+e1211  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 1
+msg_out_size: 256
+edge_mlp_config: [[256, 'tanh'], [256, 'tanh'], [256, 'tanh'], [256, 'tanh']]
+out_mlp_config: [[256, 'relu'], [256, 'relu'], [256, 'relu'], [256, 'relu']]
+do_prob: 0
+is_batch_norm: False
+is_xavier_weights: False
+recur_emb_type: gru
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: std
+feat_configs: []
+reduc_config: None
+feat_norm: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+skip_first_edge_type: False
+pred_steps: 10
+is_burn_in: True
+final_pred_steps: 50
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+show_conf_band: False
+
+Continue training from '[m012_(apv+G)]-gru_dec_1.1' in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1'? (y/n):
+Continuing training from '[m012_(apv+G)]-gru_dec_1.1'
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\checkpoints:
+
+['best-model-epoch=45-val_loss=0.0341.ckpt', 'best-model-epoch=94-val_loss=0.0482.ckpt']
+
+Enter the ckpt file to load (include the quotes) (e.g., 'epoch=1-step=1000.ckpt'): Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+---------------------------------------------------------------------------
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Relation matrices are overridden to make fully connected graph in decoder.
+
+Trained Decoder Model Loaded for testing.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\callbacks\model_checkpoint.py:658: Checkpoint directory C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\checkpoints exists and is not empty.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer loaded from checkpoint with 'std' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Step 11280, Epoch 142/191, Batch 0/80
+train_loss: 0.0331
+
+Step 11285, Epoch 142/191, Batch 5/80
+train_loss: 0.1566
+
+Step 11290, Epoch 142/191, Batch 10/80
+train_loss: 0.1224
+
+Step 11295, Epoch 142/191, Batch 15/80
+train_loss: 0.0854
+
+Step 11300, Epoch 142/191, Batch 20/80
+train_loss: 0.0722
+
+Step 11305, Epoch 142/191, Batch 25/80
+train_loss: 0.0674
+
+Step 11310, Epoch 142/191, Batch 30/80
+train_loss: 0.0576
+
+Step 11315, Epoch 142/191, Batch 35/80
+train_loss: 0.0515
+
+Step 11320, Epoch 142/191, Batch 40/80
+train_loss: 0.0491
+
+Step 11325, Epoch 142/191, Batch 45/80
+train_loss: 0.0443
+
+Step 11330, Epoch 142/191, Batch 50/80
+train_loss: 0.0432
+
+Step 11335, Epoch 142/191, Batch 55/80
+train_loss: 0.0423
+
+Step 11340, Epoch 142/191, Batch 60/80
+train_loss: 0.0422
+
+Step 11345, Epoch 142/191, Batch 65/80
+train_loss: 0.0397
+
+Step 11350, Epoch 142/191, Batch 70/80
+train_loss: 0.0441
+
+Step 11355, Epoch 142/191, Batch 75/80
+train_loss: 0.0409
+
+Epoch 142/50 completed, Global Step: 11359
+train_loss: 0.0409, val_loss: 0.0418
+
+---------------------------------------------------------------------------
+
+
+Step 11360, Epoch 143/191, Batch 0/80
+train_loss: 0.0409
+
+Step 11365, Epoch 143/191, Batch 5/80
+train_loss: 0.0416
+
+Step 11370, Epoch 143/191, Batch 10/80
+train_loss: 0.0393
+
+Step 11375, Epoch 143/191, Batch 15/80
+train_loss: 0.0349
+
+Step 11380, Epoch 143/191, Batch 20/80
+train_loss: 0.0379
+
+Step 11385, Epoch 143/191, Batch 25/80
+train_loss: 0.0400
+
+Step 11390, Epoch 143/191, Batch 30/80
+train_loss: 0.0390
+
+Step 11395, Epoch 143/191, Batch 35/80
+train_loss: 0.0371
+
+Step 11400, Epoch 143/191, Batch 40/80
+train_loss: 0.0357
+
+Step 11405, Epoch 143/191, Batch 45/80
+train_loss: 0.0379
+
+Step 11410, Epoch 143/191, Batch 50/80
+train_loss: 0.0351
+
+Step 11415, Epoch 143/191, Batch 55/80
+train_loss: 0.0415
+
+Step 11420, Epoch 143/191, Batch 60/80
+train_loss: 0.0368
+
+Step 11425, Epoch 143/191, Batch 65/80
+train_loss: 0.0387
+
+Step 11430, Epoch 143/191, Batch 70/80
+train_loss: 0.0336
+
+Step 11435, Epoch 143/191, Batch 75/80
+train_loss: 0.0349
+
+Epoch 143/50 completed, Global Step: 11439
+train_loss: 0.0349, val_loss: 0.0344
+
+---------------------------------------------------------------------------
+
+
+Step 11440, Epoch 144/191, Batch 0/80
+train_loss: 0.0330
+
+Step 11445, Epoch 144/191, Batch 5/80
+train_loss: 0.0384
+
+Step 11450, Epoch 144/191, Batch 10/80
+train_loss: 0.0353
+
+Step 11455, Epoch 144/191, Batch 15/80
+train_loss: 0.0368
+
+Step 11460, Epoch 144/191, Batch 20/80
+train_loss: 0.0371
+
+Step 11465, Epoch 144/191, Batch 25/80
+train_loss: 0.0371
+
+Step 11470, Epoch 144/191, Batch 30/80
+train_loss: 0.0371
+
+Step 11475, Epoch 144/191, Batch 35/80
+train_loss: 0.0406
+
+Step 11480, Epoch 144/191, Batch 40/80
+train_loss: 0.0384
+
+Step 11485, Epoch 144/191, Batch 45/80
+train_loss: 0.0392
+
+Step 11490, Epoch 144/191, Batch 50/80
+train_loss: 0.0364
+
+Step 11495, Epoch 144/191, Batch 55/80
+train_loss: 0.0450
+
+Step 11500, Epoch 144/191, Batch 60/80
+train_loss: 0.0442
+
+Step 11505, Epoch 144/191, Batch 65/80
+train_loss: 0.0390
+
+Step 11510, Epoch 144/191, Batch 70/80
+train_loss: 0.0386
+
+Step 11515, Epoch 144/191, Batch 75/80
+train_loss: 0.0377
+
+Epoch 144/50 completed, Global Step: 11519
+train_loss: 0.0377, val_loss: 0.0389
+
+---------------------------------------------------------------------------
+
+
+Step 11520, Epoch 145/191, Batch 0/80
+train_loss: 0.0395
+
+Step 11525, Epoch 145/191, Batch 5/80
+train_loss: 0.0341
+
+Step 11530, Epoch 145/191, Batch 10/80
+train_loss: 0.0352
+
+Step 11535, Epoch 145/191, Batch 15/80
+train_loss: 0.0349
+
+Step 11540, Epoch 145/191, Batch 20/80
+train_loss: 0.0328
+
+Step 11545, Epoch 145/191, Batch 25/80
+train_loss: 0.0354
+
+Step 11550, Epoch 145/191, Batch 30/80
+train_loss: 0.0372
+
+Step 11555, Epoch 145/191, Batch 35/80
+train_loss: 0.0333
+
+Step 11560, Epoch 145/191, Batch 40/80
+train_loss: 0.0375
+
+Step 11565, Epoch 145/191, Batch 45/80
+train_loss: 0.0381
+
+Step 11570, Epoch 145/191, Batch 50/80
+train_loss: 0.0357
+
+Step 11575, Epoch 145/191, Batch 55/80
+train_loss: 0.0372
+
+Step 11580, Epoch 145/191, Batch 60/80
+train_loss: 0.0343
+
+Step 11585, Epoch 145/191, Batch 65/80
+train_loss: 0.0363
+
+Step 11590, Epoch 145/191, Batch 70/80
+train_loss: 0.0332
+
+Step 11595, Epoch 145/191, Batch 75/80
+train_loss: 0.0339
+
+Epoch 145/50 completed, Global Step: 11599
+train_loss: 0.0339, val_loss: 0.0368
+
+---------------------------------------------------------------------------
+
+
+Step 11600, Epoch 146/191, Batch 0/80
+train_loss: 0.0366
+
+Step 11605, Epoch 146/191, Batch 5/80
+train_loss: 0.0363
+
+Step 11610, Epoch 146/191, Batch 10/80
+train_loss: 0.0370
+
+Step 11615, Epoch 146/191, Batch 15/80
+train_loss: 0.0346
+
+Step 11620, Epoch 146/191, Batch 20/80
+train_loss: 0.0362
+
+Step 11625, Epoch 146/191, Batch 25/80
+train_loss: 0.0386
+
+Step 11630, Epoch 146/191, Batch 30/80
+train_loss: 0.0381
+
+Step 11635, Epoch 146/191, Batch 35/80
+train_loss: 0.0351
+
+Step 11640, Epoch 146/191, Batch 40/80
+train_loss: 0.0351
+
+Step 11645, Epoch 146/191, Batch 45/80
+train_loss: 0.0355
+
+Step 11650, Epoch 146/191, Batch 50/80
+train_loss: 0.0337
+
+Step 11655, Epoch 146/191, Batch 55/80
+train_loss: 0.0353
+
+Step 11660, Epoch 146/191, Batch 60/80
+train_loss: 0.0339
+
+Step 11665, Epoch 146/191, Batch 65/80
+train_loss: 0.0337
+
+Step 11670, Epoch 146/191, Batch 70/80
+train_loss: 0.0348
+
+Step 11675, Epoch 146/191, Batch 75/80
+train_loss: 0.0364
+
+Epoch 146/50 completed, Global Step: 11679
+train_loss: 0.0364, val_loss: 0.0397
+
+---------------------------------------------------------------------------
+
+
+Step 11680, Epoch 147/191, Batch 0/80
+train_loss: 0.0391
+
+Step 11685, Epoch 147/191, Batch 5/80
+train_loss: 0.0367
+
+Step 11690, Epoch 147/191, Batch 10/80
+train_loss: 0.0355
+
+Step 11695, Epoch 147/191, Batch 15/80
+train_loss: 0.0357
+
+Step 11700, Epoch 147/191, Batch 20/80
+train_loss: 0.0402
+
+Step 11705, Epoch 147/191, Batch 25/80
+train_loss: 0.0375
+
+Step 11710, Epoch 147/191, Batch 30/80
+train_loss: 0.0384
+
+Step 11715, Epoch 147/191, Batch 35/80
+train_loss: 0.0399
+
+Step 11720, Epoch 147/191, Batch 40/80
+train_loss: 0.0396
+
+Step 11725, Epoch 147/191, Batch 45/80
+train_loss: 0.0354
+
+Step 11730, Epoch 147/191, Batch 50/80
+train_loss: 0.0346
+
+Step 11735, Epoch 147/191, Batch 55/80
+train_loss: 0.0329
+
+Step 11740, Epoch 147/191, Batch 60/80
+train_loss: 0.0413
+
+Step 11745, Epoch 147/191, Batch 65/80
+train_loss: 0.0372
+
+Step 11750, Epoch 147/191, Batch 70/80
+train_loss: 0.0376
+
+Step 11755, Epoch 147/191, Batch 75/80
+train_loss: 0.0333
+
+Epoch 147/50 completed, Global Step: 11759
+train_loss: 0.0333, val_loss: 0.0362
+
+---------------------------------------------------------------------------
+
+
+Step 11760, Epoch 148/191, Batch 0/80
+train_loss: 0.0365
+
+Step 11765, Epoch 148/191, Batch 5/80
+train_loss: 0.0385
+
+Step 11770, Epoch 148/191, Batch 10/80
+train_loss: 0.0333
+
+Step 11775, Epoch 148/191, Batch 15/80
+train_loss: 0.0373
+
+Step 11780, Epoch 148/191, Batch 20/80
+train_loss: 0.0366
+
+Step 11785, Epoch 148/191, Batch 25/80
+train_loss: 0.0329
+
+Step 11790, Epoch 148/191, Batch 30/80
+train_loss: 0.0371
+
+Step 11795, Epoch 148/191, Batch 35/80
+train_loss: 0.0322
+
+Step 11800, Epoch 148/191, Batch 40/80
+train_loss: 0.0372
+
+Step 11805, Epoch 148/191, Batch 45/80
+train_loss: 0.0336
+
+Step 11810, Epoch 148/191, Batch 50/80
+train_loss: 0.0345
+
+Step 11815, Epoch 148/191, Batch 55/80
+train_loss: 0.0344
+
+Step 11820, Epoch 148/191, Batch 60/80
+train_loss: 0.0355
+
+Step 11825, Epoch 148/191, Batch 65/80
+train_loss: 0.0327
+
+Step 11830, Epoch 148/191, Batch 70/80
+train_loss: 0.0328
+
+Step 11835, Epoch 148/191, Batch 75/80
+train_loss: 0.0362
+
+Epoch 148/50 completed, Global Step: 11839
+train_loss: 0.0362, val_loss: 0.0355
+
+---------------------------------------------------------------------------
+
+
+Step 11840, Epoch 149/191, Batch 0/80
+train_loss: 0.0354
+
+Step 11845, Epoch 149/191, Batch 5/80
+train_loss: 0.0373
+
+Step 11850, Epoch 149/191, Batch 10/80
+train_loss: 0.0351
+
+Step 11855, Epoch 149/191, Batch 15/80
+train_loss: 0.0333
+
+Step 11860, Epoch 149/191, Batch 20/80
+train_loss: 0.0336
+
+Step 11865, Epoch 149/191, Batch 25/80
+train_loss: 0.0322
+
+Step 11870, Epoch 149/191, Batch 30/80
+train_loss: 0.0340
+
+Step 11875, Epoch 149/191, Batch 35/80
+train_loss: 0.0336
+
+Step 11880, Epoch 149/191, Batch 40/80
+train_loss: 0.0339
+
+Step 11885, Epoch 149/191, Batch 45/80
+train_loss: 0.0352
+
+Step 11890, Epoch 149/191, Batch 50/80
+train_loss: 0.0357
+
+Step 11895, Epoch 149/191, Batch 55/80
+train_loss: 0.0362
+
+Step 11900, Epoch 149/191, Batch 60/80
+train_loss: 0.0398
+
+Step 11905, Epoch 149/191, Batch 65/80
+train_loss: 0.0387
+
+Step 11910, Epoch 149/191, Batch 70/80
+train_loss: 0.0362
+
+Step 11915, Epoch 149/191, Batch 75/80
+train_loss: 0.0379
+
+Epoch 149/50 completed, Global Step: 11919
+train_loss: 0.0379, val_loss: 0.0367
+
+---------------------------------------------------------------------------
+
+
+Step 11920, Epoch 150/191, Batch 0/80
+train_loss: 0.0368
+
+Step 11925, Epoch 150/191, Batch 5/80
+train_loss: 0.0329
+
+Step 11930, Epoch 150/191, Batch 10/80
+train_loss: 0.0399
+
+Step 11935, Epoch 150/191, Batch 15/80
+train_loss: 0.0360
+
+Step 11940, Epoch 150/191, Batch 20/80
+train_loss: 0.0386
+
+Step 11945, Epoch 150/191, Batch 25/80
+train_loss: 0.0350
+
+Step 11950, Epoch 150/191, Batch 30/80
+train_loss: 0.0330
+
+Step 11955, Epoch 150/191, Batch 35/80
+train_loss: 0.0357
+
+Step 11960, Epoch 150/191, Batch 40/80
+train_loss: 0.0351
+
+Step 11965, Epoch 150/191, Batch 45/80
+train_loss: 0.0338
+
+Step 11970, Epoch 150/191, Batch 50/80
+train_loss: 0.0316
+
+Step 11975, Epoch 150/191, Batch 55/80
+train_loss: 0.0321
+
+Step 11980, Epoch 150/191, Batch 60/80
+train_loss: 0.0350
+
+Step 11985, Epoch 150/191, Batch 65/80
+train_loss: 0.0348
+
+Step 11990, Epoch 150/191, Batch 70/80
+train_loss: 0.0408
+
+Step 11995, Epoch 150/191, Batch 75/80
+train_loss: 0.0411
+
+Epoch 150/50 completed, Global Step: 11999
+train_loss: 0.0411, val_loss: 0.0413
+
+---------------------------------------------------------------------------
+
+
+Step 12000, Epoch 151/191, Batch 0/80
+train_loss: 0.0410
+
+Step 12005, Epoch 151/191, Batch 5/80
+train_loss: 0.0408
+
+Step 12010, Epoch 151/191, Batch 10/80
+train_loss: 0.0351
+
+Step 12015, Epoch 151/191, Batch 15/80
+train_loss: 0.0371
+
+Step 12020, Epoch 151/191, Batch 20/80
+train_loss: 0.0340
+
+Step 12025, Epoch 151/191, Batch 25/80
+train_loss: 0.0337
+
+Step 12030, Epoch 151/191, Batch 30/80
+train_loss: 0.0345
+
+Step 12035, Epoch 151/191, Batch 35/80
+train_loss: 0.0360
+
+Step 12040, Epoch 151/191, Batch 40/80
+train_loss: 0.0353
+
+Step 12045, Epoch 151/191, Batch 45/80
+train_loss: 0.0353
+
+Step 12050, Epoch 151/191, Batch 50/80
+train_loss: 0.0377
+
+Step 12055, Epoch 151/191, Batch 55/80
+train_loss: 0.0312
+
+Step 12060, Epoch 151/191, Batch 60/80
+train_loss: 0.0342
+
+Step 12065, Epoch 151/191, Batch 65/80
+train_loss: 0.0322
+
+Step 12070, Epoch 151/191, Batch 70/80
+train_loss: 0.0351
+
+Step 12075, Epoch 151/191, Batch 75/80
+train_loss: 0.0330
+
+Epoch 151/50 completed, Global Step: 12079
+train_loss: 0.0330, val_loss: 0.0354
+
+---------------------------------------------------------------------------
+
+
+Step 12080, Epoch 152/191, Batch 0/80
+train_loss: 0.0356
+
+Step 12085, Epoch 152/191, Batch 5/80
+train_loss: 0.0344
+
+Step 12090, Epoch 152/191, Batch 10/80
+train_loss: 0.0356
+
+Step 12095, Epoch 152/191, Batch 15/80
+train_loss: 0.0345
+
+Step 12100, Epoch 152/191, Batch 20/80
+train_loss: 0.0363
+
+Step 12105, Epoch 152/191, Batch 25/80
+train_loss: 0.0363
+
+Step 12110, Epoch 152/191, Batch 30/80
+train_loss: 0.0362
+
+Step 12115, Epoch 152/191, Batch 35/80
+train_loss: 0.0367
+
+Step 12120, Epoch 152/191, Batch 40/80
+train_loss: 0.0348
+
+Step 12125, Epoch 152/191, Batch 45/80
+train_loss: 0.0384
+
+Step 12130, Epoch 152/191, Batch 50/80
+train_loss: 0.0374
+
+Step 12135, Epoch 152/191, Batch 55/80
+train_loss: 0.0331
+
+Step 12140, Epoch 152/191, Batch 60/80
+train_loss: 0.0337
+
+Step 12145, Epoch 152/191, Batch 65/80
+train_loss: 0.0350
+
+Step 12150, Epoch 152/191, Batch 70/80
+train_loss: 0.0325
+
+Step 12155, Epoch 152/191, Batch 75/80
+train_loss: 0.0318
+
+Epoch 152/50 completed, Global Step: 12159
+train_loss: 0.0318, val_loss: 0.0359
+
+---------------------------------------------------------------------------
+
+
+Step 12160, Epoch 153/191, Batch 0/80
+train_loss: 0.0360
+
+Step 12165, Epoch 153/191, Batch 5/80
+train_loss: 0.0379
+
+Step 12170, Epoch 153/191, Batch 10/80
+train_loss: 0.0368
+
+Step 12175, Epoch 153/191, Batch 15/80
+train_loss: 0.0333
+
+Step 12180, Epoch 153/191, Batch 20/80
+train_loss: 0.0338
+
+Step 12185, Epoch 153/191, Batch 25/80
+train_loss: 0.0326
+
+Step 12190, Epoch 153/191, Batch 30/80
+train_loss: 0.0330
+
+Step 12195, Epoch 153/191, Batch 35/80
+train_loss: 0.0319
+
+Step 12200, Epoch 153/191, Batch 40/80
+train_loss: 0.0370
+
+Step 12205, Epoch 153/191, Batch 45/80
+train_loss: 0.0325
+
+Step 12210, Epoch 153/191, Batch 50/80
+train_loss: 0.0336
+
+Step 12215, Epoch 153/191, Batch 55/80
+train_loss: 0.0338
+
+Step 12220, Epoch 153/191, Batch 60/80
+train_loss: 0.0329
+
+Step 12225, Epoch 153/191, Batch 65/80
+train_loss: 0.0340
+
+Step 12230, Epoch 153/191, Batch 70/80
+train_loss: 0.0355
+
+Step 12235, Epoch 153/191, Batch 75/80
+train_loss: 0.0352
+
+Epoch 153/50 completed, Global Step: 12239
+train_loss: 0.0352, val_loss: 0.0383
+
+---------------------------------------------------------------------------
+
+
+Step 12240, Epoch 154/191, Batch 0/80
+train_loss: 0.0386
+
+Step 12245, Epoch 154/191, Batch 5/80
+train_loss: 0.0392
+
+Step 12250, Epoch 154/191, Batch 10/80
+train_loss: 0.0409
+
+Step 12255, Epoch 154/191, Batch 15/80
+train_loss: 0.0377
+
+Step 12260, Epoch 154/191, Batch 20/80
+train_loss: 0.0353
+
+Step 12265, Epoch 154/191, Batch 25/80
+train_loss: 0.0352
+
+Step 12270, Epoch 154/191, Batch 30/80
+train_loss: 0.0386
+
+Step 12275, Epoch 154/191, Batch 35/80
+train_loss: 0.0356
+
+Step 12280, Epoch 154/191, Batch 40/80
+train_loss: 0.0399
+
+Step 12285, Epoch 154/191, Batch 45/80
+train_loss: 0.0343
+
+Step 12290, Epoch 154/191, Batch 50/80
+train_loss: 0.0359
+
+Step 12295, Epoch 154/191, Batch 55/80
+train_loss: 0.0344
+
+Step 12300, Epoch 154/191, Batch 60/80
+train_loss: 0.0395
+
+Step 12305, Epoch 154/191, Batch 65/80
+train_loss: 0.0359
+
+Step 12310, Epoch 154/191, Batch 70/80
+train_loss: 0.0348
+
+Step 12315, Epoch 154/191, Batch 75/80
+train_loss: 0.0335
+
+Epoch 154/50 completed, Global Step: 12319
+train_loss: 0.0335, val_loss: 0.0328
+
+---------------------------------------------------------------------------
+
+
+Step 12320, Epoch 155/191, Batch 0/80
+train_loss: 0.0333
+
+Step 12325, Epoch 155/191, Batch 5/80
+train_loss: 0.0317
+
+Step 12330, Epoch 155/191, Batch 10/80
+train_loss: 0.0327
+
+Step 12335, Epoch 155/191, Batch 15/80
+train_loss: 0.0350
+
+Step 12340, Epoch 155/191, Batch 20/80
+train_loss: 0.0327
+
+Step 12345, Epoch 155/191, Batch 25/80
+train_loss: 0.0330
+
+Step 12350, Epoch 155/191, Batch 30/80
+train_loss: 0.0330
+
+Step 12355, Epoch 155/191, Batch 35/80
+train_loss: 0.0339
+
+Step 12360, Epoch 155/191, Batch 40/80
+train_loss: 0.0309
+
+Step 12365, Epoch 155/191, Batch 45/80
+train_loss: 0.0303
+
+Step 12370, Epoch 155/191, Batch 50/80
+train_loss: 0.0352
+
+Step 12375, Epoch 155/191, Batch 55/80
+train_loss: 0.0378
+
+Step 12380, Epoch 155/191, Batch 60/80
+train_loss: 0.0337
+
+Step 12385, Epoch 155/191, Batch 65/80
+train_loss: 0.0340
+
+Step 12390, Epoch 155/191, Batch 70/80
+train_loss: 0.0341
+
+Step 12395, Epoch 155/191, Batch 75/80
+train_loss: 0.0330
+
+Epoch 155/50 completed, Global Step: 12399
+train_loss: 0.0330, val_loss: 0.0341
+
+---------------------------------------------------------------------------
+
+
+Step 12400, Epoch 156/191, Batch 0/80
+train_loss: 0.0339
+
+Step 12405, Epoch 156/191, Batch 5/80
+train_loss: 0.0319
+
+Step 12410, Epoch 156/191, Batch 10/80
+train_loss: 0.0325
+
+Step 12415, Epoch 156/191, Batch 15/80
+train_loss: 0.0377
+
+Step 12420, Epoch 156/191, Batch 20/80
+train_loss: 0.0386
+
+Step 12425, Epoch 156/191, Batch 25/80
+train_loss: 0.0348
+
+Step 12430, Epoch 156/191, Batch 30/80
+train_loss: 0.0356
+
+Step 12435, Epoch 156/191, Batch 35/80
+train_loss: 0.0398
+
+Step 12440, Epoch 156/191, Batch 40/80
+train_loss: 0.0348
+
+Step 12445, Epoch 156/191, Batch 45/80
+train_loss: 0.0368
+
+Step 12450, Epoch 156/191, Batch 50/80
+train_loss: 0.0364
+
+Step 12455, Epoch 156/191, Batch 55/80
+train_loss: 0.0364
+
+Step 12460, Epoch 156/191, Batch 60/80
+train_loss: 0.0352
+
+Step 12465, Epoch 156/191, Batch 65/80
+train_loss: 0.0345
+
+Step 12470, Epoch 156/191, Batch 70/80
+train_loss: 0.0343
+
+Step 12475, Epoch 156/191, Batch 75/80
+train_loss: 0.0309
+
+Epoch 156/50 completed, Global Step: 12479
+train_loss: 0.0309, val_loss: 0.0361
+
+---------------------------------------------------------------------------
+
+
+Step 12480, Epoch 157/191, Batch 0/80
+train_loss: 0.0359
+
+Step 12485, Epoch 157/191, Batch 5/80
+train_loss: 0.0357
+
+Step 12490, Epoch 157/191, Batch 10/80
+train_loss: 0.0353
+
+Step 12495, Epoch 157/191, Batch 15/80
+train_loss: 0.0344
+
+Step 12500, Epoch 157/191, Batch 20/80
+train_loss: 0.0361
+
+Step 12505, Epoch 157/191, Batch 25/80
+train_loss: 0.0360
+
+Step 12510, Epoch 157/191, Batch 30/80
+train_loss: 0.0366
+
+Step 12515, Epoch 157/191, Batch 35/80
+train_loss: 0.0342
+
+Step 12520, Epoch 157/191, Batch 40/80
+train_loss: 0.0336
+
+Step 12525, Epoch 157/191, Batch 45/80
+train_loss: 0.0356
+
+Step 12530, Epoch 157/191, Batch 50/80
+train_loss: 0.0347
+
+Step 12535, Epoch 157/191, Batch 55/80
+train_loss: 0.0348
+
+Step 12540, Epoch 157/191, Batch 60/80
+train_loss: 0.0328
+
+Step 12545, Epoch 157/191, Batch 65/80
+train_loss: 0.0337
+
+Step 12550, Epoch 157/191, Batch 70/80
+train_loss: 0.0350
+
+Step 12555, Epoch 157/191, Batch 75/80
+train_loss: 0.0365
+
+Epoch 157/50 completed, Global Step: 12559
+train_loss: 0.0365, val_loss: 0.0365
+
+---------------------------------------------------------------------------
+
+
+Step 12560, Epoch 158/191, Batch 0/80
+train_loss: 0.0358
+
+Step 12565, Epoch 158/191, Batch 5/80
+train_loss: 0.0346
+
+Step 12570, Epoch 158/191, Batch 10/80
+train_loss: 0.0328
+
+Step 12575, Epoch 158/191, Batch 15/80
+train_loss: 0.0366
+
+Step 12580, Epoch 158/191, Batch 20/80
+train_loss: 0.0392
+
+Step 12585, Epoch 158/191, Batch 25/80
+train_loss: 0.0345
+
+Step 12590, Epoch 158/191, Batch 30/80
+train_loss: 0.0365
+
+Step 12595, Epoch 158/191, Batch 35/80
+train_loss: 0.0336
+
+Step 12600, Epoch 158/191, Batch 40/80
+train_loss: 0.0323
+
+Step 12605, Epoch 158/191, Batch 45/80
+train_loss: 0.0321
+
+Step 12610, Epoch 158/191, Batch 50/80
+train_loss: 0.0346
+
+Step 12615, Epoch 158/191, Batch 55/80
+train_loss: 0.0341
+
+Step 12620, Epoch 158/191, Batch 60/80
+train_loss: 0.0308
+
+Step 12625, Epoch 158/191, Batch 65/80
+train_loss: 0.0362
+
+Step 12630, Epoch 158/191, Batch 70/80
+train_loss: 0.0354
+
+Step 12635, Epoch 158/191, Batch 75/80
+train_loss: 0.0316
+
+Epoch 158/50 completed, Global Step: 12639
+train_loss: 0.0316, val_loss: 0.0325
+
+---------------------------------------------------------------------------
+
+
+Step 12640, Epoch 159/191, Batch 0/80
+train_loss: 0.0327
+
+Step 12645, Epoch 159/191, Batch 5/80
+train_loss: 0.0351
+
+Step 12650, Epoch 159/191, Batch 10/80
+train_loss: 0.0348
+
+Step 12655, Epoch 159/191, Batch 15/80
+train_loss: 0.0333
+
+Step 12660, Epoch 159/191, Batch 20/80
+train_loss: 0.0326
+
+Step 12665, Epoch 159/191, Batch 25/80
+train_loss: 0.0375
+
+Step 12670, Epoch 159/191, Batch 30/80
+train_loss: 0.0394
+
+Step 12675, Epoch 159/191, Batch 35/80
+train_loss: 0.0355
+
+Step 12680, Epoch 159/191, Batch 40/80
+train_loss: 0.0426
+
+Step 12685, Epoch 159/191, Batch 45/80
+train_loss: 0.0354
+
+Step 12690, Epoch 159/191, Batch 50/80
+train_loss: 0.0355
+
+Step 12695, Epoch 159/191, Batch 55/80
+train_loss: 0.0329
+
+Step 12700, Epoch 159/191, Batch 60/80
+train_loss: 0.0370
+
+Step 12705, Epoch 159/191, Batch 65/80
+train_loss: 0.0301
+
+Step 12710, Epoch 159/191, Batch 70/80
+train_loss: 0.0315
+
+Step 12715, Epoch 159/191, Batch 75/80
+train_loss: 0.0343
+
+Epoch 159/50 completed, Global Step: 12719
+train_loss: 0.0343, val_loss: 0.0313
+
+---------------------------------------------------------------------------
+
+
+Step 12720, Epoch 160/191, Batch 0/80
+train_loss: 0.0310
+
+Step 12725, Epoch 160/191, Batch 5/80
+train_loss: 0.0294
+
+Step 12730, Epoch 160/191, Batch 10/80
+train_loss: 0.0335
+
+Step 12735, Epoch 160/191, Batch 15/80
+train_loss: 0.0341
+
+Step 12740, Epoch 160/191, Batch 20/80
+train_loss: 0.0323
+
+Step 12745, Epoch 160/191, Batch 25/80
+train_loss: 0.0315
+
+Step 12750, Epoch 160/191, Batch 30/80
+train_loss: 0.0308
+
+Step 12755, Epoch 160/191, Batch 35/80
+train_loss: 0.0327
+
+Step 12760, Epoch 160/191, Batch 40/80
+train_loss: 0.0307
+
+Step 12765, Epoch 160/191, Batch 45/80
+train_loss: 0.0304
+
+Step 12770, Epoch 160/191, Batch 50/80
+train_loss: 0.0348
+
+Step 12775, Epoch 160/191, Batch 55/80
+train_loss: 0.0357
+
+Step 12780, Epoch 160/191, Batch 60/80
+train_loss: 0.0316
+
+Step 12785, Epoch 160/191, Batch 65/80
+train_loss: 0.0326
+
+Step 12790, Epoch 160/191, Batch 70/80
+train_loss: 0.0334
+
+Step 12795, Epoch 160/191, Batch 75/80
+train_loss: 0.0324
+
+Epoch 160/50 completed, Global Step: 12799
+train_loss: 0.0324, val_loss: 0.0341
+
+---------------------------------------------------------------------------
+
+
+Step 12800, Epoch 161/191, Batch 0/80
+train_loss: 0.0346
+
+Step 12805, Epoch 161/191, Batch 5/80
+train_loss: 0.0353
+
+Step 12810, Epoch 161/191, Batch 10/80
+train_loss: 0.0331
+
+Step 12815, Epoch 161/191, Batch 15/80
+train_loss: 0.0352
+
+Step 12820, Epoch 161/191, Batch 20/80
+train_loss: 0.0309
+
+Step 12825, Epoch 161/191, Batch 25/80
+train_loss: 0.0310
+
+Step 12830, Epoch 161/191, Batch 30/80
+train_loss: 0.0324
+
+Step 12835, Epoch 161/191, Batch 35/80
+train_loss: 0.0320
+
+Step 12840, Epoch 161/191, Batch 40/80
+train_loss: 0.0327
+
+Step 12845, Epoch 161/191, Batch 45/80
+train_loss: 0.0312
+
+Step 12850, Epoch 161/191, Batch 50/80
+train_loss: 0.0339
+
+Step 12855, Epoch 161/191, Batch 55/80
+train_loss: 0.0297
+
+Step 12860, Epoch 161/191, Batch 60/80
+train_loss: 0.0299
+
+Step 12865, Epoch 161/191, Batch 65/80
+train_loss: 0.0306
+
+Step 12870, Epoch 161/191, Batch 70/80
+train_loss: 0.0343
+
+Step 12875, Epoch 161/191, Batch 75/80
+train_loss: 0.0332
+
+Epoch 161/50 completed, Global Step: 12879
+train_loss: 0.0332, val_loss: 0.0342
+
+---------------------------------------------------------------------------
+
+
+Step 12880, Epoch 162/191, Batch 0/80
+train_loss: 0.0336
+
+Step 12885, Epoch 162/191, Batch 5/80
+train_loss: 0.0305
+
+Step 12890, Epoch 162/191, Batch 10/80
+train_loss: 0.0332
+
+Step 12895, Epoch 162/191, Batch 15/80
+train_loss: 0.0311
+
+Step 12900, Epoch 162/191, Batch 20/80
+train_loss: 0.0308
+
+Step 12905, Epoch 162/191, Batch 25/80
+train_loss: 0.0332
+
+Step 12910, Epoch 162/191, Batch 30/80
+train_loss: 0.0319
+
+Step 12915, Epoch 162/191, Batch 35/80
+train_loss: 0.0305
+
+Step 12920, Epoch 162/191, Batch 40/80
+train_loss: 0.0335
+
+Step 12925, Epoch 162/191, Batch 45/80
+train_loss: 0.0338
+
+Step 12930, Epoch 162/191, Batch 50/80
+train_loss: 0.0314
+
+Step 12935, Epoch 162/191, Batch 55/80
+train_loss: 0.0342
+
+Step 12940, Epoch 162/191, Batch 60/80
+train_loss: 0.0328
+
+Step 12945, Epoch 162/191, Batch 65/80
+train_loss: 0.0348
+
+Step 12950, Epoch 162/191, Batch 70/80
+train_loss: 0.0329
+
+Step 12955, Epoch 162/191, Batch 75/80
+train_loss: 0.0333
+
+Epoch 162/50 completed, Global Step: 12959
+train_loss: 0.0333, val_loss: 0.0339
+
+---------------------------------------------------------------------------
+
+
+Step 12960, Epoch 163/191, Batch 0/80
+train_loss: 0.0333
+
+Step 12965, Epoch 163/191, Batch 5/80
+train_loss: 0.0336
+
+Step 12970, Epoch 163/191, Batch 10/80
+train_loss: 0.0340
+
+Step 12975, Epoch 163/191, Batch 15/80
+train_loss: 0.0316
+
+Step 12980, Epoch 163/191, Batch 20/80
+train_loss: 0.0341
+
+Step 12985, Epoch 163/191, Batch 25/80
+train_loss: 0.0407
+
+Step 12990, Epoch 163/191, Batch 30/80
+train_loss: 0.0317
+
+Step 12995, Epoch 163/191, Batch 35/80
+train_loss: 0.0304
+
+Step 13000, Epoch 163/191, Batch 40/80
+train_loss: 0.0346
+
+Step 13005, Epoch 163/191, Batch 45/80
+train_loss: 0.0308
+
+Step 13010, Epoch 163/191, Batch 50/80
+train_loss: 0.0299
+
+Step 13015, Epoch 163/191, Batch 55/80
+train_loss: 0.0357
+
+Step 13020, Epoch 163/191, Batch 60/80
+train_loss: 0.0305
+
+Step 13025, Epoch 163/191, Batch 65/80
+train_loss: 0.0323
+
+Step 13030, Epoch 163/191, Batch 70/80
+train_loss: 0.0332
+
+Step 13035, Epoch 163/191, Batch 75/80
+train_loss: 0.0348
+
+Epoch 163/50 completed, Global Step: 13039
+train_loss: 0.0348, val_loss: 0.0296
+
+---------------------------------------------------------------------------
+
+
+Step 13040, Epoch 164/191, Batch 0/80
+train_loss: 0.0297
+
+Step 13045, Epoch 164/191, Batch 5/80
+train_loss: 0.0351
+
+Step 13050, Epoch 164/191, Batch 10/80
+train_loss: 0.0334
+
+Step 13055, Epoch 164/191, Batch 15/80
+train_loss: 0.0365
+
+Step 13060, Epoch 164/191, Batch 20/80
+train_loss: 0.0332
+
+Step 13065, Epoch 164/191, Batch 25/80
+train_loss: 0.0326
+
+Step 13070, Epoch 164/191, Batch 30/80
+train_loss: 0.0311
+
+Step 13075, Epoch 164/191, Batch 35/80
+train_loss: 0.0375
+
+Step 13080, Epoch 164/191, Batch 40/80
+train_loss: 0.0341
+
+Step 13085, Epoch 164/191, Batch 45/80
+train_loss: 0.0362
+
+Step 13090, Epoch 164/191, Batch 50/80
+train_loss: 0.0363
+
+Step 13095, Epoch 164/191, Batch 55/80
+train_loss: 0.0307
+
+Step 13100, Epoch 164/191, Batch 60/80
+train_loss: 0.0357
+
+Step 13105, Epoch 164/191, Batch 65/80
+train_loss: 0.0345
+
+Step 13110, Epoch 164/191, Batch 70/80
+train_loss: 0.0339
+
+Step 13115, Epoch 164/191, Batch 75/80
+train_loss: 0.0319
+
+Epoch 164/50 completed, Global Step: 13119
+train_loss: 0.0319, val_loss: 0.0319
+
+---------------------------------------------------------------------------
+
+
+Step 13120, Epoch 165/191, Batch 0/80
+train_loss: 0.0316
+
+Step 13125, Epoch 165/191, Batch 5/80
+train_loss: 0.0344
+
+Step 13130, Epoch 165/191, Batch 10/80
+train_loss: 0.0366
+
+Step 13135, Epoch 165/191, Batch 15/80
+train_loss: 0.0306
+
+Step 13140, Epoch 165/191, Batch 20/80
+train_loss: 0.0304
+
+Step 13145, Epoch 165/191, Batch 25/80
+train_loss: 0.0322
+
+Step 13150, Epoch 165/191, Batch 30/80
+train_loss: 0.0307
+
+Step 13155, Epoch 165/191, Batch 35/80
+train_loss: 0.0285
+
+Step 13160, Epoch 165/191, Batch 40/80
+train_loss: 0.0345
+
+Step 13165, Epoch 165/191, Batch 45/80
+train_loss: 0.0311
+
+Step 13170, Epoch 165/191, Batch 50/80
+train_loss: 0.0317
+
+Step 13175, Epoch 165/191, Batch 55/80
+train_loss: 0.0308
+
+Step 13180, Epoch 165/191, Batch 60/80
+train_loss: 0.0299
+
+Step 13185, Epoch 165/191, Batch 65/80
+train_loss: 0.0302
+
+Step 13190, Epoch 165/191, Batch 70/80
+train_loss: 0.0316
+
+Step 13195, Epoch 165/191, Batch 75/80
+train_loss: 0.0361
+
+Epoch 165/50 completed, Global Step: 13199
+train_loss: 0.0361, val_loss: 0.0330
+
+---------------------------------------------------------------------------
+
+
+Step 13200, Epoch 166/191, Batch 0/80
+train_loss: 0.0323
+
+Step 13205, Epoch 166/191, Batch 5/80
+train_loss: 0.0342
+
+Step 13210, Epoch 166/191, Batch 10/80
+train_loss: 0.0339
+
+Step 13215, Epoch 166/191, Batch 15/80
+train_loss: 0.0323
+
+Step 13220, Epoch 166/191, Batch 20/80
+train_loss: 0.0322
+
+Step 13225, Epoch 166/191, Batch 25/80
+train_loss: 0.0364
+
+Step 13230, Epoch 166/191, Batch 30/80
+train_loss: 0.0296
+
+Step 13235, Epoch 166/191, Batch 35/80
+train_loss: 0.0322
+
+Step 13240, Epoch 166/191, Batch 40/80
+train_loss: 0.0356
+
+Step 13245, Epoch 166/191, Batch 45/80
+train_loss: 0.0306
+
+Step 13250, Epoch 166/191, Batch 50/80
+train_loss: 0.0318
+
+Step 13255, Epoch 166/191, Batch 55/80
+train_loss: 0.0301
+
+Step 13260, Epoch 166/191, Batch 60/80
+train_loss: 0.0336
+
+Step 13265, Epoch 166/191, Batch 65/80
+train_loss: 0.0286
+
+Step 13270, Epoch 166/191, Batch 70/80
+train_loss: 0.0298
+
+Step 13275, Epoch 166/191, Batch 75/80
+train_loss: 0.0278
+
+Epoch 166/50 completed, Global Step: 13279
+train_loss: 0.0278, val_loss: 0.0303
+
+---------------------------------------------------------------------------
+
+
+Step 13280, Epoch 167/191, Batch 0/80
+train_loss: 0.0308
+
+Step 13285, Epoch 167/191, Batch 5/80
+train_loss: 0.0319
+
+Step 13290, Epoch 167/191, Batch 10/80
+train_loss: 0.0304
+
+Step 13295, Epoch 167/191, Batch 15/80
+train_loss: 0.0309
+
+Step 13300, Epoch 167/191, Batch 20/80
+train_loss: 0.0302
+
+Step 13305, Epoch 167/191, Batch 25/80
+train_loss: 0.0322
+
+Step 13310, Epoch 167/191, Batch 30/80
+train_loss: 0.0319
+
+Step 13315, Epoch 167/191, Batch 35/80
+train_loss: 0.0293
+
+Step 13320, Epoch 167/191, Batch 40/80
+train_loss: 0.0329
+
+Step 13325, Epoch 167/191, Batch 45/80
+train_loss: 0.0335
+
+Step 13330, Epoch 167/191, Batch 50/80
+train_loss: 0.0359
+
+Step 13335, Epoch 167/191, Batch 55/80
+train_loss: 0.0356
+
+Step 13340, Epoch 167/191, Batch 60/80
+train_loss: 0.0320
+
+Step 13345, Epoch 167/191, Batch 65/80
+train_loss: 0.0338
+
+Step 13350, Epoch 167/191, Batch 70/80
+train_loss: 0.0322
+
+Step 13355, Epoch 167/191, Batch 75/80
+train_loss: 0.0305
+
+Epoch 167/50 completed, Global Step: 13359
+train_loss: 0.0305, val_loss: 0.0329
+
+---------------------------------------------------------------------------
+
+
+Step 13360, Epoch 168/191, Batch 0/80
+train_loss: 0.0329
+
+Step 13365, Epoch 168/191, Batch 5/80
+train_loss: 0.0375
+
+Step 13370, Epoch 168/191, Batch 10/80
+train_loss: 0.0313
+
+Step 13375, Epoch 168/191, Batch 15/80
+train_loss: 0.0337
+
+Step 13380, Epoch 168/191, Batch 20/80
+train_loss: 0.0313
+
+Step 13385, Epoch 168/191, Batch 25/80
+train_loss: 0.0314
+
+Step 13390, Epoch 168/191, Batch 30/80
+train_loss: 0.0307
+
+Step 13395, Epoch 168/191, Batch 35/80
+train_loss: 0.0301
+
+Step 13400, Epoch 168/191, Batch 40/80
+train_loss: 0.0286
+
+Step 13405, Epoch 168/191, Batch 45/80
+train_loss: 0.0314
+
+Step 13410, Epoch 168/191, Batch 50/80
+train_loss: 0.0373
+
+Step 13415, Epoch 168/191, Batch 55/80
+train_loss: 0.0356
+
+Step 13420, Epoch 168/191, Batch 60/80
+train_loss: 0.0337
+
+Step 13425, Epoch 168/191, Batch 65/80
+train_loss: 0.0324
+
+Step 13430, Epoch 168/191, Batch 70/80
+train_loss: 0.0334
+
+Step 13435, Epoch 168/191, Batch 75/80
+train_loss: 0.0317
+
+Epoch 168/50 completed, Global Step: 13439
+train_loss: 0.0317, val_loss: 0.0321
+
+---------------------------------------------------------------------------
+
+
+Step 13440, Epoch 169/191, Batch 0/80
+train_loss: 0.0315
+
+Step 13445, Epoch 169/191, Batch 5/80
+train_loss: 0.0291
+
+Step 13450, Epoch 169/191, Batch 10/80
+train_loss: 0.0340
+
+Step 13455, Epoch 169/191, Batch 15/80
+train_loss: 0.0293
+
+Step 13460, Epoch 169/191, Batch 20/80
+train_loss: 0.0315
+
+Step 13465, Epoch 169/191, Batch 25/80
+train_loss: 0.0340
+
+Step 13470, Epoch 169/191, Batch 30/80
+train_loss: 0.0301
+
+Step 13475, Epoch 169/191, Batch 35/80
+train_loss: 0.0347
+
+Step 13480, Epoch 169/191, Batch 40/80
+train_loss: 0.0318
+
+Step 13485, Epoch 169/191, Batch 45/80
+train_loss: 0.0308
+
+Step 13490, Epoch 169/191, Batch 50/80
+train_loss: 0.0288
+
+Step 13495, Epoch 169/191, Batch 55/80
+train_loss: 0.0298
+
+Step 13500, Epoch 169/191, Batch 60/80
+train_loss: 0.0334
+
+Step 13505, Epoch 169/191, Batch 65/80
+train_loss: 0.0364
+
+Step 13510, Epoch 169/191, Batch 70/80
+train_loss: 0.0346
+
+Step 13515, Epoch 169/191, Batch 75/80
+train_loss: 0.0334
+
+Epoch 169/50 completed, Global Step: 13519
+train_loss: 0.0334, val_loss: 0.0310
+
+---------------------------------------------------------------------------
+
+
+Step 13520, Epoch 170/191, Batch 0/80
+train_loss: 0.0303
+
+Step 13525, Epoch 170/191, Batch 5/80
+train_loss: 0.0344
+
+Step 13530, Epoch 170/191, Batch 10/80
+train_loss: 0.0334
+
+Step 13535, Epoch 170/191, Batch 15/80
+train_loss: 0.0297
+
+Step 13540, Epoch 170/191, Batch 20/80
+train_loss: 0.0316
+
+Step 13545, Epoch 170/191, Batch 25/80
+train_loss: 0.0336
+
+Step 13550, Epoch 170/191, Batch 30/80
+train_loss: 0.0340
+
+Step 13555, Epoch 170/191, Batch 35/80
+train_loss: 0.0284
+
+Step 13560, Epoch 170/191, Batch 40/80
+train_loss: 0.0292
+
+Step 13565, Epoch 170/191, Batch 45/80
+train_loss: 0.0294
+
+Step 13570, Epoch 170/191, Batch 50/80
+train_loss: 0.0344
+
+Step 13575, Epoch 170/191, Batch 55/80
+train_loss: 0.0340
+
+Step 13580, Epoch 170/191, Batch 60/80
+train_loss: 0.0323
+
+Step 13585, Epoch 170/191, Batch 65/80
+train_loss: 0.0300
+
+Step 13590, Epoch 170/191, Batch 70/80
+train_loss: 0.0318
+
+Step 13595, Epoch 170/191, Batch 75/80
+train_loss: 0.0348
+
+Epoch 170/50 completed, Global Step: 13599
+train_loss: 0.0348, val_loss: 0.0333
+
+---------------------------------------------------------------------------
+
+
+Step 13600, Epoch 171/191, Batch 0/80
+train_loss: 0.0322
+
+Step 13605, Epoch 171/191, Batch 5/80
+train_loss: 0.0328
+
+Step 13610, Epoch 171/191, Batch 10/80
+train_loss: 0.0323
+
+Step 13615, Epoch 171/191, Batch 15/80
+train_loss: 0.0318
+
+Step 13620, Epoch 171/191, Batch 20/80
+train_loss: 0.0303
+
+Step 13625, Epoch 171/191, Batch 25/80
+train_loss: 0.0318
+
+Step 13630, Epoch 171/191, Batch 30/80
+train_loss: 0.0333
+
+Step 13635, Epoch 171/191, Batch 35/80
+train_loss: 0.0297
+
+Step 13640, Epoch 171/191, Batch 40/80
+train_loss: 0.0295
+
+Step 13645, Epoch 171/191, Batch 45/80
+train_loss: 0.0312
+
+Step 13650, Epoch 171/191, Batch 50/80
+train_loss: 0.0301
+
+Step 13655, Epoch 171/191, Batch 55/80
+train_loss: 0.0306
+
+Step 13660, Epoch 171/191, Batch 60/80
+train_loss: 0.0300
+
+Step 13665, Epoch 171/191, Batch 65/80
+train_loss: 0.0315
+
+Step 13670, Epoch 171/191, Batch 70/80
+train_loss: 0.0296
+
+Step 13675, Epoch 171/191, Batch 75/80
+train_loss: 0.0347
+
+Epoch 171/50 completed, Global Step: 13679
+train_loss: 0.0347, val_loss: 0.0321
+
+---------------------------------------------------------------------------
+
+
+Step 13680, Epoch 172/191, Batch 0/80
+train_loss: 0.0308
+
+Step 13685, Epoch 172/191, Batch 5/80
+train_loss: 0.0312
+
+Step 13690, Epoch 172/191, Batch 10/80
+train_loss: 0.0301
+
+Step 13695, Epoch 172/191, Batch 15/80
+train_loss: 0.0321
+
+Step 13700, Epoch 172/191, Batch 20/80
+train_loss: 0.0315
+
+Step 13705, Epoch 172/191, Batch 25/80
+train_loss: 0.0327
+
+Step 13710, Epoch 172/191, Batch 30/80
+train_loss: 0.0329
+
+Step 13715, Epoch 172/191, Batch 35/80
+train_loss: 0.0342
+
+Step 13720, Epoch 172/191, Batch 40/80
+train_loss: 0.0307
+
+Step 13725, Epoch 172/191, Batch 45/80
+train_loss: 0.0318
+
+Step 13730, Epoch 172/191, Batch 50/80
+train_loss: 0.0304
+
+Step 13735, Epoch 172/191, Batch 55/80
+train_loss: 0.0319
+
+Step 13740, Epoch 172/191, Batch 60/80
+train_loss: 0.0292
+
+Step 13745, Epoch 172/191, Batch 65/80
+train_loss: 0.0306
+
+Step 13750, Epoch 172/191, Batch 70/80
+train_loss: 0.0293
+
+Step 13755, Epoch 172/191, Batch 75/80
+train_loss: 0.0294
+
+Epoch 172/50 completed, Global Step: 13759
+train_loss: 0.0294, val_loss: 0.0309
+
+---------------------------------------------------------------------------
+
+
+Step 13760, Epoch 173/191, Batch 0/80
+train_loss: 0.0307
+
+Step 13765, Epoch 173/191, Batch 5/80
+train_loss: 0.0312
+
+Step 13770, Epoch 173/191, Batch 10/80
+train_loss: 0.0326
+
+Step 13775, Epoch 173/191, Batch 15/80
+train_loss: 0.0341
+
+Step 13780, Epoch 173/191, Batch 20/80
+train_loss: 0.0308
+
+Step 13785, Epoch 173/191, Batch 25/80
+train_loss: 0.0304
+
+Step 13790, Epoch 173/191, Batch 30/80
+train_loss: 0.0348
+
+Step 13795, Epoch 173/191, Batch 35/80
+train_loss: 0.0322
+
+Step 13800, Epoch 173/191, Batch 40/80
+train_loss: 0.0294
+
+Step 13805, Epoch 173/191, Batch 45/80
+train_loss: 0.0308
+
+Step 13810, Epoch 173/191, Batch 50/80
+train_loss: 0.0317
+
+Step 13815, Epoch 173/191, Batch 55/80
+train_loss: 0.0334
+
+Step 13820, Epoch 173/191, Batch 60/80
+train_loss: 0.0305
+
+Step 13825, Epoch 173/191, Batch 65/80
+train_loss: 0.0314
+
+Step 13830, Epoch 173/191, Batch 70/80
+train_loss: 0.0291
+
+Step 13835, Epoch 173/191, Batch 75/80
+train_loss: 0.0311
+
+Epoch 173/50 completed, Global Step: 13839
+train_loss: 0.0311, val_loss: 0.0315
+
+---------------------------------------------------------------------------
+
+
+Step 13840, Epoch 174/191, Batch 0/80
+train_loss: 0.0322
+
+Step 13845, Epoch 174/191, Batch 5/80
+train_loss: 0.0325
+
+Step 13850, Epoch 174/191, Batch 10/80
+train_loss: 0.0308
+
+Step 13855, Epoch 174/191, Batch 15/80
+train_loss: 0.0278
+
+Step 13860, Epoch 174/191, Batch 20/80
+train_loss: 0.0325
+
+Step 13865, Epoch 174/191, Batch 25/80
+train_loss: 0.0317
+
+Step 13870, Epoch 174/191, Batch 30/80
+train_loss: 0.0285
+
+Step 13875, Epoch 174/191, Batch 35/80
+train_loss: 0.0302
+
+Step 13880, Epoch 174/191, Batch 40/80
+train_loss: 0.0322
+
+Step 13885, Epoch 174/191, Batch 45/80
+train_loss: 0.0293
+
+Step 13890, Epoch 174/191, Batch 50/80
+train_loss: 0.0305
+
+Step 13895, Epoch 174/191, Batch 55/80
+train_loss: 0.0300
+
+Step 13900, Epoch 174/191, Batch 60/80
+train_loss: 0.0305
+
+Step 13905, Epoch 174/191, Batch 65/80
+train_loss: 0.0297
+
+Step 13910, Epoch 174/191, Batch 70/80
+train_loss: 0.0321
+
+Step 13915, Epoch 174/191, Batch 75/80
+train_loss: 0.0322
+
+Epoch 174/50 completed, Global Step: 13919
+train_loss: 0.0322, val_loss: 0.0305
+
+---------------------------------------------------------------------------
+
+
+Step 13920, Epoch 175/191, Batch 0/80
+train_loss: 0.0302
+
+Step 13925, Epoch 175/191, Batch 5/80
+train_loss: 0.0301
+
+Step 13930, Epoch 175/191, Batch 10/80
+train_loss: 0.0302
+
+Step 13935, Epoch 175/191, Batch 15/80
+train_loss: 0.0304
+
+Step 13940, Epoch 175/191, Batch 20/80
+train_loss: 0.0289
+
+Step 13945, Epoch 175/191, Batch 25/80
+train_loss: 0.0279
+
+Step 13950, Epoch 175/191, Batch 30/80
+train_loss: 0.0299
+
+Step 13955, Epoch 175/191, Batch 35/80
+train_loss: 0.0267
+
+Step 13960, Epoch 175/191, Batch 40/80
+train_loss: 0.0269
+
+Step 13965, Epoch 175/191, Batch 45/80
+train_loss: 0.0317
+
+Step 13970, Epoch 175/191, Batch 50/80
+train_loss: 0.0288
+
+Step 13975, Epoch 175/191, Batch 55/80
+train_loss: 0.0295
+
+Step 13980, Epoch 175/191, Batch 60/80
+train_loss: 0.0303
+
+Step 13985, Epoch 175/191, Batch 65/80
+train_loss: 0.0318
+
+Step 13990, Epoch 175/191, Batch 70/80
+train_loss: 0.0311
+
+Step 13995, Epoch 175/191, Batch 75/80
+train_loss: 0.0267
+
+Epoch 175/50 completed, Global Step: 13999
+train_loss: 0.0267, val_loss: 0.0308
+
+---------------------------------------------------------------------------
+
+
+Step 14000, Epoch 176/191, Batch 0/80
+train_loss: 0.0314
+
+Step 14005, Epoch 176/191, Batch 5/80
+train_loss: 0.0322
+
+Step 14010, Epoch 176/191, Batch 10/80
+train_loss: 0.0346
+
+Step 14015, Epoch 176/191, Batch 15/80
+train_loss: 0.0307
+
+Step 14020, Epoch 176/191, Batch 20/80
+train_loss: 0.0282
+
+Step 14025, Epoch 176/191, Batch 25/80
+train_loss: 0.0331
+
+Step 14030, Epoch 176/191, Batch 30/80
+train_loss: 0.0347
+
+Step 14035, Epoch 176/191, Batch 35/80
+train_loss: 0.0328
+
+Step 14040, Epoch 176/191, Batch 40/80
+train_loss: 0.0318
+
+Step 14045, Epoch 176/191, Batch 45/80
+train_loss: 0.0333
+
+Step 14050, Epoch 176/191, Batch 50/80
+train_loss: 0.0284
+
+Step 14055, Epoch 176/191, Batch 55/80
+train_loss: 0.0326
+
+Step 14060, Epoch 176/191, Batch 60/80
+train_loss: 0.0841
+
+Step 14065, Epoch 176/191, Batch 65/80
+train_loss: 0.0879
+
+Step 14070, Epoch 176/191, Batch 70/80
+train_loss: 0.0837
+
+Step 14075, Epoch 176/191, Batch 75/80
+train_loss: 0.0725
+
+Epoch 176/50 completed, Global Step: 14079
+train_loss: 0.0725, val_loss: 0.0681
+
+---------------------------------------------------------------------------
+
+
+Step 14080, Epoch 177/191, Batch 0/80
+train_loss: 0.0693
+
+Step 14085, Epoch 177/191, Batch 5/80
+train_loss: 0.0631
+
+Step 14090, Epoch 177/191, Batch 10/80
+train_loss: 0.0575
+
+Step 14095, Epoch 177/191, Batch 15/80
+train_loss: 0.0540
+
+Step 14100, Epoch 177/191, Batch 20/80
+train_loss: 0.0526
+
+Step 14105, Epoch 177/191, Batch 25/80
+train_loss: 0.0519
+
+Step 14110, Epoch 177/191, Batch 30/80
+train_loss: 0.0473
+
+Step 14115, Epoch 177/191, Batch 35/80
+train_loss: 0.0464
+
+Step 14120, Epoch 177/191, Batch 40/80
+train_loss: 0.0444
+
+Step 14125, Epoch 177/191, Batch 45/80
+train_loss: 0.0469
+
+Step 14130, Epoch 177/191, Batch 50/80
+train_loss: 0.0425
+
+Step 14135, Epoch 177/191, Batch 55/80
+train_loss: 0.0423
+
+Step 14140, Epoch 177/191, Batch 60/80
+train_loss: 0.0429
+
+Step 14145, Epoch 177/191, Batch 65/80
+train_loss: 0.0389
+
+Step 14150, Epoch 177/191, Batch 70/80
+train_loss: 0.0412
+
+Step 14155, Epoch 177/191, Batch 75/80
+train_loss: 0.0387
+
+Epoch 177/50 completed, Global Step: 14159
+train_loss: 0.0387, val_loss: 0.0405
+
+---------------------------------------------------------------------------
+
+
+Step 14160, Epoch 178/191, Batch 0/80
+train_loss: 0.0404
+
+Step 14165, Epoch 178/191, Batch 5/80
+train_loss: 0.0370
+
+Step 14170, Epoch 178/191, Batch 10/80
+train_loss: 0.0377
+
+Step 14175, Epoch 178/191, Batch 15/80
+train_loss: 0.0376
+
+Step 14180, Epoch 178/191, Batch 20/80
+train_loss: 0.0386
+
+Step 14185, Epoch 178/191, Batch 25/80
+train_loss: 0.0359
+
+Step 14190, Epoch 178/191, Batch 30/80
+train_loss: 0.0363
+
+Step 14195, Epoch 178/191, Batch 35/80
+train_loss: 0.0354
+
+Step 14200, Epoch 178/191, Batch 40/80
+train_loss: 0.0357
+
+Step 14205, Epoch 178/191, Batch 45/80
+train_loss: 0.0355
+
+Step 14210, Epoch 178/191, Batch 50/80
+train_loss: 0.0351
+
+Step 14215, Epoch 178/191, Batch 55/80
+train_loss: 0.0370
+
+Step 14220, Epoch 178/191, Batch 60/80
+train_loss: 0.0332
+
+Step 14225, Epoch 178/191, Batch 65/80
+train_loss: 0.0334
+
+Step 14230, Epoch 178/191, Batch 70/80
+train_loss: 0.0384
+
+Step 14235, Epoch 178/191, Batch 75/80
+train_loss: 0.0376
+
+Epoch 178/50 completed, Global Step: 14239
+train_loss: 0.0376, val_loss: 0.0386
+
+---------------------------------------------------------------------------
+
+
+Step 14240, Epoch 179/191, Batch 0/80
+train_loss: 0.0391
+
+Step 14245, Epoch 179/191, Batch 5/80
+train_loss: 0.0331
+
+Step 14250, Epoch 179/191, Batch 10/80
+train_loss: 0.0395
+
+Step 14255, Epoch 179/191, Batch 15/80
+train_loss: 0.0409
+
+Step 14260, Epoch 179/191, Batch 20/80
+train_loss: 0.0368
+
+Step 14265, Epoch 179/191, Batch 25/80
+train_loss: 0.0376
+
+Step 14270, Epoch 179/191, Batch 30/80
+train_loss: 0.0369
+
+Step 14275, Epoch 179/191, Batch 35/80
+train_loss: 0.0358
+
+Step 14280, Epoch 179/191, Batch 40/80
+train_loss: 0.0326
+
+Step 14285, Epoch 179/191, Batch 45/80
+train_loss: 0.0329
+
+Step 14290, Epoch 179/191, Batch 50/80
+train_loss: 0.0361
+
+Step 14295, Epoch 179/191, Batch 55/80
+train_loss: 0.0363
+
+Step 14300, Epoch 179/191, Batch 60/80
+train_loss: 0.0351
+
+Step 14305, Epoch 179/191, Batch 65/80
+train_loss: 0.0375
+
+Step 14310, Epoch 179/191, Batch 70/80
+train_loss: 0.0339
+
+Step 14315, Epoch 179/191, Batch 75/80
+train_loss: 0.0317
+
+Epoch 179/50 completed, Global Step: 14319
+train_loss: 0.0317, val_loss: 0.0325
+
+---------------------------------------------------------------------------
+
+
+Step 14320, Epoch 180/191, Batch 0/80
+train_loss: 0.0323
+
+Step 14325, Epoch 180/191, Batch 5/80
+train_loss: 0.0363
+
+Step 14330, Epoch 180/191, Batch 10/80
+train_loss: 0.0372
+
+Step 14335, Epoch 180/191, Batch 15/80
+train_loss: 0.0346
+
+Step 14340, Epoch 180/191, Batch 20/80
+train_loss: 0.0322
+
+Step 14345, Epoch 180/191, Batch 25/80
+train_loss: 0.0331
+
+Step 14350, Epoch 180/191, Batch 30/80
+train_loss: 0.0322
+
+Step 14355, Epoch 180/191, Batch 35/80
+train_loss: 0.0313
+
+Step 14360, Epoch 180/191, Batch 40/80
+train_loss: 0.0318
+
+Step 14365, Epoch 180/191, Batch 45/80
+train_loss: 0.0349
+
+Step 14370, Epoch 180/191, Batch 50/80
+train_loss: 0.0323
+
+Step 14375, Epoch 180/191, Batch 55/80
+train_loss: 0.0305
+
+Step 14380, Epoch 180/191, Batch 60/80
+train_loss: 0.0284
+
+Step 14385, Epoch 180/191, Batch 65/80
+train_loss: 0.0336
+
+Step 14390, Epoch 180/191, Batch 70/80
+train_loss: 0.0323
+
+Step 14395, Epoch 180/191, Batch 75/80
+train_loss: 0.0340
+
+Epoch 180/50 completed, Global Step: 14399
+train_loss: 0.0340, val_loss: 0.0307
+
+---------------------------------------------------------------------------
+
+
+Step 14400, Epoch 181/191, Batch 0/80
+train_loss: 0.0303
+
+Step 14405, Epoch 181/191, Batch 5/80
+train_loss: 0.0310
+
+Step 14410, Epoch 181/191, Batch 10/80
+train_loss: 0.0313
+
+Step 14415, Epoch 181/191, Batch 15/80
+train_loss: 0.0306
+
+Step 14420, Epoch 181/191, Batch 20/80
+train_loss: 0.0327
+
+Step 14425, Epoch 181/191, Batch 25/80
+train_loss: 0.0303
+
+Step 14430, Epoch 181/191, Batch 30/80
+train_loss: 0.0318
+
+Step 14435, Epoch 181/191, Batch 35/80
+train_loss: 0.0310
+
+Step 14440, Epoch 181/191, Batch 40/80
+train_loss: 0.0308
+
+Step 14445, Epoch 181/191, Batch 45/80
+train_loss: 0.0370
+
+Step 14450, Epoch 181/191, Batch 50/80
+train_loss: 0.0306
+
+Step 14455, Epoch 181/191, Batch 55/80
+train_loss: 0.0321
+
+Step 14460, Epoch 181/191, Batch 60/80
+train_loss: 0.0319
+
+Step 14465, Epoch 181/191, Batch 65/80
+train_loss: 0.0315
+
+Step 14470, Epoch 181/191, Batch 70/80
+train_loss: 0.0324
+
+Step 14475, Epoch 181/191, Batch 75/80
+train_loss: 0.0293
+
+Epoch 181/50 completed, Global Step: 14479
+train_loss: 0.0293, val_loss: 0.0309
+
+---------------------------------------------------------------------------
+
+
+Step 14480, Epoch 182/191, Batch 0/80
+train_loss: 0.0308
+
+Step 14485, Epoch 182/191, Batch 5/80
+train_loss: 0.0280
+
+Step 14490, Epoch 182/191, Batch 10/80
+train_loss: 0.0285
+
+Step 14495, Epoch 182/191, Batch 15/80
+train_loss: 0.0309
+
+Step 14500, Epoch 182/191, Batch 20/80
+train_loss: 0.0304
+
+Step 14505, Epoch 182/191, Batch 25/80
+train_loss: 0.0350
+
+Step 14510, Epoch 182/191, Batch 30/80
+train_loss: 0.0314
+
+Step 14515, Epoch 182/191, Batch 35/80
+train_loss: 0.0291
+
+Step 14520, Epoch 182/191, Batch 40/80
+train_loss: 0.0303
+
+Step 14525, Epoch 182/191, Batch 45/80
+train_loss: 0.0278
+
+Step 14530, Epoch 182/191, Batch 50/80
+train_loss: 0.0311
+
+Step 14535, Epoch 182/191, Batch 55/80
+train_loss: 0.0342
+
+Step 14540, Epoch 182/191, Batch 60/80
+train_loss: 0.0303
+
+Step 14545, Epoch 182/191, Batch 65/80
+train_loss: 0.0309
+
+Step 14550, Epoch 182/191, Batch 70/80
+train_loss: 0.0354
+
+Step 14555, Epoch 182/191, Batch 75/80
+train_loss: 0.0347
+
+Epoch 182/50 completed, Global Step: 14559
+train_loss: 0.0347, val_loss: 0.0295
+
+---------------------------------------------------------------------------
+
+
+Step 14560, Epoch 183/191, Batch 0/80
+train_loss: 0.0290
+
+Step 14565, Epoch 183/191, Batch 5/80
+train_loss: 0.0312
+
+Step 14570, Epoch 183/191, Batch 10/80
+train_loss: 0.0325
+
+Step 14575, Epoch 183/191, Batch 15/80
+train_loss: 0.0333
+
+Step 14580, Epoch 183/191, Batch 20/80
+train_loss: 0.0333
+
+Step 14585, Epoch 183/191, Batch 25/80
+train_loss: 0.0285
+
+Step 14590, Epoch 183/191, Batch 30/80
+train_loss: 0.0327
+
+Step 14595, Epoch 183/191, Batch 35/80
+train_loss: 0.0332
+
+Step 14600, Epoch 183/191, Batch 40/80
+train_loss: 0.0299
+
+Step 14605, Epoch 183/191, Batch 45/80
+train_loss: 0.0299
+
+Step 14610, Epoch 183/191, Batch 50/80
+train_loss: 0.0317
+
+Step 14615, Epoch 183/191, Batch 55/80
+train_loss: 0.0312
+
+Step 14620, Epoch 183/191, Batch 60/80
+train_loss: 0.0295
+
+Step 14625, Epoch 183/191, Batch 65/80
+train_loss: 0.0330
+
+Step 14630, Epoch 183/191, Batch 70/80
+train_loss: 0.0353
+
+Step 14635, Epoch 183/191, Batch 75/80
+train_loss: 0.0338
+
+Epoch 183/50 completed, Global Step: 14639
+train_loss: 0.0338, val_loss: 0.0298
+
+---------------------------------------------------------------------------
+
+
+Step 14640, Epoch 184/191, Batch 0/80
+train_loss: 0.0294
+
+Step 14645, Epoch 184/191, Batch 5/80
+train_loss: 0.0300
+
+Step 14650, Epoch 184/191, Batch 10/80
+train_loss: 0.0295
+
+Step 14655, Epoch 184/191, Batch 15/80
+train_loss: 0.0337
+
+Step 14660, Epoch 184/191, Batch 20/80
+train_loss: 0.0318
+
+Step 14665, Epoch 184/191, Batch 25/80
+train_loss: 0.0298
+
+Step 14670, Epoch 184/191, Batch 30/80
+train_loss: 0.0304
+
+Step 14675, Epoch 184/191, Batch 35/80
+train_loss: 0.0311
+
+Step 14680, Epoch 184/191, Batch 40/80
+train_loss: 0.0280
+
+Step 14685, Epoch 184/191, Batch 45/80
+train_loss: 0.0291
+
+Step 14690, Epoch 184/191, Batch 50/80
+train_loss: 0.0312
+
+Step 14695, Epoch 184/191, Batch 55/80
+train_loss: 0.0313
+
+Step 14700, Epoch 184/191, Batch 60/80
+train_loss: 0.0294
+
+Step 14705, Epoch 184/191, Batch 65/80
+train_loss: 0.0317
+
+Step 14710, Epoch 184/191, Batch 70/80
+train_loss: 0.0280
+
+Step 14715, Epoch 184/191, Batch 75/80
+train_loss: 0.0319
+
+Epoch 184/50 completed, Global Step: 14719
+train_loss: 0.0319, val_loss: 0.0345
+
+---------------------------------------------------------------------------
+
+
+Step 14720, Epoch 185/191, Batch 0/80
+train_loss: 0.0349
+
+Step 14725, Epoch 185/191, Batch 5/80
+train_loss: 0.0284
+
+Step 14730, Epoch 185/191, Batch 10/80
+train_loss: 0.0319
+
+Step 14735, Epoch 185/191, Batch 15/80
+train_loss: 0.0278
+
+Step 14740, Epoch 185/191, Batch 20/80
+train_loss: 0.0275
+
+Step 14745, Epoch 185/191, Batch 25/80
+train_loss: 0.0267
+
+Step 14750, Epoch 185/191, Batch 30/80
+train_loss: 0.0268
+
+Step 14755, Epoch 185/191, Batch 35/80
+train_loss: 0.0305
+
+Step 14760, Epoch 185/191, Batch 40/80
+train_loss: 0.0281
+
+Step 14765, Epoch 185/191, Batch 45/80
+train_loss: 0.0286
+
+Step 14770, Epoch 185/191, Batch 50/80
+train_loss: 0.0308
+
+Step 14775, Epoch 185/191, Batch 55/80
+train_loss: 0.0275
+
+Step 14780, Epoch 185/191, Batch 60/80
+train_loss: 0.0300
+
+Step 14785, Epoch 185/191, Batch 65/80
+train_loss: 0.0324
+
+Step 14790, Epoch 185/191, Batch 70/80
+train_loss: 0.0323
+
+Step 14795, Epoch 185/191, Batch 75/80
+train_loss: 0.0311
+
+Epoch 185/50 completed, Global Step: 14799
+train_loss: 0.0311, val_loss: 0.0307
+
+---------------------------------------------------------------------------
+
+
+Step 14800, Epoch 186/191, Batch 0/80
+train_loss: 0.0305
+
+Step 14805, Epoch 186/191, Batch 5/80
+train_loss: 0.0298
+
+Step 14810, Epoch 186/191, Batch 10/80
+train_loss: 0.0283
+
+Step 14815, Epoch 186/191, Batch 15/80
+train_loss: 0.0291
+
+Step 14820, Epoch 186/191, Batch 20/80
+train_loss: 0.0286
+
+Step 14825, Epoch 186/191, Batch 25/80
+train_loss: 0.0283
+
+Step 14830, Epoch 186/191, Batch 30/80
+train_loss: 0.0284
+
+Step 14835, Epoch 186/191, Batch 35/80
+train_loss: 0.0303
+
+Step 14840, Epoch 186/191, Batch 40/80
+train_loss: 0.0284
+
+Step 14845, Epoch 186/191, Batch 45/80
+train_loss: 0.0281
+
+Step 14850, Epoch 186/191, Batch 50/80
+train_loss: 0.0280
+
+Step 14855, Epoch 186/191, Batch 55/80
+train_loss: 0.0278
+
+Step 14860, Epoch 186/191, Batch 60/80
+train_loss: 0.0333
+
+Step 14865, Epoch 186/191, Batch 65/80
+train_loss: 0.0275
+
+Step 14870, Epoch 186/191, Batch 70/80
+train_loss: 0.0266
+
+Step 14875, Epoch 186/191, Batch 75/80
+train_loss: 0.0277
+
+Epoch 186/50 completed, Global Step: 14879
+train_loss: 0.0277, val_loss: 0.0311
+
+---------------------------------------------------------------------------
+
+
+Step 14880, Epoch 187/191, Batch 0/80
+train_loss: 0.0310
+
+Step 14885, Epoch 187/191, Batch 5/80
+train_loss: 0.0289
+
+Step 14890, Epoch 187/191, Batch 10/80
+train_loss: 0.0292
+
+Step 14895, Epoch 187/191, Batch 15/80
+train_loss: 0.0308
+
+Step 14900, Epoch 187/191, Batch 20/80
+train_loss: 0.0291
+
+Step 14905, Epoch 187/191, Batch 25/80
+train_loss: 0.0332
+
+Step 14910, Epoch 187/191, Batch 30/80
+train_loss: 0.0282
+
+Step 14915, Epoch 187/191, Batch 35/80
+train_loss: 0.0287
+
+Step 14920, Epoch 187/191, Batch 40/80
+train_loss: 0.0274
+
+Step 14925, Epoch 187/191, Batch 45/80
+train_loss: 0.0290
+
+Step 14930, Epoch 187/191, Batch 50/80
+train_loss: 0.0273
+
+Step 14935, Epoch 187/191, Batch 55/80
+train_loss: 0.0295
+
+Step 14940, Epoch 187/191, Batch 60/80
+train_loss: 0.0278
+
+Step 14945, Epoch 187/191, Batch 65/80
+train_loss: 0.0283
+
+Step 14950, Epoch 187/191, Batch 70/80
+train_loss: 0.0291
+
+Step 14955, Epoch 187/191, Batch 75/80
+train_loss: 0.0301
+
+Epoch 187/50 completed, Global Step: 14959
+train_loss: 0.0301, val_loss: 0.0270
+
+---------------------------------------------------------------------------
+
+
+Step 14960, Epoch 188/191, Batch 0/80
+train_loss: 0.0273
+
+Step 14965, Epoch 188/191, Batch 5/80
+train_loss: 0.0286
+
+Step 14970, Epoch 188/191, Batch 10/80
+train_loss: 0.0277
+
+Step 14975, Epoch 188/191, Batch 15/80
+train_loss: 0.0304
+
+Step 14980, Epoch 188/191, Batch 20/80
+train_loss: 0.0282
+
+Step 14985, Epoch 188/191, Batch 25/80
+train_loss: 0.0318
+
+Step 14990, Epoch 188/191, Batch 30/80
+train_loss: 0.0281
+
+Step 14995, Epoch 188/191, Batch 35/80
+train_loss: 0.0343
+
+Step 15000, Epoch 188/191, Batch 40/80
+train_loss: 0.0292
+
+Step 15005, Epoch 188/191, Batch 45/80
+train_loss: 0.0283
+
+Step 15010, Epoch 188/191, Batch 50/80
+train_loss: 0.0306
+
+Step 15015, Epoch 188/191, Batch 55/80
+train_loss: 0.0290
+
+Step 15020, Epoch 188/191, Batch 60/80
+train_loss: 0.0317
+
+Step 15025, Epoch 188/191, Batch 65/80
+train_loss: 0.0269
+
+Step 15030, Epoch 188/191, Batch 70/80
+train_loss: 0.0290
+
+Step 15035, Epoch 188/191, Batch 75/80
+train_loss: 0.0287
+
+Epoch 188/50 completed, Global Step: 15039
+train_loss: 0.0287, val_loss: 0.0271
+
+---------------------------------------------------------------------------
+
+
+Step 15040, Epoch 189/191, Batch 0/80
+train_loss: 0.0269
+
+Step 15045, Epoch 189/191, Batch 5/80
+train_loss: 0.0294
+
+Step 15050, Epoch 189/191, Batch 10/80
+train_loss: 0.0273
+
+Step 15055, Epoch 189/191, Batch 15/80
+train_loss: 0.0306
+
+Step 15060, Epoch 189/191, Batch 20/80
+train_loss: 0.0291
+
+Step 15065, Epoch 189/191, Batch 25/80
+train_loss: 0.0319
+
+Step 15070, Epoch 189/191, Batch 30/80
+train_loss: 0.0301
+
+Step 15075, Epoch 189/191, Batch 35/80
+train_loss: 0.0322
+
+Step 15080, Epoch 189/191, Batch 40/80
+train_loss: 0.0278
+
+Step 15085, Epoch 189/191, Batch 45/80
+train_loss: 0.0298
+
+Step 15090, Epoch 189/191, Batch 50/80
+train_loss: 0.0295
+
+Step 15095, Epoch 189/191, Batch 55/80
+train_loss: 0.0274
+
+Step 15100, Epoch 189/191, Batch 60/80
+train_loss: 0.0271
+
+Step 15105, Epoch 189/191, Batch 65/80
+train_loss: 0.0283
+
+Step 15110, Epoch 189/191, Batch 70/80
+train_loss: 0.0266
+
+Step 15115, Epoch 189/191, Batch 75/80
+train_loss: 0.0299
+
+Epoch 189/50 completed, Global Step: 15119
+train_loss: 0.0299, val_loss: 0.0284
+
+---------------------------------------------------------------------------
+
+
+Step 15120, Epoch 190/191, Batch 0/80
+train_loss: 0.0280
+
+Step 15125, Epoch 190/191, Batch 5/80
+train_loss: 0.0272
+
+Step 15130, Epoch 190/191, Batch 10/80
+train_loss: 0.0293
+
+Step 15135, Epoch 190/191, Batch 15/80
+train_loss: 0.0275
+
+Step 15140, Epoch 190/191, Batch 20/80
+train_loss: 0.0263
+
+Step 15145, Epoch 190/191, Batch 25/80
+train_loss: 0.0331
+
+Step 15150, Epoch 190/191, Batch 30/80
+train_loss: 0.0332
+
+Step 15155, Epoch 190/191, Batch 35/80
+train_loss: 0.0319
+
+Step 15160, Epoch 190/191, Batch 40/80
+train_loss: 0.0310
+
+Step 15165, Epoch 190/191, Batch 45/80
+train_loss: 0.0300
+
+Step 15170, Epoch 190/191, Batch 50/80
+train_loss: 0.0286
+
+Step 15175, Epoch 190/191, Batch 55/80
+train_loss: 0.0283
+
+Step 15180, Epoch 190/191, Batch 60/80
+train_loss: 0.0277
+
+Step 15185, Epoch 190/191, Batch 65/80
+train_loss: 0.0264
+
+Step 15190, Epoch 190/191, Batch 70/80
+train_loss: 0.0284
+
+Step 15195, Epoch 190/191, Batch 75/80
+train_loss: 0.0269
+
+Epoch 190/50 completed, Global Step: 15199
+train_loss: 0.0269, val_loss: 0.0282
+
+---------------------------------------------------------------------------
+
+
+Step 15200, Epoch 191/191, Batch 0/80
+train_loss: 0.0287
+
+Step 15205, Epoch 191/191, Batch 5/80
+train_loss: 0.0265
+
+Step 15210, Epoch 191/191, Batch 10/80
+train_loss: 0.0277
+
+Step 15215, Epoch 191/191, Batch 15/80
+train_loss: 0.0265
+
+Step 15220, Epoch 191/191, Batch 20/80
+train_loss: 0.0255
+
+Step 15225, Epoch 191/191, Batch 25/80
+train_loss: 0.0285
+
+Step 15230, Epoch 191/191, Batch 30/80
+train_loss: 0.0380
+
+Step 15235, Epoch 191/191, Batch 35/80
+train_loss: 0.0347
+
+Step 15240, Epoch 191/191, Batch 40/80
+train_loss: 0.0329
+
+Step 15245, Epoch 191/191, Batch 45/80
+train_loss: 0.0312
+
+Step 15250, Epoch 191/191, Batch 50/80
+train_loss: 0.0273
+
+Step 15255, Epoch 191/191, Batch 55/80
+train_loss: 0.0329
+
+Step 15260, Epoch 191/191, Batch 60/80
+train_loss: 0.0345
+
+Step 15265, Epoch 191/191, Batch 65/80
+train_loss: 0.0300
+
+Step 15270, Epoch 191/191, Batch 70/80
+train_loss: 0.0281
+
+Step 15275, Epoch 191/191, Batch 75/80
+train_loss: 0.0277
+
+Epoch 191/50 completed, Global Step: 15279
+train_loss: 0.0277, val_loss: 0.0278
+
+---------------------------------------------------------------------------
+
+
+Training completed in 5580.95 seconds or 93.02 minutes or 1.5502637430032096 hours.
+Total training steps: 15279
+
+Subsystem losses for train data:
+SS_1_train_loss: 0.0177
+SS_2_train_loss: 0.0413
+SS_3_train_loss: 0.0365
+SS_4_train_loss: 0.0397
+
+Subsystem losses for val data:
+SS_1_val_loss: 0.0146
+SS_2_val_loss: 0.0382
+SS_3_val_loss: 0.0349
+SS_4_val_loss: 0.0380
+
+Training completed for model '[m012_(apv+G)]-gru_dec_1.1'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m012_(apv+G)]-gru_dec_1.1...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,003.0339' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_1 and rep '1003.0339' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,003.0339' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_2 and rep '1003.0339' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_3 for rep '1,003.0339' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_3 and rep '1003.0339' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_4 for rep '1,003.0339' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_4 and rep '1003.0339' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,003.0022' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_1 and rep '1003.0022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,003.0022' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_2 and rep '1003.0022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_3 for rep '1,003.0022' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_3 and rep '1003.0022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_4 for rep '1,003.0022' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_4 and rep '1003.0022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1
+
+
+---------------------------------------------------------------------------
+
+TESTING TRAINED DECODER MODEL...
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\checkpoints:
+
+['best-model-epoch=45-val_loss=0.0270.ckpt', 'best-model-epoch=45-val_loss=0.0341.ckpt', 'best-model-epoch=94-val_loss=0.0482.ckpt']
+
+Enter the ckpt file to load (include the quotes) (e.g., 'epoch=1-step=1000.ckpt'): 
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Relation matrices are overridden to make fully connected graph in decoder.
+
+Trained Decoder Model Loaded for testing.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Testing: |                                                                                  | 0/? [00:00<?, ?it/s]
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer loaded from checkpoint with 'std' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                                             | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                                                | 0/10 [00:00<?, ?it/s]
+Found rep_num = 1001.0001 in batch 0 of epoch 186. Decoder output plot will be made for this data.
+Testing DataLoader 0:  10%|#####6                                                  | 1/10 [00:00<00:04,  1.88it/s]Testing DataLoader 0:  20%|###########2                                            | 2/10 [00:00<00:03,  2.62it/s]Testing DataLoader 0:  30%|################8                                       | 3/10 [00:00<00:02,  3.11it/s]Testing DataLoader 0:  40%|######################4                                 | 4/10 [00:01<00:01,  3.42it/s]Testing DataLoader 0:  50%|############################                            | 5/10 [00:01<00:01,  3.60it/s]Testing DataLoader 0:  60%|#################################6                      | 6/10 [00:01<00:01,  3.75it/s]Testing DataLoader 0:  70%|#######################################1                | 7/10 [00:01<00:00,  3.86it/s]Testing DataLoader 0:  80%|############################################8           | 8/10 [00:02<00:00,  3.96it/s]Testing DataLoader 0:  90%|##################################################4     | 9/10 [00:02<00:00,  4.04it/s]Testing DataLoader 0: 100%|#######################################################| 10/10 [00:02<00:00,  4.11it/s]
+Testing completed in 2.46 seconds or 0.04 minutes or 0.0006831160518858167 hours.
+
+test_loss: 0.0268
+
+Subsystem losses for test data:
+SS_1_test_loss: 0.0141
+SS_2_test_loss: 0.0362
+SS_3_test_loss: 0.0338
+SS_4_test_loss: 0.0379
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,001.0001' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_1 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,001.0001' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_2 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_3 for rep '1,001.0001' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_3 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_4 for rep '1,001.0001' for [m012_(apv+G)]-gru_dec_1.1...
+
+Decoder output plot for subsystem_4 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\train\etypes=1\m012\apv\set_G\D=gru\tswp_0\[m012_(apv+G)]-gru_dec_1.1\test
+
+Testing DataLoader 0: 100%|#######################################################| 10/10 [00:13<00:00,  0.75it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│         test_loss         │    0.02683909423649311    │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Decoder model '[m012_(apv+G)]-gru_dec_1.1' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-29 11:28:06

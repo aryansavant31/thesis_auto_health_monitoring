@@ -603,7 +603,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         all_time_data = torch.cat(all_time_data, dim=0)  # shape: (n_samples, n_nodes, n_timesteps, n_dims)
 
-        self.init_input_processors(verbose=False)
+        self.init_input_processors(is_verbose=False)
 
         # domain transform data (mandatory)
         if self.domain == 'time':
@@ -657,8 +657,9 @@ class Encoder(LightningModule, MessagePassingLayers):
             data, freq_bins = self.domain_transformer.transform(time_data)
 
         # normalize raw data (optional)
-        if self.raw_data_normalizer:
-            data = self.raw_data_normalizer.transform(data)
+        if not get_data_shape:
+            if self.raw_data_normalizer:
+                data = self.raw_data_normalizer.transform(data)
 
         # extract features from data (optional)
         if self.domain == 'time':
@@ -669,8 +670,10 @@ class Encoder(LightningModule, MessagePassingLayers):
                 data = self.freq_fex.extract(data, freq_bins)
 
         # normalize features (optional : if feat_norm is provided)
-        if self.feat_normalizer:
-            data = self.feat_normalizer.transform(data)
+        # normalize raw data (optional)
+        if not get_data_shape:
+            if self.feat_normalizer:
+                data = self.feat_normalizer.transform(data)
 
         # reduce features (optional : if reduc_config is provided)
         if self.feat_reducer:

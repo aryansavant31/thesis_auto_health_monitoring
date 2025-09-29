@@ -1,4 +1,7 @@
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\pob_los\ctrl\set_E1\IF\tswp_1\[pob_los_(ctrl+E1)]-IF_fdet_1\fault_detector.pkl
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\pob_los\ctrl\set_E1\IF\tswp_1\[pob_los_(ctrl+E1)]-IF_fdet_2\fault_detector.pkl
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\pob_los\ctrl\set_E1\IF\tswp_1\[pob_los_(ctrl+E1)]-IF_fdet_3\fault_detector.pkl
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\pob_los\ctrl\set_E1\IF\tswp_1\[pob_los_(ctrl+E1)]-IF_fdet_4\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_1\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_2\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_3\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_4\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_5\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_6\fault_detector.pkl
+c:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M012\scene_1\train\mass_1\apv\set_G\IF\tswp_1\[mass_1_(apv+G)]-IF_fdet_7\fault_detector.pkl

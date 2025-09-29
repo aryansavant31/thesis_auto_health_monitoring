@@ -115,6 +115,7 @@ class DataNormalizer:
             Input data tensor to fit the scaler.
         """
         batch_size, n_nodes, n_components, n_dims = data.shape
+        self.n_components_og = n_components
         self.scalers = []
         for node in range(n_nodes):
             scaler = self.scaler_cls()
@@ -144,6 +145,29 @@ class DataNormalizer:
             norm_node_data = torch.from_numpy(norm_node_data).view(batch_size, n_components, n_dims).to(data.device)
             norm_data[:, node, :, :] = norm_node_data
         return norm_data
+    
+    def inverse_transform(self, data):
+        """
+        Apply inverse normalization to each node data.
+
+        Parameters
+        ----------
+        data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Input normalized data tensor to be inverse transformed.
+
+        Returns
+        -------
+        inv_data : torch.Tensor, shape (batch_size, n_nodes, n_components, n_dims)
+            Inverse transformed data tensor.
+        """
+        batch_size, n_nodes, n_components, n_dims = data.shape
+        inv_data = torch.zeros_like(data)
+        for node in range(n_nodes):
+            node_data = data[:, node, :, :].reshape(batch_size, n_components * n_dims).detach().cpu().numpy()
+            inv_node_data = self.scalers[node].inverse_transform(node_data)
+            inv_node_data = torch.from_numpy(inv_node_data).view(batch_size, n_components, n_dims).to(data.device)
+            inv_data[:, node, :, :] = inv_node_data
+        return inv_data
 
     # def normalize(self, data):
     #     """

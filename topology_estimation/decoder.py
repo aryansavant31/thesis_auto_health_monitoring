@@ -16,6 +16,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
+import matplotlib.colors as mcolors
 
 # global imports
 from data.config import DataConfig
@@ -399,7 +400,7 @@ class Decoder(LightningModule):
 
         all_time_data = torch.cat(all_time_data, dim=0)  # shape: (n_samples, n_nodes, n_timesteps, n_dims)
 
-        self.init_input_processors(verbose=False)
+        self.init_input_processors(is_verbose=False)
 
         # domain transform data (mandatory)
         if self.domain == 'time':
@@ -638,6 +639,7 @@ class Decoder(LightningModule):
         self.model_id = os.path.basename(self.logger.log_dir) if self.logger else 'decoder'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else 'decoder'
         self.run_type = "train"
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
 
         self.found_rep1 = False # for decoder output plot
         self.n_steps_per_epoch = len(self.trainer.train_dataloader)
@@ -656,6 +658,36 @@ class Decoder(LightningModule):
         super().on_train_epoch_start()
 
         self.custom_current_epoch += 1
+        self.subsystem_train_losses_epoch = []
+        self.subsystem_val_losses_epoch = []
+
+    def apply_inverse_transform(self, x_pred, target):
+        n_comps_original = self.raw_data_normalizer.n_components_og  # set this to the original number of components used for fitting
+        n_comps_reduced = x_pred.shape[2]  # assuming shape is (batch_size, n_nodes, n_comps, n_dims)
+
+        pad_amount = n_comps_original - n_comps_reduced
+
+        if pad_amount > 0:
+            # Pad at the beginning of the components axis (axis=2)
+            # F.pad expects pad as (last_dim_pad_left, last_dim_pad_right, ..., first_dim_pad_left, first_dim_pad_right)
+            # For 4D: (dim3_left, dim3_right, dim2_left, dim2_right, dim1_left, dim1_right, dim0_left, dim0_right)
+            # So for axis=2, pad = (0, 0, pad_amount, 0, 0, 0, 0, 0)
+            pad = (0, 0, pad_amount, 0, 0, 0, 0, 0)
+            x_pred_padded = F.pad(x_pred, pad, "constant", 0)
+            target_padded = F.pad(target, pad, "constant", 0)
+        else:
+            x_pred_padded = x_pred
+            target_padded = target
+
+        # Inverse transform
+        x_pred_rep1_inv = self.raw_data_normalizer.inverse_transform(x_pred_padded)
+        target_rep1_inv = self.raw_data_normalizer.inverse_transform(target_padded)
+
+        # Slice out only the reduced components (i.e., remove the padded first components)
+        x_pred_inv = x_pred_rep1_inv[:, :, -n_comps_reduced:, :]
+        target_inv = target_rep1_inv[:, :, -n_comps_reduced:, :]
+        return x_pred_inv, target_inv
+
         
     def _forward_pass(self, batch, batch_idx):
         """
@@ -683,6 +715,22 @@ class Decoder(LightningModule):
 
         elif self.loss_type == 'mae':
             loss = F.l1_loss(x_pred, target)
+
+        # extract loss per sub_system
+        subsystem_losses_batch = []
+        for idxs in self.subsystem_indices:
+            x_pred_sub = x_pred[:, idxs, :, :]
+            target_sub = target[:, idxs, :, :]
+            if self.loss_type == 'mse':
+                loss_sub = F.mse_loss(x_pred_sub, target_sub, reduction='mean')
+            elif self.loss_type == 'mae':
+                loss_sub = F.l1_loss(x_pred_sub, target_sub, reduction='mean')
+            elif self.loss_type == 'nll':
+                x_var_sub = x_var[:, idxs, :, :]
+                loss_sub = nll_gaussian(x_pred_sub, target_sub, x_var_sub)
+            subsystem_losses_batch.append(loss_sub)
+
+        subsystem_losses_batch = torch.stack(subsystem_losses_batch)  # shape: (num_subsystems,)
 
         # prepare data for decoder output plot
         target_rep_num = 1001.0001
@@ -714,7 +762,7 @@ class Decoder(LightningModule):
             'rep_num': rep_num,
         }
 
-        return loss, decoder_plot_data
+        return loss, decoder_plot_data, subsystem_losses_batch
     
 
     def training_step(self, batch, batch_idx):
@@ -732,8 +780,9 @@ class Decoder(LightningModule):
         # if self.custom_current_epoch == 0 and batch_idx == 0:
         #     self.start_time = time.time()
 
-        loss, self.decoder_plot_data_train = self._forward_pass(batch, batch_idx)
+        loss, self.decoder_plot_data_train, subsystem_losses_batch = self._forward_pass(batch, batch_idx)
         self.train_loss = loss.item()
+        self.subsystem_train_losses_epoch.append(subsystem_losses_batch.detach().cpu())
 
         # log every n steps
         self.n = 5
@@ -770,7 +819,8 @@ class Decoder(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        loss, self.decoder_plot_data_val = self._forward_pass(batch, batch_idx)
+        loss, self.decoder_plot_data_val, subsystem_losses_batch = self._forward_pass(batch, batch_idx)
+        self.subsystem_val_losses_epoch.append(subsystem_losses_batch.detach().cpu())
 
         self.log_dict(
             {'val_loss': loss},
@@ -786,6 +836,13 @@ class Decoder(LightningModule):
         Called at the end of each training epoch. Updates the training losses.
         """
         #self.train_losses['train_losses'].append(self.trainer.callback_metrics['train_loss'].item())
+        # calculate mean of subsystem losses for the epoch
+        if self.subsystem_train_losses_epoch:
+            all_subsystem_train_losses = torch.stack(self.subsystem_train_losses_epoch)  # shape: (num_batches, num_subsystems)
+            mean_subsystem_train_losses = all_subsystem_train_losses.mean(dim=0)  # shape: (num_subsystems,)
+            self.subsystem_train_loss_dict = {f'SS_{i+1}_train_loss': mean_subsystem_train_losses[i].item() for i in range(len(self.subsystem_indices))}
+        else:
+            self.subsystem_train_loss_dict = None
 
         print(f"\nEpoch {self.custom_current_epoch+1}/{self.trainer.max_epochs} completed, Global Step: {self.custom_step}")
         train_loss_str = f"train_loss: {self.train_losses['train_losses'][-1]:,.4f}"
@@ -795,6 +852,15 @@ class Decoder(LightningModule):
 
         # validation
         if self.trainer.val_dataloaders:
+
+            # calcualte mean of subsystem losses for the epoch
+            if self.subsystem_val_losses_epoch:
+                all_subsystem_val_losses = torch.stack(self.subsystem_val_losses_epoch)  # shape: (num_batches, num_subsystems)
+                mean_subsystem_val_losses = all_subsystem_val_losses.mean(dim=0)  # shape: (num_subsystems,)
+                self.subsystem_val_loss_dict = {f'SS_{i+1}_val_loss': mean_subsystem_val_losses[i].item() for i in range(len(self.subsystem_indices))}
+            else:
+                self.subsystem_val_loss_dict = None
+
             self.train_losses['val_losses'].append(self.trainer.callback_metrics['val_loss'].item())
             val_loss_str = f", val_loss: {self.train_losses['val_losses'][-1]:,.4f}"
 
@@ -807,6 +873,9 @@ class Decoder(LightningModule):
               "\n\n" + 75*'-' + '\n')
 
         # update hparams
+        subsystem_train_loss_str = ', '.join([f"{key}: {value:,.4f}" for key, value in self.subsystem_train_loss_dict.items()]) if self.subsystem_train_loss_dict else "None"
+        subsystem_val_loss_str = ', '.join([f"{key}: {value:,.4f}" for key, value in self.subsystem_val_loss_dict.items()]) if self.subsystem_val_loss_dict else "None"
+
         self.training_time = time.time() - self.start_time
         self.hyperparams.update({
             'model_id': self.model_id,
@@ -815,6 +884,8 @@ class Decoder(LightningModule):
             'n_steps': self.custom_step,
             'train_loss': self.train_losses['train_losses'][-1],
             'val_loss': self.train_losses['val_losses'][-1] if self.trainer.val_dataloaders else None,
+            'subsystem_train_losses': subsystem_train_loss_str,
+            'subsystem_val_losses': subsystem_val_loss_str,
         })
 
     def on_train_end(self):
@@ -823,9 +894,19 @@ class Decoder(LightningModule):
         """
         print(f"\nTraining completed in {self.training_time:.2f} seconds or {self.training_time / 60:.2f} minutes or {self.training_time / 60 / 60} hours.")
         print(f"Total training steps: {self.custom_step}")
+
+        # print the mean of subsystem losses for the entire training
+        if self.subsystem_train_loss_dict:
+            print("\nSubsystem losses for train data:")
+            for subsystem, loss in self.subsystem_train_loss_dict.items():
+                print(f"{subsystem}: {loss:,.4f}")
+
+        if self.subsystem_val_loss_dict:
+            print("\nSubsystem losses for val data:")
+            for subsystem, loss in self.subsystem_val_loss_dict.items():
+                print(f"{subsystem}: {loss:,.4f}")
         
         if self.logger:
-            
             # save losses
             with open(os.path.join(self.logger.log_dir, 'train_losses.pkl'), 'wb') as f:
                 pickle.dump(self.train_losses, f)
@@ -838,9 +919,12 @@ class Decoder(LightningModule):
 
         # plot training losses and decoder output
         self.training_loss_plot()
-        self.decoder_output_plot(**self.decoder_plot_data_train, type='train')
-        self.decoder_output_plot(**self.decoder_plot_data_val, type='val') if self.trainer.val_dataloaders else None
-    
+        for i, idxes in enumerate(self.subsystem_indices):
+            self.decoder_output_plot(**self.decoder_plot_data_train, type='train', subsystem=f"subsystem_{i+1}", node_split=idxes, is_end=True)
+
+        if self.trainer.val_dataloaders:   
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_val, type='val', subsystem=f"subsystem_{i+1}", node_split=idxes, is_end=True)
 
 # ====== Trainer.test() methods  ======
     def on_test_start(self):
@@ -852,6 +936,9 @@ class Decoder(LightningModule):
 
         self.custom_step = -1  # will be incremented to 0 in first test step
         self.found_rep1 = False # for decoder output plot
+
+        self.subsystem_test_losses_epoch = []
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
  
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
@@ -877,7 +964,8 @@ class Decoder(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        loss, self.decoder_plot_data_test = self._forward_pass(batch, batch_idx)
+        loss, self.decoder_plot_data_test, subsystem_losses_batch = self._forward_pass(batch, batch_idx)
+        self.subsystem_test_losses_epoch.append(subsystem_losses_batch.detach().cpu())
 
         self.log_dict(
             {'test_loss': loss},
@@ -895,14 +983,31 @@ class Decoder(LightningModule):
         self.infer_time = time.time() - self.start_time
         print(f"\nTesting completed in {self.infer_time:.2f} seconds or {self.infer_time / 60:.2f} minutes or {self.infer_time / 60 / 60} hours.")
 
+        # calculate mean of subsystem losses for the epoch
+        if self.subsystem_test_losses_epoch:
+            all_subsystem_test_losses = torch.stack(self.subsystem_test_losses_epoch)  # shape: (num_batches, num_subsystems)
+            mean_subsystem_test_losses = all_subsystem_test_losses.mean(dim=0)  # shape: (num_subsystems,)
+            self.subsystem_test_loss_dict = {f'SS_{i+1}_test_loss': mean_subsystem_test_losses[i].item() for i in range(len(self.subsystem_indices))}
+        else:
+            self.subsystem_test_loss_dict = None
+
+        subsystem_test_loss_str = ', '.join([f"{key}: {value:,.4f}" for key, value in self.subsystem_test_loss_dict.items()]) if self.subsystem_test_loss_dict else "None"
+
         # update hparams
         self.hyperparams.update({
             'test_loss': self.trainer.callback_metrics['test_loss'].item(),
             'infer_time': self.infer_time,
+            'subsystem_test_losses': subsystem_test_loss_str,
             })
 
         # print stats after each epoch
         print(f"\ntest_loss: {self.hyperparams['test_loss']:,.4f}")
+
+        # print the mean of subsystem losses for the entire testing
+        if self.subsystem_test_loss_dict:
+            print("\nSubsystem losses for test data:")
+            for subsystem, loss in self.subsystem_test_loss_dict.items():
+                print(f"{subsystem}: {loss:,.4f}")
         
         if self.logger:
             self.logger.log_hyperparams(self.hyperparams)
@@ -914,10 +1019,13 @@ class Decoder(LightningModule):
 
         # make decoder output plot
         if self.decoder_plot_data_rep1:
-            self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type)
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_rep1, type=self.run_type, subsystem=f"subsystem_{i+1}", node_split=idxes)
         else:
             print(f"\nNo target rep num. Hence decoder output is made for first sample in the last test batch.")
-            self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type)
+            for i, idxes in enumerate(self.subsystem_indices):
+                self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type, subsystem=f"subsystem_{i+1}", node_split=idxes)
+            
     
 
 # ====== Trainer.predict() method  ====== 
@@ -928,6 +1036,9 @@ class Decoder(LightningModule):
 
         self.custom_step = -1  # will be incremented to 0 in first predict step
         self.found_rep1 = False # for decoder output plot
+
+        self.subsystem_predict_losses_epoch = []
+        self.subsystem_indices = self.data_config.signal_types['subsystems']
 
         # Log model information
         self.model_id = self.hyperparams.get('model_id', 'decoder')
@@ -953,10 +1064,8 @@ class Decoder(LightningModule):
             - rel_batch : tuple
                 Contains the receiver and sender relationship matrices.
         """
-        loss, self.decoder_plot_data_predict = self._forward_pass(batch, batch_idx)
-
-        infer_time = time.time() - self.start_time
-        print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
+        loss, self.decoder_plot_data_predict, subsystem_losses_batch = self._forward_pass(batch, batch_idx)
+        self.subsystem_predict_losses_epoch.append(subsystem_losses_batch.detach().cpu())
         
         print(f"\nDecoder residual: {loss.item():,.4f}")
         print('\n' + 75*'-')
@@ -969,6 +1078,24 @@ class Decoder(LightningModule):
             'dec/x_pred': self.decoder_plot_data_predict['x_pred'],
         }
     
+    def on_predict_end(self):
+        infer_time = time.time() - self.start_time
+        print(f"\nPrediction completed in {infer_time:.2f} seconds or {infer_time / 60:.2f} minutes or {infer_time / 60 / 60} hours.")
+
+        # calculate mean of subsystem losses for the epoch
+        if self.subsystem_predict_losses_epoch:
+            all_subsystem_predict_losses = torch.stack(self.subsystem_predict_losses_epoch)  # shape: (num_batches, num_subsystems)
+            mean_subsystem_predict_losses = all_subsystem_predict_losses.mean(dim=0)  # shape: (num_subsystems,)
+            self.subsystem_predict_loss_dict = {f'SS_{i+1}_predict_loss': mean_subsystem_predict_losses[i].item() for i in range(len(self.subsystem_indices))}
+        else:
+            self.subsystem_predict_loss_dict = None
+        subsystem_predict_loss_str = ', '.join([f"{key}: {value:,.4f}" for key, value in self.subsystem_predict_loss_dict.items()]) if self.subsystem_predict_loss_dict else "None"
+
+        # update hparams
+        self.hyperparams.update({
+            'infer_time': infer_time,
+            'subsystem_predict_losses': subsystem_predict_loss_str,
+            })
     
 # ================== Visualization Methods =======================
 
@@ -993,12 +1120,23 @@ class Decoder(LightningModule):
         })
 
         # create a figure with 3 subplots in a vertical grid
-        plt.figure(figsize=(8, 6), dpi=100)
+        fig = plt.figure(figsize=(8, 6), dpi=100)
+        ax = fig.gca()
+
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"[{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
 
         # plot nri losses
         plt.plot(train_steps, self.train_losses[f'train_losses'], label='train loss', color='blue')
         plt.plot(val_steps, self.train_losses[f'val_losses'], label='val loss', color='orange', linestyle='--', marker='o', markersize=4)
-        plt.title(F"Train and Validation Losses ({self.loss_type.upper()}) : [{self.model_id}]")
+        plt.title(F"Train and Validation Losses ({self.loss_type.upper()})")
         plt.ylabel('Loss (Log Scale)')
         plt.xlabel('Steps')
         plt.yscale('log')
@@ -1014,7 +1152,7 @@ class Decoder(LightningModule):
         else:
             print("\nTraining loss plot not logged as logging is disabled.\n")
 
-    def decoder_output_plot(self, x_pred, x_var, target, rep_num, type:str, is_end=True, sample_idx=0):
+    def decoder_output_plot(self, x_pred, x_var, target, rep_num, type:str, subsystem="System Level", node_split=None, is_end=True, sample_idx=0):
         """
         Plot the decoder output for a given sample.
 
@@ -1028,6 +1166,8 @@ class Decoder(LightningModule):
             Target node data for the decoder.
         rep_num : int
             rep label
+        node_split : list
+            List of node indices for each group.
         type : str
             Type of data (e.g., 'train', 'val', 'test', 'predict').
         is_end : bool, optional
@@ -1038,32 +1178,60 @@ class Decoder(LightningModule):
 
         if is_end:
             print("\n" + 12*"<" + f" DECODER OUTPUT PLOT ({type.upper()}) " + 12*">") if is_end else None
-            print(f"\nCreating decoder output plot for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
+            print(f"\nCreating decoder output plot for {subsystem} for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
+
+        # apply inverse transform to get back to original data space
+        if self.raw_data_normalizer:
+            x_pred, target = self.apply_inverse_transform(x_pred, target)
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
         x_var = x_var.detach().cpu().numpy()
         target = target.detach().cpu().numpy()
 
+        if node_split is not None:
+            x_pred = x_pred[:, node_split, :, :]
+            x_var = x_var[:, node_split, :, :]
+            target = target[:, node_split, :, :]
+
         batch_size, n_nodes, n_comps, n_dims = x_pred.shape
 
-        node_names = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
+        node_names_all = [f"{node_name}" for node_name in self.data_config.signal_types['group'].keys()]
+        node_names = [node_names_all[i] for i in node_split] if node_split is not None else node_names_all
 
         # update font settings for plots
         plt.rcParams.update({
             "text.usetex": False,   # No external LaTeX
             "font.family": "serif",
             "mathtext.fontset": "cm",  # Computer Modern math
+            "font.size": 14,
+            'legend.fontsize': 10
         })
+
+        subplot_fontsize = max(14, int(12 - 0.5 * (n_nodes + n_dims) / 2))
+        suptitle_fontsize = subplot_fontsize + 4
         
         # create figure with subplots for each node and dimension
-        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 5, n_nodes * 3), sharex=False, sharey=False, dpi=75)
+        fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 6, n_nodes * 4), sharex=False, sharey=False, dpi=75)
         if n_nodes == 1:
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
 
-        fig.suptitle(f"Decoder Output for Rep {rep_num[sample_idx]:,.4f} : [{self.model_id} / {type}]", fontsize=16)
+        fig.suptitle(f"Output Trajectories of {" ".join(subsystem.capitalize().split("_"))} ({" ".join(type.capitalize().split('_'))} data)", fontsize=suptitle_fontsize, y=0.98)
+        plt.tight_layout(rect=[0, 0, 0.93, 0.99])
+        fig.text(
+            0.5,           # x position (0=left, 1=right)
+            0.01,          # y position (0=bottom, 1=top)
+            f"(Sample {rep_num[sample_idx]:,.4f}): [{self.model_id}]", 
+            ha='center', 
+            va='bottom', 
+            fontsize=6,    # small font size
+            color='gray'
+        )
+
+        cmap = plt.cm.Paired  # or plt.cm.tab20, plt.cm.Set2, etc.
+        num_colors = cmap.N // 2  # Number of color pairs available 
 
         for node in range(n_nodes):
             dim_names = self.data_config.signal_types['group'][node_names[node]]
@@ -1075,44 +1243,55 @@ class Decoder(LightningModule):
                 timesteps = np.arange(n_comps)
                 gt = target[sample_idx, node, :, dim]  # ground truth
                 pred = x_pred[sample_idx, node, :, dim]  # predictions
-                std_dev = np.sqrt(x_var[sample_idx, node, :, dim])  # standard deviation
 
+                std_dev = np.sqrt(x_var[sample_idx, node, :, dim])  # standard deviation
                 conf_band_upper = pred + (pred * 1.96 * std_dev)  # upper confidence band
                 conf_band_lower = pred - (pred * 1.96 * std_dev)  # lower confidence band
 
-                # plot ground truth, predictions, and confidence band
-                ax.plot(timesteps, gt, label="ground truth", color="blue", linestyle="--")
-                ax.plot(timesteps, pred, label="prediction", color="red", alpha=0.7)
+                # Pick a color pair for this dimension
+                base_color_gt = cmap(dim * 2 / cmap.N)
+                color_gt = tuple(np.array(mcolors.to_rgb(base_color_gt)) * 0.6)  # darken by 30%
+                color_pred = cmap((dim * 2 + 1) / cmap.N)
+
+                # Ground truth: dotted, lighter
+                ax.plot(timesteps, gt, label="ground truth", color=color_gt, linestyle=":", linewidth=2, alpha=1)
+                # Prediction: solid, more opaque
+                ax.plot(timesteps, pred, label="prediction", color=color_pred, linestyle="-", alpha=1.0)
 
                 prediction_start_step = n_comps - self.final_pred_steps if self.is_burn_in else 0
-                ax.axvline(x=prediction_start_step - 1, color='green', linestyle=':', label='start of prediction', linewidth=1.8) if prediction_start_step > 0 else None
+                if prediction_start_step > 0:
+                    ax.axvline(x=prediction_start_step - 1, color='red', linestyle=':', label='start of prediction', linewidth=1.8)
 
                 if self.show_conf_band:
-                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color="orange", alpha=0.3, label="relative confidence")
+                    ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color=color_pred, alpha=0.2, label="relative confidence")
 
-                # Add labels and legend
-                #if node == n_nodes - 1:
                 ax.set_xlabel("timesteps")
-                ax.set_ylabel(f"{dim_names[dim]}")
-                         
-                if node == 0 and dim == n_dims - 1:
-                    ax.legend(loc="upper right")
-
-                # add node name as title for each row
-                ax.set_title(f"{node_names[node]} ({dim_names[dim]})", fontsize=11)
-
+                if dim_names[dim] == "acc":
+                    unit = " (m/s²)"
+                    measurement = "Acceleration"
+                elif dim_names[dim] == "vel":
+                    unit = " (m/s)"
+                    measurement = "Velocity"
+                elif dim_names[dim] == "pos":
+                    unit = " (m)"
+                    measurement = "Position"
+                else:
+                    unit = ""
+                ax.set_ylabel(f"{dim_names[dim]}{unit}")
+                ax.legend(loc="upper right")
+                ax.set_title(f"{" ".join(node_names[node].capitalize().split('_'))} ({measurement} v/s Timesteps)", fontsize=subplot_fontsize)
                 ax.grid(True)
 
         # adjust subplot spacing to prevent label overlap
-        plt.subplots_adjust(left=0.15, bottom=0.1, right=0.95, top=0.9, wspace=0.3, hspace=0.6)
+        plt.subplots_adjust(left=0.08, bottom=0.12, right=0.95, top=0.88, wspace=0.3, hspace=0.55)
 
         # save the plot if logger is available
         if self.logger:
-            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
+            self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/{subsystem}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
 
             if is_end:
-                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{type}_({self.model_id}).png'), dpi=500)
-                print(f"\nDecoder output plot for rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
+                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{subsystem}_{type}_({self.model_id}).png'), dpi=500)
+                print(f"\nDecoder output plot for {subsystem} and rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
         else:
             if is_end:
                 print("\nDecoder output plot not logged as logging is disabled.\n")

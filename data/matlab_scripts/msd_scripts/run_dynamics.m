@@ -25,12 +25,21 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     % u_cells{M} = @(t) (t >= 0 && t < 0.0005) * 1000; 
     
     % periodic force
-    A = [1];    % amplitude
-    f0 = 100;     % fundamental freq (hz)
-    freq = [f0]; % freq (hz)
+    A = [0.4, 0.3, 0.5, 0.9];    % amplitude
+    f0_5 = 12;     % fundamental freq (hz)
+    f0_8 = 14;     % fundamental freq (hz)
+    f0_10 = 18;     % fundamental freq (hz)
+    f0_12= 20;     % fundamental freq (hz)
+
+    freq_5 = [f0_5; 2*f0_5; 10*f0_5; 50*f0_5]; % freq (hz)
+    freq_8 = [f0_8; 2*f0_8; 10*f0_8; 50*f0_8]; % freq (hz)
+    freq_10 = [f0_10; 2*f0_10; 10*f0_10; 50*f0_10]; % freq (hz)
+    freq_12 = [f0_12; 2*f0_12; 10*f0_12; 50*f0_12]; % freq (hz)
     
-    u_cells{M} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
-    u_cells{1} = @(t) A*sin(2*pi*freq*t) + 1e-7*randn(size(t));
+    u_cells{5} = @(t) A*sin(2*pi*freq_5*t) + 1e-7*randn(size(t));
+    u_cells{8} = @(t) A*sin(2*pi*freq_8*t) + 1e-7*randn(size(t));
+    u_cells{10} = @(t) A*sin(2*pi*freq_10*t) + 1e-7*randn(size(t));
+    u_cells{12} = @(t) A*sin(2*pi*freq_12*t) + 1e-7*randn(size(t));
     
     u = @(t) cellfun(@(f) f(t), u_cells);  % returns M×1 vector at time t
     
@@ -47,7 +56,7 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     
     % Time
     fs = 500;
-    t_end = 1000;
+    t_end = 200;
     tspan = 0:1/fs:t_end;
     
     % Initial positions and velocities

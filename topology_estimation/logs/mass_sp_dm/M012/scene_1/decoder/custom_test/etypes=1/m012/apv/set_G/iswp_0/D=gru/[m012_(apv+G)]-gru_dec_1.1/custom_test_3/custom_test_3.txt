@@ -1,0 +1,1 @@
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M012\scene_1\decoder\custom_test\etypes=1\m012\apv\set_G\iswp_0\(NOK):ds_1_mod_fault_1[OG]\D=gru\[m012_(apv+G)]-gru_dec_1.1\T100, Tmax = 100,001\(spf) vanilla (is_exp_top = True)

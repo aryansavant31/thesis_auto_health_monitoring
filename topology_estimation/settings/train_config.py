@@ -60,7 +60,7 @@ class DecoderTrainConfig:
     # 1: Training parameters   
 
         self.model_num = 1  # 15 [test failed due to error](correct tp: mae loss, long prediction horizon), 16 - incorrect
-        self.continue_training = False
+        self.continue_training = True
         self.is_log = True
         
         self.n_edge_types = 1
@@ -81,11 +81,11 @@ class DecoderTrainConfig:
 
     # 2: Decoder parameters
 
-        self.msg_out_size = 128
+        self.msg_out_size = 256
     
         # embedding function parameters 
-        self.edge_mlp_config = {'mlp': 'edge_nri_og'}
-        self.out_mlp_config = {'mlp': 'out_nri_og'}
+        self.edge_mlp_config = {'mlp': 'edge_nri_4'}
+        self.out_mlp_config = {'mlp': 'out_nri_4'}
 
         self.do_prob = 0
         self.is_batch_norm = False
@@ -96,7 +96,7 @@ class DecoderTrainConfig:
         
         # input processor parameters
         self.dec_domain_config = get_domain_config('time')
-        self.dec_raw_data_norm = 'min_max'
+        self.dec_raw_data_norm = 'std'
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
@@ -351,7 +351,7 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 18 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr), 18 (lower accuracy cutoff)
+        self.model_num = 1 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr), 18 (lower accuracy cutoff)
         self.continue_training = False
         self.is_log = True
         
@@ -365,7 +365,7 @@ class NRITrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 50
+        self.max_epochs = 1
         self.optimizer = 'adam'
 
         ## encoder
@@ -389,7 +389,7 @@ class NRITrainConfig:
         self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
 
         # if encoder warmup is True
-        self.warmup_acc_cutoff = 0.8   # accuracy cutoff for encoder warmup
+        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
         self.sustain_enc_warmup = True  # if True, then re-enable encoder warmup if edge accuracy drops below cutoff during training
         self.final_gamma = 0.3
         self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup
@@ -431,7 +431,7 @@ class NRITrainConfig:
 
         # input processor parameters
         self.enc_domain_config = get_domain_config('time')
-        self.enc_raw_data_norm = 'min_max'  
+        self.enc_raw_data_norm = 'std'  
         self.enc_feat_configs = []
         self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         self.enc_feat_norm = None
@@ -445,7 +445,7 @@ class NRITrainConfig:
 
     # 3: Decoder parameters
 
-        self.msg_out_size = 64
+        self.msg_out_size = 256
     
         # embedding function parameters 
         self.edge_mlp_config = {'mlp': 'edge_nri_og'}
@@ -460,7 +460,7 @@ class NRITrainConfig:
         
         # input processor parameters
         self.dec_domain_config = get_domain_config('time')
-        self.dec_raw_data_norm = 'min_max' 
+        self.dec_raw_data_norm = 'std' 
         self.dec_feat_configs = [
             # get_time_feat_config('first_n_modes', data_config=self.data_config, n_modes=10),
         ]
@@ -471,7 +471,7 @@ class NRITrainConfig:
         self.skip_first_edge_type = True
         self.pred_steps = 10
         self.is_burn_in = True
-        self.final_pred_steps = 30
+        self.final_pred_steps = 50
         self.dynamic_rel = False
         self.is_dynamic_graph = False
 
@@ -832,6 +832,30 @@ class ExtraSettings:
                             [msg_out_size, 'tanh']], # the last layer should look like this for any configs for decoder
 
             'out_nri_og': [[msg_out_size, 'relu'],
+                            [msg_out_size, 'relu']],
+
+            'edge_nri_4':  [[msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],], 
+
+            'out_nri_4': [[msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
+                            [msg_out_size, 'relu']],
+
+            'edge_nri_6':  [[msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],
+                            [msg_out_size, 'tanh'],], 
+
+            'out_nri_6': [[msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
+                            [msg_out_size, 'relu'],
                             [msg_out_size, 'relu']],
                             
         }

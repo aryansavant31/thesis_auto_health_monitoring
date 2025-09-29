@@ -1,0 +1,425 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.train.py
+Base Name: [m004_(apv+G)]-gru_dec_1.6
+Start Time: 2025-09-28 17:45:30
+End Time: 2025-09-28 17:46:38
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26100)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting decoder model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) series_tp    : [OG]
+
+- **Unhealthy configs**
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) mass_1   : [acc, pos, vel]
+  (2) mass_2   : [acc, pos, vel]
+  (3) mass_3   : [acc, pos, vel]
+  (4) mass_4   : [acc, pos, vel]
+
+Node group name: m004
+Signal group name: apv
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 500,001
+
+No data interpolation applied.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.],
+ [500., 500., 500.]]
+
+No exclusive rep numbers found in keys of hfd5 file. Hence, using default rep numbers.
+
+Target rep_num 1001.0001 found at index 0. This sample will be included in the test set.
+
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 5000 
+Train: 4000/4000 [OK=4000, NOK=0, UK=0], Test: 500/500 [OK=500, NOK=0, UK=0], Val: 450/500 [OK=450, NOK=0, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 80
+torch.Size([50, 4, 100, 3])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 10
+torch.Size([50, 4, 100, 3]) 
+
+val_data_loader statistics:
+Number of batches: 9
+torch.Size([50, 4, 100, 3]) 
+
+---------------------------------------------------------------------------
+
+Loading Relation Matrices...
+
+Relation Matrices loaded successfully.
+
+## Relation Matrices Summary 
+
+**Adjacency matrix for input** => shape: (4, 4)
+     n1   n2   n3   n4
+n1  0.0  1.0  0.0  0.0
+n2  1.0  0.0  1.0  0.0
+n3  0.0  1.0  0.0  1.0
+n4  0.0  0.0  1.0  0.0
+
+
+**Receiver relation matrix** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  0.0  1.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  1.0  0.0  0.0  0.0
+e23  0.0  0.0  1.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  1.0  0.0  0.0
+e34  0.0  0.0  0.0  1.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  1.0  0.0
+
+
+**Sender relation matrix:** => shape: (12, 4)
+      n1   n2   n3   n4
+e12  1.0  0.0  0.0  0.0
+e13  0.0  0.0  0.0  0.0
+e14  0.0  0.0  0.0  0.0
+e21  0.0  1.0  0.0  0.0
+e23  0.0  1.0  0.0  0.0
+e24  0.0  0.0  0.0  0.0
+e31  0.0  0.0  0.0  0.0
+e32  0.0  0.0  1.0  0.0
+e34  0.0  0.0  1.0  0.0
+e41  0.0  0.0  0.0  0.0
+e42  0.0  0.0  0.0  0.0
+e43  0.0  0.0  0.0  1.0
+
+
+---------------------------------------------------------------------------
+
+<<<<<< DECODER PARAMETERS >>>>>>
+
+Decoder model parameters:
+-------------------------
+n_edge_types: 1
+msg_out_size: 128
+edge_mlp_config: [[128, 'tanh'], [128, 'tanh']]
+out_mlp_config: [[128, 'relu'], [128, 'relu']]
+do_prob: 0
+is_batch_norm: False
+is_xavier_weights: False
+recur_emb_type: gru
+domain_config: {'type': 'time', 'cutoff_freq': 0}
+raw_data_norm: min_max
+feat_configs: []
+reduc_config: None
+feat_norm: None
+n_dims: 3
+
+Decoder run parameters:
+-------------------------
+skip_first_edge_type: False
+pred_steps: 10
+is_burn_in: True
+final_pred_steps: 50
+is_dynamic_graph: False
+temp: 1.0
+is_hard: True
+show_conf_band: False
+
+'[m004_(apv+G)]-gru_dec_1.6' already exists in the log path 'C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the '[m004_(apv+G)]-gru_dec_1.6' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6? (y/n): Overwrote '[m004_(apv+G)]-gru_dec_1.6' from the log path C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6.
+Model parameters saved to C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6.
+
+Training environment set. Training will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+---------------------------------------------------------------------------
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Relation matrices are overridden to make fully connected graph in decoder.
+
+Training parameters set to: 
+lr=0.001, 
+optimizer=adam, 
+loss_type=mae
+
+Fitting normalizers for decoder model...
+
+>> Normalizers fitted using 4000 samples
+
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+
+Decoder Model Initialized with the following configurations:
+
+Decoder Model Summary:
+Decoder(
+  (edge_mlp_fn): ModuleList(
+    (0): MLP(
+      (layers): ModuleList(
+        (0): Linear(in_features=256, out_features=128, bias=True)
+        (1): Tanh()
+        (2): Dropout(p=0, inplace=False)
+        (3): Linear(in_features=128, out_features=128, bias=True)
+        (4): Tanh()
+      )
+    )
+  )
+  (recurrent_emb_fn): GRU(
+    (input_u): Linear(in_features=3, out_features=128, bias=True)
+    (hidden_u): Linear(in_features=128, out_features=128, bias=True)
+    (input_r): Linear(in_features=3, out_features=128, bias=True)
+    (hidden_r): Linear(in_features=128, out_features=128, bias=True)
+    (input_h): Linear(in_features=3, out_features=128, bias=True)
+    (hidden_h): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (mean_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=128, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=128, out_features=128, bias=True)
+      (4): ReLU()
+    )
+  )
+  (var_mlp): MLP(
+    (layers): ModuleList(
+      (0): Linear(in_features=128, out_features=128, bias=True)
+      (1): ReLU()
+      (2): Dropout(p=0, inplace=False)
+      (3): Linear(in_features=128, out_features=128, bias=True)
+      (4): ReLU()
+    )
+  )
+  (mean_output_layer): Linear(in_features=128, out_features=3, bias=True)
+  (var_output_layer): Linear(in_features=128, out_features=3, bias=True)
+)
+
+---------------------------------------------------------------------------
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer loaded from checkpoint with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Step 0, Epoch 1/1, Batch 0/80
+train_loss: 0.5412
+
+Step 5, Epoch 1/1, Batch 5/80
+train_loss: 0.1194
+
+Step 10, Epoch 1/1, Batch 10/80
+train_loss: 0.1101
+
+Step 15, Epoch 1/1, Batch 15/80
+train_loss: 0.0910
+
+Step 20, Epoch 1/1, Batch 20/80
+train_loss: 0.0915
+
+Step 25, Epoch 1/1, Batch 25/80
+train_loss: 0.0827
+
+Step 30, Epoch 1/1, Batch 30/80
+train_loss: 0.0793
+
+Step 35, Epoch 1/1, Batch 35/80
+train_loss: 0.0746
+
+Step 40, Epoch 1/1, Batch 40/80
+train_loss: 0.0761
+
+Step 45, Epoch 1/1, Batch 45/80
+train_loss: 0.0742
+
+Step 50, Epoch 1/1, Batch 50/80
+train_loss: 0.0716
+
+Step 55, Epoch 1/1, Batch 55/80
+train_loss: 0.0725
+
+Step 60, Epoch 1/1, Batch 60/80
+train_loss: 0.0726
+
+Step 65, Epoch 1/1, Batch 65/80
+train_loss: 0.0733
+
+Step 70, Epoch 1/1, Batch 70/80
+train_loss: 0.0722
+
+Step 75, Epoch 1/1, Batch 75/80
+train_loss: 0.0706
+
+Epoch 1/1 completed, Global Step: 79
+train_loss: 0.0706, val_loss: 0.0708
+
+---------------------------------------------------------------------------
+
+
+Training completed in 28.06 seconds or 0.47 minutes or 0.007794874045583937 hours.
+Total training steps: 79
+
+Subsystem losses for train data:
+SS_1_train_loss: 0.0937
+SS_2_train_loss: 0.0940
+
+Subsystem losses for val data:
+SS_1_val_loss: 0.0706
+SS_2_val_loss: 0.0709
+
+Training completed for model '[m004_(apv+G)]-gru_dec_1.6'. Trained model saved at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\checkpoints
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< TRAINING LOSS PLOT (TRAIN + VAL) >>>>>>>>>>>>
+
+Creating training loss plot for [m004_(apv+G)]-gru_dec_1.6...
+
+Training loss (train + val) plot logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,001.2402' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_1 and rep '1001.2402' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TRAIN) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,001.2402' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_2 and rep '1001.2402' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,001.2022' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_1 and rep '1001.2022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (VAL) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,001.2022' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_2 and rep '1001.2022' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6
+
+
+---------------------------------------------------------------------------
+
+TESTING TRAINED DECODER MODEL...
+
+.ckpt_files available in C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\checkpoints:
+
+['best-model-epoch=00-val_loss=0.0708.ckpt']
+
+Testing environment set. Testing will be logged at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\test
+
+Edge matrix is created from relation matrices and set to decoder.
+
+Relation matrices are overridden to make fully connected graph in decoder.
+
+Trained Decoder Model Loaded for testing.
+C:\Anaconda3\envs\afd_env\Lib\site-packages\pytorch_lightning\trainer\connectors\data_connector.py:425: The 'test_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=19` in the `DataLoader` to improve performance.
+Testing: |                                                         | 0/? [00:00<?, ?it/s]
+Initializing input processors for decoder model...
+
+>> Domain transformer initialized: time(cutoff_freq=0)
+
+>> Raw data normalizer loaded from checkpoint with 'min_max' normalization
+
+>> No feature normalization is applied
+
+>> No time feature extraction is applied
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Testing:   0%|                                                    | 0/10 [00:00<?, ?it/s]Testing DataLoader 0:   0%|                                       | 0/10 [00:00<?, ?it/s]
+Found rep_num = 1001.0001 in batch 0 of epoch 0. Decoder output plot will be made for this data.
+Testing DataLoader 0:  10%|###1                           | 1/10 [00:00<00:01,  8.56it/s]Testing DataLoader 0:  20%|######2                        | 2/10 [00:00<00:00,  8.67it/s]Testing DataLoader 0:  30%|#########2                     | 3/10 [00:00<00:00,  8.73it/s]Testing DataLoader 0:  40%|############4                  | 4/10 [00:00<00:00,  8.52it/s]Testing DataLoader 0:  50%|###############5               | 5/10 [00:00<00:00,  8.48it/s]Testing DataLoader 0:  60%|##################5            | 6/10 [00:00<00:00,  8.29it/s]Testing DataLoader 0:  70%|#####################7         | 7/10 [00:00<00:00,  8.24it/s]Testing DataLoader 0:  80%|########################8      | 8/10 [00:00<00:00,  8.17it/s]Testing DataLoader 0:  90%|###########################9   | 9/10 [00:01<00:00,  8.21it/s]Testing DataLoader 0: 100%|##############################| 10/10 [00:01<00:00,  8.16it/s]
+Testing completed in 1.23 seconds or 0.02 minutes or 0.0003410381078720093 hours.
+
+test_loss: 0.0710
+
+Subsystem losses for test data:
+SS_1_test_loss: 0.0709
+SS_2_test_loss: 0.0710
+
+Test metrics and hyperparameters logged for tensorboard at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_1 for rep '1,001.0001' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_1 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\test
+
+
+<<<<<<<<<<<< DECODER OUTPUT PLOT (TEST) >>>>>>>>>>>>
+
+Creating decoder output plot for subsystem_2 for rep '1,001.0001' for [m004_(apv+G)]-gru_dec_1.6...
+
+Decoder output plot for subsystem_2 and rep '1001.0001' logged at C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\D=gru\tswp_0\[m004_(apv+G)]-gru_dec_1.6\test
+
+Testing DataLoader 0: 100%|##############################| 10/10 [00:05<00:00,  1.73it/s]
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│         test_loss         │    0.07096579670906067    │
+└───────────────────────────┴───────────────────────────┘
+
+===========================================================================
+
+Decoder model '[m004_(apv+G)]-gru_dec_1.6' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-09-28 17:46:38
