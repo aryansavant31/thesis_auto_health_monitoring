@@ -59,7 +59,7 @@ class DataConfig:
         self.machine_type = 'NXE'
         self.scenario = 'full_wafer'
 
-        self.signal_types = NXEGroupMaker().pob_los_ctrl
+        self.signal_types = NXEGroupMaker().ws_ls1_ctrl
         
         self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
@@ -142,33 +142,33 @@ class DataConfig:
             #             get_augment_config('sine', freqs=[1, 3, 5, 7], std_facs=[1.6, 2.1, 1.8, 2.3]),
             #             ],  
             # 
-            # POB LOS
+            # POB LOS, WS
             # medium
             '(sim)_E1_set01_M=mAQ87': [
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
-                        get_augment_config('sine', freqs=[200, 60], std_facs=[2, 2.3]),
+                        get_augment_config('sine', freqs=[200, 60], std_facs=[2, 1.8]),
 
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         # get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
-                        get_augment_config('sine', freqs=[75, 420], std_facs=[2.3, 2]),
+                        get_augment_config('sine', freqs=[75, 420], std_facs=[1.8, 2]),
 
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-                        get_augment_config('glitch', prob=0.07, std_fac=2.2, add_next=True),
-                        get_augment_config('sine', freqs=[150, 40, 320], std_facs=[2.3, 2, 2]),
+                        get_augment_config('glitch', prob=0.07, std_fac=2, add_next=True),
+                        get_augment_config('sine', freqs=[150, 40, 320], std_facs=[1.8, 2, 2]),
                         ], 
                     '(sim)_E1_set01_M=mAS23': [
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         # get_augment_config('glitch', prob=0.02, std_fac=2.3, add_next=True),
-                        get_augment_config('sine', freqs=[25, 290, 315], std_facs=[2, 1.9, 2.5]),
+                        get_augment_config('sine', freqs=[25, 290, 315], std_facs=[2, 1.9, 1.8]),
 
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
-                        get_augment_config('sine', freqs=[100, 425, 45], std_facs=[2.2, 2.4, 2.5]),
+                        get_augment_config('sine', freqs=[100, 425, 45], std_facs=[2, 2, 1.8]),
 
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         # get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
-                        get_augment_config('sine', freqs=[55, 125, 270, 465], std_facs=[1.6, 2.1, 1.8, 2.3]),
+                        get_augment_config('sine', freqs=[55, 125, 270, 465], std_facs=[1.6, 2.1, 1.8, 2]),
                         ],   
                     
             
@@ -375,7 +375,7 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [NXEGroupMaker().pob_los_ctrl]
+        self.signal_types = [NXEGroupMaker().ws_ls1_ctrl]
         self.window_length = [8000]
         self.stride = [8000]
 
@@ -451,7 +451,7 @@ class DataSweep:
                     '(sim)_E1_set01_M=mAQ10': [
                         # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
                         get_augment_config('glitch', prob=0.05, std_fac=2, add_next=True),
-                        get_augment_config('sine', freqs=[100, 223, 500], std_facs=[2, 2.4, 2])
+                        get_augment_config('sine', freqs=[100, 223, 500], std_facs=[1.8, 1.5, 2])
                         ],
                 },
 
