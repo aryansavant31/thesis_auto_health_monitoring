@@ -1174,7 +1174,7 @@ class TrainerFaultDetector:
                 # C: soft (below, light gray)
                 ax.text(x, y+0.28, f"S: {cell['C']}", ha='center', va='center', fontsize=25, fontweight='normal', color='black', alpha=0.75)
                 # Cell label (TN, FP, etc)
-                ax.text(x-0.38, y-0.38, cell_labels[i][j], ha='left', va='top', fontsize=23, color='dimgray', fontweight='bold')
+                ax.text(x-0.38, y-0.38, cell_labels[i][j], ha='left', va='top', fontsize=23, color='black', fontweight='bold')
 
         # ax.set_xlabel('Prediction', fontsize=15)
         # ax.set_ylabel('Ground Truth', fontsize=15)
