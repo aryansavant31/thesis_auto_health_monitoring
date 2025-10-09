@@ -55,19 +55,19 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M005'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = MSDGroupMaker().m005_acc
+        self.signal_types = NXEGroupMaker().pob_los_ctrl
         
         self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 100
-        self.stride             = 100
-        self.start_from_timestep = 1000  # number of initial samples to chop off from the start of the signal
+        self.window_length      = 8000
+        self.stride             = 8000
+        self.start_from_timestep = 0  #1000 number of initial samples to chop off from the start of the signal
 
         self.use_custom_max_timesteps = False
         self.max_timesteps     = 10000
@@ -84,10 +84,68 @@ class DataConfig:
 
         if not view_dataset:
             self.set_id = self.get_set_id()
+
+    def faults_ammf(self):
+        # ammf faults (l2 medium)
+        self.fault_ammf_l2_1 = [get_augment_config('glitch', prob=0.07, std_fac=2, add_next=True),
+                        get_augment_config('sine', freqs=[3, 2], std_facs=[1.8, 2])]
+        self.fault_ammf_l2_2 = [get_augment_config('glitch', prob=0.08, std_fac=1.8, add_next=True),
+                        get_augment_config('sine', freqs=[2, 4], std_facs=[1.8, 1.5])]
+        self.fault_ammf_l2_3 = [get_augment_config('glitch', prob=0.09, std_fac=2.2, add_next=True),
+                        get_augment_config('sine', freqs=[2, 4, 5], std_facs=[2, 1.8, 1.5])]
+        self.fault_ammf_l2_4 = [get_augment_config('glitch', prob=0.03, std_fac=1.9, add_next=True),
+                        get_augment_config('sine', freqs=[1, 2, 3], std_facs=[1.7, 1.9, 2])]
+        self.fault_ammf_l2_5 = [get_augment_config('glitch', prob=0.02, std_fac=1.5, add_next=True),
+                        get_augment_config('sine', freqs=[1, 2, 4], std_facs=[1.8, 2, 1.9])]
+        self.fault_ammf_l2_6 = [get_augment_config('glitch', prob=0.05, std_fac=1.9, add_next=True),
+                        get_augment_config('sine', freqs=[1, 3, 5, 7], std_facs=[1.6, 2.1, 1.8, 1.9]),]
+        
+        # ammf faults (l3 subtle)
+        self.fault_ammf_l3_1 = [get_augment_config('glitch', prob=0.07, std_fac=1.2, add_next=True),
+                        get_augment_config('sine', freqs=[3, 2], std_facs=[1.3, 1.4])]
+        self.fault_ammf_l3_2 = [get_augment_config('glitch', prob=0.08, std_fac=1.5, add_next=True),
+                        get_augment_config('sine', freqs=[2, 4], std_facs=[1.2, 1.3])]
+        self.fault_ammf_l3_3 = [get_augment_config('glitch', prob=0.09, std_fac=1.35, add_next=True),
+                        get_augment_config('sine', freqs=[2, 4, 5], std_facs=[1.2, 1.5, 1])]
+        self.fault_ammf_l3_4 = [get_augment_config('glitch', prob=0.03, std_fac=1.25, add_next=True),
+                        get_augment_config('sine', freqs=[1, 2, 3], std_facs=[1.3, 1.4, 1.25])]
+        self.fault_ammf_l3_5 = [get_augment_config('glitch', prob=0.02, std_fac=1.2, add_next=True),
+                        get_augment_config('sine', freqs=[1, 2, 4], std_facs=[1, 1.4, 1.1])]
+        self.fault_ammf_l3_6 = [get_augment_config('glitch', prob=0.05, std_fac=1.3, add_next=True),
+                        get_augment_config('sine', freqs=[1, 3, 5, 7], std_facs=[1.2, 1.1, 1, 1.3]),]
+        
+    def faults_ctrl(self):
+        # ctrl faults (l2 medium)
+        self.fault_ctrl_l2_1 = [get_augment_config('glitch', prob=0.07, std_fac=2, add_next=True),
+                        get_augment_config('sine', freqs=[30, 200, 500], std_facs=[1.8, 2, 1.5])]
+        self.fault_ctrl_l2_2 = [get_augment_config('glitch', prob=0.08, std_fac=1.8, add_next=True),
+                        get_augment_config('sine', freqs=[56, 100], std_facs=[1.8, 1.5])]
+        self.fault_ctrl_l2_3 = [get_augment_config('glitch', prob=0.09, std_fac=2.2, add_next=True),
+                        get_augment_config('sine', freqs=[150, 405, 556], std_facs=[2, 1.8, 1.5])]
+        self.fault_ctrl_l2_4 = [get_augment_config('glitch', prob=0.03, std_fac=1.9, add_next=True),
+                        get_augment_config('sine', freqs=[100, 235, 375], std_facs=[1.7, 1.9, 2])]
+        self.fault_ctrl_l2_5 = [get_augment_config('glitch', prob=0.02, std_fac=1.5, add_next=True),
+                        get_augment_config('sine', freqs=[156, 220, 400], std_facs=[1.8, 2, 1.9])]
+        self.fault_ctrl_l2_6 = [get_augment_config('glitch', prob=0.05, std_fac=1.9, add_next=True),
+                        get_augment_config('sine', freqs=[45, 300, 550, 700], std_facs=[1.6, 2.1, 1.3, 0.8]),]
+        
+        # ctrl faults (l4 subtler)
+        self.fault_ctrl_l4_1 = [get_augment_config('glitch', prob=0.07, std_fac=0.5, add_next=True),
+                        get_augment_config('sine', freqs=[30, 200, 500], std_facs=[0.5, 0.4, 0.4])]
+        self.fault_ctrl_l4_2 = [get_augment_config('glitch', prob=0.08, std_fac=0.55, add_next=True),
+                        get_augment_config('sine', freqs=[56, 100], std_facs=[0.5, 0.7])]
+        self.fault_ctrl_l4_3 = [get_augment_config('glitch', prob=0.09, std_fac=0.4, add_next=True),
+                        get_augment_config('sine', freqs=[150, 405, 556], std_facs=[0.7, 0.8, 0.55])]
+        self.fault_ctrl_l4_4 = [get_augment_config('glitch', prob=0.03, std_fac=0.4, add_next=True),
+                        get_augment_config('sine', freqs=[100, 235, 375], std_facs=[0.5, 0.75, 0.6])]
+        self.fault_ctrl_l4_5 = [get_augment_config('glitch', prob=0.02, std_fac=0.7, add_next=True),
+                        get_augment_config('sine', freqs=[156, 220, 400], std_facs=[0.4, 0.5, 0.7])]
+        self.fault_ctrl_l4_6 = [get_augment_config('glitch', prob=0.05, std_fac=0.5, add_next=True),
+                        get_augment_config('sine', freqs=[45, 300, 550, 700], std_facs=[0.5, 0.55, 0.7, 0.3]),]
         
     def set_train_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
-        #e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
+        e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
         ds_keys_ok = [f"ds_{i}" for i in range(1, 11)] # if int(key.split("_")[1]) in ds_nums]
 
         self.healthy_configs   = {
@@ -101,16 +159,24 @@ class DataConfig:
             # 'ds_4': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_5': [get_augment_config('OG')],
 
-            #key: [get_augment_config('OG')] for key in e1_keys
+            # key: [get_augment_config('OG')] for key in e1_keys
             #key: [get_augment_config('gau', mean=0, snr_db=6)] for key in e1_keys
 
         }
-        
+
+        self.faults_ctrl()
+        # all_ammf_l2_faults = [self.fault_ammf_l2_1, self.fault_ammf_l2_2, self.fault_ammf_l2_3, self.fault_ammf_l2_4, self.fault_ammf_l2_5, self.fault_ammf_l2_6, self.fault_ammf_l2_1, self.fault_ammf_l2_2, self.fault_ammf_l2_3, self.fault_ammf_l2_4]
+        all_ctrl_l2_faults = [self.fault_ctrl_l2_1, self.fault_ctrl_l2_2, self.fault_ctrl_l2_3, self.fault_ctrl_l2_4, self.fault_ctrl_l2_5, self.fault_ctrl_l2_6, self.fault_ctrl_l2_1, self.fault_ctrl_l2_2, self.fault_ctrl_l2_3, self.fault_ctrl_l2_4]
+        e1_keys_nok = [key for key in self.view.unhealthy_types if key.startswith('(sim)_E1')][:10]
+
+
         top_faults = ['1', '2', '3', '4', '5', '6', '7', '8', '10']
         ds_keys_nok = [f"top_add_{i}_ds_{j}" for i in top_faults for j in range(1, 3)]
         self.unhealthy_configs = {
+
+            key : value for key, value in zip(e1_keys_nok, all_ctrl_l2_faults)
             
-            key: [get_augment_config('OG')] for key in ds_keys_nok
+            #key: [get_augment_config('OG')] for key in ds_keys_nok
             # 'ds_1_top_mod_fault_1': [get_augment_config('OG')],
             #'ds_1_mod_fault_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             #'0_B-007': [get_augment_config('OG')],
@@ -130,33 +196,8 @@ class DataConfig:
             #             get_augment_config('sine', freqs=[1, 2, 3], std_facs=[1.8, 2.4, 2.1])
             #             ],  
 
-            # # # medium
-            # '(sim)_E1_set01_M=mAQ87': [
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.07, std_fac=2.4, add_next=True),
-            #             get_augment_config('sine', freqs=[3, 2], std_facs=[2, 2.3]),
+            # # medium
 
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.07, std_fac=2.3, add_next=True),
-            #             get_augment_config('sine', freqs=[2, 4], std_facs=[2.3, 2]),
-
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.07, std_fac=2.2, add_next=True),
-            #             get_augment_config('sine', freqs=[2, 4, 5], std_facs=[2.3, 2, 2]),
-            #             ], 
-            #         '(sim)_E1_set01_M=mAS23': [
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.02, std_fac=2.3, add_next=True),
-            #             get_augment_config('sine', freqs=[1, 2, 3], std_facs=[2, 1.9, 2.5]),
-
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
-            #             get_augment_config('sine', freqs=[1, 2, 4], std_facs=[2.2, 2.4, 2.5]),
-
-            #             # get_augment_config('gau', mean=0, snr_db=35, add_next=True),
-            #             get_augment_config('glitch', prob=0.02, std_fac=2.1, add_next=True),
-            #             get_augment_config('sine', freqs=[1, 3, 5, 7], std_facs=[1.6, 2.1, 1.8, 2.3]),
-            #             ],  
             # 
             # POB LOS
             # # medium
@@ -203,11 +244,21 @@ class DataConfig:
             #'ds_5': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             #'0_N': [get_augment_config('OG')], 
             #'series_tp': [get_augment_config('OG')]  
-            # key: [get_augment_config('OG')] for key in e1_keys
+            key: [get_augment_config('OG')] for key in e1_keys
         }
         
+        self.faults_ctrl()
+        # all_ammf_l2_faults = [self.fault_ammf_l2_1, self.fault_ammf_l2_2, self.fault_ammf_l2_3, self.fault_ammf_l2_4, self.fault_ammf_l2_5, self.fault_ammf_l2_6, self.fault_ammf_l2_1, self.fault_ammf_l2_2]
+        # all_ammf_l3_faults = [self.fault_ammf_l3_1, self.fault_ammf_l3_2, self.fault_ammf_l3_3, self.fault_ammf_l3_4, self.fault_ammf_l3_5, self.fault_ammf_l3_6, self.fault_ammf_l3_1, self.fault_ammf_l3_2]
+        
+        all_ctrl_l2_faults = [self.fault_ctrl_l2_1, self.fault_ctrl_l2_2, self.fault_ctrl_l2_3, self.fault_ctrl_l2_4, self.fault_ctrl_l2_5, self.fault_ctrl_l2_6, self.fault_ctrl_l2_1, self.fault_ctrl_l2_2]
+        all_ctrl_l4_faults = [self.fault_ctrl_l4_1, self.fault_ctrl_l4_2, self.fault_ctrl_l4_3, self.fault_ctrl_l4_4, self.fault_ctrl_l4_5, self.fault_ctrl_l4_6, self.fault_ctrl_l4_1, self.fault_ctrl_l4_2]
+
+        e1_keys_nok = [key for key in self.view.unhealthy_types if key.startswith('(sim)_E1')][10:]
+
         self.unhealthy_configs = {
-            'top_add_10_ds_1': [get_augment_config('OG')],
+            key : value for key, value in zip(e1_keys_nok, all_ctrl_l4_faults)
+            # 'top_add_10_ds_1': [get_augment_config('OG')],
             #'series_intcon_fault_l1': [get_augment_config('OG')]  
             #'0_B-021': [get_augment_config('OG')],
             # '(sim)_E1_set01_M=mAQ87': [

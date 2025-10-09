@@ -54,7 +54,7 @@ class FaultDetectorTrainConfig:
 
     # 1: Training parameters
         self.model_num = 1
-        self.train_sweep = 0
+        self.train_sweep = 1
         self.is_log = True
 
         # dataset parameters
@@ -81,10 +81,10 @@ class FaultDetectorTrainConfig:
         self.ok_percentage = 1
 
     # Input process parameters
-        self.domain_config = get_domain_config('time')
+        self.domain_config = get_domain_config('time+freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            #get_freq_feat_config('first_n_modes', n_modes=2),
+            get_freq_feat_config('first_n_modes', n_modes=3),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -127,8 +127,8 @@ class FaultDetectorTrainConfig:
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False, 'is_log_y': True}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
             'feat_ranking_boxplot'          : [True, {}],
@@ -142,8 +142,8 @@ class FaultDetectorTrainConfig:
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True}],
+            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False, 'is_log_y': True}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
             #'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
         }

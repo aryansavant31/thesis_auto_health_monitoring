@@ -232,7 +232,10 @@ class FaultDetectorInferManager(FaultDetectorInferConfig):
             raise ValueError("Data and model configurations are not compatible. Please check the configurations.")
 
         self.helper = HelperClass()
-        self.infer_sweep_num = infer_sweep_num
+        if self.infer_sweep is None:
+            self.infer_sweep_num = infer_sweep_num
+        else:
+            self.infer_sweep_num = self.infer_sweep
         
         self.train_log_path = self.log_config.train_log_path
         self.node_type = self.log_config.node_type
