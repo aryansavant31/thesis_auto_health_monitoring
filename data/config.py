@@ -55,18 +55,18 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'BER'
-        self.machine_type = 'cwru'
+        self.application = 'MSD'
+        self.machine_type = 'M005'
         self.scenario = 'scene_1'
 
-        self.signal_types = BERGroupMaker().gb_acc1
+        self.signal_types = MSDGroupMaker().m005_acc
         
-        self.fs = np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
+        self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 500
-        self.stride             = 400
+        self.window_length      = 100
+        self.stride             = 100
         self.start_from_timestep = 1000  # number of initial samples to chop off from the start of the signal
 
         self.use_custom_max_timesteps = False
@@ -91,10 +91,10 @@ class DataConfig:
         ds_keys_ok = [f"ds_{i}" for i in range(1, 11)] # if int(key.split("_")[1]) in ds_nums]
 
         self.healthy_configs   = {
-            '0_N': [get_augment_config('OG')],
-            '1_N': [get_augment_config('OG')],
+            # '0_N': [get_augment_config('OG')],
+            # '1_N': [get_augment_config('OG')],
             # 'series_tp': [get_augment_config('OG')]  
-            #key: [get_augment_config('OG')] for key in ds_keys_ok
+            key: [get_augment_config('OG')] for key in ds_keys_ok
             # 'ds_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_2': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_3': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
@@ -110,10 +110,10 @@ class DataConfig:
         ds_keys_nok = [f"top_add_{i}_ds_{j}" for i in top_faults for j in range(1, 3)]
         self.unhealthy_configs = {
             
-            #key: [get_augment_config('OG')] for key in ds_keys_nok
+            key: [get_augment_config('OG')] for key in ds_keys_nok
             # 'ds_1_top_mod_fault_1': [get_augment_config('OG')],
             #'ds_1_mod_fault_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
-            '0_B-007': [get_augment_config('OG')],
+            #'0_B-007': [get_augment_config('OG')],
             # obvious 
             # '(sim)_E1_set01_M=mAQ87': [
             #             # get_augment_config('glitch', prob=0.01, std_fac=1, add_next=True),
