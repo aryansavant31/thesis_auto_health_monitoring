@@ -1,7 +1,7 @@
 data/datasets/asml/
-fault_detection/logs/asml/**/*.pkl
+fault_detection/logs/**/*.pkl
 fault_isolation/logs/asml/
-topology_estimation/logs/asml/**/*.pkl
+topology_estimation/logs/**/*.pkl
 topology_estimation/logs/asml/**/checkpoints/
 
 topology_estimation/logs/
