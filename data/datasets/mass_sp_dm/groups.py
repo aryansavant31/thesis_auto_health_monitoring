@@ -31,7 +31,22 @@ class MSDGroupMaker:
                        'mass_4': ['acc', 'pos', 'vel'],
                        'mass_5': ['acc', 'pos', 'vel'],},
             'subsystems':  [
-                            [0, 1, 2, 3, 4],      # Subsystem 1
+                            [0, 1, 2], # Subsystem 1
+                            [3, 4],    # Subsystem 2 
+                        ]         
+            }
+        
+        self.m005_acc = {
+            'node_group_name'  : 'm005',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_1': ['acc'],
+                       'mass_2': ['acc'],
+                       'mass_3': ['acc'],
+                       'mass_4': ['acc'],
+                       'mass_5': ['acc'],},
+            'subsystems':  [
+                            [0, 1, 2], # Subsystem 1
+                            [3, 4],    # Subsystem 2  
                         ]         
             }
         

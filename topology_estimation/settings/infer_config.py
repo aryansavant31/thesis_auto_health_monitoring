@@ -40,25 +40,25 @@ class NRIInferConfig:
         self.version = 1
         
         self.num_workers = 1
-        self.batch_size = 1
+        self.batch_size = 50
 
     # Encoder run parameters
         # input processor parameters
-        self.enc_cutoff_freq = 100
-        self.is_hard = False
-        self.init_temp = 1.0
-        self.min_temp = 0.3
+        self.enc_cutoff_freq = 0
+        self.is_hard = True
+        self.init_temp = 0.05
+        self.min_temp = 0.05
         self.decay_temp = 0.000
 
     # Decoder 
         # input processor parameters
-        self.dec_cutoff_freq = 100
+        self.dec_cutoff_freq = 0
 
         # run parameters
         self.skip_first_edge_type = False
         self.pred_steps = 1
-        self.is_burn_in = False
-        self.final_pred_steps = 1
+        self.is_burn_in = True
+        self.final_pred_steps = 75
         self.dynamic_rel = False
         self.is_dynamic_graph = False
 
@@ -66,7 +66,7 @@ class NRIInferConfig:
         self.show_conf_band = False
 
     # Sparsifier parameters
-        self.spf_config = get_spf_config('no_spf', is_expert=True)
+        self.spf_config = get_spf_config('no_spf', is_expert=False)
         
         self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         self.spf_raw_data_norm = None 
@@ -79,7 +79,7 @@ class NRIInferConfig:
         self.update_nri_infer_configs()
 
     # Hyperparameters for logging
-        self.infer_hyperparams = self.get_infer_hyperarams()
+        self.infer_hyperparams = self.get_infer_hyperparams()
 
     def update_nri_infer_configs(self):
         """
@@ -93,7 +93,7 @@ class NRIInferConfig:
         self.log_config.dec_domain_config.update({'cutoff_freq' : self.dec_cutoff_freq})
         self.dec_domain_config = self.log_config.dec_domain_config
 
-    def get_infer_hyperarams(self):
+    def get_infer_hyperparams(self):
         domain_dec_str = get_config_str([self.dec_domain_config])
         domain_enc_str = get_config_str([self.enc_domain_config])
         spf_domain_str = get_config_str([self.spf_domain_config])
@@ -141,31 +141,13 @@ class NRIInferSweep:
         from topology_estimation.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 1
+        self.infer_sweep_num = 2
 
         self.selected_model_path = get_selected_model_path(framework=NRIInferConfig.framework, is_multi=True)
         
-        self.batch_size = [1]
+        self.batch_size = [50]
 
-    # Encoder run parameters
-        # input processor parameters
-        self.enc_cutoff_freq = [100]
-        self.temp = [0.1]
-        self.is_hard = [False]
 
-    # Decoder 
-        # input processor parameters
-        self.dec_cutoff_freq = [100]
-
-        # run parameters
-        self.skip_first_edge_type = [False]
-        self.pred_steps = [1]
-        self.is_burn_in = [False]
-        self.final_pred_steps = [1]
-        self.is_dynamic_graph = [False]
-
-    # Sparsifier parameters
-        self.spf_config = [get_spf_config('no_spf', is_expert=True)]
         
         # self.spf_domain_config   = get_domain_config('time', data_config=self.data_config)
         # self.spf_raw_data_norm = None 

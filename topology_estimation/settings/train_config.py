@@ -351,9 +351,10 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 1 # 5, 6, 7, 8, 9, 10 (high decoder lr is bad), 11 (enc_warmup), 12, 13 (loss_plot with gains), 14 (enc_warmup after decoder stabilize), 15 (sustain_enc_warmup after dec stabilize), 16 (bug fixes), 17 (high enc_lr), 18 (lower accuracy cutoff)
+        self.model_num = 3 # 2 raw time data, 3 psd feats, 4 time feats
         self.continue_training = False
         self.is_log = True
+        self.train_sweep = 5 # 2 - using some possible configuration, 3 - most of tp config
         
         self.n_edge_types = 2
 
@@ -365,15 +366,15 @@ class NRITrainConfig:
         self.num_workers = 1
 
         # optimization parameters
-        self.max_epochs = 1
+        self.max_epochs = 30
         self.optimizer = 'adam'
 
         ## encoder
-        self.lr_enc = 0.0002
+        self.lr_enc = 0.002
         self.loss_type_enc = 'kld'
 
         self.is_beta_annealing = True
-        self.final_beta = 0.000        # final value of beta after annealing
+        self.final_beta = 0.0005        # final value of beta after annealing
         self.warmup_frac_beta = 0.8     # fraction of total steps for warmup
 
         ### for kld loss
@@ -382,17 +383,17 @@ class NRITrainConfig:
 
         ## decoder
         self.lr_dec = 0.001
-        self.loss_type_dec = 'mse'
+        self.loss_type_dec = 'mae'
 
 
         # warmup parameters
         self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
 
         # if encoder warmup is True
-        self.warmup_acc_cutoff = 0.85   # accuracy cutoff for encoder warmup
+        self.warmup_acc_cutoff = 0.99   # accuracy cutoff for encoder warmup
         self.sustain_enc_warmup = True  # if True, then re-enable encoder warmup if edge accuracy drops below cutoff during training
-        self.final_gamma = 0.3
-        self.warmup_frac_gamma = 0.6    # fraction of total steps for warmup
+        self.final_gamma = 1
+        self.warmup_frac_gamma = 0.01    # fraction of total steps for warmup
 
         self.dec_loss_stabilize_steps = 80  # Number of steps with constant loss to consider decoder stabilized
         self.dec_loss_bound_update_interval = 5  # Interval (in steps) to update loss bounds. Less value means more frequent updates.
@@ -402,7 +403,7 @@ class NRITrainConfig:
 
         # pipeline parameters
         self.pipeline_type = 'f_mlp1_og' 
-        self.is_residual_connection = False 
+        self.is_residual_connection = True 
 
         # embedding function parameters
         self.n_hidden_mlp = 256
@@ -416,7 +417,7 @@ class NRITrainConfig:
             }
 
         self.enc_do_prob = {
-            'mlp': 0.0,
+            'mlp': 0.1,
             'cnn': 0.0
             }
         self.enc_is_batch_norm = {
@@ -430,22 +431,30 @@ class NRITrainConfig:
         self.attention_output_size = 5   
 
         # input processor parameters
-        self.enc_domain_config = get_domain_config('time')
-        self.enc_raw_data_norm = 'std'  
-        self.enc_feat_configs = []
+        self.enc_domain_config = get_domain_config('time+freq')
+        self.enc_raw_data_norm = None
+        self.enc_feat_configs = [
+            get_freq_feat_config('first_n_modes', n_modes=5),
+            get_time_feat_config('mean_abs'),
+            get_time_feat_config('energy'),
+            get_time_feat_config('variance'),
+            get_time_feat_config('std'),
+            get_time_feat_config('rms'),
+        ]
+
         self.enc_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
-        self.enc_feat_norm = None
+        self.enc_feat_norm = 'std'
 
         # gumble softmax parameters
         self.is_hard = False   
 
         self.init_temp = 1.0    # initial temperature for Gumble Softmax
-        self.min_temp = 0.7     # minimum temperature for Gumble Softmax
+        self.min_temp = 0.05     # minimum temperature for Gumble Softmax
         self.decay_temp = 0.001  # exponential decay rate for temperature  
 
     # 3: Decoder parameters
 
-        self.msg_out_size = 256
+        self.msg_out_size = 128
     
         # embedding function parameters 
         self.edge_mlp_config = {'mlp': 'edge_nri_og'}
@@ -468,10 +477,10 @@ class NRITrainConfig:
         self.dec_reduc_config = None # get_reduc_config('PCA', n_components=10) # or None
         
         # run parameters
-        self.skip_first_edge_type = True
+        self.skip_first_edge_type = False
         self.pred_steps = 10
         self.is_burn_in = True
-        self.final_pred_steps = 50
+        self.final_pred_steps = 75
         self.dynamic_rel = False
         self.is_dynamic_graph = False
 

@@ -171,3 +171,77 @@ def nll_gaussian(pred, target, variance):
     nll = term_1 + term_2       # shape (batch_size, n_nodes, n_timesteps-1, n_dim)
 
     return nll.sum() / (target.size(0) * target.size(1)) # shape (scalar)
+
+def smape(pred, target, is_per_node=False, eps=1):
+    """
+    smape: Symmetric Mean Absolute Percentage Error
+    Parameters
+    ----------
+    pred : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+    target : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+
+    Returns
+    -------
+    torch.Tensor (Scalar) or torch.Tensor (n_nodes,)
+        The Mean Absolute Percentage Error (MAPE).
+        If is_per_node is False, the MAPE is averaged over the total number of nodes in the batch.
+        If is_per_node is True, the MAPE is computed per node and averaged over the batch.
+    """
+    eps = 0.1 * torch.mean(torch.abs(target))  # 10% of average magnitude
+    sape = torch.abs(pred - target) / (((torch.abs(pred) + torch.abs(target)) / 2) + eps)  # shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+    
+
+    if is_per_node:
+        smape_per_node = sape.mean(dim=(0, 2, 3))  # shape (n_nodes,)
+        return smape_per_node
+    else:
+        smape = sape.mean()  # shape (scalar)
+        return smape
+    
+def correlation_loss(pred, target, is_per_node=False, eps=1e-8):
+    
+    if is_per_node:
+        n_nodes = pred.size(1)
+        corr_per_node = torch.zeros(n_nodes).to(pred.device)
+        for i in range(n_nodes):
+            vx = pred[:, i, :, :] - pred[:, i, :, :].mean()
+            vy = target[:, i, :, :] - target[:, i, :, :].mean()
+            corr_per_node[i] = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx**2) * torch.sum(vy**2)) + eps)
+        return 1 - corr_per_node
+    else:
+        vx = pred - pred.mean()
+        vy = target - target.mean()
+        corr = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx**2) * torch.sum(vy**2)) + eps)
+        return 1 - corr
+    
+# def smspe(pred, target, is_per_node=False, eps=1):
+#     """
+#     smspe: Symmetric Mean Squared Percentage Error
+
+#     Parameters
+#     ----------
+#     pred : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+#     target : torch.Tensor, shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+#     is_per_node : bool, optional
+#         If True, computes the SMSPE per node and averages over the batch.
+#         If False, computes the SMSPE averaged over the total number of nodes in the batch.
+#     eps : float, optional
+#         Small value to avoid division by zero.
+#         Default is 1.
+
+#     Returns
+#     -------
+#     torch.Tensor (Scalar) or torch.Tensor (n_nodes,)
+#         The Mean Squared Percentage Error (MSPE).
+#         If is_per_node is False, the MSPE is averaged over the total number of nodes in the batch.
+#         If is_per_node is True, the MSPE is computed per node and averaged over the batch.
+#     """
+#     eps = 0.1 * torch.mean(torch.abs(target))  # 10% of average magnitude
+#     sspe = ((pred - target) ** 2) / (((torch.abs(pred) + torch.abs(target)) / 2 + eps) ** 2)  # shape (batch_size, n_nodes, n_timesteps-1, n_dim)
+    
+#     if is_per_node:
+#         mspe_per_node = sspe.mean(dim=(0, 2, 3))  # shape (n_nodes,)
+#         return mspe_per_node
+#     else:
+#         mspe = sspe.mean()  # shape (scalar)
+#         return mspe

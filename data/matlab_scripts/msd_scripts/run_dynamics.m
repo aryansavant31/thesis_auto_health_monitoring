@@ -25,21 +25,14 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     % u_cells{M} = @(t) (t >= 0 && t < 0.0005) * 1000; 
     
     % periodic force
-    A = [0.4, 0.3, 0.5, 0.9];    % amplitude
-    f0_5 = 12;     % fundamental freq (hz)
-    f0_8 = 14;     % fundamental freq (hz)
-    f0_10 = 18;     % fundamental freq (hz)
-    f0_12= 20;     % fundamental freq (hz)
+    A1 = [1, 0.5, 0.2, 0.1];    % amplitude
+    A2 = [0.8, 0.4, 0.15, 0.08];    % amplitude
+    f0 = 10;     % fundamental freq (hz)
 
-    freq_5 = [f0_5; 2*f0_5; 10*f0_5; 50*f0_5]; % freq (hz)
-    freq_8 = [f0_8; 2*f0_8; 10*f0_8; 50*f0_8]; % freq (hz)
-    freq_10 = [f0_10; 2*f0_10; 10*f0_10; 50*f0_10]; % freq (hz)
-    freq_12 = [f0_12; 2*f0_12; 10*f0_12; 50*f0_12]; % freq (hz)
+    freq = [5; 15; 40; 80]; % freq (hz)
     
-    u_cells{5} = @(t) A*sin(2*pi*freq_5*t) + 1e-7*randn(size(t));
-    u_cells{8} = @(t) A*sin(2*pi*freq_8*t) + 1e-7*randn(size(t));
-    u_cells{10} = @(t) A*sin(2*pi*freq_10*t) + 1e-7*randn(size(t));
-    u_cells{12} = @(t) A*sin(2*pi*freq_12*t) + 1e-7*randn(size(t));
+    u_cells{3} = @(t) A1*sin(2*pi*freq*t) + 1e-7*randn(size(t));
+    u_cells{5} = @(t) A2*sin(2*pi*freq*t) + 1e-7*randn(size(t));
     
     u = @(t) cellfun(@(f) f(t), u_cells);  % returns M×1 vector at time t
     
@@ -56,7 +49,7 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     
     % Time
     fs = 500;
-    t_end = 200;
+    t_end = 70;
     tspan = 0:1/fs:t_end;
     
     % Initial positions and velocities
@@ -86,23 +79,23 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     end
 
 
-    % === position plot ===
-    figure;
-    plot(tspan, pos, 'LineWidth', 1.5);
-    xlabel('Time (s)');
-    ylabel('Position (m)');
-    legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
-    title('Mass Positions Over Time');
-    grid on;
-    
-    % === velocity plot ===
-    figure;
-    plot(tspan, vel, 'LineWidth', 1.5);
-    xlabel('Time (s)');
-    ylabel('Velocity (m/s)');
-    legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
-    title('Mass Velocities Over Time');
-    grid on;
+    % % === position plot ===
+    % figure;
+    % plot(tspan, pos, 'LineWidth', 1.5);
+    % xlabel('Time (s)');
+    % ylabel('Position (m)');
+    % legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
+    % title('Mass Positions Over Time');
+    % grid on;
+    % 
+    % % === velocity plot ===
+    % figure;
+    % plot(tspan, vel, 'LineWidth', 1.5);
+    % xlabel('Time (s)');
+    % ylabel('Velocity (m/s)');
+    % legend(arrayfun(@(i) sprintf('Mass %d', i), 1:M, 'UniformOutput', false));
+    % title('Mass Velocities Over Time');
+    % grid on;
     
     % === acceleration plot ===
     figure;
@@ -129,3 +122,33 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
     legend(arrayfun(@(i) sprintf('Mass %d', i), non_zero_forces, 'UniformOutput', false));
     title('Input Forces Applied');
     grid on;
+    
+    % PSD
+    N = 100;
+    freq_res = fs/N;
+    freq_axis = 0:freq_res:fs-1/fs;
+
+    figure;
+    for i = 1:M
+        % Compute single-sided amplitude spectrum
+        Y_mag = abs(fft(acc(1000:1000+N, i))); % two sided
+        Y_mag_1s = Y_mag(1:N/2+1); % one sided
+        
+        Y_am = Y_mag/N;
+        Y_am_1s = 2*Y_am(1:N/2+1); % one sided am
+
+        % P2 = abs(Y/N);                % two-sided spectrum
+        % P1 = P2(1:N/2+1);             % single-sided
+        % P1(2:end-1) = 2*P1(2:end-1);  % keep energy consistent
+        % f = fs*(0:(N/2))/N;           % frequency axis
+        
+        subplot(M,1,i)
+        plot(freq_axis(2:N/2), Y_am_1s(2:end-1), 'LineWidth', 1.2); % exclude DC components and Nq freq
+        grid on;
+        xlabel('Frequency (Hz)');
+        ylabel('Amp');
+        title(sprintf('Amplitude v/s freq: Mass %d', i));
+        xlim([0 250]);  % focus on 0–600 Hz band
+    end
+
+    disp(conn.spring_k)

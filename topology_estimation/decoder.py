@@ -109,8 +109,7 @@ class Decoder(LightningModule):
             self.send_rel = send_rel_fc
 
             print(f"\nRelation matrices are overridden to make fully connected graph in decoder.")
-        else:
-            print(f"\nGiven relation matrices are set to decoder.")
+        
 
             
     def set_edge_matrix(self, edge_matrix):

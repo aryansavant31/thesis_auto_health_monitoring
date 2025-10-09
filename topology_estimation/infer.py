@@ -210,7 +210,7 @@ class NRIInferPipeline(TopologyEstimationInferHelper):
             dynamic_rel=self.tp_config.dynamic_rel
             )
 
-        print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.ckpt_path}")
+        print(f"\nNRI model loaded for '{self.tp_config.run_type}' from {self.tp_config.selected_model_path}")
         print(f"\nModel type: {type(trained_nri_model).__name__}, Model ID: {trained_nri_model.hyperparams['model_id']}, No. of input features req.: {trained_nri_model.encoder.n_comps}, No. of dimensions req.: {trained_nri_model.decoder.n_dims}") 
         print('\n' + 75*'-')
 

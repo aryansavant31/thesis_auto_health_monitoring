@@ -52,7 +52,7 @@ class DataPreprocessor:
 
         # prepare data and labels from paths
         x_node, y_node, y_edge, y_rep = {}, {}, {}, {}
-
+        self.unit_num = 0
         for ds_type in node_path_map.keys():
             node_type_map = node_path_map[ds_type]
             ds_subtype_map = edge_path_map[ds_type]
@@ -162,13 +162,17 @@ class DataPreprocessor:
         text += 45*'-' + "\n"
         text += "*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*\n\n"
 
+        self.total_units = 0
+
         text += "- **Healthy configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.healthy_configs.items()):
-            text += f"  ({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
+            self.total_units += 1
+            text += f"  ({self.total_units}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
 
         text += "\n- **Unhealthy configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.unhealthy_configs.items()):
-            text += f"  ({idx+1}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
+            self.total_units += 1
+            text += f"  ({self.total_units}) {ds_subtype}    : [{self._get_augment_str(augments)}]\n"
 
         text += "\n- **Unknown configs**\n"
         for idx, (ds_subtype, augments) in enumerate(self.data_config.unknown_configs.items()):
@@ -268,7 +272,8 @@ class DataPreprocessor:
         else:
             rem_label_counts = {1: 0, -1: 0, 0: 0}
 
-        print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
+        print("\n\nTotal units:", self.total_units)
+        print("\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
         print(45*'-')
         print(f"Total samples: {total_samples}", f"\nDesired samples: {n_des}/{desired_samples} [OK={des_label_counts[1]}, NOK={des_label_counts[-1]}, UK={des_label_counts[0]}],\nRemainder samples: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
         
@@ -414,7 +419,8 @@ class DataPreprocessor:
         else:
             rem_label_counts = {1: 0, -1: 0, 0: 0}
 
-        print("\n\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
+        print("\n\nTotal units:", self.total_units)
+        print("\n[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]")
         print(60*'-')
         print(f"Total samples: {total_samples}", f"\nTrain: {n_train}/{train_total} [OK={train_label_counts[1]}, NOK={train_label_counts[-1]}, UK={train_label_counts[0]}], Test: {n_test}/{test_total} [OK={test_label_counts[1]}, NOK={test_label_counts[-1]}, UK={test_label_counts[0]}], Val: {n_val}/{val_total} [OK={val_label_counts[1]}, NOK={val_label_counts[-1]}, UK={val_label_counts[0]}],\nRemainder: {remainder_samples} [OK={rem_label_counts[1]}, NOK={rem_label_counts[-1]}, UK={rem_label_counts[0]}]")
 
@@ -636,6 +642,7 @@ class DataPreprocessor:
         for node_type, ds_subtype_map in node_type_map.items():
 
             for ds_subtype_idx, (ds_subtype, signal_type_paths) in enumerate(ds_subtype_map.items()):
+                self.unit_num += 1
                 node_fs_list = []  # to store fs values for all dimensions of the current node
 
                 for dim_idx, hdf5_path in enumerate(signal_type_paths):
@@ -660,13 +667,22 @@ class DataPreprocessor:
                         # interpolate data with lesser timesteps to match global max_timesteps (if time is available)
                         if data.shape[1] < self.data_config.max_timesteps or data.shape[1] > self.data_config.max_timesteps:
                             data, time = self._interpolate_data(data, time, self.data_config.max_timesteps)
-                            is_interpolated = True
+                            self.is_interpolated = True
 
                         # calcualte fs
                         fs = 1 / np.mean(np.diff(time, axis=1), axis=1)  # shape: (n_reps,)
                         node_fs_list.append(fs[0])  # assumes fs is consistent across reps for a dimension
                     else:
                         fs = [self.data_config.fs[0, 0]]
+
+                    # Chop off first n samples if specified
+                    if self.data_config.start_from_timestep > 0:
+                        if data.shape[1] > self.data_config.start_from_timestep:
+                            data = data[:, self.data_config.start_from_timestep:]
+                            time = time[:, self.data_config.start_from_timestep:] if time.size != 0 else time
+                            self.is_chopped = True
+                        else:
+                            raise ValueError(f"Cannot chop off {self.data_config.start_from_timestep} samples as data has only {data.shape[1]} samples.")
       
                     # Apply augmentations
                     if ds_type == 'OK':
@@ -686,7 +702,8 @@ class DataPreprocessor:
                     segmented_rep_nums = []
                     for rep_num in rep_num_list:
                         for seg_num in range(len(data_segments) // len(rep_num_list)): # iterate over number of segments per rep
-                            segmented_rep_nums.append(float(f"{rep_num:02d}{ds_subtype_idx+1:03d}.{seg_num+1:04d}"))
+                            segmented_rep_nums.append(float(f"{rep_num:02d}{self.unit_num:03d}.{seg_num+1:04d}"))
+                            
                             
                     # store segments and rep numbers
                     node_dim_collect[node_type][ds_subtype][dim_idx].append(data_segments)
@@ -708,6 +725,11 @@ class DataPreprocessor:
                 print(f"\nData interpolation applied to match max_timesteps for node types with lesser timesteps.")
             else:
                 print(f"\nNo data interpolation applied.")
+
+            if self.__dict__.get('is_chopped', False):
+                print(f"\nFirst {self.data_config.start_from_timestep} timesteps chopped off from the data.")
+            else:
+                print(f"\nNo timesteps chopped off from the data.")
             
             # save fs values to data_config for only OK type data
             if fs_matrix.size != 0:

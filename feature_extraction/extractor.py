@@ -34,7 +34,7 @@ class TimeFeatureExtractor:
         """
         self.feat_configs = feat_configs
 
-    def extract(self, time_data):
+    def extract(self, time_data, is_verbose=True):
         """
         Apply the time feature extraction to the data.
 
@@ -63,7 +63,7 @@ class TimeFeatureExtractor:
                         features = feat_fn(time_data)  
                         features_list.append(features)
                     else:
-                        print(f"Unknown time feature name in ranks: {feature_name}. Skipping...")
+                        print(f"Unknown time feature name in ranks: {feature_name}. Skipping...") if is_verbose else None
 
             # 2. features apart from ranks
             elif hasattr(tf, feat_type):
@@ -72,7 +72,7 @@ class TimeFeatureExtractor:
 
                 features_list.append(features)
             else:
-                print(f"Unknown time feature extraction type: {feat_type}. Skipping...")
+                print(f"Unknown time feature extraction type: {feat_type}. Skipping...") if is_verbose else None
             
             
         # concatenate all features into a single tensor
@@ -94,7 +94,7 @@ class FrequencyFeatureExtractor:
         self.feat_configs = feat_configs
         self.fs = data_config.fs  # sampling frequency
 
-    def extract(self, freq_mag, freq_bins):
+    def extract(self, freq_mag, freq_bins, is_verbose=True):
         """
         Apply the frequency feature extraction to the data.
 
@@ -134,7 +134,7 @@ class FrequencyFeatureExtractor:
 
                         features_list.append(features)
                     else:
-                        print(f"Unknown frequency feature name in ranks: {feature_name}. Skipping...")
+                        print(f"Unknown frequency feature name in ranks: {feature_name}. Skipping...") if is_verbose else None
 
             # 2. first n modes
             elif feat_type == 'first_n_modes':
@@ -167,7 +167,7 @@ class FrequencyFeatureExtractor:
 
                 features_list.append(features)   
             else:
-                print(f"Unknown frequency feature extraction type: {feat_config['type']}. Skipping...")
+                print(f"Unknown frequency feature extraction type: {feat_config['type']}. Skipping...") if is_verbose else None
 
         # concatenate all features into a single tensor
         final_tensor = torch.cat(features_list, axis=2)  # shape: (batch_size, n_nodes, n_components, n_dims)

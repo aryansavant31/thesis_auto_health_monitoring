@@ -77,7 +77,7 @@ def infer_single_config(args):
             nri_infer_pipeline = NRIInferPipeline(nri_config.data_config, nri_config)
 
             preds_enc = nri_infer_pipeline.infer(device=device)
-            preds.update(preds_enc)
+            # preds.update(preds_enc)
 
             base_name = f"{nri_config.selected_model_num}/{os.path.basename(nri_infer_pipeline.infer_log_path)}" if nri_infer_pipeline.infer_log_path else f"{nri_config.selected_model_num}/{run_type}"
             

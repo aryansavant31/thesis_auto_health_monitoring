@@ -53,8 +53,8 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 6
-        self.train_sweep = 1
+        self.model_num = 1
+        self.train_sweep = 0
         self.is_log = True
 
         # dataset parameters
@@ -122,13 +122,13 @@ class FaultDetectorTrainConfig:
 
         self.train_plots = {
             'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [False, {}],
+            'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
-            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
             'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True}],
             # 'anomaly_score_dist_advance-2'    : [False, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
             'feat_ranking_boxplot'          : [True, {}],
@@ -140,10 +140,10 @@ class FaultDetectorTrainConfig:
             'confusion_matrix_advance'      : [True, {}],
             'roc_curve'                     : [False, {}],
             'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num':1}],
-            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
+            'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [True, {'is_pred':False}],
             'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False}],
-            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True, 'bins':80}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': True}],
             #'anomaly_score_dist_advance-2'    : [True, {'percentile_ok': 95, 'percentile_nok': 95, 'num': 2}],
             'pair_plot'                     : [True, {}],
         }

@@ -257,8 +257,8 @@ class GRU(LightningModule):
         h_tilde = torch.tanh(self.input_h(input) + r * self.hidden_h(agg_msgs))
 
         # new hidd(en state
-        # hidden = ((1 - u) * hidden_prev) + (u * h_tilde)
-        hidden = (1 - u) * h_tilde + u * hidden_prev
+        hidden = ((1 - u) * hidden_prev) + (u * h_tilde)
+        # hidden = (1 - u) * h_tilde + u * hidden_prev
 
         return hidden
         

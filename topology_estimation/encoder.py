@@ -514,7 +514,7 @@ class Encoder(LightningModule, MessagePassingLayers):
        
         # initialize raw data normalizers
         if self.raw_data_norm:
-            if not self.feat_configs or self.domain == 'time': # have raw data normalization for both doamin if no feature extraction. But if feature extraction, only allow time domain
+            if not self.feat_configs or self.domain in ['time', 'time+freq']: # have raw data normalization for both doamin if no feature extraction. But if feature extraction, only allow time domain
                 if self.raw_data_normalizer is None:
                     self.raw_data_normalizer = DataNormalizer(norm_type=self.raw_data_norm)
                     print(f"\n>> Raw data normalizer initialized with '{self.raw_data_norm}' normalization") if is_verbose else None 
@@ -543,21 +543,21 @@ class Encoder(LightningModule, MessagePassingLayers):
             print("\n>> No feature normalization is applied") if is_verbose else None 
 
         # define feature objects
-        if self.domain == 'time':
+        if self.domain in ['time', 'time+freq']:
             if self.feat_configs:
                 self.time_fex = TimeFeatureExtractor(self.feat_configs)
-                print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None 
+                print(f"\n>> Time feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.time_fex = None
-                print("\n>> No time feature extraction is applied") if is_verbose else None 
+                print("\n>> No time feature extraction is applied") if is_verbose else None
 
-        elif self.domain == 'freq':
+        if self.domain in ['freq', 'time+freq']:
             if self.feat_configs:
                 self.freq_fex = FrequencyFeatureExtractor(self.feat_configs, data_config=self.data_config)
-                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None 
+                print(f"\n>> Frequency feature extractor initialized with features: {feat_str}") if is_verbose else None
             else:
                 self.freq_fex = None
-                print("\n>> No frequency feature extraction is applied") if is_verbose else None 
+                print("\n>> No frequency feature extraction is applied") if is_verbose else None
         
         # define feature reducer
         if self.reduc_config:
@@ -610,11 +610,14 @@ class Encoder(LightningModule, MessagePassingLayers):
             data = self.domain_transformer.transform(all_time_data)
         elif self.domain == 'freq':
             data, freq_bins = self.domain_transformer.transform(all_time_data)
+        elif self.domain == 'time+freq':
+            data, freq_data, freq_bins = self.domain_transformer.transform(all_time_data)
 
         # fit raw data normalizer (optional)
         if self.raw_data_normalizer:
-            self.raw_data_normalizer.fit(data)
-            data = self.raw_data_normalizer.transform(data)
+            if self.domain in ['time', 'time+freq']:
+                self.raw_data_normalizer.fit(data)
+                data = self.raw_data_normalizer.transform(data)
 
         # extract features from data (optional)
         if self.domain == 'time':
@@ -623,6 +626,11 @@ class Encoder(LightningModule, MessagePassingLayers):
         elif self.domain == 'freq':
             if self.freq_fex:
                 data = self.freq_fex.extract(data, freq_bins)
+        elif self.domain == 'time+freq':
+            if self.time_fex and self.freq_fex:
+                time_feats = self.time_fex.extract(data)
+                freq_feats = self.freq_fex.extract(freq_data, freq_bins)
+                data = torch.cat([time_feats, freq_feats], axis=2)  # shape (batch_size, n_nodes, n_components, n_dims)
 
         # fit feature normalizer (optional : if feat_norm is provided)
         if self.feat_normalizer:
@@ -655,11 +663,14 @@ class Encoder(LightningModule, MessagePassingLayers):
             data = self.domain_transformer.transform(time_data)
         elif self.domain == 'freq':
             data, freq_bins = self.domain_transformer.transform(time_data)
+        elif self.domain == 'time+freq':
+            data, freq_data, freq_bins = self.domain_transformer.transform(time_data)
 
-        # normalize raw data (optional)
+        # fit raw data normalizer (optional)
         if not get_data_shape:
             if self.raw_data_normalizer:
-                data = self.raw_data_normalizer.transform(data)
+                if self.domain in ['time', 'time+freq']:
+                    data = self.raw_data_normalizer.transform(data)
 
         # extract features from data (optional)
         if self.domain == 'time':
@@ -668,9 +679,13 @@ class Encoder(LightningModule, MessagePassingLayers):
         elif self.domain == 'freq':
             if self.freq_fex:
                 data = self.freq_fex.extract(data, freq_bins)
+        elif self.domain == 'time+freq':
+            if self.time_fex and self.freq_fex:
+                time_feats = self.time_fex.extract(data, is_verbose=False)
+                freq_feats = self.freq_fex.extract(freq_data, freq_bins, is_verbose=False)
+                data = torch.cat([time_feats, freq_feats], axis=2)  # shape (batch_size, n_nodes, n_components, n_dims)
 
         # normalize features (optional : if feat_norm is provided)
-        # normalize raw data (optional)
         if not get_data_shape:
             if self.feat_normalizer:
                 data = self.feat_normalizer.transform(data)
@@ -714,6 +729,7 @@ class Encoder(LightningModule, MessagePassingLayers):
 
         # process the input data
         x = self.process_input_data(data)
+        x = x.float()
 
         for layer_num, layer in enumerate(self.pipeline):
             layer_type = layer[0].split('/')[1].split('.')[0]

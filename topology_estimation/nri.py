@@ -18,7 +18,7 @@ import pickle
 import matplotlib.colors as mcolors
 
 # local imports
-from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian
+from .utils.loss import kl_categorical, kl_categorical_uniform, nll_gaussian, smape, correlation_loss
 from .utils.schedulers import BetaScheduler, TempScheduler
 from .encoder import Encoder
 from .decoder import Decoder
@@ -566,8 +566,27 @@ class NRI(LightningModule):
         if self.loss_type_decoder == 'nll':
             loss_decoder = nll_gaussian(x_pred, target, x_var)
         elif self.loss_type_decoder == 'mse':
+            # overall loss
             loss_decoder = F.mse_loss(x_pred, target)
 
+            # loss per node
+            loss_decoder_per_node = F.mse_loss(x_pred, target, reduction='none').mean(dim=(0,2,3))  # shape: (n_nodes,)
+        elif self.loss_type_decoder == 'mae':
+            # overall loss
+            loss_decoder = F.l1_loss(x_pred, target)
+            # loss per node
+            loss_decoder_per_node = F.l1_loss(x_pred, target, reduction='none').mean(dim=(0,2,3))  # shape: (n_nodes,)
+        elif self.loss_type_decoder == 'smape':
+            # overall loss
+            loss_decoder = smape(x_pred, target)
+            # loss per node
+            loss_decoder_per_node = smape(x_pred, target, is_per_node=True)  # shape: (n_nodes,)
+
+        elif self.loss_type_decoder == 'correlation':
+            # overall loss
+            loss_decoder = correlation_loss(x_pred, target)
+            # loss per node
+            loss_decoder_per_node = correlation_loss(x_pred, target, is_per_node=True)  # shape: (n_nodes,)
 
         if self.is_enc_warmup:
 
@@ -613,8 +632,10 @@ class NRI(LightningModule):
             'ce_loss_encoder': ce_loss_encoder,
             'entropy_per_edge': mean_entropy_per_edge,
             'loss_decoder': loss_decoder,
+            'loss_decoder_per_node': loss_decoder_per_node,
             'edge_accuracy': edge_accuracy,
-            'edge_accuracy_per_sample': edge_accuracy_per_sample
+            'edge_accuracy_per_sample': edge_accuracy_per_sample,
+            'relations': relations,
         }
 
         # prepare data for decoder output plot
@@ -765,6 +786,13 @@ class NRI(LightningModule):
 
         if log_data['edge_accuracy'] is not None:
             log_dict['enc/val_edge_accuracy'] = log_data['edge_accuracy']
+
+            # xombined metric for checkpointing
+            if self.custom_current_epoch > self.custom_max_epochs - 5:  # last 5 epochs
+                combined_metric = log_data['edge_accuracy'] - log_data['loss_decoder']
+            else:
+                combined_metric = self.custom_current_epoch / 10000  # dummy value
+            log_dict['val_combined_metric'] = combined_metric
 
         self.log_dict(
             log_dict,
@@ -926,6 +954,14 @@ class NRI(LightningModule):
 
         self.is_beta_annealing = False  # no beta annealing during testing
         self.is_enc_warmup = False   # no encoder warmup during testing
+        self.sustain_enc_warmup = False
+
+        self.loss_type_decoder = 'smape'
+
+        self.adj_matrices = []  # to store adjacency matrices from edge predictions
+        self.rep_nums = []  # to store rep nums of test data
+        self.true_adj_matrices = []  # to store true relations if available
+        self.dec_losses_per_node = []
 
         self.temp_scheduler = TempScheduler(
             init_tau=self.init_temp,
@@ -962,13 +998,17 @@ class NRI(LightningModule):
                 Contains the receiver and sender relationship matrices.
         """
         log_data, self.decoder_plot_data_test, self.edge_preds = self._forward_pass(batch, batch_idx)
-        data, _, _, self.rep_nums = batch
+        data, _, _, rep_nums = batch
         num_nodes = data.size(1)
 
+        self.rep_nums.extend(rep_nums.cpu().numpy().tolist())
         # convert edge predictions to adjacency matrix
-        self.adj_matrices = self.edge_pred_to_adjacency_matrix(self.edge_preds, num_nodes)
+        self.adj_matrices.extend(self.edge_pred_to_adjacency_matrix(self.edge_preds, num_nodes).cpu().numpy().tolist())
+        self.true_adj_matrices.extend(self.edge_pred_to_adjacency_matrix(log_data['relations'], num_nodes).cpu().numpy().tolist()) if log_data['relations'] is not None else None
 
         # Log the losses and metrics
+        self.dec_losses_per_node.append(log_data['loss_decoder_per_node'].cpu().numpy())
+
         log_dict = {
             'nri/test_loss': log_data['loss'],
             'enc/test_loss': log_data['loss_encoder'],
@@ -979,6 +1019,9 @@ class NRI(LightningModule):
         if log_data['edge_accuracy'] is not None:
             log_dict['enc/test_edge_accuracy'] = log_data['edge_accuracy']
 
+        for i, idxes in enumerate(self.subsystem_indices):
+            self.decoder_output_plot(**self.decoder_plot_data_test, type=self.run_type, subsystem=f"subsystem_{i+1}", node_split=idxes, is_end=False)
+
         self.log_dict(
             log_dict,
             on_step=False,
@@ -988,6 +1031,12 @@ class NRI(LightningModule):
         )
 
         return log_data['loss']
+
+
+    # def on_test_batch_end(self, outputs, batch, batch_idx, dataloader_idx = 0):
+    #     # make decoder output plot for test data
+    #     # if self.custom_step+1 < len(self.trainer.test_dataloaders):
+        
     
     def on_test_epoch_end(self):
         """
@@ -1010,6 +1059,22 @@ class NRI(LightningModule):
 
 
         # print stats after testing
+        # print("\nEdge predictions are as follows (showing probabilities for each edge type):")
+        # for edge_pred, rep in zip(self.edge_preds, self.rep_nums):
+        #     print(f"\nRep {rep:,.3f}:")
+        #     print(edge_pred.cpu().numpy())
+
+        print("\nAdjacency matrix from edge pred is as follows:")
+        for true_adj_matrix, adj_matrix, rep in zip(self.true_adj_matrices, self.adj_matrices, self.rep_nums):
+            print(f"\nRep {rep:,.3f}:")
+            n_nodes = len(adj_matrix)
+            df_truth = pd.DataFrame(true_adj_matrix, columns=[f"n{i+1}" for i in range(n_nodes)], index=[f"n{i+1}" for i in range(n_nodes)])
+            df_pred = pd.DataFrame(adj_matrix, columns=[f"n{i+1}" for i in range(n_nodes)], index=[f"n{i+1}" for i in range(n_nodes)])
+            print("True adjacency matrix:")
+            print(df_truth)
+            print("Predicted adjacency matrix:")
+            print(df_pred)
+
         print(
             f"\nnri_test_loss: {self.hyperparams['nri/test_loss']:,.4f}, " 
             f"enc_test_loss: {self.hyperparams['enc/test_loss']:,.4f}, "
@@ -1017,15 +1082,12 @@ class NRI(LightningModule):
             f"test_edge_accuracy: {self.hyperparams.get('enc/test_edge_accuracy', -1):.4f}"
             )
         
-        print("\nEdge predictions are as follows (showing probabilities for each edge type):")
-        for edge_pred, rep in zip(self.edge_preds, self.rep_nums):
-            print(f"\nRep {rep.item():,.3f}:")
-            print(edge_pred.cpu().numpy())
+        # print decoder test loss per node averaged over all test batches
+        mean_dec_loss_per_node = np.array(self.dec_losses_per_node)
+        print(f"\nDecoder test loss per node (averaged over all test batches):")
+        for i, loss in enumerate(mean_dec_loss_per_node):
+            print(f"Batch {i+1}: {loss}")
 
-        print("\nAdjacency matrix from edge pred is as follows:")
-        for adj_matrix, rep in zip(self.adj_matrices, self.rep_nums):
-            print(f"\nRep {rep.item():,.3f}:")
-            print(adj_matrix.cpu().numpy())
 
 
         if self.logger:
@@ -1061,6 +1123,8 @@ class NRI(LightningModule):
 
         self.is_beta_annealing = False  # no beta annealing during prediction
         self.is_enc_warmup = False   # no encoder warmup during prediction
+
+        self.loss_type_decoder = 'correlation'
 
         self.temp_scheduler = TempScheduler(
             init_tau=self.init_temp,
@@ -1149,20 +1213,20 @@ class NRI(LightningModule):
 
         Returns
         -------
-        adj_matrix : torch.Tensor, shape (batch_size, n_nodes, n_nodes, n_edge_types)
+        adj_matrix : torch.Tensor, shape (batch_size, n_nodes, n_nodes)
             Tensor representing the adjacency matrix.
         """
         batch_size, n_edges, n_edge_types = edge_pred.shape
 
         # Initialize an empty adjacency matrix
-        adj_matrix = torch.zeros(batch_size, n_nodes, n_nodes, n_edge_types, device=edge_pred.device)
+        adj_matrix = torch.zeros(batch_size, n_nodes, n_nodes, device=edge_pred.device)
 
         # Fill the adjacency matrix
         edge_idx = 0
         for from_node in range(n_nodes):
             for to_node in range(n_nodes):
                 if from_node != to_node:  # Skip self-loops
-                    adj_matrix[:, from_node, to_node, :] = edge_pred[:, edge_idx, :]
+                    adj_matrix[:, from_node, to_node] = edge_pred[:, edge_idx, 1] # exclude no-edge type
                     edge_idx += 1
 
         return adj_matrix
@@ -1200,7 +1264,7 @@ class NRI(LightningModule):
             f"[{self.model_id}]", 
             ha='center', 
             va='bottom', 
-            fontsize=6,    # small font size
+            fontsize=7,    # small font size
             color='gray'
         )
 
@@ -1213,7 +1277,7 @@ class NRI(LightningModule):
             axes[i-j, 0].plot(train_warmup_steps, self.train_losses[f'enc/train_warmup_losses'], label='train loss', color='purple')
             axes[i-j, 0].plot(val_warmup_steps, self.train_losses[f'enc/val_warmup_losses'], label='val loss', color='magenta', linestyle='--', marker='o', markersize=4)
             axes[i-j, 0].set_title('Encoder Warmup Losses (CE)')
-            axes[i-j, 0].set_xlabel('Steps')
+            axes[i-j, 0].set_xlabel('Training steps')
             axes[i-j, 0].set_ylabel('Loss')
             axes[i-j, 0].legend()
             axes[i-j, 0].grid(True)
@@ -1221,7 +1285,7 @@ class NRI(LightningModule):
             # plot encoder warmup gamma
             axes[i-j, 1].plot(train_steps, self.train_gains['enc_warmup_loss/gamma'], label='gamma', color='brown')
             axes[i-j, 1].set_title('Encoder Warmup Loss Gain (Gamma)')
-            axes[i-j, 1].set_xlabel('Steps')
+            axes[i-j, 1].set_xlabel('Training steps')
             axes[i-j, 1].set_ylabel('Gamma')
             axes[i-j, 1].grid(True)
             axes[i-j, 1].legend()
@@ -1232,7 +1296,7 @@ class NRI(LightningModule):
         axes[i-j, 0].plot(train_steps, self.train_losses[f'enc/train_losses'], label='train loss', color='olive')
         axes[i-j, 0].plot(val_steps, self.train_losses[f'enc/val_losses'], label='val loss', color='green', linestyle='--', marker='o', markersize=4)
         axes[i-j, 0].set_title(f'Encoder Losses ({self.loss_type_encoder.upper()})')
-        axes[i-j, 0].set_xlabel('Steps')
+        axes[i-j, 0].set_xlabel('Training steps')
         axes[i-j, 0].set_ylabel('Loss')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
@@ -1240,7 +1304,7 @@ class NRI(LightningModule):
         # plot encoder beta
         axes[i-j, 1].plot(train_steps, self.train_gains['enc_loss/beta'], label='beta', color='teal')
         axes[i-j, 1].set_title('Encoder Loss Gain (Beta)')
-        axes[i-j, 1].set_xlabel('Steps')
+        axes[i-j, 1].set_xlabel('Training steps')
         axes[i-j, 1].set_ylabel('Beta')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
@@ -1267,7 +1331,7 @@ class NRI(LightningModule):
 
         axes[i-j, 0].set_title(f'Decoder Losses ({self.loss_type_decoder.upper()})')
         axes[i-j, 0].set_ylabel('Loss (log)')
-        axes[i-j, 0].set_xlabel('Steps')
+        axes[i-j, 0].set_xlabel('Training steps')
         axes[i-j, 0].set_yscale('log')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
@@ -1275,7 +1339,7 @@ class NRI(LightningModule):
         # plot decoder gain
         axes[i-j, 1].plot(train_steps, self.train_gains['dec_loss/alpha'], label='alpha', color='navy')
         axes[i-j, 1].set_title('Decoder Loss Gain (Alpha)')
-        axes[i-j, 1].set_xlabel('Steps')
+        axes[i-j, 1].set_xlabel('Training steps')
         axes[i-j, 1].set_ylabel('Alpha')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
@@ -1287,7 +1351,7 @@ class NRI(LightningModule):
         axes[i-j, 0].plot(val_steps, self.train_losses[f'nri/val_losses'], label='val loss', color='orange', linestyle='--', marker='o', markersize=4)
         axes[i-j, 0].set_title('NRI Losses (Encoder + Decoder)')
         axes[i-j, 0].set_ylabel('Loss (log)')
-        axes[i-j, 0].set_xlabel('Steps')
+        axes[i-j, 0].set_xlabel('Training steps')
         axes[i-j, 0].set_yscale('log')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
@@ -1296,11 +1360,13 @@ class NRI(LightningModule):
         axes[i-j, 1].plot(train_steps, self.train_gains['nri_loss/delta'], label='delta', color='darkred')
         axes[i-j, 1].set_title('NRI Loss Gain (Delta)')
         axes[i-j, 1].set_ylabel('Delta')
-        axes[i-j, 1].set_xlabel('Steps')
+        axes[i-j, 1].set_xlabel('Training steps')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
 
         fig.suptitle(f"Train and Validation Losses", fontsize=15) # 15
+        # adjust subplot spacing to prevent label overlap
+        plt.subplots_adjust(left=0.08, bottom=0.08, right=0.95, top=0.91, wspace=0.2, hspace=0.55)
 
         # save loss plot if logger is avaialble
         if self.logger:
@@ -1360,7 +1426,7 @@ class NRI(LightningModule):
                 )
 
         plt.title(f'Encoder Edge Prediction Accuracy ({" ".join(self.run_type.capitalize().split('_'))})', fontsize=10, pad=20)
-        plt.xlabel('Steps')
+        plt.xlabel('Training steps', labelpad=15)
         plt.ylabel('Accuracy')
         plt.ylim(0, 1)
         plt.legend()
@@ -1425,7 +1491,7 @@ class NRI(LightningModule):
                 )
 
         plt.title(f'Encoder Edge Prediction Entropy ({" ".join(self.run_type.capitalize().split('_'))})', fontsize=10, pad=20)
-        plt.xlabel('Steps')
+        plt.xlabel('Training steps', labelpad=15)
         plt.ylabel('Entropy')
         # plt.ylim(0, 1)
         plt.legend()
@@ -1468,8 +1534,8 @@ class NRI(LightningModule):
             print(f"\nCreating decoder output plot for {subsystem} for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
 
         # apply inverse transform to get back to original data space
-        if self.decoder.raw_data_normalizer:
-            x_pred, target = self.apply_inverse_transform(x_pred, target)
+        # if self.decoder.raw_data_normalizer:
+        #     x_pred, target = self.apply_inverse_transform(x_pred, target)
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
@@ -1496,7 +1562,7 @@ class NRI(LightningModule):
         })
 
         subplot_fontsize = max(14, int(12 - 0.5 * (n_nodes + n_dims) / 2))
-        suptitle_fontsize = subplot_fontsize + 4
+        suptitle_fontsize = subplot_fontsize + 2
         
         # create figure with subplots for each node and dimension
         fig, axes = plt.subplots(n_nodes, n_dims, figsize=(n_dims * 6, n_nodes * 4), sharex=False, sharey=False, dpi=75)

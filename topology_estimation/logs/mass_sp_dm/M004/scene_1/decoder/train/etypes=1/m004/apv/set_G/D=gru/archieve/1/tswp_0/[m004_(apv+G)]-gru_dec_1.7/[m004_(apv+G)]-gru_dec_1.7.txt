@@ -1,1 +1,0 @@
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\logs\mass_sp_dm\M004\scene_1\decoder\train\etypes=1\m004\apv\set_G\healthy\(OK):series_tp[OG]\[D] gru\mass_1: (acc, pos, vel), mass_2: (acc, pos, vel), mass_3: (acc, pos, vel), mass_4: (acc, pos, vel)\T100, Tmax = 500,001\(spf) vanilla (is_exp_top = True)\(D) time\(D) [no_feat] [no_reduc]\tswp_0\(D) (dims = 3)

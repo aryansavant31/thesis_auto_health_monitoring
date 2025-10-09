@@ -4,6 +4,8 @@ fault_isolation/logs/asml/
 topology_estimation/logs/asml/**/*.pkl
 topology_estimation/logs/asml/**/checkpoints/
 
+topology_estimation/logs/
+
 
 data/datasets/bearing/cwru/
 

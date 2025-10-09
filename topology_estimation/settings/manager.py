@@ -32,7 +32,10 @@ class NRITrainManager(NRITrainConfig):
     def __init__(self, data_config:DataConfig, train_sweep_num=0):
         super().__init__(data_config)
         self.helper = HelperClass()
-        self.train_sweep_num = train_sweep_num
+        if self.train_sweep is None:
+            self.train_sweep_num = train_sweep_num
+        else:
+            self.train_sweep_num = self.train_sweep
 
     def get_train_log_path(self, n_dim, n_comps, always_next_version=False):
         """
@@ -154,6 +157,8 @@ class NRITrainManager(NRITrainConfig):
         for root, dirs, files in os.walk(parent_dir):
             # Only look at immediate subfolders of parent_dir
             if os.path.dirname(root) == parent_dir:
+                if os.path.basename(root) == "archieve":
+                    continue  # skip the 'archieve' folder
                 for d in dirs:
                     model_folders.append(d)
 
@@ -665,7 +670,7 @@ class DecoderTrainSweepManager(TopologyEstimationTrainSweepManager):
     
 
 
-class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
+class TopologyEstimationInferManager(NRIInferConfig):
     def __init__(self, data_config, framework, run_type, infer_sweep_num=0, selected_model_path=None):
         """
         Initializes the infer manager for topology estimation.
@@ -681,8 +686,8 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
         """
         if framework == 'nri':
             NRIInferConfig.__init__(self, data_config, run_type, selected_model_path)
-        elif framework == 'decoder':
-            DecoderInferConfig.__init__(self, data_config, run_type, selected_model_path)
+        # elif framework == 'decoder':
+        #     DecoderInferConfig.__init__(self, data_config, run_type, selected_model_path)
 
         # check if data and model are compatible
         if not self._is_data_model_match():
@@ -858,7 +863,7 @@ class TopologyEstimationInferManager(NRIInferConfig, DecoderInferConfig):
                 print("Stopped operation.")
                 sys.exit()  # Exit the program gracefully   
 
-class TopologyEstimationInferSweepManager(NRIInferSweep, DecoderInferSweep):
+class TopologyEstimationInferSweepManager(NRIInferSweep):
     def __init__(self, data_configs:list, framework, run_type):
         self.data_configs = data_configs
         self.framework = framework
@@ -881,8 +886,8 @@ class TopologyEstimationInferSweepManager(NRIInferSweep, DecoderInferSweep):
 
             if self.framework == 'nri':
                 NRIInferSweep.__init__(self, data_config)
-            elif self.framework == 'decoder':
-                DecoderInferSweep.__init__(self, data_config)
+            # elif self.framework == 'decoder':
+            #     DecoderInferSweep.__init__(self, data_config)
 
             node_group_change = data_config.signal_types['node_group_name'] != infer_configs[-1].data_config.signal_types['node_group_name'] if infer_configs else False
             signal_group_change = data_config.signal_types['signal_group_name'] != infer_configs[-1].data_config.signal_types['signal_group_name'] if infer_configs else False

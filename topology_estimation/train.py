@@ -154,17 +154,24 @@ class TopologyEstimationTrainHelper:
 
             # define ckeckpoint callback to save the best model
             if self.tp_config.framework == 'nri':
-                monitor_metric = 'nri/val_loss'
+                checkpoint_callback = ModelCheckpoint(
+                dirpath=os.path.join(self.train_log_path, 'checkpoints'),
+                filename='best-model-{epoch:02d}-{val_combined_metric:.4f}',
+                save_top_k=1,
+                monitor='val_combined_metric',
+                mode='max'
+            )
+                
             elif self.tp_config.framework == 'decoder':
-                monitor_metric = 'val_loss'
-
-            checkpoint_callback = ModelCheckpoint(
+                checkpoint_callback = ModelCheckpoint(
                 dirpath=os.path.join(self.train_log_path, 'checkpoints'),
                 filename='best-model-{epoch:02d}-{val_loss:.4f}',
                 save_top_k=1,
-                monitor=monitor_metric,
+                monitor='val_loss',
                 mode='min'
             )
+
+            
 
             # define logger
             train_logger = TensorBoardLogger(os.path.dirname(self.train_log_path), name="", version=os.path.basename(self.train_log_path))
