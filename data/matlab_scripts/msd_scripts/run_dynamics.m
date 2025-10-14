@@ -1,4 +1,4 @@
-function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype)
+function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype, ds_num)
 
     % Get root directory where run_dynamics.m is located
     root_dir_path = mfilename('fullpath');
@@ -42,6 +42,19 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
              conn.damper_d;
              conn.k_wall_lin;
              conn.d_wall_lin];
+
+    disp(["ds_num: " ds_num])
+    disp("mass")
+    disp(conn.mass)
+    disp("spring")
+    disp(conn.spring_k)
+    disp("damper")
+    disp(conn.damper_d)
+    disp("spring_wall")
+    disp(conn.k_wall_lin)
+    disp("damper_wall")
+    disp(conn.d_wall_lin)
+
     
     odefun = @(t, x) f(x, u(t), param);
     
@@ -150,5 +163,3 @@ function [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario
         title(sprintf('Amplitude v/s freq: Mass %d', i));
         xlim([0 250]);  % focus on 0–600 Hz band
     end
-
-    disp(conn.spring_k)

@@ -141,7 +141,7 @@ class NRIInferSweep:
         from topology_estimation.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 2 # 2 usesd all ds 3 sets
+        self.infer_sweep_num = 1 # 2 usesd all ds 3 sets
 
         self.selected_model_path = get_selected_model_path(framework=NRIInferConfig.framework, is_multi=True)
         

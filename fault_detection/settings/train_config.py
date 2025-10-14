@@ -54,7 +54,7 @@ class FaultDetectorTrainConfig:
 
     # 1: Training parameters
         self.model_num = 1
-        self.train_sweep = 1
+        self.train_sweep =None
         self.is_log = True
 
         # dataset parameters
@@ -84,7 +84,7 @@ class FaultDetectorTrainConfig:
         self.domain_config = get_domain_config('time+freq')
         self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=3),
+            get_freq_feat_config('first_n_modes', n_modes=5),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -115,7 +115,7 @@ class FaultDetectorTrainConfig:
     # Feature selection parameters
         self.feat_selector_config = get_reduc_config('LDA', n_comps=1)  # feature selection config
         self.n_splits = 5  # number of splits for feature selection
-        self.n_feats = 6  # number of features to select
+        self.n_feats = 5  # number of features to select
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()
@@ -295,26 +295,28 @@ class FaultDetectorTrainSweep:
         """
         self.data_config = data_config
 
-        self.train_sweep_num = 4
+        self.train_sweep_num = 2
 
     # 1: Training parameters
         # dataset parameters
         self.batch_size  = [1]
-        self.train_rt    = [0.8]
-        self.test_rt     = [0.2]
         self.num_workers = [1]
 
     # 2: Model parameters
         self.anom_type = ['IF']
-        self.n_estimators = [10, 10, 10, 50, 50, 50, 100, 100, 100, 500, 500, 500, 1000, 1000, 1000, 2000, 2000, 2000]
-        self.contam = [1e-40, 1e-20, 1e-15, 1e-05, 1e0-3, 0.01, 0.1, 0.3]
+        # self.n_estimators = [10, 10, 10, 50, 50, 50, 100, 100, 100, 500, 500, 500, 1000, 1000, 1000, 2000, 2000, 2000]
+        # self.contam = [1e-40, 1e-20, 1e-15, 1e-05, 1e0-3, 0.01, 0.1, 0.3]
 
         # run parameters
-        self.domain_config = [get_domain_config('freq')]
-        self.raw_data_norm = [None]
+        #self.domain_config = [get_domain_config('time+freq')]
+        #self.raw_data_norm = [None]
         self.feat_configs = [
-            [],
-            [get_freq_feat_config('first_n_modes', n_modes=10)]
+            [get_freq_feat_config('first_n_modes', n_modes=2)],
+            [get_freq_feat_config('first_n_modes', n_modes=3)],
+            [get_freq_feat_config('first_n_modes', n_modes=4)],
+            [get_freq_feat_config('first_n_modes', n_modes=5)],
+            [get_freq_feat_config('first_n_modes', n_modes=6)],
+            [get_freq_feat_config('first_n_modes', n_modes=7)],
             #[get_time_feat_config('mean')], 
             # [get_time_feat_config('kurtosis')], 
             # [get_freq_feat_config('stdF')], 
@@ -323,9 +325,10 @@ class FaultDetectorTrainSweep:
             #[get_time_feat_config('skewness')]
 
         ]
-        self.reduc_config = [None]
-        self.feat_norm = [None]
-        self.feat_select_config = [None, get_reduc_config('LDA', n_feats=10, n_comps=1)]
+        #self.reduc_config = [None]
+        #self.feat_norm = ['std']
+        #self.feat_select_config = [get_reduc_config('LDA', n_feats=10, n_comps=1)]
+        self.n_feats = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 
 if __name__ == "__main__":

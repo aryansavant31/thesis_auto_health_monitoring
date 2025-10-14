@@ -1,7 +1,7 @@
-function adj = generate_dataset(machine_type, scenario, ds_type, ds_subtype)
+function adj = generate_dataset(machine_type, scenario, ds_type, ds_subtype, ds_num)
 
     % Get dynamics outputs
-    [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype);
+    [pos, vel, acc, time, conn_pairs] = run_dynamics(machine_type, scenario, ds_type, ds_subtype, ds_num);
 
     % Signal types and corresponding data
     signal_types = {'pos', 'vel', 'acc'};
@@ -11,7 +11,8 @@ function adj = generate_dataset(machine_type, scenario, ds_type, ds_subtype)
     M = size(pos, 2);
 
     % Base path to save
-    base_path = fullfile('.', 'data', 'datasets', 'mass_sp_dm', machine_type, scenario, ds_type, ds_subtype, 'raw');
+    ds_subtype_str = ds_subtype + ds_num;
+    base_path = fullfile('.', 'data', 'datasets', 'mass_sp_dm', machine_type, scenario, ds_type, ds_subtype_str, 'raw');
 
     % Save signals (per mass, per signal type)
     for s = 1:length(signal_types)
@@ -55,7 +56,7 @@ function adj = generate_dataset(machine_type, scenario, ds_type, ds_subtype)
     if ~exist(edge_save_path, 'dir')
         mkdir(edge_save_path);
     end
-    adj_filename = fullfile(edge_save_path, strcat(ds_subtype, '_adj.mat'));
+    adj_filename = fullfile(edge_save_path, strcat(ds_subtype_str, '_adj.mat'));
     
     E = struct();
     varname_edge = sprintf('%s_adj', ds_subtype);

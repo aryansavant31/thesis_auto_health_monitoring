@@ -35,8 +35,8 @@ class FaultDetectorInferConfig:
         self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
-        self.version = 3
-        self.infer_sweep = 1
+        self.version = 1
+        self.infer_sweep = None
         
         self.num_workers = 1
         self.batch_size = 1
@@ -112,7 +112,7 @@ class FaultDetectorInferSweep:
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 1.1   # Ensure self.infer_Sweep in infer config is NONE. 
+        self.infer_sweep_num = 2   # Ensure self.infer_Sweep in infer config is NONE. 
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 

@@ -1,12 +1,13 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_infer.py
 Base Name: iswp_2
-Start Time: 2025-09-09 13:24:26
-End Time: 2025-09-09 13:47:58
+Start Time: 2025-10-14 13:20:09
+End Time: 2025-10-14 13:24:44
 
-CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
-GPU: None detected
-OS: Windows 10 (10.0.19045)
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26200)
 
 Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
 ========================================================================================================================
@@ -22,121 +23,129 @@ Run type: custom_test
 Total combinations: 1
 
 Parameters and their values:
-  healthy_configs: 1 values -> [{'E1_set01_M=mEK83': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEO26': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEP39': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEP73': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEV46': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mEZ94': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFA30': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFC17': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFF18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFJ72': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFL29': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFM76': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFQ18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFX20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mFY86': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGB62': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGD45': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGD96': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF06': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF37': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGF62': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGG38': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGH51': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGI48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGM63': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGR15': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGS15': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGT99': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mGX70': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHA09': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHB89': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHC14': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHC51': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHD92': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHF87': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHF95': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHG72': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHG90': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHL47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHM40': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHS02': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHT43': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHU18': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHV81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHW09': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHW86': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mHZ50': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIB13': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIC11': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIC20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mID45': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIF20': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIH25': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIK66': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIN28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIN36': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIP47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIQ75': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIR17': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIR27': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU34': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIU96': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIV66': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIX10': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIX97': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIY01': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mIZ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJA07': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJA16': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJD47': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJD49': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJK48': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJL74': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJR91': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mJZ76': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKA74': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKG27': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKH54': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKH90': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKI28': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKJ81': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKL05': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKM26': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKM58': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKN34': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKS53': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKT03': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mKW33': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}], 'E1_set01_M=mat': [{'type': 'gau', 'mean': 0.0, 'std': 0.0001, 'add_next': False}]}]
-  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
-  stride: 1 values -> [1000]
-  unhealthy_configs: 1 values -> [{'(sim)_E1_set01_M=mAI26': [{'type': 'glitch', 'prob': 0.01, 'amp': 0.05, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.01, 'add_next': True}, {'type': 'sine', 'freqs': [10, 15], 'amps': [1, 0.5], 'add_next': False}], '(sim)_E1_set01_M=mAQ10': [{'type': 'glitch', 'prob': 0.01, 'amp': 0.05, 'add_next': True}, {'type': 'gau', 'mean': 0, 'std': 0.01, 'add_next': True}, {'type': 'sine', 'freqs': [1, 5, 10], 'amps': [1, 0.5, 0.5], 'add_next': False}]}]
-  window_length: 1 values -> [1000]
+  healthy_configs: 1 values -> [{'ok_ds_101': [{'type': 'OG', 'add_next': False}], 'ok_ds_102': [{'type': 'OG', 'add_next': False}], 'ok_ds_103': [{'type': 'OG', 'add_next': False}], 'ok_ds_104': [{'type': 'OG', 'add_next': False}], 'ok_ds_105': [{'type': 'OG', 'add_next': False}], 'ok_ds_106': [{'type': 'OG', 'add_next': False}], 'ok_ds_107': [{'type': 'OG', 'add_next': False}], 'ok_ds_108': [{'type': 'OG', 'add_next': False}], 'ok_ds_109': [{'type': 'OG', 'add_next': False}], 'ok_ds_110': [{'type': 'OG', 'add_next': False}], 'ok_ds_111': [{'type': 'OG', 'add_next': False}], 'ok_ds_112': [{'type': 'OG', 'add_next': False}], 'ok_ds_113': [{'type': 'OG', 'add_next': False}], 'ok_ds_114': [{'type': 'OG', 'add_next': False}], 'ok_ds_115': [{'type': 'OG', 'add_next': False}], 'ok_ds_116': [{'type': 'OG', 'add_next': False}], 'ok_ds_117': [{'type': 'OG', 'add_next': False}], 'ok_ds_118': [{'type': 'OG', 'add_next': False}], 'ok_ds_119': [{'type': 'OG', 'add_next': False}], 'ok_ds_120': [{'type': 'OG', 'add_next': False}], 'ok_ds_121': [{'type': 'OG', 'add_next': False}], 'ok_ds_122': [{'type': 'OG', 'add_next': False}], 'ok_ds_123': [{'type': 'OG', 'add_next': False}], 'ok_ds_124': [{'type': 'OG', 'add_next': False}], 'ok_ds_125': [{'type': 'OG', 'add_next': False}], 'ok_ds_126': [{'type': 'OG', 'add_next': False}], 'ok_ds_127': [{'type': 'OG', 'add_next': False}], 'ok_ds_128': [{'type': 'OG', 'add_next': False}], 'ok_ds_129': [{'type': 'OG', 'add_next': False}], 'ok_ds_130': [{'type': 'OG', 'add_next': False}], 'ok_ds_131': [{'type': 'OG', 'add_next': False}], 'ok_ds_132': [{'type': 'OG', 'add_next': False}], 'ok_ds_133': [{'type': 'OG', 'add_next': False}], 'ok_ds_134': [{'type': 'OG', 'add_next': False}], 'ok_ds_135': [{'type': 'OG', 'add_next': False}], 'ok_ds_136': [{'type': 'OG', 'add_next': False}], 'ok_ds_137': [{'type': 'OG', 'add_next': False}], 'ok_ds_138': [{'type': 'OG', 'add_next': False}], 'ok_ds_139': [{'type': 'OG', 'add_next': False}], 'ok_ds_140': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'mass_1', 'signal_group_name': 'vel', 'group': {'mass_1': ['vel']}}]
+  unhealthy_configs: 1 values -> [{'mod_1_f1_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_1_f1_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_1_f1_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_1_f2_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_1_f2_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_1_f2_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_1_f3_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_1_f3_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_1_f3_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_1_f4_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_1_f4_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_1_f4_ds_4': [{'type': 'OG', 'add_next': False}]}]
 
 Parameter Sweep Summary:
-Total combinations: 45
+Total combinations: 50
 
 Parameters and their values:
   batch_size: 1 values -> [1]
   cutoff_freq: 1 values -> [0]
 
-Number of models selected: 45
+Number of models selected: 50
 Selected models are as follows:
 ------------------------------
-  Model 1: [ammf_(acc+E1)]-IF_fdet_18
-  Model 2: [ammf_(acc+E1)]-IF_fdet_19
-  Model 3: [ammf_(acc+E1)]-IF_fdet_20
-  Model 4: [ammf_(acc+E1)]-IF_fdet_21
-  Model 5: [ammf_(acc+E1)]-IF_fdet_22
-  Model 6: [ammf_(acc+E1)]-IF_fdet_23
-  Model 7: [ammf_(acc+E1)]-IF_fdet_24
-  Model 8: [ammf_(acc+E1)]-IF_fdet_25
-  Model 9: [ammf_(acc+E1)]-IF_fdet_26
-  Model 10: [ammf_(acc+E1)]-IF_fdet_27
-  Model 11: [ammf_(acc+E1)]-IF_fdet_28
-  Model 12: [ammf_(acc+E1)]-IF_fdet_29
-  Model 13: [ammf_(acc+E1)]-IF_fdet_30
-  Model 14: [ammf_(acc+E1)]-IF_fdet_31
-  Model 15: [ammf_(acc+E1)]-IF_fdet_32
-  Model 16: [ammf_(acc+E1)]-IF_fdet_33
-  Model 17: [ammf_(acc+E1)]-IF_fdet_34
-  Model 18: [ammf_(acc+E1)]-IF_fdet_35
-  Model 19: [ammf_(acc+E1)]-IF_fdet_36
-  Model 20: [ammf_(acc+E1)]-IF_fdet_37
-  Model 21: [ammf_(acc+E1)]-IF_fdet_38
-  Model 22: [ammf_(acc+E1)]-IF_fdet_39
-  Model 23: [ammf_(acc+E1)]-IF_fdet_40
-  Model 24: [ammf_(acc+E1)]-IF_fdet_41
-  Model 25: [ammf_(acc+E1)]-IF_fdet_42
-  Model 26: [ammf_(acc+E1)]-IF_fdet_43
-  Model 27: [ammf_(acc+E1)]-IF_fdet_44
-  Model 28: [ammf_(acc+E1)]-IF_fdet_45
-  Model 29: [ammf_(acc+E1)]-IF_fdet_46
-  Model 30: [ammf_(acc+E1)]-IF_fdet_47
-  Model 31: [ammf_(acc+E1)]-IF_fdet_48
-  Model 32: [ammf_(acc+E1)]-IF_fdet_49
-  Model 33: [ammf_(acc+E1)]-IF_fdet_50
-  Model 34: [ammf_(acc+E1)]-IF_fdet_51
-  Model 35: [ammf_(acc+E1)]-IF_fdet_52
-  Model 36: [ammf_(acc+E1)]-IF_fdet_53
-  Model 37: [ammf_(acc+E1)]-IF_fdet_54
-  Model 38: [ammf_(acc+E1)]-IF_fdet_55
-  Model 39: [ammf_(acc+E1)]-IF_fdet_56
-  Model 40: [ammf_(acc+E1)]-IF_fdet_57
-  Model 41: [ammf_(acc+E1)]-IF_fdet_58
-  Model 42: [ammf_(acc+E1)]-IF_fdet_59
-  Model 43: [ammf_(acc+E1)]-IF_fdet_60
-  Model 44: [ammf_(acc+E1)]-IF_fdet_61
-  Model 45: [ammf_(acc+E1)]-IF_fdet_63
+  Model 1: [mass_1_(vel+G)]-IF_fdet_8
+  Model 2: [mass_1_(vel+G)]-IF_fdet_9
+  Model 3: [mass_1_(vel+G)]-IF_fdet_10
+  Model 4: [mass_1_(vel+G)]-IF_fdet_11
+  Model 5: [mass_1_(vel+G)]-IF_fdet_12
+  Model 6: [mass_1_(vel+G)]-IF_fdet_13
+  Model 7: [mass_1_(vel+G)]-IF_fdet_14
+  Model 8: [mass_1_(vel+G)]-IF_fdet_15
+  Model 9: [mass_1_(vel+G)]-IF_fdet_16
+  Model 10: [mass_1_(vel+G)]-IF_fdet_17
+  Model 11: [mass_1_(vel+G)]-IF_fdet_18
+  Model 12: [mass_1_(vel+G)]-IF_fdet_19
+  Model 13: [mass_1_(vel+G)]-IF_fdet_20
+  Model 14: [mass_1_(vel+G)]-IF_fdet_21
+  Model 15: [mass_1_(vel+G)]-IF_fdet_22
+  Model 16: [mass_1_(vel+G)]-IF_fdet_23
+  Model 17: [mass_1_(vel+G)]-IF_fdet_24
+  Model 18: [mass_1_(vel+G)]-IF_fdet_25
+  Model 19: [mass_1_(vel+G)]-IF_fdet_26
+  Model 20: [mass_1_(vel+G)]-IF_fdet_27
+  Model 21: [mass_1_(vel+G)]-IF_fdet_28
+  Model 22: [mass_1_(vel+G)]-IF_fdet_29
+  Model 23: [mass_1_(vel+G)]-IF_fdet_30
+  Model 24: [mass_1_(vel+G)]-IF_fdet_31
+  Model 25: [mass_1_(vel+G)]-IF_fdet_32
+  Model 26: [mass_1_(vel+G)]-IF_fdet_33
+  Model 27: [mass_1_(vel+G)]-IF_fdet_34
+  Model 28: [mass_1_(vel+G)]-IF_fdet_35
+  Model 29: [mass_1_(vel+G)]-IF_fdet_36
+  Model 30: [mass_1_(vel+G)]-IF_fdet_37
+  Model 31: [mass_1_(vel+G)]-IF_fdet_38
+  Model 32: [mass_1_(vel+G)]-IF_fdet_39
+  Model 33: [mass_1_(vel+G)]-IF_fdet_40
+  Model 34: [mass_1_(vel+G)]-IF_fdet_41
+  Model 35: [mass_1_(vel+G)]-IF_fdet_42
+  Model 36: [mass_1_(vel+G)]-IF_fdet_43
+  Model 37: [mass_1_(vel+G)]-IF_fdet_44
+  Model 38: [mass_1_(vel+G)]-IF_fdet_45
+  Model 39: [mass_1_(vel+G)]-IF_fdet_46
+  Model 40: [mass_1_(vel+G)]-IF_fdet_47
+  Model 41: [mass_1_(vel+G)]-IF_fdet_48
+  Model 42: [mass_1_(vel+G)]-IF_fdet_49
+  Model 43: [mass_1_(vel+G)]-IF_fdet_50
+  Model 44: [mass_1_(vel+G)]-IF_fdet_51
+  Model 45: [mass_1_(vel+G)]-IF_fdet_52
+  Model 46: [mass_1_(vel+G)]-IF_fdet_53
+  Model 47: [mass_1_(vel+G)]-IF_fdet_54
+  Model 48: [mass_1_(vel+G)]-IF_fdet_55
+  Model 49: [mass_1_(vel+G)]-IF_fdet_56
+  Model 50: [mass_1_(vel+G)]-IF_fdet_57
 
-Parallelizing 45 fault detection configurations across 8 workers...
-  Completed config 8: [ammf_(acc+E1)]-IF_fdet_25/custom_test_1
-  Completed config 6: [ammf_(acc+E1)]-IF_fdet_23/custom_test_1
-  Completed config 1: [ammf_(acc+E1)]-IF_fdet_18/custom_test_1
-  Completed config 2: [ammf_(acc+E1)]-IF_fdet_19/custom_test_1
-  Completed config 7: [ammf_(acc+E1)]-IF_fdet_24/custom_test_1
-  Completed config 3: [ammf_(acc+E1)]-IF_fdet_20/custom_test_1
-  Completed config 4: [ammf_(acc+E1)]-IF_fdet_21/custom_test_1
-  Completed config 5: [ammf_(acc+E1)]-IF_fdet_22/custom_test_1
-  Completed config 11: [ammf_(acc+E1)]-IF_fdet_28/custom_test_1
-  Completed config 12: [ammf_(acc+E1)]-IF_fdet_29/custom_test_1
-  Completed config 13: [ammf_(acc+E1)]-IF_fdet_30/custom_test_1
-  Completed config 9: [ammf_(acc+E1)]-IF_fdet_26/custom_test_1
-  Completed config 14: [ammf_(acc+E1)]-IF_fdet_31/custom_test_1
-  Completed config 16: [ammf_(acc+E1)]-IF_fdet_33/custom_test_1
-  Completed config 10: [ammf_(acc+E1)]-IF_fdet_27/custom_test_1
-  Completed config 15: [ammf_(acc+E1)]-IF_fdet_32/custom_test_1
-  Completed config 17: [ammf_(acc+E1)]-IF_fdet_34/custom_test_1
-  Completed config 18: [ammf_(acc+E1)]-IF_fdet_35/custom_test_1
-  Completed config 21: [ammf_(acc+E1)]-IF_fdet_38/custom_test_1
-  Completed config 19: [ammf_(acc+E1)]-IF_fdet_36/custom_test_1
-  Completed config 22: [ammf_(acc+E1)]-IF_fdet_39/custom_test_1
-  Completed config 23: [ammf_(acc+E1)]-IF_fdet_40/custom_test_1
-  Completed config 20: [ammf_(acc+E1)]-IF_fdet_37/custom_test_1
-  Completed config 24: [ammf_(acc+E1)]-IF_fdet_41/custom_test_1
-  Completed config 26: [ammf_(acc+E1)]-IF_fdet_43/custom_test_1
-  Completed config 27: [ammf_(acc+E1)]-IF_fdet_44/custom_test_1
-  Completed config 28: [ammf_(acc+E1)]-IF_fdet_45/custom_test_1
-  Completed config 25: [ammf_(acc+E1)]-IF_fdet_42/custom_test_1
-  Completed config 31: [ammf_(acc+E1)]-IF_fdet_48/custom_test_1
-  Completed config 29: [ammf_(acc+E1)]-IF_fdet_46/custom_test_1
-  Completed config 32: [ammf_(acc+E1)]-IF_fdet_49/custom_test_1
-  Completed config 30: [ammf_(acc+E1)]-IF_fdet_47/custom_test_1
-  Completed config 33: [ammf_(acc+E1)]-IF_fdet_50/custom_test_1
-  Completed config 34: [ammf_(acc+E1)]-IF_fdet_51/custom_test_1
-  Completed config 37: [ammf_(acc+E1)]-IF_fdet_54/custom_test_1
-  Completed config 36: [ammf_(acc+E1)]-IF_fdet_53/custom_test_1
-  Completed config 35: [ammf_(acc+E1)]-IF_fdet_52/custom_test_1
-  Completed config 38: [ammf_(acc+E1)]-IF_fdet_55/custom_test_1
-  Completed config 39: [ammf_(acc+E1)]-IF_fdet_56/custom_test_1
-  Completed config 40: [ammf_(acc+E1)]-IF_fdet_57/custom_test_1
-  Completed config 41: [ammf_(acc+E1)]-IF_fdet_58/custom_test_1
-  Completed config 42: [ammf_(acc+E1)]-IF_fdet_59/custom_test_1
-  Completed config 45: [ammf_(acc+E1)]-IF_fdet_63/custom_test_1
-  Completed config 43: [ammf_(acc+E1)]-IF_fdet_60/custom_test_1
-  Completed config 44: [ammf_(acc+E1)]-IF_fdet_61/custom_test_1
+Parallelizing 50 fault detection configurations across 8 workers...
+  Completed config 5: [mass_1_(vel+G)]-IF_fdet_12/custom_test_1
+  Completed config 8: [mass_1_(vel+G)]-IF_fdet_15/custom_test_1
+  Completed config 4: [mass_1_(vel+G)]-IF_fdet_11/custom_test_1
+  Completed config 3: [mass_1_(vel+G)]-IF_fdet_10/custom_test_1
+  Completed config 2: [mass_1_(vel+G)]-IF_fdet_9/custom_test_1
+  Completed config 7: [mass_1_(vel+G)]-IF_fdet_14/custom_test_1
+  Completed config 6: [mass_1_(vel+G)]-IF_fdet_13/custom_test_1
+  Completed config 1: [mass_1_(vel+G)]-IF_fdet_8/custom_test_1
+  Completed config 11: [mass_1_(vel+G)]-IF_fdet_18/custom_test_1
+  Completed config 10: [mass_1_(vel+G)]-IF_fdet_17/custom_test_1
+  Completed config 9: [mass_1_(vel+G)]-IF_fdet_16/custom_test_1
+  Completed config 12: [mass_1_(vel+G)]-IF_fdet_19/custom_test_1
+  Completed config 14: [mass_1_(vel+G)]-IF_fdet_21/custom_test_1
+  Completed config 16: [mass_1_(vel+G)]-IF_fdet_23/custom_test_1
+  Completed config 13: [mass_1_(vel+G)]-IF_fdet_20/custom_test_1
+  Completed config 15: [mass_1_(vel+G)]-IF_fdet_22/custom_test_1
+  Completed config 17: [mass_1_(vel+G)]-IF_fdet_24/custom_test_1
+  Completed config 18: [mass_1_(vel+G)]-IF_fdet_25/custom_test_1
+  Completed config 19: [mass_1_(vel+G)]-IF_fdet_26/custom_test_1
+  Completed config 20: [mass_1_(vel+G)]-IF_fdet_27/custom_test_1
+  Completed config 24: [mass_1_(vel+G)]-IF_fdet_31/custom_test_1
+  Completed config 21: [mass_1_(vel+G)]-IF_fdet_28/custom_test_1
+  Completed config 23: [mass_1_(vel+G)]-IF_fdet_30/custom_test_1
+  Completed config 22: [mass_1_(vel+G)]-IF_fdet_29/custom_test_1
+  Completed config 25: [mass_1_(vel+G)]-IF_fdet_32/custom_test_1
+  Completed config 26: [mass_1_(vel+G)]-IF_fdet_33/custom_test_1
+  Completed config 27: [mass_1_(vel+G)]-IF_fdet_34/custom_test_1
+  Completed config 28: [mass_1_(vel+G)]-IF_fdet_35/custom_test_1
+  Completed config 29: [mass_1_(vel+G)]-IF_fdet_36/custom_test_1
+  Completed config 30: [mass_1_(vel+G)]-IF_fdet_37/custom_test_1
+  Completed config 31: [mass_1_(vel+G)]-IF_fdet_38/custom_test_1
+  Completed config 32: [mass_1_(vel+G)]-IF_fdet_39/custom_test_1
+  Completed config 33: [mass_1_(vel+G)]-IF_fdet_40/custom_test_1
+  Completed config 34: [mass_1_(vel+G)]-IF_fdet_41/custom_test_1
+  Completed config 35: [mass_1_(vel+G)]-IF_fdet_42/custom_test_1
+  Completed config 36: [mass_1_(vel+G)]-IF_fdet_43/custom_test_1
+  Completed config 38: [mass_1_(vel+G)]-IF_fdet_45/custom_test_1
+  Completed config 37: [mass_1_(vel+G)]-IF_fdet_44/custom_test_1
+  Completed config 39: [mass_1_(vel+G)]-IF_fdet_46/custom_test_1
+  Completed config 40: [mass_1_(vel+G)]-IF_fdet_47/custom_test_1
+  Completed config 41: [mass_1_(vel+G)]-IF_fdet_48/custom_test_1
+  Completed config 42: [mass_1_(vel+G)]-IF_fdet_49/custom_test_1
+  Completed config 43: [mass_1_(vel+G)]-IF_fdet_50/custom_test_1
+  Completed config 46: [mass_1_(vel+G)]-IF_fdet_53/custom_test_1
+  Completed config 44: [mass_1_(vel+G)]-IF_fdet_51/custom_test_1
+  Completed config 45: [mass_1_(vel+G)]-IF_fdet_52/custom_test_1
+  Completed config 47: [mass_1_(vel+G)]-IF_fdet_54/custom_test_1
+  Completed config 48: [mass_1_(vel+G)]-IF_fdet_55/custom_test_1
+  Completed config 49: [mass_1_(vel+G)]-IF_fdet_56/custom_test_1
+  Completed config 50: [mass_1_(vel+G)]-IF_fdet_57/custom_test_1
 
 ===========================================================================
 
 ===========================================================================
 
-Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_2_output.txt
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_2_output.txt
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-09 13:47:58
+Log saved at: 2025-10-14 13:24:44

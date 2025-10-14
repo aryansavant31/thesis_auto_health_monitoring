@@ -571,6 +571,9 @@ class NRI(LightningModule):
 
             # loss per node
             loss_decoder_per_node = F.mse_loss(x_pred, target, reduction='none').mean(dim=(0,2,3))  # shape: (n_nodes,)
+
+            # loss per node
+            loss_decoder_per_node = F.mse_loss(x_pred, target, reduction='none').mean(dim=(0,2,3))  # shape: (n_nodes,)
         elif self.loss_type_decoder == 'mae':
             # overall loss
             loss_decoder = F.l1_loss(x_pred, target)

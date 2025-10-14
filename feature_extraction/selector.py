@@ -115,7 +115,7 @@ class FeatureSelector:
 
             # isolate healthy feature data
             feat_data_ok = feat_data[label == 1]
-
+            feat_data_nok = feat_data[label == -1] # debug
 
         # Normalize features
             if fault_detector.feat_normalizer:
@@ -133,6 +133,14 @@ class FeatureSelector:
 
             # create dataframe for feature data
             feat_data_df = pd.DataFrame(feat_data_scaled, columns=feat_name_cols)
+            # DEBUG
+            pd.set_option('display.max_rows', None)
+            pd.set_option('display.max_columns', None)
+            pd.set_option('display.width', None)
+            pd.set_option('display.max_colwidth', None)
+
+            print(feat_data_df)
+            
             #print(feat_data_df.columns[feat_data_df.isna().any()]).tolist()
 
         # Perform feature ranking

@@ -1,12 +1,13 @@
 === SCRIPT EXECUTION LOG ===
 Script: fault_detection.multi_train.py
 Base Name: tswp_2
-Start Time: 2025-09-08 14:00:53
-End Time: 2025-09-08 14:03:39
+Start Time: 2025-10-14 12:45:12
+End Time: 2025-10-14 12:57:40
 
-CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
-GPU: None detected
-OS: Windows 10 (10.0.19045)
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26200)
 
 Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
 ========================================================================================================================
@@ -22,43 +23,127 @@ Run type: train
 Total combinations: 1
 
 Parameters and their values:
-  healthy_configs: 1 values -> [{'E1_set01_M=mAI26': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ10': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAQ87': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAS23': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mAU64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF18': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBF92': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBH22': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBI93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBJ96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBK70': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBN34': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP09': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS36': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBS45': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBU17': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBW64': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY13': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mBY93': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCD86': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF56': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF78': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCF96': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCG89': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCO66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCQ94': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCX30': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mCZ47': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDD00': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDH60': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI25': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDI82': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDJ62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK28': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDK50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDL40': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDM53': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDN98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDP98': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDR32': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDS38': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT50': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT62': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mDT74': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED29': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mED66': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEE75': [{'type': 'OG', 'add_next': False}], 'E1_set01_M=mEK25': [{'type': 'OG', 'add_next': False}]}]
-  signal_types: 1 values -> [{'node_group_name': 'ammf', 'signal_group_name': 'acc', 'group': {'ammf': ['acc_rx', 'acc_ry', 'acc_rz', 'acc_x', 'acc_y', 'acc_z']}}]
-  stride: 1 values -> [1000]
-  window_length: 1 values -> [1000]
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
-Next model number folder will be: [ammf_(acc+E1)]-IF_fdet_12
+  healthy_configs: 1 values -> [{'ok_ds_1': [{'type': 'OG', 'add_next': False}], 'ok_ds_2': [{'type': 'OG', 'add_next': False}], 'ok_ds_3': [{'type': 'OG', 'add_next': False}], 'ok_ds_4': [{'type': 'OG', 'add_next': False}], 'ok_ds_5': [{'type': 'OG', 'add_next': False}], 'ok_ds_6': [{'type': 'OG', 'add_next': False}], 'ok_ds_7': [{'type': 'OG', 'add_next': False}], 'ok_ds_8': [{'type': 'OG', 'add_next': False}], 'ok_ds_9': [{'type': 'OG', 'add_next': False}], 'ok_ds_10': [{'type': 'OG', 'add_next': False}], 'ok_ds_11': [{'type': 'OG', 'add_next': False}], 'ok_ds_12': [{'type': 'OG', 'add_next': False}], 'ok_ds_13': [{'type': 'OG', 'add_next': False}], 'ok_ds_14': [{'type': 'OG', 'add_next': False}], 'ok_ds_15': [{'type': 'OG', 'add_next': False}], 'ok_ds_16': [{'type': 'OG', 'add_next': False}], 'ok_ds_17': [{'type': 'OG', 'add_next': False}], 'ok_ds_18': [{'type': 'OG', 'add_next': False}], 'ok_ds_19': [{'type': 'OG', 'add_next': False}], 'ok_ds_20': [{'type': 'OG', 'add_next': False}], 'ok_ds_21': [{'type': 'OG', 'add_next': False}], 'ok_ds_22': [{'type': 'OG', 'add_next': False}], 'ok_ds_23': [{'type': 'OG', 'add_next': False}], 'ok_ds_24': [{'type': 'OG', 'add_next': False}], 'ok_ds_25': [{'type': 'OG', 'add_next': False}], 'ok_ds_26': [{'type': 'OG', 'add_next': False}], 'ok_ds_27': [{'type': 'OG', 'add_next': False}], 'ok_ds_28': [{'type': 'OG', 'add_next': False}], 'ok_ds_29': [{'type': 'OG', 'add_next': False}], 'ok_ds_30': [{'type': 'OG', 'add_next': False}], 'ok_ds_31': [{'type': 'OG', 'add_next': False}], 'ok_ds_32': [{'type': 'OG', 'add_next': False}], 'ok_ds_33': [{'type': 'OG', 'add_next': False}], 'ok_ds_34': [{'type': 'OG', 'add_next': False}], 'ok_ds_35': [{'type': 'OG', 'add_next': False}], 'ok_ds_36': [{'type': 'OG', 'add_next': False}], 'ok_ds_37': [{'type': 'OG', 'add_next': False}], 'ok_ds_38': [{'type': 'OG', 'add_next': False}], 'ok_ds_39': [{'type': 'OG', 'add_next': False}], 'ok_ds_40': [{'type': 'OG', 'add_next': False}], 'ok_ds_41': [{'type': 'OG', 'add_next': False}], 'ok_ds_42': [{'type': 'OG', 'add_next': False}], 'ok_ds_43': [{'type': 'OG', 'add_next': False}], 'ok_ds_44': [{'type': 'OG', 'add_next': False}], 'ok_ds_45': [{'type': 'OG', 'add_next': False}], 'ok_ds_46': [{'type': 'OG', 'add_next': False}], 'ok_ds_47': [{'type': 'OG', 'add_next': False}], 'ok_ds_48': [{'type': 'OG', 'add_next': False}], 'ok_ds_49': [{'type': 'OG', 'add_next': False}], 'ok_ds_50': [{'type': 'OG', 'add_next': False}], 'ok_ds_51': [{'type': 'OG', 'add_next': False}], 'ok_ds_52': [{'type': 'OG', 'add_next': False}], 'ok_ds_53': [{'type': 'OG', 'add_next': False}], 'ok_ds_54': [{'type': 'OG', 'add_next': False}], 'ok_ds_55': [{'type': 'OG', 'add_next': False}], 'ok_ds_56': [{'type': 'OG', 'add_next': False}], 'ok_ds_57': [{'type': 'OG', 'add_next': False}], 'ok_ds_58': [{'type': 'OG', 'add_next': False}], 'ok_ds_59': [{'type': 'OG', 'add_next': False}], 'ok_ds_60': [{'type': 'OG', 'add_next': False}], 'ok_ds_61': [{'type': 'OG', 'add_next': False}], 'ok_ds_62': [{'type': 'OG', 'add_next': False}], 'ok_ds_63': [{'type': 'OG', 'add_next': False}], 'ok_ds_64': [{'type': 'OG', 'add_next': False}], 'ok_ds_65': [{'type': 'OG', 'add_next': False}], 'ok_ds_66': [{'type': 'OG', 'add_next': False}], 'ok_ds_67': [{'type': 'OG', 'add_next': False}], 'ok_ds_68': [{'type': 'OG', 'add_next': False}], 'ok_ds_69': [{'type': 'OG', 'add_next': False}], 'ok_ds_70': [{'type': 'OG', 'add_next': False}], 'ok_ds_71': [{'type': 'OG', 'add_next': False}], 'ok_ds_72': [{'type': 'OG', 'add_next': False}], 'ok_ds_73': [{'type': 'OG', 'add_next': False}], 'ok_ds_74': [{'type': 'OG', 'add_next': False}], 'ok_ds_75': [{'type': 'OG', 'add_next': False}], 'ok_ds_76': [{'type': 'OG', 'add_next': False}], 'ok_ds_77': [{'type': 'OG', 'add_next': False}], 'ok_ds_78': [{'type': 'OG', 'add_next': False}], 'ok_ds_79': [{'type': 'OG', 'add_next': False}], 'ok_ds_80': [{'type': 'OG', 'add_next': False}], 'ok_ds_81': [{'type': 'OG', 'add_next': False}], 'ok_ds_82': [{'type': 'OG', 'add_next': False}], 'ok_ds_83': [{'type': 'OG', 'add_next': False}], 'ok_ds_84': [{'type': 'OG', 'add_next': False}], 'ok_ds_85': [{'type': 'OG', 'add_next': False}], 'ok_ds_86': [{'type': 'OG', 'add_next': False}], 'ok_ds_87': [{'type': 'OG', 'add_next': False}], 'ok_ds_88': [{'type': 'OG', 'add_next': False}], 'ok_ds_89': [{'type': 'OG', 'add_next': False}], 'ok_ds_90': [{'type': 'OG', 'add_next': False}], 'ok_ds_91': [{'type': 'OG', 'add_next': False}], 'ok_ds_92': [{'type': 'OG', 'add_next': False}], 'ok_ds_93': [{'type': 'OG', 'add_next': False}], 'ok_ds_94': [{'type': 'OG', 'add_next': False}], 'ok_ds_95': [{'type': 'OG', 'add_next': False}], 'ok_ds_96': [{'type': 'OG', 'add_next': False}], 'ok_ds_97': [{'type': 'OG', 'add_next': False}], 'ok_ds_98': [{'type': 'OG', 'add_next': False}], 'ok_ds_99': [{'type': 'OG', 'add_next': False}], 'ok_ds_100': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'mass_1', 'signal_group_name': 'vel', 'group': {'mass_1': ['vel']}}]
+  unhealthy_configs: 1 values -> [{'mod_1_f1_ds_1': [{'type': 'OG', 'add_next': False}], 'mod_1_f2_ds_1': [{'type': 'OG', 'add_next': False}], 'mod_1_f3_ds_1': [{'type': 'OG', 'add_next': False}], 'mod_1_f4_ds_1': [{'type': 'OG', 'add_next': False}]}]
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
+Next model number folder will be: [mass_1_(vel+G)]-IF_fdet_8
 
 Parameter Sweep Summary:
-Total combinations: 5
+Total combinations: 50
 
 Parameters and their values:
-  anom_config: 1 values -> [{'anom_type': 'IF', 'IF/n_estimators': 1000, 'IF/seed': 42, 'IF/contam': 0.001, 'IF/n_jobs': -1, 'IF/verbose': 0, 'IF/max_samples': 'auto', 'IF/bootstrap': False, 'IF/warm_start': False, 'IF/max_features': 1.0}]
+  anom_type: 1 values -> ['IF']
   batch_size: 1 values -> [1]
-  domain_config: 1 values -> [{'type': 'freq', 'cutoff_freq': 0}]
-  feat_configs: 5 values -> [[], [{'type': 'meanF'}], [{'type': 'kurtosisF'}], [{'type': 'stdF'}], [{'type': 'skewnessF'}]]
-  feat_norm: 1 values -> [None]
+  feat_configs: 5 values -> [[{'type': 'first_n_modes', 'n_modes': 2}], [{'type': 'first_n_modes', 'n_modes': 3}], [{'type': 'first_n_modes', 'n_modes': 4}], [{'type': 'first_n_modes', 'n_modes': 5}], [{'type': 'first_n_modes', 'n_modes': 6}]]
+  n_feats: 10 values -> [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   num_workers: 1 values -> [1]
-  raw_data_norm: 1 values -> [None]
-  reduc_config: 1 values -> [None]
-  test_rt: 1 values -> [0.2]
-  train_rt: 1 values -> [0.8]
-Parallelizing 5 fault detection configurations across 8 workers...
-  Completed config 5: [ammf_(acc+E1)]-IF_fdet_16
-  Completed config 2: [ammf_(acc+E1)]-IF_fdet_13
-  Completed config 3: [ammf_(acc+E1)]-IF_fdet_14
-  Completed config 4: [ammf_(acc+E1)]-IF_fdet_15
-  Completed config 1: [ammf_(acc+E1)]-IF_fdet_12
+Parallelizing 50 fault detection configurations across 8 workers...
+  Completed config 2: [mass_1_(vel+G)]-IF_fdet_9
+  Completed config 4: [mass_1_(vel+G)]-IF_fdet_11
+  Completed config 3: [mass_1_(vel+G)]-IF_fdet_10
+  Completed config 6: [mass_1_(vel+G)]-IF_fdet_13
+  Completed config 1: [mass_1_(vel+G)]-IF_fdet_8
+  Completed config 8: [mass_1_(vel+G)]-IF_fdet_15
+  Completed config 7: [mass_1_(vel+G)]-IF_fdet_14
+  Completed config 5: [mass_1_(vel+G)]-IF_fdet_12
+  Completed config 11: [mass_1_(vel+G)]-IF_fdet_18
+  Completed config 9: [mass_1_(vel+G)]-IF_fdet_16
+  Completed config 15: [mass_1_(vel+G)]-IF_fdet_22
+  Completed config 10: [mass_1_(vel+G)]-IF_fdet_17
+  Completed config 13: [mass_1_(vel+G)]-IF_fdet_20
+  Completed config 12: [mass_1_(vel+G)]-IF_fdet_19
+  Completed config 14: [mass_1_(vel+G)]-IF_fdet_21
+  Completed config 16: [mass_1_(vel+G)]-IF_fdet_23
+  Completed config 18: [mass_1_(vel+G)]-IF_fdet_25
+  Completed config 20: [mass_1_(vel+G)]-IF_fdet_27
+  Completed config 21: [mass_1_(vel+G)]-IF_fdet_28
+  Completed config 23: [mass_1_(vel+G)]-IF_fdet_30
+  Completed config 22: [mass_1_(vel+G)]-IF_fdet_29
+  Completed config 24: [mass_1_(vel+G)]-IF_fdet_31
+  Completed config 19: [mass_1_(vel+G)]-IF_fdet_26
+  Completed config 17: [mass_1_(vel+G)]-IF_fdet_24
+  Completed config 25: [mass_1_(vel+G)]-IF_fdet_32
+  Completed config 26: [mass_1_(vel+G)]-IF_fdet_33
+  Completed config 27: [mass_1_(vel+G)]-IF_fdet_34
+  Completed config 28: [mass_1_(vel+G)]-IF_fdet_35
+  Completed config 29: [mass_1_(vel+G)]-IF_fdet_36
+  Completed config 30: [mass_1_(vel+G)]-IF_fdet_37
+  Completed config 31: [mass_1_(vel+G)]-IF_fdet_38
+  Completed config 32: [mass_1_(vel+G)]-IF_fdet_39
+  Completed config 33: [mass_1_(vel+G)]-IF_fdet_40
+  Completed config 34: [mass_1_(vel+G)]-IF_fdet_41
+  Completed config 35: [mass_1_(vel+G)]-IF_fdet_42
+  Completed config 36: [mass_1_(vel+G)]-IF_fdet_43
+  Completed config 37: [mass_1_(vel+G)]-IF_fdet_44
+  Completed config 38: [mass_1_(vel+G)]-IF_fdet_45
+  Completed config 40: [mass_1_(vel+G)]-IF_fdet_47
+  Completed config 39: [mass_1_(vel+G)]-IF_fdet_46
+  Completed config 42: [mass_1_(vel+G)]-IF_fdet_49
+  Completed config 43: [mass_1_(vel+G)]-IF_fdet_50
+  Completed config 44: [mass_1_(vel+G)]-IF_fdet_51
+  Completed config 45: [mass_1_(vel+G)]-IF_fdet_52
+  Completed config 46: [mass_1_(vel+G)]-IF_fdet_53
+  Completed config 48: [mass_1_(vel+G)]-IF_fdet_55
+  Completed config 41: [mass_1_(vel+G)]-IF_fdet_48
+  Completed config 47: [mass_1_(vel+G)]-IF_fdet_54
+  Completed config 49: [mass_1_(vel+G)]-IF_fdet_56
+  Completed config 50: [mass_1_(vel+G)]-IF_fdet_57
 
 ===========================================================================
 
 ===========================================================================
 
-Fault detection model sweep completed. Sweep log saved at: C:\AFD\fault_detection\docs\sweep_logs\train_sweeps\tswp_2_console_output.txt
+Fault detection model sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\train_sweeps\tswp_2_console_output.txt
 
 
 === EXECUTION COMPLETED ===
-Log saved at: 2025-09-08 14:03:39
+Log saved at: 2025-10-14 12:57:40

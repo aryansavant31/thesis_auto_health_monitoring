@@ -354,7 +354,7 @@ class NRITrainConfig:
         self.model_num = 3 # 2 raw time data, 3 psd feats, 4 time feats
         self.continue_training = False
         self.is_log = True
-        self.train_sweep = 5 # 2 - using some possible configuration, 3 - most of tp config
+        self.train_sweep = 4.3 # 3.1 - mse loss # 2 - using some possible configuration, 3 - most of tp config
         
         self.n_edge_types = 2
 
@@ -382,7 +382,7 @@ class NRITrainConfig:
         self.add_const_kld = True               # this needs to be True, adds a constant term to the KL divergence
 
         ## decoder
-        self.lr_dec = 0.001
+        self.lr_dec = 0.002
         self.loss_type_dec = 'mae'
 
 

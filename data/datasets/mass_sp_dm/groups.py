@@ -22,6 +22,11 @@ class MSDGroupMaker:
                         ]        
             }
         
+        
+        # ============== M005 =================
+
+        # tOPOLOGY ESTIAMTION
+        
         self.m005_all = {
             'node_group_name'  : 'm005',  
             'signal_group_name': 'apv',
@@ -49,6 +54,31 @@ class MSDGroupMaker:
                             [3, 4],    # Subsystem 2  
                         ]         
             }
+        
+        
+        # FAULT DETECTION
+
+        # Mass 1
+        self.m005_m1_acc = {
+            'node_group_name'  : 'mass_1',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_1': ['acc'],}
+        }
+
+        self.m005_m1_pos = {
+            'node_group_name'  : 'mass_1',  
+            'signal_group_name': 'pos',
+            'group' : {'mass_1': ['pos']}
+        }
+
+        self.m005_m1_vel = {
+            'node_group_name'  : 'mass_1',  
+            'signal_group_name': 'vel',
+            'group' : {'mass_1': ['vel']}
+        }
+        
+
+        # ============== M012 =================
         
         self.m012_all = {
             'node_group_name'  : 'm012',
