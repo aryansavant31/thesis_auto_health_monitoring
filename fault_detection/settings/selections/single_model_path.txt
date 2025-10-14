@@ -1,1 +1,1 @@
-C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\pob_los\ctrl\set_E1\IF\tswp_1\[pob_los_(ctrl+E1)]-IF_fdet_1\fault_detector.pkl
+C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\pos\set_E1\IF\tswp_1\[ws_ls1_(pos+E1)]-IF_fdet_4\fault_detector.pkl

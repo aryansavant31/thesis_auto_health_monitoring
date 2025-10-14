@@ -53,7 +53,7 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 1
+        self.model_num = 2
         self.train_sweep = 1
         self.is_log = True
 
