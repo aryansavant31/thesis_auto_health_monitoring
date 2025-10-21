@@ -35,7 +35,7 @@ class FaultDetectorInferConfig:
         self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
-        self.version = 3
+        self.version = 2
         self.infer_sweep = 1
         
         self.num_workers = 1

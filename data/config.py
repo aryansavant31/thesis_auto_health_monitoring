@@ -57,19 +57,19 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'MSD'
-        self.machine_type = 'M005'
-        self.scenario = 'scene_1'
+        self.application = 'ASM'
+        self.machine_type = 'NXE'
+        self.scenario = 'full_wafer'
 
-        self.signal_types = MSDGroupMaker().m005_m1_acc
+        self.signal_types = NXEGroupMaker().ammf_ctrl
         
         self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 1100
-        self.stride             = 1100
-        self.start_from_timestep = 2000  #1000 number of initial samples to chop off from the start of the signal
+        self.window_length      = 1000
+        self.stride             = 1000
+        self.start_from_timestep = 0 #2000  #1000 number of initial samples to chop off from the start of the signal
 
         self.use_custom_max_timesteps = False
         self.max_timesteps     = 10000
@@ -266,7 +266,7 @@ class DataConfig:
         }
 
         self.unknown_configs = {
-            # '1_N': [get_augment_config('OG')],
+            
             
             
         }
@@ -274,11 +274,11 @@ class DataConfig:
     def set_predict_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            #'series_tp': [get_augment_config('OG')]
+            #'E1_set01_M=mKT03': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {
-            'mod_1_4_f4_ds_1': [get_augment_config('OG')]
+            '(sim)_E1_set01_M=mBY13': f.ammf_ctrl_faults(3)[-2]
         #     '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
             # '0_IR-007': [get_augment_config('OG')],
@@ -293,7 +293,7 @@ class DataConfig:
             if self.healthy_configs != {}:   
                 set_id = list(self.healthy_configs.keys())[0].split('_')[0]
             elif self.unhealthy_configs != {}:
-                set_id = list(self.unhealthy_configs.keys())[0].split('_')[0]
+                set_id = list(self.unhealthy_configs.keys())[0].split('_')[1]
             elif self.unknown_configs != {}:
                 set_id = list(self.unknown_configs.keys())[0].split('_')[0]
 

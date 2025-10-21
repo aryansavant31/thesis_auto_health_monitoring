@@ -1,0 +1,167 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.infer.py
+Base Name: [ws_ls1_(pos+E1)]-IF_fdet_1/predict_2
+Start Time: 2025-10-21 10:50:19
+End Time: 2025-10-21 10:51:13
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting anomaly detector to predict...
+
+'Predict' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+
+- **Unhealthy configs**
+  (1) (sim)_E1_set01_M=mBY13    : [glitch(prob=0.02, std_fac=0.5, add_next=True), sine(freqs=[1, 2, 4], std_facs=[0.6, 0.7, 0.5], add_next=False)]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) ws_ls1   : [pos_x, pos_y]
+
+Node group name: ws_ls1
+Signal group name: pos
+
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 32,768
+
+No data interpolation applied.
+
+First 2000 timesteps chopped off from the data.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[20000., 20000.]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+
+Total units: 1
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 36 
+Desired samples: 36/36 [OK=0, NOK=36, UK=0],
+Remainder samples: 0 [OK=0, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 36
+torch.Size([1, 1, 8000, 2])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+---------------------------------------------------------------------------
+
+Anomaly detector model loaded for 'predict' from C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\pos\set_E1\IF\tswp_1\[ws_ls1_(pos+E1)]-IF_fdet_1\fault_detector.pkl
+
+Model type: IsolationForest, Model ID: [ws_ls1_(pos+E1)]-IF_fdet_1, No. of input features req.: 24
+
+---------------------------------------------------------------------------
+
+predict number 2 for already exists for [ws_ls1_(pos+E1)]-IF_fdet_1 in the log path 'C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop predict (Choose 'a', 'b' or 'c'):  Are you sure you want to remove the version 2 from the log path C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2? (y/n): Overwrote version 2 from the log path C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2.
+Predict parameters saved to C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2.
+
+Predict environment set. Predict will be logged at: C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2
+
+---------------------------------------------------------------------------
+
+Predicting anomalies using the trained model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time+freq(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> Feature normalizer loaded with 'std' normalization
+
+>> Time feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['mean_abs', 'sq_root_abs', 'impulse_factor', 'crest_factor', 'rms', 'clearance_factor'])
+
+>> Frequency feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['mean_abs', 'sq_root_abs', 'impulse_factor', 'crest_factor', 'rms', 'clearance_factor'])
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: sq_root_abs. Skipping...
+Unknown frequency feature name in ranks: impulse_factor. Skipping...
+Unknown frequency feature name in ranks: crest_factor. Skipping...
+Unknown frequency feature name in ranks: rms. Skipping...
+Unknown frequency feature name in ranks: clearance_factor. Skipping...
+
+Feature names: ['freq1_0', 'freq1_1', 'freq2_0', 'freq2_1', 'freq3_0', 'freq3_1', 'mode1_0', 'mode1_1', 'mode2_0', 'mode2_1', 'mode3_0', 'mode3_1', 'mean_abs_0', 'mean_abs_1', 'sq_root_abs_0', 'sq_root_abs_1', 'impulse_factor_0', 'impulse_factor_1', 'crest_factor_0', 'crest_factor_1', 'rms_0', 'rms_1', 'clearance_factor_0', 'clearance_factor_1']
+
+Prediction completed in 9.25 seconds
+
+OK upper bound (from training): 0.5925
+
+Dataframe is as follows:
+  machine_num  ... sign_scores
+0         001  ...   -0.044132
+
+[1 rows x 9 columns]
+
+Prediction results:
+  machine_num                                            rep_num  final_pred_label  sign_scores
+0         001  [1001.0001, 1001.0002, 1001.0003, 2001.0001, 2...                -1    -0.044132
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION SIMPLE 1 (FINAL_PRED_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for [ws_ls1_(pos+E1)]-IF_fdet_1 / predict_2...
+## Bin details for Anomaly Score Distribution Simple 1 (final_pred_label)
+-------------------------
+### Total OK (hard) samples: 0
+---------- Samples in OK (hard) bins ----------
+
+### Total OK (soft) samples: 0
+---------- Samples in OK (soft) bins ----------
+
+### Total NOK (hard) samples: 35
+---------- Samples in NOK (hard) bins ----------
+- **Bin 30 (0.60000, 0.62000) [dark orange]**: 4 (2,001.0002), 12 (5,001.0001), 14 (5,001.0003), 15 (6,001.0001), 21 (8,001.0001), 24 (9,001.0001), 27 (10,001.0001)
+- **Bin 31 (0.62000, 0.64000) [dark orange]**: 5 (2,001.0003), 7 (3,001.0002), 16 (6,001.0002), 18 (7,001.0001), 19 (7,001.0002), 20 (7,001.0003), 22 (8,001.0002), 30 (11,001.0001), 32 (11,001.0003), 34 (12,001.0002)
+- **Bin 32 (0.64000, 0.66000) [dark orange]**: 0 (1,001.0001), 1 (1,001.0002), 3 (2,001.0001), 6 (3,001.0001), 8 (3,001.0003), 11 (4,001.0003), 13 (5,001.0002), 23 (8,001.0003), 25 (9,001.0002), 26 (9,001.0003), 28 (10,001.0002), 29 (10,001.0003), 33 (12,001.0001)
+- **Bin 33 (0.66000, 0.68000) [dark orange]**: 2 (1,001.0003), 9 (4,001.0001), 10 (4,001.0002), 17 (6,001.0003), 31 (11,001.0002)
+
+### Total NOK (soft) samples: 0
+---------- Samples in NOK (soft) bins ----------
+
+DB delta OK (100% OK of train): 0.0002 (DB = 0.5927)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for [ws_ls1_(pos+E1)]-IF_fdet_1 / predict_2...
+
+Pair plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ws_ls1\pos\set_E1\iswp_1\IF\[ws_ls1_(pos+E1)]-IF_fdet_1\predict_2
+
+
+===========================================================================
+
+Predict of anomaly detector '[ws_ls1_(pos+E1)]-IF_fdet_1/predict_2' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-10-21 10:51:13

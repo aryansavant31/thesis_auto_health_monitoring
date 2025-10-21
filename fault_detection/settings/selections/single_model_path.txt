@@ -1,1 +1,1 @@
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_1\acc\set_G\IF\tswp_1\[mass_1_(acc+G)]-IF_fdet_64\fault_detector.pkl
+C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\ctrl\set_E1\IF\tswp_1\[ammf_(ctrl+E1)]-IF_fdet_1\fault_detector.pkl

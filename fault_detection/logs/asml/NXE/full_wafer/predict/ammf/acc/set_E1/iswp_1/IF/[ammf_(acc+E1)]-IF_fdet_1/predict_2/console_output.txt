@@ -1,0 +1,163 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.infer.py
+Base Name: [ammf_(acc+E1)]-IF_fdet_1/predict_2
+Start Time: 2025-10-21 10:58:01
+End Time: 2025-10-21 10:58:41
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting anomaly detector to predict...
+
+'Predict' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+
+- **Unhealthy configs**
+  (1) (sim)_E1_set01_M=mBY13    : [glitch(prob=0.03, std_fac=1.25, add_next=True), sine(freqs=[1, 2, 3], std_facs=[1.3, 1.4, 1.25], add_next=False)]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) ammf   : [acc_rx, acc_ry, acc_rz, acc_x, acc_y, acc_z]
+
+Node group name: ammf
+Signal group name: acc
+
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 4,098
+
+No data interpolation applied.
+
+No timesteps chopped off from the data.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[2500.0002, 2500.0002, 2500.0002, 2500.0002, 2500.0002, 2500.0002]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+
+Total units: 1
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+---------------------------------------------
+Total samples: 48 
+Desired samples: 48/48 [OK=0, NOK=48, UK=0],
+Remainder samples: 0 [OK=0, NOK=0, UK=0]
+
+custom_data_loader statistics:
+Number of batches: 48
+torch.Size([1, 1, 1000, 6])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+---------------------------------------------------------------------------
+
+Anomaly detector model loaded for 'predict' from C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ammf\acc\set_E1\IF\tswp_1\[ammf_(acc+E1)]-IF_fdet_1\fault_detector.pkl
+
+Model type: IsolationForest, Model ID: [ammf_(acc+E1)]-IF_fdet_1, No. of input features req.: 72
+
+---------------------------------------------------------------------------
+Predict parameters saved to C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ammf\acc\set_E1\iswp_1\IF\[ammf_(acc+E1)]-IF_fdet_1\predict_2.
+
+Predict environment set. Predict will be logged at: C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ammf\acc\set_E1\iswp_1\IF\[ammf_(acc+E1)]-IF_fdet_1\predict_2
+
+---------------------------------------------------------------------------
+
+Predicting anomalies using the trained model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time+freq(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> Feature normalizer loaded with 'std' normalization
+
+>> Time feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['rms', 'std', 'log_log_ratio', 'mean_abs', 'variance', 'energy'])
+
+>> Frequency feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['rms', 'std', 'log_log_ratio', 'mean_abs', 'variance', 'energy'])
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: rms. Skipping...
+Unknown frequency feature name in ranks: std. Skipping...
+Unknown frequency feature name in ranks: log_log_ratio. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: variance. Skipping...
+Unknown frequency feature name in ranks: energy. Skipping...
+
+Feature names: ['freq1_0', 'freq1_1', 'freq1_2', 'freq1_3', 'freq1_4', 'freq1_5', 'freq2_0', 'freq2_1', 'freq2_2', 'freq2_3', 'freq2_4', 'freq2_5', 'freq3_0', 'freq3_1', 'freq3_2', 'freq3_3', 'freq3_4', 'freq3_5', 'mode1_0', 'mode1_1', 'mode1_2', 'mode1_3', 'mode1_4', 'mode1_5', 'mode2_0', 'mode2_1', 'mode2_2', 'mode2_3', 'mode2_4', 'mode2_5', 'mode3_0', 'mode3_1', 'mode3_2', 'mode3_3', 'mode3_4', 'mode3_5', 'rms_0', 'rms_1', 'rms_2', 'rms_3', 'rms_4', 'rms_5', 'std_0', 'std_1', 'std_2', 'std_3', 'std_4', 'std_5', 'log_log_ratio_0', 'log_log_ratio_1', 'log_log_ratio_2', 'log_log_ratio_3', 'log_log_ratio_4', 'log_log_ratio_5', 'mean_abs_0', 'mean_abs_1', 'mean_abs_2', 'mean_abs_3', 'mean_abs_4', 'mean_abs_5', 'variance_0', 'variance_1', 'variance_2', 'variance_3', 'variance_4', 'variance_5', 'energy_0', 'energy_1', 'energy_2', 'energy_3', 'energy_4', 'energy_5']
+
+Prediction completed in 8.98 seconds
+
+OK upper bound (from training): 0.6655
+
+Dataframe is as follows:
+  machine_num  ... sign_scores
+0         001  ...   -0.045739
+
+[1 rows x 9 columns]
+
+Prediction results:
+  machine_num                                            rep_num  final_pred_label  sign_scores
+0         001  [1001.0001, 1001.0002, 1001.0003, 1001.0004, 2...                -1    -0.045739
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION SIMPLE 1 (FINAL_PRED_LABEL) >>>>>>>>>>>>
+
+Creating anomaly score distribution plot for [ammf_(acc+E1)]-IF_fdet_1 / predict_2...
+## Bin details for Anomaly Score Distribution Simple 1 (final_pred_label)
+-------------------------
+### Total OK (hard) samples: 0
+---------- Samples in OK (hard) bins ----------
+
+### Total OK (soft) samples: 0
+---------- Samples in OK (soft) bins ----------
+
+### Total NOK (hard) samples: 28
+---------- Samples in NOK (hard) bins ----------
+- **Bin 33 (0.66000, 0.68000) [dark orange]**: 12 (4,001.0001), 13 (4,001.0002), 15 (4,001.0004)
+- **Bin 34 (0.68000, 0.70000) [dark orange]**: 14 (4,001.0003)
+- **Bin 39 (0.78000, 0.80000) [dark orange]**: 0 (1,001.0001), 1 (1,001.0002), 2 (1,001.0003), 3 (1,001.0004), 4 (2,001.0001), 5 (2,001.0002), 6 (2,001.0003), 7 (2,001.0004), 8 (3,001.0001), 9 (3,001.0002), 10 (3,001.0003), 11 (3,001.0004), 16 (5,001.0001), 17 (5,001.0002), 18 (5,001.0003), 19 (5,001.0004), 20 (6,001.0001), 21 (6,001.0002), 22 (6,001.0003), 23 (6,001.0004), 24 (7,001.0001), 25 (7,001.0002), 26 (7,001.0003), 27 (7,001.0004)
+
+### Total NOK (soft) samples: 0
+---------- Samples in NOK (soft) bins ----------
+
+DB delta OK (100% OK of train): 0.0101 (DB = 0.6757)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ammf\acc\set_E1\iswp_1\IF\[ammf_(acc+E1)]-IF_fdet_1\predict_2
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for [ammf_(acc+E1)]-IF_fdet_1 / predict_2...
+
+Pair plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ammf\acc\set_E1\iswp_1\IF\[ammf_(acc+E1)]-IF_fdet_1\predict_2
+
+
+===========================================================================
+
+Predict of anomaly detector '[ammf_(acc+E1)]-IF_fdet_1/predict_2' completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-10-21 10:58:41

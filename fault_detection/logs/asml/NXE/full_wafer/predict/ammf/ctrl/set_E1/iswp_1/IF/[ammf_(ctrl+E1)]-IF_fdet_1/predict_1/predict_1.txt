@@ -1,0 +1,1 @@
+C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\ammf\ctrl\set_E1\iswp_1\healthy\(OK):E1_M=mKT03[OG]\[anom] IF\[ammf_(ctrl+E1)]-IF_fdet_1\T1000, Tmax = 4,098
