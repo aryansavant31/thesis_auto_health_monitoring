@@ -133,13 +133,13 @@ class FeatureSelector:
 
             # create dataframe for feature data
             feat_data_df = pd.DataFrame(feat_data_scaled, columns=feat_name_cols)
-            # DEBUG
-            pd.set_option('display.max_rows', None)
-            pd.set_option('display.max_columns', None)
-            pd.set_option('display.width', None)
-            pd.set_option('display.max_colwidth', None)
+            # # DEBUG
+            # pd.set_option('display.max_rows', None)
+            # pd.set_option('display.max_columns', None)
+            # pd.set_option('display.width', None)
+            # pd.set_option('display.max_colwidth', None)
 
-            print(feat_data_df)
+            # print(feat_data_df)
             
             #print(feat_data_df.columns[feat_data_df.isna().any()]).tolist()
 

@@ -21,7 +21,7 @@ class ProcessRawMSDNodeData:
         raw_root = self.get_raw_path()
         if not os.path.exists(raw_root):
             raise FileNotFoundError(f"Raw data path {raw_root} does not exist.")
-        for ds_type in ['healthy', 'unhealthy']:
+        for ds_type in ['unhealthy']:
             ds_type_path = os.path.join(raw_root, ds_type)
             for root, _, files in os.walk(ds_type_path):
                 for file in files:

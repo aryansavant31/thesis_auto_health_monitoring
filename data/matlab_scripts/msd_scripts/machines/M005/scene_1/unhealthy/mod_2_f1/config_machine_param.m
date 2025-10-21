@@ -7,7 +7,7 @@ function conn = config_machine_param(conn)
     %% configure mass (kg)
 
     m1_nominal = 1;
-    m2_nominal = 0.8;
+    m2_nominal = 0.3;
     m3_nominal = 0.5;
     m4_nominal = 1;
     m5_nominal = 0.5;
@@ -15,7 +15,7 @@ function conn = config_machine_param(conn)
     m_rand_range = 0.1; % 10% varaition
 
     conn.mass(1) = m1_nominal .* (1 + m_rand_range .* (2*rand(size(m1_nominal)) - 1));
-    conn.mass(2) = m2_nominal .* (1 + 0.8 .* (2*rand(size(m2_nominal)) - 1));
+    conn.mass(2) = m2_nominal .* (1 + m_rand_range .* (2*rand(size(m2_nominal)) - 1));
     conn.mass(3) = m3_nominal .* (1 + m_rand_range .* (2*rand(size(m3_nominal)) - 1));
     conn.mass(4) = m4_nominal .* (1 + m_rand_range .* (2*rand(size(m4_nominal)) - 1));
     conn.mass(5) = m5_nominal .* (1 + m_rand_range .* (2*rand(size(m5_nominal)) - 1));
@@ -37,9 +37,9 @@ function conn = config_machine_param(conn)
     c2_nominal = 3;
     c3_nominal = 4;
 
-    conn.damper_d(1) = c1_nominal .* (1 + 0.3 .* (2*rand(size(c1_nominal)) - 1));
-    conn.damper_d(2) = c2_nominal .* (1 + 0.3 .* (2*rand(size(c2_nominal)) - 1));
-    conn.damper_d(3) = c3_nominal .* (1 + 0.3 .* (2*rand(size(c3_nominal)) - 1));
+    conn.damper_d(1) = c1_nominal .* (1 + 0.1 .* (2*rand(size(c1_nominal)) - 1));
+    conn.damper_d(2) = c2_nominal .* (1 + 0.1 .* (2*rand(size(c2_nominal)) - 1));
+    conn.damper_d(3) = c3_nominal .* (1 + 0.1 .* (2*rand(size(c3_nominal)) - 1));
 
     %% Springs/dampers between wall & masses
     
@@ -57,10 +57,10 @@ function conn = config_machine_param(conn)
     c1_wall_nominal = 5;
     c4_wall_nominal = 5;
 
-    conn.d_wall_lin(1) = c1_wall_nominal .* (1 + 0.3 .* (2*rand(size(c1_wall_nominal)) - 1));
+    conn.d_wall_lin(1) = c1_wall_nominal .* (1 + 0.1 .* (2*rand(size(c1_wall_nominal)) - 1));
     conn.d_wall_lin(2) = 0;
     conn.d_wall_lin(3) = 0;
-    conn.d_wall_lin(4) = c4_wall_nominal .* (1 + 0.3 .* (2*rand(size(c4_wall_nominal)) - 1));
+    conn.d_wall_lin(4) = c4_wall_nominal .* (1 + 0.1 .* (2*rand(size(c4_wall_nominal)) - 1));
     conn.d_wall_lin(5) = 0;
 
 

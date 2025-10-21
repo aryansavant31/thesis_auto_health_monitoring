@@ -120,7 +120,7 @@ class DataConfig:
 
         top_faults = ['5', '6', '7', '3', '8', '9', '10']
         ds_keys_top_nok = [f"top_add_{i}_ds_{j}" for i in top_faults for j in range(1, 3)]
-        ds_keys_mod_nok = [f"mod_1_f{i}_ds_1" for i in range(1, 5)]
+        ds_keys_mod_nok = [f"mod_5_f{i}_ds_1" for i in range(1, 5)]
         self.unhealthy_configs = {
 
             #key : value for key, value in zip(e1_keys_nok, all_ctrl_l2_faults)
@@ -207,7 +207,7 @@ class DataConfig:
         #all_ctrl_l4_faults = [self.fault_ctrl_l4_1, self.fault_ctrl_l4_2, self.fault_ctrl_l4_3, self.fault_ctrl_l4_4, self.fault_ctrl_l4_5, self.fault_ctrl_l4_6, self.fault_ctrl_l4_1, self.fault_ctrl_l4_2]
 
         #e1_keys_nok = [key for key in self.view.unhealthy_types if key.startswith('(sim)_E1')][10:]
-        ds_keys_mod_nok = [f"mod_1_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
+        ds_keys_mod_nok = [f"mod_5_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
 
         self.unhealthy_configs = {
             key: [get_augment_config('OG')] for key in ds_keys_mod_nok
@@ -274,10 +274,11 @@ class DataConfig:
     def set_predict_dataset(self):
         self.amt = 1
         self.healthy_configs   = {
-            'series_tp': [get_augment_config('OG')]
+            #'series_tp': [get_augment_config('OG')]
         }
         
         self.unhealthy_configs = {
+            'mod_1_4_f4_ds_1': [get_augment_config('OG')]
         #     '0_B-021': [get_augment_config('OG')],
             # '0_B-007': [get_augment_config('OG')],
             # '0_IR-007': [get_augment_config('OG')],
@@ -399,9 +400,13 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [MSDGroupMaker().m005_m1_acc]
-        # self.window_length = [100]
-        # self.stride = [100]
+        self.signal_types = [MSDGroupMaker().m005_m1_acc, MSDGroupMaker().m005_m1_pos, MSDGroupMaker().m005_m1_vel,
+                             MSDGroupMaker().m005_m2_acc, MSDGroupMaker().m005_m2_pos, MSDGroupMaker().m005_m2_vel,
+                             MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
+                             MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
+                             #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
+        self.window_length = [1100]
+        self.stride = [1100]
 
 
         if self.run_type == 'train':
@@ -415,7 +420,7 @@ class DataSweep:
             ]
 
             # medium
-            ds_keys_mod_nok = [f"mod_1_f{i}_ds_1" for i in range(1, 5)]
+            ds_keys_mod_nok = [f"mod_5_f{i}_ds_1" for i in range(1, 5)]
             self.unhealthy_configs = [
                 {key: [get_augment_config('OG')] for key in ds_keys_mod_nok}
                 # {'(sim)_E1_set01_M=mAQ87': [
@@ -457,7 +462,7 @@ class DataSweep:
             #     # {key: [get_augment_config('gau', mean=0.0, std=0.8)] for key in e1_keys},
             ]
 
-            ds_keys_mod_nok = [f"mod_1_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
+            ds_keys_mod_nok = [f"mod_5_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
 
             self.unhealthy_configs = [
                 # {'top_add_2_ds_1': [get_augment_config('OG')]},
@@ -549,12 +554,12 @@ class DataSweep:
 
 
         elif self.run_type == 'predict':
-            self.set_id = ['G']
+            #self.set_id = ['G']
             self.healthy_configs = [
-                {'0_N': [get_augment_config('OG')]}
+                {}
             ]
             self.unhealthy_configs = [
-                {'0_B-021': [get_augment_config('OG')]},
+                {'mod_1_f2_ds_6': [get_augment_config('OG')]}
             ]
             
     def get_sweep_configs(self):

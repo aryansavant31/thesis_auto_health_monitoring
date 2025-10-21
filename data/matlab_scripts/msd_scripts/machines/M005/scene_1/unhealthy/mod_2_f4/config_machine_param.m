@@ -23,23 +23,23 @@ function conn = config_machine_param(conn)
     %% Spring/dampers between masses
 
     % configure linear spring
-    k1_nominal = 16000;
+    k1_nominal = 4000;
     k2_nominal = 10000;
     k3_nominal = 15000;
 
-    conn.spring_k(1) = k1_nominal .* (1 + 0.77 .* (2*rand(size(k1_nominal)) - 1));
+    conn.spring_k(1) = k1_nominal .* (1 + 0.1 .* (2*rand(size(k1_nominal)) - 1));
     conn.spring_k(2) = k2_nominal .* (1 + 0.13 .* (2*rand(size(k2_nominal)) - 1));
     conn.spring_k(3) = k3_nominal .* (1 + 0.12 .* (2*rand(size(k3_nominal)) - 1));
     
     
     % configure linear damper
-    c1_nominal = 5;
+    c1_nominal = 0.1;
     c2_nominal = 3;
     c3_nominal = 4;
 
     conn.damper_d(1) = c1_nominal .* (1 + 0.8 .* (2*rand(size(c1_nominal)) - 1));
-    conn.damper_d(2) = c2_nominal .* (1 + 0.3 .* (2*rand(size(c2_nominal)) - 1));
-    conn.damper_d(3) = c3_nominal .* (1 + 0.3 .* (2*rand(size(c3_nominal)) - 1));
+    conn.damper_d(2) = c2_nominal .* (1 + 0.1 .* (2*rand(size(c2_nominal)) - 1));
+    conn.damper_d(3) = c3_nominal .* (1 + 0.1 .* (2*rand(size(c3_nominal)) - 1));
 
     %% Springs/dampers between wall & masses
     
@@ -57,10 +57,10 @@ function conn = config_machine_param(conn)
     c1_wall_nominal = 5;
     c4_wall_nominal = 5;
 
-    conn.d_wall_lin(1) = c1_wall_nominal .* (1 + 0.3 .* (2*rand(size(c1_wall_nominal)) - 1));
+    conn.d_wall_lin(1) = c1_wall_nominal .* (1 + 0.1 .* (2*rand(size(c1_wall_nominal)) - 1));
     conn.d_wall_lin(2) = 0;
     conn.d_wall_lin(3) = 0;
-    conn.d_wall_lin(4) = c4_wall_nominal .* (1 + 0.3 .* (2*rand(size(c4_wall_nominal)) - 1));
+    conn.d_wall_lin(4) = c4_wall_nominal .* (1 + 0.1 .* (2*rand(size(c4_wall_nominal)) - 1));
     conn.d_wall_lin(5) = 0;
 
 

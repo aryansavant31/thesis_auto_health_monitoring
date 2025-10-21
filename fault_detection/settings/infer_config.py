@@ -35,8 +35,8 @@ class FaultDetectorInferConfig:
         self.log_config = load_log_config(self.selected_model_path)
 
         self.is_log = True
-        self.version = 1
-        self.infer_sweep = None
+        self.version = 3
+        self.infer_sweep = 1
         
         self.num_workers = 1
         self.batch_size = 1
@@ -48,14 +48,14 @@ class FaultDetectorInferConfig:
         self.infer_hparams = self.get_infer_hparams()
 
         self.test_plots = {
-            'confusion_matrix_simple'              : [True, {}],
-            'confusion_matrix_advance'      : [True, {}],
+            'confusion_matrix_simple'              : [False, {}],
+            'confusion_matrix_advance'      : [False, {}],
             'roc_curve'                     : [False, {}],
-            'anomaly_score_dist_simple-1'   : [False, {'is_pred':True, 'is_log_x': False, 'num': 1, 'bins':80}],
+            'anomaly_score_dist_simple-1'   : [True, {'is_pred':True, 'is_log_x': False, 'is_log_y': False, 'num': 1}],
             'anomaly_score_dist_simple-2'   : [False, {'is_pred':True, 'is_log_x': True, 'bins':80, 'num':2}],
             # 'anomaly_score_dist_simple-2'   : [False, {'is_pred':False, 'is_log_x': False}],
-            'anomaly_score_dist_advance-1'    : [True, {'num': 1, 'is_log_x': False, 'is_log_y': True}],
-            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
+            'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False, 'is_log_y': True}],
+            'anomaly_score_dist_advance-2'    : [False, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
             # 'anomaly_score_dist_advance-2'    : [True, {'num': 2}],
             'pair_plot'                     : [True, {}],
         }
@@ -112,7 +112,7 @@ class FaultDetectorInferSweep:
         from fault_detection.settings.manager import get_selected_model_path
 
         self.data_config = data_config
-        self.infer_sweep_num = 2   # Ensure self.infer_Sweep in infer config is NONE. 
+        self.infer_sweep_num = 1   # Ensure self.infer_Sweep in infer config is NONE. 
 
         self.selected_model_path = get_selected_model_path(is_multi=True)
 

@@ -8,7 +8,7 @@ function conn = config_machine_param(conn)
 
     m1_nominal = 1;
     m2_nominal = 0.8;
-    m3_nominal = 0.5;
+    m3_nominal = 1.5;
     m4_nominal = 1;
     m5_nominal = 0.5;
     
@@ -16,9 +16,9 @@ function conn = config_machine_param(conn)
 
     conn.mass(1) = m1_nominal .* (1 + m_rand_range .* (2*rand(size(m1_nominal)) - 1));
     conn.mass(2) = m2_nominal .* (1 + m_rand_range .* (2*rand(size(m2_nominal)) - 1));
-    conn.mass(3) = m3_nominal .* (1 + 0.6 .* (2*rand(size(m3_nominal)) - 1));
+    conn.mass(3) = m3_nominal .* (1 + m_rand_range .* (2*rand(size(m3_nominal)) - 1));
     conn.mass(4) = m4_nominal .* (1 + m_rand_range .* (2*rand(size(m4_nominal)) - 1));
-    conn.mass(5) = m5_nominal .* (1 + m_rand_range .* (2*rand(size(m5_nominal)) - 1));
+    conn.mass(5) = m5_nominal .* (1 +  m_rand_range .* (2*rand(size(m5_nominal)) - 1));
     
     %% Spring/dampers between masses
 

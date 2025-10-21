@@ -153,10 +153,10 @@ def multi_inferer_main(run_type, parallel_execution, max_workers=None):
         if not os.path.exists(sweep_file_path):
             os.makedirs(sweep_file_path)
 
-        if run_type == 'predict':
-            npy_file_path = os.path.join(sweep_file_path, f"fdet_results_dict.npy")
-            np.save(npy_file_path, results_dict)
-            print(f"\nFault detection results dictionary saved at: {npy_file_path}")
+        # if run_type == 'predict':
+        #     npy_file_path = os.path.join(sweep_file_path, f"fdet_results_dict.npy")
+        #     np.save(npy_file_path, results_dict)
+        #     print(f"\nFault detection results dictionary saved at: {npy_file_path}")
         
         text_file_path = os.path.join(sweep_file_path, f"iswp_{infer_sweep_num}_output.txt")
         print(f"\nFault detection model '{run_type}' sweep completed. Sweep log saved at: {text_file_path}")

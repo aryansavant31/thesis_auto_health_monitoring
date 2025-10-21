@@ -725,6 +725,9 @@ class TrainerFaultDetector:
 
         infer_time = time.time() - start_time
         print(f"\nPrediction completed in {infer_time:.2f} seconds")
+
+        # get sign scores (threshold - score)
+        self.df_machine['sign_scores'] = fault_detector.threshold - self.df_machine['scores']
         
         # # preprocess pred label to match the given label notations
         # self.df['pred_label'] = np.where(self.df['pred_label'] == -1, 1, 0)  # convert -1 to 1 (anomaly) and 1 to 0 (normal)
@@ -749,12 +752,16 @@ class TrainerFaultDetector:
         print(f"\nDataframe is as follows:")
         print(self.df_machine)
 
-        # convert predictions to tensor
-        pred_labels = torch.tensor(self.df_machine['final_pred_label'].values, dtype=torch.int64)
-        scores = torch.tensor(self.df_machine['scores'].values, dtype=torch.float32)
-        rep_nums = torch.tensor(self.df_machine['rep_num'].values, dtype=torch.float32)
+        print('\nPrediction results:')
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', None):
+            print(self.df_machine[['machine_num', 'rep_num', 'final_pred_label', 'sign_scores']])
 
-        print(f"\nPredictions: {pred_labels}")
+        # convert predictions to tensor
+        # pred_labels = torch.tensor(self.df_machine['final_pred_label'].values, dtype=torch.int64)
+        # scores = torch.tensor(self.df_machine['sign_scores'].values, dtype=torch.float32)
+        # rep_nums = torch.tensor(self.df_machine['rep_num'].values, dtype=torch.float32)
+
+        # print(f"\nPredictions: {pred_labels}")
 
     # 3. Log model information
 
@@ -763,16 +770,16 @@ class TrainerFaultDetector:
         self.run_type = os.path.basename(self.logger.log_dir) if self.logger else 'predict'
         self.tb_tag = self.model_id.split('-')[0].strip('[]').replace('_(', "  (").replace('+', " + ") if self.logger else self.model_type
 
-        if self.logger:
-            # save dataframe
-            df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
-            self.df_machine.to_pickle(df_path)  
+        # if self.logger:
+        #     # save dataframe
+        #     df_path = os.path.join(self.logger.log_dir, f'dataframe_{self.run_type}.pkl')
+        #     self.df_machine.to_pickle(df_path)  
 
         print('\n' + 75*'-')
 
-        return {'pred_labels': pred_labels, 
-                'scores': scores,
-                'reps': rep_nums}
+        return {'pred_labels': 0, 
+                'scores': 0,
+                'reps': 0} # 0 is placeholder
     
     def test(self, fault_detector:FaultDetector, test_loader):
         """
@@ -1235,7 +1242,7 @@ class TrainerFaultDetector:
             print("\nROC curve not logged as logging is disabled.\n")
         
 
-    def anomaly_score_dist_simple(self, is_pred=True, is_log_x=False, is_log_y=True, bins=15, num=1):
+    def anomaly_score_dist_simple(self, is_pred=True, is_log_x=False, is_log_y=True, bins=50, num=1):
         """
         Create a histogram of the anomaly scores for Ok and NOK classes.
         
@@ -1326,7 +1333,7 @@ class TrainerFaultDetector:
 
         # Combine all scores for bin edges
         all_scores = np.concatenate([ok_included, ok_excluded, nok_included, nok_excluded])
-        bins_edges = np.histogram_bin_edges(all_scores, bins=bins)
+        bins_edges = np.histogram_bin_edges(all_scores, bins=bins, range=(0, 1))
 
         # update font settings for plots
         plt.rcParams.update({
@@ -1338,10 +1345,14 @@ class TrainerFaultDetector:
         # create the histogram
         plt.figure(figsize=(12, 8), dpi=100)
         # Plot included/excluded for OK and NOK
-        counts_ok_in, _, _ = plt.hist(ok_included, bins=bins_edges, color='green', label=f'OK (dark=hard, light=soft)', alpha=0.5)
-        counts_ok_ex, _, _ = plt.hist(ok_excluded, bins=bins_edges, color='green', alpha=0.2)
-        counts_nok_in, _, _ = plt.hist(nok_included, bins=bins_edges, color='orange', label=f'NOK (dark=hard, light=soft)', alpha=0.5)
-        counts_nok_ex, _, _ = plt.hist(nok_excluded, bins=bins_edges, color='orange', alpha=0.2)
+        if ok_included.size > 0:
+            counts_ok_in, _, _ = plt.hist(ok_included, bins=bins_edges, color='green', label=f'OK (dark=hard, light=soft)', alpha=0.5)
+        if ok_excluded.size > 0:
+            counts_ok_ex, _, _ = plt.hist(ok_excluded, bins=bins_edges, color='green', alpha=0.2)
+        if nok_included.size > 0:
+            counts_nok_in, _, _ = plt.hist(nok_included, bins=bins_edges, color='orange', label=f'NOK (dark=hard, light=soft)', alpha=0.5)
+        if nok_excluded.size > 0:
+            counts_nok_ex, _, _ = plt.hist(nok_excluded, bins=bins_edges, color='orange', alpha=0.2)
 
         # # add vertical lines for means and boundary
         # plt.axvline(mean_ok, color='blue', linestyle='--', linewidth=1, label=f'Mean OK: {mean_ok:.4f}')
@@ -1351,21 +1362,21 @@ class TrainerFaultDetector:
         #plt.axvline(nok_lower, color='brown', linestyle=':', linewidth=1.5, label=f'NOK lower bound: {nok_lower:.4}') if nok_lower is not None else None
         
         # db_delta_ok
-        if ok_upper is not None:
-            plt.hlines(y=5, xmin=min(ok_upper, shift), xmax=max(ok_upper, shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK: {db_delta_ok:.4f}')
+        # if ok_upper is not None:
+          #  plt.hlines(y=5, xmin=min(ok_upper, shift), xmax=max(ok_upper, shift), colors='teal', alpha=0.8, linestyles='--', linewidth=1, label=f'DB delta OK: {db_delta_ok:.4f}')
         # db_delta_nok
         # if nok_lower is not None:
         #     plt.hlines(y=8, xmin=min(nok_lower, shift), xmax=max(nok_lower, shift), colors='brown', alpha=0.6, linestyles='--', linewidth=1, label=f'DB delta NOK ({self.nok_percentage * 100}% NOK): {db_delta_nok:.4f}')
 
          # Add bin indices on top of each bar for all histograms
         for i in range(len(bins_edges) - 1):
-            if counts_ok_in[i] > 0:
+            if ok_included.size > 0 and counts_ok_in[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_ok_in[i], str(i), ha='center', va='bottom', fontsize=8, color='blue')
-            if counts_ok_ex[i] > 0:
+            if ok_excluded.size > 0 and counts_ok_ex[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_ok_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='blue', alpha=0.4)
-            if counts_nok_in[i] > 0:
+            if nok_included.size > 0 and counts_nok_in[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok_in[i], str(i), ha='center', va='bottom', fontsize=8, color='orange')
-            if counts_nok_ex[i] > 0:
+            if nok_excluded.size > 0 and counts_nok_ex[i] > 0:
                 plt.text((bins_edges[i] + bins_edges[i + 1]) / 2, counts_nok_ex[i], str(i), ha='center', va='bottom', fontsize=8, color='orange', alpha=0.4)
 
         
@@ -1381,6 +1392,7 @@ class TrainerFaultDetector:
             plt.yscale('log') 
         if is_log_x: 
             plt.xscale('log')
+        plt.xlim(left=0, right=1)
 
         # write sample indices in each bin
         text = f"## Bin details for Anomaly Score Distribution Simple {num} ({label_col})\n"

@@ -66,7 +66,10 @@ class FaultDetectorInferPipeline:
         elif self.fdet_config.run_type == 'predict':
             preds = tester.predict(fault_detector, custom_loader)
             
-            tester.anomaly_score_dist_simple(is_pred=True, bins=100)
+            # plot the predict results
+            for plot_name, plot_config in self.fdet_config.test_plots.items():
+                if plot_config[0]:
+                    getattr(tester, plot_name.split('-')[0])(**plot_config[1])
 
             return preds
 

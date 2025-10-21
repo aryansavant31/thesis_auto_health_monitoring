@@ -76,7 +76,83 @@ class MSDGroupMaker:
             'signal_group_name': 'vel',
             'group' : {'mass_1': ['vel']}
         }
+
+        # Mass 2
+        self.m005_m2_acc = {
+            'node_group_name'  : 'mass_2',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_2': ['acc'],}
+        }
         
+        self.m005_m2_pos = {
+            'node_group_name'  : 'mass_2',  
+            'signal_group_name': 'pos',
+            'group' : {'mass_2': ['pos']}
+        }
+
+        self.m005_m2_vel = {
+            'node_group_name'  : 'mass_2',  
+            'signal_group_name': 'vel',
+            'group' : {'mass_2': ['vel']}
+        }
+
+        # Mass 3
+        self.m005_m3_acc = {
+            'node_group_name'  : 'mass_3',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_3': ['acc'],}
+        }
+
+        self.m005_m3_pos = {
+            'node_group_name'  : 'mass_3',  
+            'signal_group_name': 'pos',
+            'group' : {'mass_3': ['pos']}
+        }
+
+        self.m005_m3_vel = {
+            'node_group_name'  : 'mass_3',
+            'signal_group_name': 'vel',
+            'group' : {'mass_3': ['vel']}
+        }
+
+        # Mass 4
+        self.m005_m4_acc = {
+            'node_group_name'  : 'mass_4',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_4': ['acc'],}
+        }
+
+        self.m005_m4_pos = {
+            'node_group_name'  : 'mass_4',
+            'signal_group_name': 'pos',
+            'group' : {'mass_4': ['pos']}
+        }
+
+        self.m005_m4_vel = {
+            'node_group_name'  : 'mass_4',
+            'signal_group_name': 'vel',
+            'group' : {'mass_4': ['vel']}
+        }
+
+        # Mass 5
+
+        self.m005_m5_acc = {
+            'node_group_name'  : 'mass_5',  
+            'signal_group_name': 'acc',
+            'group' : {'mass_5': ['acc'],}
+        }
+
+        self.m005_m5_pos = {
+            'node_group_name'  : 'mass_5',
+            'signal_group_name': 'pos',
+            'group' : {'mass_5': ['pos']}
+        }
+
+        self.m005_m5_vel = {
+            'node_group_name'  : 'mass_5',
+            'signal_group_name': 'vel',
+            'group' : {'mass_5': ['vel']}
+        }
 
         # ============== M012 =================
         

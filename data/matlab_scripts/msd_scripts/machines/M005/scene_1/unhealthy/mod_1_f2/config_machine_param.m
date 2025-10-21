@@ -6,7 +6,7 @@ function conn = config_machine_param(conn)
 
     %% configure mass (kg)
 
-    m1_nominal = 1;
+    m1_nominal = 0.4;
     m2_nominal = 0.8;
     m3_nominal = 0.5;
     m4_nominal = 1;
@@ -44,7 +44,7 @@ function conn = config_machine_param(conn)
     %% Springs/dampers between wall & masses
     
     % configure linear wall spring
-    k1_wall_nominal = 4000;
+    k1_wall_nominal = 12000;
     k4_wall_nominal = 20000;
 
     conn.k_wall_lin(1) = k1_wall_nominal .* (1 + 0.11 .* (2*rand(size(k1_wall_nominal)) - 1));
