@@ -875,7 +875,7 @@ class TrainerFaultDetector:
 
         print('\n' + 75*'-')
 
-    def classify_machines(self, input_df, nok_threshold=0.25):
+    def classify_machines(self, input_df, nok_threshold=0.2):
         """
         Classify predictions per machine from self.df.
 

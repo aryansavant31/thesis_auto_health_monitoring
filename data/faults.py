@@ -143,7 +143,7 @@ def pob_ls_ctrl_faults(level):
     fault_l4_5 = [get_augment_config('glitch', prob=0.02, std_fac=0.7, add_next=True),
                     get_augment_config('sine', freqs=[156, 220, 400], std_facs=[0.4, 0.5, 0.7])]
     fault_l4_6 = [get_augment_config('glitch', prob=0.05, std_fac=0.5, add_next=True),
-                    get_augment_config('sine', freqs=[45, 300, 550, 700], std_facs=[0.5, 0.55, 0.7, 0.3]),]
+                    get_augment_config('sine', freqs=[45, 300, 550, 700], std_facs=[1.3, 1.2, 1, 0.7]),] # l3
     
     all_l4_faults = [fault_l4_1, fault_l4_2, fault_l4_3, fault_l4_4, fault_l4_5, fault_l4_6, fault_l4_1, fault_l4_2]
 

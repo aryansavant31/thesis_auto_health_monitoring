@@ -1,0 +1,1 @@
+C:\AFD\fault_detection\logs\asml\NXE\full_wafer\predict\pob_los\ctrl\set_E1\iswp_1\(NOK):(sim)_E1_M=mBY13[glitch(prob=0.08, std_fac=1.8, add_next=True), sine(freqs=[56, 100], std_facs=[1.8, 1.5], add_next=False)]\[anom] IF\[pob_los_(ctrl+E1)]-IF_fdet_1\T8000, Tmax = 32,768
