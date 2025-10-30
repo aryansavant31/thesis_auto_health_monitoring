@@ -57,19 +57,19 @@ class DataConfig:
                                 'ASM':'asml',
                                 'ASMT':'asml_trial'}
         
-        self.application = 'ASM'
-        self.machine_type = 'NXE'
-        self.scenario = 'full_wafer'
+        self.application = 'MSD'
+        self.machine_type = 'M005'
+        self.scenario = 'scene_1'
 
-        self.signal_types = NXEGroupMaker().ammf_ctrl
+        self.signal_types = MSDGroupMaker().m005_m4_vel
         
         self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
 
         # segement data
-        self.window_length      = 1000
-        self.stride             = 1000
-        self.start_from_timestep = 0 #2000  #1000 number of initial samples to chop off from the start of the signal
+        self.window_length      = 1100
+        self.stride             = 1100
+        self.start_from_timestep = 2000  #1000 number of initial samples to chop off from the start of the signal
 
         self.use_custom_max_timesteps = False
         self.max_timesteps     = 10000
@@ -92,7 +92,7 @@ class DataConfig:
     def set_train_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
         e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
-        ds_keys_ok = [f"ok_ds_{i}" for i in range(1, 101)] # if int(key.split("_")[1]) in ds_nums]
+        ds_keys_ok = [f"ok_ds_{i}" for i in range(1, 26)] # if int(key.split("_")[1]) in ds_nums]
 
         self.healthy_configs   = {
             # '0_N': [get_augment_config('OG')],
@@ -120,7 +120,7 @@ class DataConfig:
 
         top_faults = ['5', '6', '7', '3', '8', '9', '10']
         ds_keys_top_nok = [f"top_add_{i}_ds_{j}" for i in top_faults for j in range(1, 3)]
-        ds_keys_mod_nok = [f"mod_5_f{i}_ds_1" for i in range(1, 5)]
+        ds_keys_mod_nok = [f"mod_4_f{i}_ds_1" for i in range(1, 5)]
         self.unhealthy_configs = {
 
             #key : value for key, value in zip(e1_keys_nok, all_ctrl_l2_faults)
@@ -400,11 +400,12 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        self.signal_types = [MSDGroupMaker().m005_m1_acc, MSDGroupMaker().m005_m1_pos, MSDGroupMaker().m005_m1_vel,
-                             MSDGroupMaker().m005_m2_acc, MSDGroupMaker().m005_m2_pos, MSDGroupMaker().m005_m2_vel,
-                             MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
-                             MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
-                             #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
+        # self.signal_types = [MSDGroupMaker().m005_m1_acc, MSDGroupMaker().m005_m1_pos, MSDGroupMaker().m005_m1_vel,
+        #                      MSDGroupMaker().m005_m2_acc, MSDGroupMaker().m005_m2_pos, MSDGroupMaker().m005_m2_vel,
+        #                      MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
+        #                      MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
+        #                      #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
+        self.signal_types = [MSDGroupMaker().m005_m4_vel]
         self.window_length = [1100]
         self.stride = [1100]
 
@@ -462,7 +463,7 @@ class DataSweep:
             #     # {key: [get_augment_config('gau', mean=0.0, std=0.8)] for key in e1_keys},
             ]
 
-            ds_keys_mod_nok = [f"mod_5_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
+            ds_keys_mod_nok = [f"mod_4_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
 
             self.unhealthy_configs = [
                 # {'top_add_2_ds_1': [get_augment_config('OG')]},

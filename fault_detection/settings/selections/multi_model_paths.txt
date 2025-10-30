@@ -1,12 +1,3 @@
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_1\acc\set_G\IF\tswp_1\[mass_1_(acc+G)]-IF_fdet_64\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_1\pos\set_G\IF\tswp_1\[mass_1_(pos+G)]-IF_fdet_7\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_1\vel\set_G\IF\tswp_1\[mass_1_(vel+G)]-IF_fdet_55\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_2\acc\set_G\IF\tswp_1\[mass_2_(acc+G)]-IF_fdet_45\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_2\pos\set_G\IF\tswp_1\[mass_2_(pos+G)]-IF_fdet_4\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_2\vel\set_G\IF\tswp_1\[mass_2_(vel+G)]-IF_fdet_29\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_3\acc\set_G\IF\tswp_1\[mass_3_(acc+G)]-IF_fdet_47\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_3\pos\set_G\IF\tswp_1\[mass_3_(pos+G)]-IF_fdet_30\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_3\vel\set_G\IF\tswp_1\[mass_3_(vel+G)]-IF_fdet_55\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\acc\set_G\IF\tswp_1\[mass_4_(acc+G)]-IF_fdet_42\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\pos\set_G\IF\tswp_1\[mass_4_(pos+G)]-IF_fdet_35\fault_detector.pkl
-C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\vel\set_G\IF\tswp_1\[mass_4_(vel+G)]-IF_fdet_40\fault_detector.pkl
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\vel\set_G\IF\tswp_3\[mass_4_(vel+G)]-IF_fdet_85\fault_detector.pkl
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\vel\set_G\IF\tswp_4\[mass_4_(vel+G)]-IF_fdet_86\fault_detector.pkl
+C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\logs\mass_sp_dm\M005\scene_1\train\mass_4\vel\set_G\IF\tswp_5\[mass_4_(vel+G)]-IF_fdet_87\fault_detector.pkl

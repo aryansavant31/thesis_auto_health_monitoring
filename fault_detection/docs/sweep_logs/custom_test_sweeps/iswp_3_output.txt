@@ -1,0 +1,59 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_infer.py
+Base Name: iswp_3
+Start Time: 2025-10-30 13:11:57
+End Time: 2025-10-30 13:12:26
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26200)
+
+Python Version: 3.12.3 | packaged by conda-forge | (main, Apr 15 2024, 18:20:11) [MSC v.1938 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model inference sweep...
+
+Processing 1 data groups
+
+Data Config Sweep Summary:
+Run type: custom_test
+------------------------------
+Total combinations: 1
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{'ok_ds_101': [{'type': 'OG', 'add_next': False}], 'ok_ds_102': [{'type': 'OG', 'add_next': False}], 'ok_ds_103': [{'type': 'OG', 'add_next': False}], 'ok_ds_104': [{'type': 'OG', 'add_next': False}], 'ok_ds_105': [{'type': 'OG', 'add_next': False}], 'ok_ds_106': [{'type': 'OG', 'add_next': False}], 'ok_ds_107': [{'type': 'OG', 'add_next': False}], 'ok_ds_108': [{'type': 'OG', 'add_next': False}], 'ok_ds_109': [{'type': 'OG', 'add_next': False}], 'ok_ds_110': [{'type': 'OG', 'add_next': False}], 'ok_ds_111': [{'type': 'OG', 'add_next': False}], 'ok_ds_112': [{'type': 'OG', 'add_next': False}], 'ok_ds_113': [{'type': 'OG', 'add_next': False}], 'ok_ds_114': [{'type': 'OG', 'add_next': False}], 'ok_ds_115': [{'type': 'OG', 'add_next': False}], 'ok_ds_116': [{'type': 'OG', 'add_next': False}], 'ok_ds_117': [{'type': 'OG', 'add_next': False}], 'ok_ds_118': [{'type': 'OG', 'add_next': False}], 'ok_ds_119': [{'type': 'OG', 'add_next': False}], 'ok_ds_120': [{'type': 'OG', 'add_next': False}], 'ok_ds_121': [{'type': 'OG', 'add_next': False}], 'ok_ds_122': [{'type': 'OG', 'add_next': False}], 'ok_ds_123': [{'type': 'OG', 'add_next': False}], 'ok_ds_124': [{'type': 'OG', 'add_next': False}], 'ok_ds_125': [{'type': 'OG', 'add_next': False}], 'ok_ds_126': [{'type': 'OG', 'add_next': False}], 'ok_ds_127': [{'type': 'OG', 'add_next': False}], 'ok_ds_128': [{'type': 'OG', 'add_next': False}], 'ok_ds_129': [{'type': 'OG', 'add_next': False}], 'ok_ds_130': [{'type': 'OG', 'add_next': False}], 'ok_ds_131': [{'type': 'OG', 'add_next': False}], 'ok_ds_132': [{'type': 'OG', 'add_next': False}], 'ok_ds_133': [{'type': 'OG', 'add_next': False}], 'ok_ds_134': [{'type': 'OG', 'add_next': False}], 'ok_ds_135': [{'type': 'OG', 'add_next': False}], 'ok_ds_136': [{'type': 'OG', 'add_next': False}], 'ok_ds_137': [{'type': 'OG', 'add_next': False}], 'ok_ds_138': [{'type': 'OG', 'add_next': False}], 'ok_ds_139': [{'type': 'OG', 'add_next': False}], 'ok_ds_140': [{'type': 'OG', 'add_next': False}]}]
+  signal_types: 1 values -> [{'node_group_name': 'mass_4', 'signal_group_name': 'vel', 'group': {'mass_4': ['vel']}}]
+  stride: 1 values -> [1100]
+  unhealthy_configs: 1 values -> [{'mod_4_f1_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_4_f1_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_4_f1_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_4_f2_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_4_f2_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_4_f2_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_4_f3_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_4_f3_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_4_f3_ds_4': [{'type': 'OG', 'add_next': False}], 'mod_4_f4_ds_2': [{'type': 'OG', 'add_next': False}], 'mod_4_f4_ds_3': [{'type': 'OG', 'add_next': False}], 'mod_4_f4_ds_4': [{'type': 'OG', 'add_next': False}]}]
+  window_length: 1 values -> [1100]
+
+Parameter Sweep Summary:
+Total combinations: 3
+
+Parameters and their values:
+  batch_size: 1 values -> [1]
+  cutoff_freq: 1 values -> [0]
+
+Number of models selected: 3
+Selected models are as follows:
+------------------------------
+  Model 1: [mass_4_(vel+G)]-IF_fdet_85
+  Model 2: [mass_4_(vel+G)]-IF_fdet_86
+  Model 3: [mass_4_(vel+G)]-IF_fdet_87
+
+Parallelizing 3 fault detection configurations across 8 workers...
+  Completed config 2: [mass_4_(vel+G)]-IF_fdet_86/custom_test_1
+  Completed config 1: [mass_4_(vel+G)]-IF_fdet_85/custom_test_1
+  Completed config 3: [mass_4_(vel+G)]-IF_fdet_87/custom_test_1
+
+===========================================================================
+
+===========================================================================
+
+Fault detection model 'custom_test' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\custom_test_sweeps\iswp_3_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-10-30 13:12:26
