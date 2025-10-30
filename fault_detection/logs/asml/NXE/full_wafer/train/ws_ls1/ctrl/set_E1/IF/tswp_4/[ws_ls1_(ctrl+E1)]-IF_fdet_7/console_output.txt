@@ -1,0 +1,607 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.train.py
+Base Name: [ws_ls1_(ctrl+E1)]-IF_fdet_7
+Start Time: 2025-10-30 12:56:41
+End Time: 2025-10-30 12:59:00
+
+CPU: Intel64 Family 6 Model 79 Stepping 1, GenuineIntel (Cores: 12), Max Frequency: 2594.00 MHz
+GPU: None detected
+OS: Windows 10 (10.0.19045)
+
+Python Version: 3.12.11 | packaged by Anaconda, Inc. | (main, Jun  5 2025, 12:58:53) [MSC v.1929 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model training...
+
+'Train' type dataset selected:
+
+
+Dataset selections:
+---------------------------------------------
+*_(<ds_subtype_num>) <ds_subtype> : [<augments>]_*
+
+- **Healthy configs**
+  (1) E1_set01_M=mAI26    : [OG]
+  (2) E1_set01_M=mAQ10    : [OG]
+  (3) E1_set01_M=mAQ87    : [OG]
+  (4) E1_set01_M=mAS23    : [OG]
+  (5) E1_set01_M=mAU64    : [OG]
+  (6) E1_set01_M=mBF18    : [OG]
+  (7) E1_set01_M=mBF38    : [OG]
+  (8) E1_set01_M=mBF92    : [OG]
+  (9) E1_set01_M=mBH22    : [OG]
+  (10) E1_set01_M=mBI93    : [OG]
+  (11) E1_set01_M=mBJ96    : [OG]
+  (12) E1_set01_M=mBK70    : [OG]
+  (13) E1_set01_M=mBN34    : [OG]
+  (14) E1_set01_M=mBP09    : [OG]
+  (15) E1_set01_M=mBP98    : [OG]
+  (16) E1_set01_M=mBS36    : [OG]
+  (17) E1_set01_M=mBS45    : [OG]
+  (18) E1_set01_M=mBU17    : [OG]
+  (19) E1_set01_M=mBW64    : [OG]
+  (20) E1_set01_M=mBY13    : [OG]
+  (21) E1_set01_M=mBY93    : [OG]
+  (22) E1_set01_M=mCD86    : [OG]
+  (23) E1_set01_M=mCF56    : [OG]
+  (24) E1_set01_M=mCF78    : [OG]
+  (25) E1_set01_M=mCF96    : [OG]
+
+- **Unhealthy configs**
+  (26) (sim)_E1_set01_M=mAI26    : [glitch(prob=0.07, std_fac=0.5, add_next=True), sine(freqs=[30, 200, 500], std_facs=[0.5, 0.4, 0.4], add_next=False)]
+  (27) (sim)_E1_set01_M=mAQ10    : [glitch(prob=0.08, std_fac=0.55, add_next=True), sine(freqs=[56, 100], std_facs=[0.5, 0.7], add_next=False)]
+  (28) (sim)_E1_set01_M=mAQ87    : [glitch(prob=0.09, std_fac=0.4, add_next=True), sine(freqs=[150, 405, 556], std_facs=[0.7, 0.8, 0.55], add_next=False)]
+  (29) (sim)_E1_set01_M=mAS23    : [glitch(prob=0.03, std_fac=0.4, add_next=True), sine(freqs=[100, 235, 375], std_facs=[0.5, 0.75, 0.6], add_next=False)]
+  (30) (sim)_E1_set01_M=mBF92    : [glitch(prob=0.02, std_fac=0.7, add_next=True), sine(freqs=[156, 220, 400], std_facs=[0.4, 0.5, 0.7], add_next=False)]
+  (31) (sim)_E1_set01_M=mBH22    : [glitch(prob=0.05, std_fac=0.5, add_next=True), sine(freqs=[45, 300, 550, 700], std_facs=[0.5, 0.55, 0.7, 0.3], add_next=False)]
+  (32) (sim)_E1_set01_M=mBI93    : [glitch(prob=0.07, std_fac=0.5, add_next=True), sine(freqs=[30, 200, 500], std_facs=[0.5, 0.4, 0.4], add_next=False)]
+  (33) (sim)_E1_set01_M=mBJ96    : [glitch(prob=0.08, std_fac=0.55, add_next=True), sine(freqs=[56, 100], std_facs=[0.5, 0.7], add_next=False)]
+
+- **Unknown configs**
+
+
+Node and signal types:
+---------------------------------------------
+*_(<node_num>) <node_type> : [<signal_types>]_*
+
+  (1) ws_ls1   : [ctrl_err_rx, ctrl_err_ry, ctrl_err_rz, ctrl_err_x, ctrl_err_y, ctrl_err_z]
+
+Node group name: ws_ls1
+Signal group name: ctrl
+
+
+For ds_type 'OK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 32,768
+
+No data interpolation applied.
+
+No timesteps chopped off from the data.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[20000., 20000., 20000., 20000., 20000., 20000.]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+For ds_type 'NOK' and others....
+---------------------------------------------
+Maximum timesteps across all node types: 32,768
+
+No data interpolation applied.
+
+No timesteps chopped off from the data.
+
+'fs' is updated in data_config as given in loaded healthy (or unknown) data.
+New fs:
+[[20000., 20000., 20000., 20000., 20000., 20000.]]
+
+Exclusive rep numbers found in keys of hdf5 file. Hence, using them as rep numbers.
+
+Target rep_num 1001.0001 found at index 0. This sample will be included in the test set.
+
+
+Total units: 33
+
+[1 sample = (n_nodes, n_timesteps (window_length), n_dims)]
+------------------------------------------------------------
+Total samples: 1580 
+Train: 1106/1106 [OK=849, NOK=257, UK=0], Test: 158/158 [OK=118, NOK=40, UK=0], Val: 315/316 [OK=228, NOK=87, UK=0],
+Remainder: 0 [OK=0, NOK=0, UK=0]
+
+train_data_loader statistics:
+Number of batches: 1106
+torch.Size([1, 1, 8000, 6])  => (batch_size, n_nodes, n_timesteps, n_dims)
+
+test_data_loader statistics:
+Number of batches: 158
+torch.Size([1, 1, 8000, 6]) 
+
+val_data_loader statistics:
+Number of batches: 315
+torch.Size([1, 1, 8000, 6]) 
+
+---------------------------------------------------------------------------
+
+Anomaly Detector Model Initialized with the following configurations:
+Model type: IsolationForest
+Number of trees in the forest: 2000
+Contamination: 1e-15
+
+---------------------------------------------------------------------------
+
+Initializing feature selector for anomaly detection model...
+
+>> Feature selector initialized with LDA
+
+Starting feature selection...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time+freq(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> Feature normalizer initialized with 'std' normalization
+
+>> Time feature extractor initialized with features: first_n_modes(n_modes=3)
+
+>> Frequency feature extractor initialized with features: first_n_modes(n_modes=3)
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+
+Top 6 consensus features selected: ['std_deviation_index', 'shape_factor', 'energy', 'variance', 'mean_abs', 'log_log_ratio']
+Feature selection completed. Updated the fault detector model to use selected features
+
+---------------------------------------------------------------------------
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: std_deviation_index. Skipping...
+Unknown frequency feature name in ranks: shape_factor. Skipping...
+Unknown frequency feature name in ranks: energy. Skipping...
+Unknown frequency feature name in ranks: variance. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: log_log_ratio. Skipping...
+'Version 1' already exists in the log path 'C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_1\[ws_ls1_(ctrl+E1)]-IF_fdet_1'.
+(a) Overwrite exsiting version, (b) create new version, (c) stop training (Choose 'a', 'b' or 'c'):  Next model number folder will be: [ws_ls1_(ctrl+E1)]-IF_fdet_7
+Model parameters saved to C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7.
+
+Training environment set. Training will be logged at: C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+---------------------------------------------------------------------------
+
+Feature ranking plot with variance logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+Feature ranking plot with mean score logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time+freq(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> Feature normalizer loaded with 'std' normalization
+
+>> Time feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['std_deviation_index', 'shape_factor', 'energy', 'variance', 'mean_abs', 'log_log_ratio'])
+
+>> Frequency feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['std_deviation_index', 'shape_factor', 'energy', 'variance', 'mean_abs', 'log_log_ratio'])
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: std_deviation_index. Skipping...
+Unknown frequency feature name in ranks: shape_factor. Skipping...
+Unknown frequency feature name in ranks: energy. Skipping...
+Unknown frequency feature name in ranks: variance. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: log_log_ratio. Skipping...
+
+Feature names: ['freq1_0', 'freq1_1', 'freq1_2', 'freq1_3', 'freq1_4', 'freq1_5', 'freq2_0', 'freq2_1', 'freq2_2', 'freq2_3', 'freq2_4', 'freq2_5', 'freq3_0', 'freq3_1', 'freq3_2', 'freq3_3', 'freq3_4', 'freq3_5', 'mode1_0', 'mode1_1', 'mode1_2', 'mode1_3', 'mode1_4', 'mode1_5', 'mode2_0', 'mode2_1', 'mode2_2', 'mode2_3', 'mode2_4', 'mode2_5', 'mode3_0', 'mode3_1', 'mode3_2', 'mode3_3', 'mode3_4', 'mode3_5', 'std_deviation_index_0', 'std_deviation_index_1', 'std_deviation_index_2', 'std_deviation_index_3', 'std_deviation_index_4', 'std_deviation_index_5', 'shape_factor_0', 'shape_factor_1', 'shape_factor_2', 'shape_factor_3', 'shape_factor_4', 'shape_factor_5', 'energy_0', 'energy_1', 'energy_2', 'energy_3', 'energy_4', 'energy_5', 'variance_0', 'variance_1', 'variance_2', 'variance_3', 'variance_4', 'variance_5', 'mean_abs_0', 'mean_abs_1', 'mean_abs_2', 'mean_abs_3', 'mean_abs_4', 'mean_abs_5', 'log_log_ratio_0', 'log_log_ratio_1', 'log_log_ratio_2', 'log_log_ratio_3', 'log_log_ratio_4', 'log_log_ratio_5']
+
+Fitting anomaly detection model...
+
+Model fitted successfully in 7.68 seconds
+
+Tuning contamination parameter using validation data...
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: std_deviation_index. Skipping...
+Unknown frequency feature name in ranks: shape_factor. Skipping...
+Unknown frequency feature name in ranks: energy. Skipping...
+Unknown frequency feature name in ranks: variance. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: log_log_ratio. Skipping...
+
+Feature names: ['freq1_0', 'freq1_1', 'freq1_2', 'freq1_3', 'freq1_4', 'freq1_5', 'freq2_0', 'freq2_1', 'freq2_2', 'freq2_3', 'freq2_4', 'freq2_5', 'freq3_0', 'freq3_1', 'freq3_2', 'freq3_3', 'freq3_4', 'freq3_5', 'mode1_0', 'mode1_1', 'mode1_2', 'mode1_3', 'mode1_4', 'mode1_5', 'mode2_0', 'mode2_1', 'mode2_2', 'mode2_3', 'mode2_4', 'mode2_5', 'mode3_0', 'mode3_1', 'mode3_2', 'mode3_3', 'mode3_4', 'mode3_5', 'std_deviation_index_0', 'std_deviation_index_1', 'std_deviation_index_2', 'std_deviation_index_3', 'std_deviation_index_4', 'std_deviation_index_5', 'shape_factor_0', 'shape_factor_1', 'shape_factor_2', 'shape_factor_3', 'shape_factor_4', 'shape_factor_5', 'energy_0', 'energy_1', 'energy_2', 'energy_3', 'energy_4', 'energy_5', 'variance_0', 'variance_1', 'variance_2', 'variance_3', 'variance_4', 'variance_5', 'mean_abs_0', 'mean_abs_1', 'mean_abs_2', 'mean_abs_3', 'mean_abs_4', 'mean_abs_5', 'log_log_ratio_0', 'log_log_ratio_1', 'log_log_ratio_2', 'log_log_ratio_3', 'log_log_ratio_4', 'log_log_ratio_5']
+
+Best threshold: 0.5375 with db_ok: 0.1118
+Validation Precision: 1.0000, Recall: 1.0000, F1-Score: 1.0000
+
+Training inference completed in 0.43 seconds
+
+Training accuracy (for hard predictions): 0.32
+
+OK upper bound (at 100.0 percentile): 0.5355
+
+Dataframe is as follows:
+   machine_num                                            rep_num  pred_label  final_pred_label    scores  given_label   nok_pct  n_samples
+0          013  [1013.0001, 4013.0002, 11013.0004, 3013.0003, ...          -1              -0.5  0.437055          1.0  0.108108         37
+1          012  [8012.0004, 6012.0001, 12012.0003, 9012.0004, ...           1               1.0  0.413557          1.0  0.000000         31
+2          017  [9017.0003, 7017.0003, 8017.0002, 3017.0003, 1...           1               1.0  0.405001          1.0  0.000000         37
+3          001  [7001.0002, 3001.0003, 10001.0002, 12001.0003,...          -1              -0.5  0.419095          1.0  0.085714         35
+4          009  [5009.0004, 1009.0004, 3009.0001, 1009.0003, 1...           1               1.0  0.403795          1.0  0.000000         36
+5          021  [12021.0003, 8021.0002, 5021.0001, 8021.0001, ...          -1              -0.5  0.415368          1.0  0.054054         37
+6          019  [8019.0002, 3019.0002, 5019.0004, 10019.0004, ...          -1              -0.5  0.413573          1.0  0.057143         35
+7          015  [8015.0003, 6015.0004, 4015.0004, 2015.0003, 1...          -1              -0.5  0.401840          1.0  0.028571         35
+8          003  [2003.0002, 5003.0001, 8003.0004, 10003.0002, ...           1               1.0  0.395726          1.0  0.000000         28
+9          010  [1010.0004, 11010.0004, 6010.0004, 4010.0002, ...           1               1.0  0.433338          1.0  0.000000         27
+10         023  [11023.0001, 7023.0001, 11023.0004, 4023.0001,...          -1              -0.5  0.403535          1.0  0.026316         38
+11         007  [1007.0002, 11007.0003, 10007.0003, 9007.0003,...          -1              -0.5  0.486659          1.0  0.156250         32
+12         004  [8004.0002, 11004.0002, 5004.0001, 10004.0004,...           1               1.0  0.411993          1.0  0.000000         35
+13         002  [10002.0004, 6002.0002, 6002.0003, 1002.0001, ...          -1              -0.5  0.421594          1.0  0.031250         32
+14         014  [3014.0002, 8014.0001, 10014.0004, 5014.0001, ...          -1              -1.0  0.521202          1.0  0.484848         33
+15         018  [1018.0002, 9018.0004, 7018.0001, 4018.0003, 1...          -1              -0.5  0.425035          1.0  0.055556         36
+16         020  [11020.0002, 11020.0003, 4020.0002, 8020.0003,...          -1              -0.5  0.411250          1.0  0.029412         34
+17         022  [1022.0004, 4022.0002, 4022.0004, 10022.0004, ...          -1              -0.5  0.432919          1.0  0.026316         38
+18         025  [8025.0004, 3025.0004, 7025.0004, 11025.0001, ...          -1              -0.5  0.410294          1.0  0.027027         37
+19         008  [9008.0002, 2008.0004, 11008.0004, 11008.0002,...          -1              -0.5  0.423247          1.0  0.051282         39
+20         006  [7006.0001, 2006.0001, 4006.0002, 1006.0003, 8...          -1              -0.5  0.422911          1.0  0.028571         35
+21         016  [12016.0004, 1016.0003, 5016.0001, 5016.0004, ...          -1              -0.5  0.414567          1.0  0.029412         34
+22         005  [6005.0004, 7005.0001, 3005.0001, 5005.0001, 4...          -1              -0.5  0.419900          1.0  0.071429         28
+23         011  [1011.0004, 2011.0003, 12011.0002, 10011.0001,...           1               1.0  0.405690          1.0  0.000000         32
+24         024  [6024.0004, 5024.0001, 7024.0002, 8024.0002, 9...           1               1.0  0.412837          1.0  0.000000         28
+
+Training hyperparameters logged for tensorboard at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+Model saved at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\fault_detector.pkl
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX SIMPLE>>>>>>>>>>>>
+
+> Creating confusion matrix for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / train...
+
+Confusion matrix logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+<<<<<<<<<<<< CONFUSION MATRIX ADVANCE >>>>>>>>>>>>
+
+> Creating confusion matrix (hard/soft) for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / train...
+
+Confusion matrix (hard/soft) logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 1 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train
+
+Creating anomaly score distribution plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / train...
+## Bin details for Anomaly Score Distribution Advance 1 (100% OK of train) 
+-------------------------
+### Total True Negative Hard (OK, correct) samples: 254
+---------- Samples in True Negative Hard (OK, correct) bins ----------
+- **Bin 18 (0.36000, 0.38000) [dark green]**: 24 (10,012.0003), 28 (1,012.0003), 46 (12,017.0003), 53 (5,017.0004), 56 (8,017.0004), 61 (8,017.0001), 68 (9,017.0002), 75 (5,009.0004), 94 (10,009.0002), 117 (5,003.0001), 118 (8,003.0004), 124 (2,003.0001), 130 (9,003.0002), 134 (4,003.0001), 142 (8,003.0001), 185 (4,004.0004), 198 (9,004.0003), 201 (4,004.0001), 203 (11,004.0001), 204 (10,004.0002), 205 (8,004.0001), 208 (5,004.0004), 246 (4,011.0001), 248 (10,011.0003), 253 (10,011.0002), 255 (2,011.0001), 256 (4,011.0004), 260 (7,011.0001), 273 (5,024.0001), 279 (7,024.0001), 290 (4,024.0001)
+- **Bin 19 (0.38000, 0.40000) [dark green]**: 4 (8,012.0004), 5 (6,012.0001), 6 (12,012.0003), 9 (9,012.0002), 10 (10,012.0002), 19 (9,012.0003), 21 (11,012.0001), 22 (1,012.0004), 23 (2,012.0001), 26 (3,012.0003), 27 (11,012.0002), 30 (9,012.0001), 31 (7,012.0001), 32 (8,012.0001), 33 (7,012.0003), 34 (2,012.0003), 35 (9,017.0003), 36 (7,017.0003), 37 (8,017.0002), 41 (11,017.0004), 42 (5,017.0002), 47 (7,017.0001), 49 (10,017.0002), 51 (11,017.0002), 52 (12,017.0002), 55 (11,017.0003), 58 (2,017.0002), 60 (10,017.0003), 64 (2,017.0001), 65 (2,017.0004), 66 (5,017.0001), 69 (6,017.0002), 70 (2,017.0003), 76 (1,009.0004), 78 (1,009.0003), 80 (2,009.0001), 81 (12,009.0001), 82 (4,009.0002), 83 (7,009.0003), 85 (10,009.0004), 88 (5,009.0002), 92 (2,009.0004), 93 (12,009.0002), 95 (6,009.0002), 96 (11,009.0001), 98 (10,009.0003), 104 (8,009.0004), 105 (5,009.0001), 106 (11,009.0003), 108 (11,009.0002), 109 (4,009.0004), 110 (6,009.0001), 119 (10,003.0002), 120 (1,003.0004), 122 (10,003.0003), 125 (11,003.0003), 127 (6,003.0001), 128 (1,003.0003), 129 (5,003.0002), 132 (11,003.0002), 133 (10,003.0004), 136 (2,003.0003), 138 (3,003.0003), 141 (4,003.0002), 143 (9,003.0003), 153 (11,010.0003), 163 (4,010.0001), 164 (9,010.0003), 167 (4,010.0004), 178 (11,004.0002), 179 (5,004.0001), 180 (10,004.0004), 181 (10,004.0003), 188 (3,004.0003), 189 (2,004.0001), 194 (8,004.0004), 196 (11,004.0003), 202 (12,004.0002), 240 (1,011.0004), 241 (2,011.0003), 242 (12,011.0002), 243 (10,011.0001), 244 (9,011.0003), 245 (11,011.0001), 251 (12,011.0001), 252 (12,011.0003), 254 (5,011.0004), 258 (9,011.0002), 265 (5,011.0001), 267 (5,011.0002), 269 (8,011.0004), 270 (6,011.0001), 271 (11,011.0003), 276 (9,024.0002), 278 (11,024.0003), 280 (11,024.0001), 287 (6,024.0001), 289 (6,024.0002), 292 (10,024.0003), 294 (10,024.0002), 295 (5,024.0004), 298 (2,024.0003), 299 (4,024.0004)
+- **Bin 20 (0.40000, 0.42000) [dark green]**: 11 (12,012.0002), 12 (8,012.0002), 13 (5,012.0002), 18 (6,012.0003), 25 (3,012.0001), 29 (5,012.0003), 38 (3,017.0003), 40 (1,017.0004), 43 (9,017.0001), 45 (10,017.0004), 48 (11,017.0001), 54 (12,017.0001), 77 (3,009.0001), 79 (10,009.0001), 84 (5,009.0003), 87 (3,009.0004), 89 (6,009.0003), 90 (9,009.0001), 97 (8,009.0003), 99 (8,009.0002), 107 (9,009.0003), 116 (2,003.0002), 121 (4,003.0003), 123 (3,003.0004), 126 (5,003.0003), 131 (8,003.0003), 135 (9,003.0001), 137 (7,003.0003), 145 (11,010.0004), 147 (4,010.0002), 150 (9,010.0001), 152 (10,010.0001), 154 (6,010.0002), 162 (10,010.0004), 165 (11,010.0002), 168 (12,010.0003), 170 (5,010.0002), 177 (8,004.0002), 184 (12,004.0001), 186 (3,004.0001), 190 (7,004.0002), 192 (9,004.0002), 197 (10,004.0001), 199 (5,004.0002), 206 (7,004.0003), 207 (4,004.0002), 209 (2,004.0003), 247 (4,011.0002), 249 (11,011.0002), 261 (3,011.0003), 266 (10,011.0004), 268 (2,011.0004), 275 (8,024.0002), 281 (3,024.0003), 285 (12,024.0001), 286 (11,024.0004), 293 (1,024.0004), 296 (12,024.0003)
+- **Bin 21 (0.42000, 0.44000) [dark green]**: 16 (7,012.0004), 17 (2,012.0002), 39 (1,017.0001), 50 (3,017.0004), 57 (7,017.0004), 59 (8,017.0003), 62 (6,017.0003), 67 (3,017.0001), 86 (1,009.0001), 91 (4,009.0003), 100 (11,009.0004), 101 (7,009.0004), 139 (7,003.0004), 140 (1,003.0001), 151 (8,010.0001), 155 (3,010.0004), 158 (9,010.0002), 169 (5,010.0004), 182 (6,004.0003), 191 (7,004.0004), 200 (3,004.0002), 210 (8,004.0003), 211 (1,004.0001), 250 (11,011.0004), 259 (1,011.0001), 264 (7,011.0004), 277 (3,024.0002), 282 (12,024.0002), 283 (7,024.0004), 291 (4,024.0003), 297 (2,024.0004)
+- **Bin 22 (0.44000, 0.46000) [dark green]**: 20 (1,012.0001), 63 (3,017.0002), 144 (1,010.0004), 149 (8,010.0004), 161 (8,010.0003), 195 (4,004.0003), 274 (7,024.0002)
+- **Bin 23 (0.46000, 0.48000) [dark green]**: 103 (1,009.0002), 148 (3,010.0003), 156 (3,010.0001), 159 (7,010.0004), 160 (12,010.0001), 288 (6,024.0003)
+- **Bin 24 (0.48000, 0.50000) [dark green]**: 15 (1,012.0002), 157 (6,010.0003), 262 (1,011.0002), 284 (1,024.0002)
+- **Bin 25 (0.50000, 0.52000) [dark green]**: 102 (6,009.0004), 146 (6,010.0004), 193 (1,004.0002)
+- **Bin 26 (0.52000, 0.54000) [dark green]**: 7 (9,012.0004), 8 (6,012.0004), 14 (12,012.0004), 44 (9,017.0004), 71 (6,017.0004), 166 (12,010.0004), 183 (12,004.0004), 187 (6,004.0004), 257 (12,011.0004), 263 (6,011.0004), 272 (6,024.0004)
+
+### Total True Positive Hard (NOK, correct) samples: 0
+---------- Samples in True Positive Hard (NOK, correct) bins ----------
+
+### Total False Positive Hard (OK, misclassified) samples: 16
+---------- Samples in False Positive Hard (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [dark red]**: 214 (10,014.0004), 216 (9,014.0001), 218 (2,014.0001), 223 (2,014.0004), 224 (4,014.0002), 225 (9,014.0004), 226 (4,014.0001)
+- **Bin 28 (0.56000, 0.58000) [dark red]**: 213 (3,014.0002), 217 (3,014.0004), 219 (6,014.0003), 221 (8,014.0004), 222 (1,014.0002), 227 (10,014.0001), 228 (3,014.0003)
+- **Bin 29 (0.58000, 0.60000) [dark red]**: 215 (1,014.0004), 220 (7,014.0002)
+
+### Total False Negative Hard (NOK, misclassified) samples: 0
+---------- Samples in False Negative Hard (NOK, misclassified) bins ----------
+
+### Total True Negative Soft (OK, correct) samples: 0
+---------- Samples in True Negative Soft (OK, correct) bins ----------
+
+### Total True Positive Soft (NOK, correct) samples: 0
+---------- Samples in True Positive Soft (NOK, correct) bins ----------
+
+### Total False Positive Soft (OK, misclassified) samples: 30
+---------- Samples in False Positive Soft (OK, misclassified) bins ----------
+- **Bin 26 (0.52000, 0.54000) [light red]**: 115 (1,015.0002), 171 (6,023.0004), 239 (9,005.0004)
+- **Bin 27 (0.54000, 0.56000) [light red]**: 0 (1,013.0002), 2 (6,013.0004), 72 (9,001.0004), 73 (6,001.0004), 74 (12,001.0004), 113 (9,019.0004), 114 (12,019.0004), 173 (6,007.0004), 174 (2,007.0004), 175 (3,007.0001), 176 (6,007.0003), 229 (1,018.0002), 230 (9,018.0004), 232 (12,022.0004), 233 (12,025.0004), 234 (1,008.0002), 235 (9,008.0004), 236 (1,006.0002), 237 (12,016.0004), 238 (12,005.0004)
+- **Bin 28 (0.56000, 0.58000) [light red]**: 1 (9,013.0004), 3 (12,013.0004), 172 (1,007.0002), 212 (12,002.0004), 231 (12,020.0004)
+- **Bin 29 (0.58000, 0.60000) [light red]**: 111 (12,021.0004), 112 (9,021.0004)
+
+### Total False Negative Soft (NOK, misclassified) samples: 0
+---------- Samples in False Negative Soft (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0020 (DB = 0.5375)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 2 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train
+
+Creating anomaly score distribution plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / train...
+## Bin details for Anomaly Score Distribution Advance 2 (100% OK of train) 
+-------------------------
+### Total True Negative Hard (OK, correct) samples: 254
+---------- Samples in True Negative Hard (OK, correct) bins ----------
+- **Bin 18 (0.36000, 0.38000) [dark green]**: 24 (10,012.0003), 28 (1,012.0003), 46 (12,017.0003), 53 (5,017.0004), 56 (8,017.0004), 61 (8,017.0001), 68 (9,017.0002), 75 (5,009.0004), 94 (10,009.0002), 117 (5,003.0001), 118 (8,003.0004), 124 (2,003.0001), 130 (9,003.0002), 134 (4,003.0001), 142 (8,003.0001), 185 (4,004.0004), 198 (9,004.0003), 201 (4,004.0001), 203 (11,004.0001), 204 (10,004.0002), 205 (8,004.0001), 208 (5,004.0004), 246 (4,011.0001), 248 (10,011.0003), 253 (10,011.0002), 255 (2,011.0001), 256 (4,011.0004), 260 (7,011.0001), 273 (5,024.0001), 279 (7,024.0001), 290 (4,024.0001)
+- **Bin 19 (0.38000, 0.40000) [dark green]**: 4 (8,012.0004), 5 (6,012.0001), 6 (12,012.0003), 9 (9,012.0002), 10 (10,012.0002), 19 (9,012.0003), 21 (11,012.0001), 22 (1,012.0004), 23 (2,012.0001), 26 (3,012.0003), 27 (11,012.0002), 30 (9,012.0001), 31 (7,012.0001), 32 (8,012.0001), 33 (7,012.0003), 34 (2,012.0003), 35 (9,017.0003), 36 (7,017.0003), 37 (8,017.0002), 41 (11,017.0004), 42 (5,017.0002), 47 (7,017.0001), 49 (10,017.0002), 51 (11,017.0002), 52 (12,017.0002), 55 (11,017.0003), 58 (2,017.0002), 60 (10,017.0003), 64 (2,017.0001), 65 (2,017.0004), 66 (5,017.0001), 69 (6,017.0002), 70 (2,017.0003), 76 (1,009.0004), 78 (1,009.0003), 80 (2,009.0001), 81 (12,009.0001), 82 (4,009.0002), 83 (7,009.0003), 85 (10,009.0004), 88 (5,009.0002), 92 (2,009.0004), 93 (12,009.0002), 95 (6,009.0002), 96 (11,009.0001), 98 (10,009.0003), 104 (8,009.0004), 105 (5,009.0001), 106 (11,009.0003), 108 (11,009.0002), 109 (4,009.0004), 110 (6,009.0001), 119 (10,003.0002), 120 (1,003.0004), 122 (10,003.0003), 125 (11,003.0003), 127 (6,003.0001), 128 (1,003.0003), 129 (5,003.0002), 132 (11,003.0002), 133 (10,003.0004), 136 (2,003.0003), 138 (3,003.0003), 141 (4,003.0002), 143 (9,003.0003), 153 (11,010.0003), 163 (4,010.0001), 164 (9,010.0003), 167 (4,010.0004), 178 (11,004.0002), 179 (5,004.0001), 180 (10,004.0004), 181 (10,004.0003), 188 (3,004.0003), 189 (2,004.0001), 194 (8,004.0004), 196 (11,004.0003), 202 (12,004.0002), 240 (1,011.0004), 241 (2,011.0003), 242 (12,011.0002), 243 (10,011.0001), 244 (9,011.0003), 245 (11,011.0001), 251 (12,011.0001), 252 (12,011.0003), 254 (5,011.0004), 258 (9,011.0002), 265 (5,011.0001), 267 (5,011.0002), 269 (8,011.0004), 270 (6,011.0001), 271 (11,011.0003), 276 (9,024.0002), 278 (11,024.0003), 280 (11,024.0001), 287 (6,024.0001), 289 (6,024.0002), 292 (10,024.0003), 294 (10,024.0002), 295 (5,024.0004), 298 (2,024.0003), 299 (4,024.0004)
+- **Bin 20 (0.40000, 0.42000) [dark green]**: 11 (12,012.0002), 12 (8,012.0002), 13 (5,012.0002), 18 (6,012.0003), 25 (3,012.0001), 29 (5,012.0003), 38 (3,017.0003), 40 (1,017.0004), 43 (9,017.0001), 45 (10,017.0004), 48 (11,017.0001), 54 (12,017.0001), 77 (3,009.0001), 79 (10,009.0001), 84 (5,009.0003), 87 (3,009.0004), 89 (6,009.0003), 90 (9,009.0001), 97 (8,009.0003), 99 (8,009.0002), 107 (9,009.0003), 116 (2,003.0002), 121 (4,003.0003), 123 (3,003.0004), 126 (5,003.0003), 131 (8,003.0003), 135 (9,003.0001), 137 (7,003.0003), 145 (11,010.0004), 147 (4,010.0002), 150 (9,010.0001), 152 (10,010.0001), 154 (6,010.0002), 162 (10,010.0004), 165 (11,010.0002), 168 (12,010.0003), 170 (5,010.0002), 177 (8,004.0002), 184 (12,004.0001), 186 (3,004.0001), 190 (7,004.0002), 192 (9,004.0002), 197 (10,004.0001), 199 (5,004.0002), 206 (7,004.0003), 207 (4,004.0002), 209 (2,004.0003), 247 (4,011.0002), 249 (11,011.0002), 261 (3,011.0003), 266 (10,011.0004), 268 (2,011.0004), 275 (8,024.0002), 281 (3,024.0003), 285 (12,024.0001), 286 (11,024.0004), 293 (1,024.0004), 296 (12,024.0003)
+- **Bin 21 (0.42000, 0.44000) [dark green]**: 16 (7,012.0004), 17 (2,012.0002), 39 (1,017.0001), 50 (3,017.0004), 57 (7,017.0004), 59 (8,017.0003), 62 (6,017.0003), 67 (3,017.0001), 86 (1,009.0001), 91 (4,009.0003), 100 (11,009.0004), 101 (7,009.0004), 139 (7,003.0004), 140 (1,003.0001), 151 (8,010.0001), 155 (3,010.0004), 158 (9,010.0002), 169 (5,010.0004), 182 (6,004.0003), 191 (7,004.0004), 200 (3,004.0002), 210 (8,004.0003), 211 (1,004.0001), 250 (11,011.0004), 259 (1,011.0001), 264 (7,011.0004), 277 (3,024.0002), 282 (12,024.0002), 283 (7,024.0004), 291 (4,024.0003), 297 (2,024.0004)
+- **Bin 22 (0.44000, 0.46000) [dark green]**: 20 (1,012.0001), 63 (3,017.0002), 144 (1,010.0004), 149 (8,010.0004), 161 (8,010.0003), 195 (4,004.0003), 274 (7,024.0002)
+- **Bin 23 (0.46000, 0.48000) [dark green]**: 103 (1,009.0002), 148 (3,010.0003), 156 (3,010.0001), 159 (7,010.0004), 160 (12,010.0001), 288 (6,024.0003)
+- **Bin 24 (0.48000, 0.50000) [dark green]**: 15 (1,012.0002), 157 (6,010.0003), 262 (1,011.0002), 284 (1,024.0002)
+- **Bin 25 (0.50000, 0.52000) [dark green]**: 102 (6,009.0004), 146 (6,010.0004), 193 (1,004.0002)
+- **Bin 26 (0.52000, 0.54000) [dark green]**: 7 (9,012.0004), 8 (6,012.0004), 14 (12,012.0004), 44 (9,017.0004), 71 (6,017.0004), 166 (12,010.0004), 183 (12,004.0004), 187 (6,004.0004), 257 (12,011.0004), 263 (6,011.0004), 272 (6,024.0004)
+
+### Total True Positive Hard (NOK, correct) samples: 0
+---------- Samples in True Positive Hard (NOK, correct) bins ----------
+
+### Total False Positive Hard (OK, misclassified) samples: 16
+---------- Samples in False Positive Hard (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [dark red]**: 214 (10,014.0004), 216 (9,014.0001), 218 (2,014.0001), 223 (2,014.0004), 224 (4,014.0002), 225 (9,014.0004), 226 (4,014.0001)
+- **Bin 28 (0.56000, 0.58000) [dark red]**: 213 (3,014.0002), 217 (3,014.0004), 219 (6,014.0003), 221 (8,014.0004), 222 (1,014.0002), 227 (10,014.0001), 228 (3,014.0003)
+- **Bin 29 (0.58000, 0.60000) [dark red]**: 215 (1,014.0004), 220 (7,014.0002)
+
+### Total False Negative Hard (NOK, misclassified) samples: 0
+---------- Samples in False Negative Hard (NOK, misclassified) bins ----------
+
+### Total True Negative Soft (OK, correct) samples: 0
+---------- Samples in True Negative Soft (OK, correct) bins ----------
+
+### Total True Positive Soft (NOK, correct) samples: 0
+---------- Samples in True Positive Soft (NOK, correct) bins ----------
+
+### Total False Positive Soft (OK, misclassified) samples: 30
+---------- Samples in False Positive Soft (OK, misclassified) bins ----------
+- **Bin 26 (0.52000, 0.54000) [light red]**: 115 (1,015.0002), 171 (6,023.0004), 239 (9,005.0004)
+- **Bin 27 (0.54000, 0.56000) [light red]**: 0 (1,013.0002), 2 (6,013.0004), 72 (9,001.0004), 73 (6,001.0004), 74 (12,001.0004), 113 (9,019.0004), 114 (12,019.0004), 173 (6,007.0004), 174 (2,007.0004), 175 (3,007.0001), 176 (6,007.0003), 229 (1,018.0002), 230 (9,018.0004), 232 (12,022.0004), 233 (12,025.0004), 234 (1,008.0002), 235 (9,008.0004), 236 (1,006.0002), 237 (12,016.0004), 238 (12,005.0004)
+- **Bin 28 (0.56000, 0.58000) [light red]**: 1 (9,013.0004), 3 (12,013.0004), 172 (1,007.0002), 212 (12,002.0004), 231 (12,020.0004)
+- **Bin 29 (0.58000, 0.60000) [light red]**: 111 (12,021.0004), 112 (9,021.0004)
+
+### Total False Negative Soft (NOK, misclassified) samples: 0
+---------- Samples in False Negative Soft (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0020 (DB = 0.5375)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / train...
+
+Pair plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7
+
+
+Testing environment set. Testing will be logged at: C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+Testing anomaly detection model...
+
+Initializing input processors for anomaly detection model...
+
+>> Domain transformer initialized: time+freq(cutoff_freq=0)
+
+>> No raw data normalization is applied
+
+>> Feature normalizer loaded with 'std' normalization
+
+>> Time feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['std_deviation_index', 'shape_factor', 'energy', 'variance', 'mean_abs', 'log_log_ratio'])
+
+>> Frequency feature extractor initialized with features: first_n_modes(n_modes=3), from_ranks(feat_list=['std_deviation_index', 'shape_factor', 'energy', 'variance', 'mean_abs', 'log_log_ratio'])
+
+>> No feature reduction is applied
+
+---------------------------------------------------------------------------
+Unknown time feature extraction type: first_n_modes. Skipping...
+Unknown frequency feature name in ranks: std_deviation_index. Skipping...
+Unknown frequency feature name in ranks: shape_factor. Skipping...
+Unknown frequency feature name in ranks: energy. Skipping...
+Unknown frequency feature name in ranks: variance. Skipping...
+Unknown frequency feature name in ranks: mean_abs. Skipping...
+Unknown frequency feature name in ranks: log_log_ratio. Skipping...
+
+Feature names: ['freq1_0', 'freq1_1', 'freq1_2', 'freq1_3', 'freq1_4', 'freq1_5', 'freq2_0', 'freq2_1', 'freq2_2', 'freq2_3', 'freq2_4', 'freq2_5', 'freq3_0', 'freq3_1', 'freq3_2', 'freq3_3', 'freq3_4', 'freq3_5', 'mode1_0', 'mode1_1', 'mode1_2', 'mode1_3', 'mode1_4', 'mode1_5', 'mode2_0', 'mode2_1', 'mode2_2', 'mode2_3', 'mode2_4', 'mode2_5', 'mode3_0', 'mode3_1', 'mode3_2', 'mode3_3', 'mode3_4', 'mode3_5', 'std_deviation_index_0', 'std_deviation_index_1', 'std_deviation_index_2', 'std_deviation_index_3', 'std_deviation_index_4', 'std_deviation_index_5', 'shape_factor_0', 'shape_factor_1', 'shape_factor_2', 'shape_factor_3', 'shape_factor_4', 'shape_factor_5', 'energy_0', 'energy_1', 'energy_2', 'energy_3', 'energy_4', 'energy_5', 'variance_0', 'variance_1', 'variance_2', 'variance_3', 'variance_4', 'variance_5', 'mean_abs_0', 'mean_abs_1', 'mean_abs_2', 'mean_abs_3', 'mean_abs_4', 'mean_abs_5', 'log_log_ratio_0', 'log_log_ratio_1', 'log_log_ratio_2', 'log_log_ratio_3', 'log_log_ratio_4', 'log_log_ratio_5']
+
+Test inference completed in 1.16 seconds
+
+OK upper bound (from training): 0.5355
+
+Dataframe is as follows:
+   machine_num                                            rep_num  pred_label  final_pred_label    scores  given_label   nok_pct  n_samples
+0          001       [1001.0001, 3001.0001, 5001.0002, 6001.0001]           1               1.0  0.412907          1.0  0.000000          4
+1          027  [6027.0003, 1027.0002, 12027.0003, 1027.0001, ...          -1              -1.0  0.582040         -1.0  0.833333          6
+2          015  [11015.0001, 3015.0004, 2015.0002, 4015.0002, ...           1               1.0  0.436142          1.0  0.000000          7
+3          019      [8019.0003, 6019.0002, 5019.0001, 12019.0002]           1               1.0  0.401052          1.0  0.000000          4
+4          005  [8005.0004, 8005.0003, 5005.0004, 8005.0001, 1...           1               1.0  0.403079          1.0  0.000000          7
+5          002  [8002.0004, 3002.0002, 1002.0002, 9002.0001, 1...           1               1.0  0.422911          1.0  0.000000          9
+6          030  [6030.0002, 9030.0001, 1030.0003, 3030.0003, 1...          -1              -1.0  0.616535         -1.0  1.000000          9
+7          032     [12032.0002, 8032.0001, 2032.0001, 12032.0001]          -1              -1.0  0.572312         -1.0  0.750000          4
+8          026  [2026.0001, 5026.0002, 8026.0003, 11026.0003, ...          -1              -1.0  0.546086         -1.0  0.571429          7
+9          028  [5028.0001, 3028.0004, 1028.0001, 3028.0001, 8...          -1              -1.0  0.651796         -1.0  1.000000          5
+10         018  [2018.0004, 2018.0002, 9018.0001, 9018.0002, 1...          -1              -0.5  0.432550          1.0  0.166667          6
+11         031                  [3031.0001, 7031.0002, 4031.0002]          -1              -1.0  0.624114         -1.0  1.000000          3
+12         016  [2016.0001, 1016.0002, 3016.0002, 5016.0002, 8...          -1              -0.5  0.429272          1.0  0.166667          6
+13         012  [12012.0001, 3012.0002, 10012.0004, 4012.0002,...           1               1.0  0.409035          1.0  0.000000          6
+14         009  [4009.0001, 7009.0002, 12009.0004, 9009.0002, ...          -1              -0.5  0.453199          1.0  0.200000          5
+15         010       [7010.0002, 7010.0001, 1010.0001, 2010.0002]           1               1.0  0.424435          1.0  0.000000          4
+16         033  [10033.0004, 3033.0004, 1033.0003, 2033.0003, ...          -1              -1.0  0.563752         -1.0  1.000000          5
+17         014       [1014.0003, 3014.0001, 6014.0001, 7014.0001]          -1              -1.0  0.533755          1.0  0.500000          4
+18         020                  [9020.0004, 8020.0004, 8020.0002]          -1              -1.0  0.447678          1.0  0.333333          3
+19         021                             [3021.0001, 6021.0002]           1               1.0  0.403196          1.0  0.000000          2
+20         017                                        [6017.0001]           1               1.0  0.384395          1.0  0.000000          1
+21         011  [8011.0002, 6011.0002, 3011.0002, 7011.0002, 1...           1               1.0  0.409753          1.0  0.000000          5
+22         008                 [9008.0001, 7008.0004, 12008.0002]           1               1.0  0.435680          1.0  0.000000          3
+23         007  [12007.0002, 8007.0002, 5007.0001, 5007.0003, ...           1               1.0  0.486010          1.0  0.000000          5
+24         024  [12024.0004, 9024.0001, 5024.0003, 8024.0003, ...          -1              -0.5  0.430333          1.0  0.142857          7
+25         006  [6006.0003, 8006.0001, 10006.0001, 9006.0001, ...           1               1.0  0.416557          1.0  0.000000          6
+26         025  [1025.0002, 2025.0003, 3025.0003, 10025.0003, ...           1               1.0  0.416546          1.0  0.000000          5
+27         003     [3003.0002, 12003.0001, 12003.0002, 6003.0002]           1               1.0  0.412308          1.0  0.000000          4
+28         022      [9022.0001, 9022.0002, 10022.0002, 7022.0003]           1               1.0  0.404330          1.0  0.000000          4
+29         013  [1013.0003, 10013.0003, 12013.0001, 3013.0001,...           1               1.0  0.442954          1.0  0.000000          5
+30         029                                        [6029.0002]          -1              -1.0  0.651729         -1.0  1.000000          1
+31         004       [2004.0004, 2004.0002, 7004.0001, 6004.0002]           1               1.0  0.404591          1.0  0.000000          4
+32         023                            [5023.0004, 10023.0001]           1               1.0  0.402745          1.0  0.000000          2
+
+Test accuracy (for hard prediction): 0.82
+Precision (hard): 0.80, Recall (hard): 1.00, F1-score (hard): 0.89
+Precision (soft): 0.00, Recall (soft): 0.00, F1-score (soft): 0.00
+
+Testing hyperparameters logged for tensorboard at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+---------------------------------------------------------------------------
+
+<<<<<<<<<<<< CONFUSION MATRIX SIMPLE>>>>>>>>>>>>
+
+> Creating confusion matrix for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / test...
+
+Confusion matrix logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+
+<<<<<<<<<<<< CONFUSION MATRIX ADVANCE >>>>>>>>>>>>
+
+> Creating confusion matrix (hard/soft) for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / test...
+
+Confusion matrix (hard/soft) logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 1 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train
+
+Creating anomaly score distribution plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / test...
+## Bin details for Anomaly Score Distribution Advance 1 (100% OK of train) 
+-------------------------
+### Total True Negative Hard (OK, correct) samples: 86
+---------- Samples in True Negative Hard (OK, correct) bins ----------
+- **Bin 18 (0.36000, 0.38000) [dark green]**: 3 (6,001.0001), 23 (8,005.0001), 88 (1,011.0003), 108 (5,025.0004), 125 (7,004.0001)
+- **Bin 19 (0.38000, 0.40000) [dark green]**: 2 (5,001.0002), 9 (11,015.0001), 12 (4,015.0002), 13 (5,015.0001), 17 (6,019.0002), 18 (5,019.0001), 19 (12,019.0002), 22 (5,005.0004), 25 (6,005.0002), 30 (9,002.0001), 35 (9,002.0003), 62 (12,012.0001), 64 (10,012.0004), 70 (7,010.0001), 82 (6,021.0002), 83 (6,017.0001), 84 (8,011.0002), 85 (6,011.0002), 99 (8,006.0001), 106 (3,025.0003), 107 (10,025.0003), 112 (6,003.0002), 113 (9,022.0001), 115 (10,022.0002), 126 (6,004.0002), 127 (5,023.0004)
+- **Bin 20 (0.40000, 0.42000) [dark green]**: 10 (3,015.0004), 11 (2,015.0002), 20 (8,005.0004), 24 (12,005.0002), 26 (4,005.0002), 27 (8,002.0004), 31 (1,002.0004), 32 (10,002.0003), 65 (4,012.0002), 67 (2,012.0004), 72 (2,010.0002), 81 (3,021.0001), 89 (9,008.0001), 100 (10,006.0001), 101 (9,006.0001), 102 (8,006.0002), 103 (2,006.0003), 110 (12,003.0001), 111 (12,003.0002), 114 (9,022.0002), 118 (10,013.0003), 121 (10,013.0004), 124 (2,004.0002), 128 (10,023.0001)
+- **Bin 21 (0.42000, 0.44000) [dark green]**: 1 (3,001.0001), 16 (8,019.0003), 21 (8,005.0003), 34 (11,002.0004), 63 (3,012.0002), 66 (8,012.0003), 87 (7,011.0002), 91 (12,008.0002), 105 (2,025.0003), 116 (7,022.0003)
+- **Bin 22 (0.44000, 0.46000) [dark green]**: 0 (1,001.0001), 28 (3,002.0002), 33 (7,002.0003), 69 (7,010.0002), 71 (1,010.0001), 86 (3,011.0002), 95 (5,007.0003), 109 (3,003.0002), 123 (2,004.0004)
+- **Bin 23 (0.46000, 0.48000) [dark green]**: 90 (7,008.0004), 94 (5,007.0001), 98 (6,006.0003), 117 (1,013.0003), 119 (12,013.0001), 120 (3,013.0001)
+- **Bin 24 (0.48000, 0.50000) [dark green]**: 92 (12,007.0002), 93 (8,007.0002), 104 (1,025.0002)
+- **Bin 25 (0.50000, 0.52000) [dark green]**: 29 (1,002.0002)
+- **Bin 26 (0.52000, 0.54000) [dark green]**: 14 (9,015.0004), 15 (12,015.0004)
+
+### Total True Positive Hard (NOK, correct) samples: 35
+---------- Samples in True Positive Hard (NOK, correct) bins ----------
+- **Bin 26 (0.52000, 0.54000) [dark orange]**: 48 (11,026.0003), 73 (10,033.0004)
+- **Bin 27 (0.54000, 0.56000) [dark orange]**: 6 (12,027.0003), 50 (6,026.0004), 74 (3,033.0004), 75 (1,033.0003)
+- **Bin 28 (0.56000, 0.58000) [dark orange]**: 8 (10,027.0001), 46 (8,032.0001), 76 (2,033.0003)
+- **Bin 29 (0.58000, 0.60000) [dark orange]**: 7 (3,027.0003), 47 (12,032.0001), 49 (6,026.0003), 77 (7,033.0002)
+- **Bin 30 (0.60000, 0.62000) [dark orange]**: 4 (6,027.0003), 36 (6,030.0002), 37 (9,030.0001), 38 (1,030.0003), 39 (3,030.0003), 40 (10,030.0004), 42 (10,030.0003), 43 (11,030.0001), 45 (12,032.0002), 51 (1,026.0002), 60 (4,031.0002)
+- **Bin 31 (0.62000, 0.64000) [dark orange]**: 5 (1,027.0002), 41 (2,030.0001), 44 (7,030.0003), 58 (3,031.0001), 59 (7,031.0002)
+- **Bin 32 (0.64000, 0.66000) [dark orange]**: 52 (5,028.0001), 53 (3,028.0004), 54 (1,028.0001), 56 (8,028.0001), 122 (6,029.0002)
+- **Bin 33 (0.66000, 0.68000) [dark orange]**: 55 (3,028.0001)
+
+### Total False Positive Hard (OK, misclassified) samples: 3
+---------- Samples in False Positive Hard (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [dark red]**: 78 (6,014.0001), 80 (9,020.0004)
+- **Bin 29 (0.58000, 0.60000) [dark red]**: 79 (7,014.0001)
+
+### Total False Negative Hard (NOK, misclassified) samples: 0
+---------- Samples in False Negative Hard (NOK, misclassified) bins ----------
+
+### Total True Negative Soft (OK, correct) samples: 1
+---------- Samples in True Negative Soft (OK, correct) bins ----------
+- **Bin 26 (0.52000, 0.54000) [light green]**: 96 (9,007.0004)
+
+### Total True Positive Soft (NOK, correct) samples: 0
+---------- Samples in True Positive Soft (NOK, correct) bins ----------
+
+### Total False Positive Soft (OK, misclassified) samples: 4
+---------- Samples in False Positive Soft (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [light red]**: 57 (12,018.0004), 61 (1,016.0002), 68 (12,009.0004), 97 (12,024.0004)
+
+### Total False Negative Soft (NOK, misclassified) samples: 0
+---------- Samples in False Negative Soft (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0020 (DB = 0.5375)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+
+<<<<<<<<<<<< ANOMALY SCORE DISTRIBUTION ADVANCE 2 (GIVEN vs PRED) >>>>>>>>>>>>
+
+(Using '100%' OK of train
+
+Creating anomaly score distribution plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / test...
+## Bin details for Anomaly Score Distribution Advance 2 (100% OK of train) 
+-------------------------
+### Total True Negative Hard (OK, correct) samples: 86
+---------- Samples in True Negative Hard (OK, correct) bins ----------
+- **Bin 18 (0.36000, 0.38000) [dark green]**: 3 (6,001.0001), 23 (8,005.0001), 88 (1,011.0003), 108 (5,025.0004), 125 (7,004.0001)
+- **Bin 19 (0.38000, 0.40000) [dark green]**: 2 (5,001.0002), 9 (11,015.0001), 12 (4,015.0002), 13 (5,015.0001), 17 (6,019.0002), 18 (5,019.0001), 19 (12,019.0002), 22 (5,005.0004), 25 (6,005.0002), 30 (9,002.0001), 35 (9,002.0003), 62 (12,012.0001), 64 (10,012.0004), 70 (7,010.0001), 82 (6,021.0002), 83 (6,017.0001), 84 (8,011.0002), 85 (6,011.0002), 99 (8,006.0001), 106 (3,025.0003), 107 (10,025.0003), 112 (6,003.0002), 113 (9,022.0001), 115 (10,022.0002), 126 (6,004.0002), 127 (5,023.0004)
+- **Bin 20 (0.40000, 0.42000) [dark green]**: 10 (3,015.0004), 11 (2,015.0002), 20 (8,005.0004), 24 (12,005.0002), 26 (4,005.0002), 27 (8,002.0004), 31 (1,002.0004), 32 (10,002.0003), 65 (4,012.0002), 67 (2,012.0004), 72 (2,010.0002), 81 (3,021.0001), 89 (9,008.0001), 100 (10,006.0001), 101 (9,006.0001), 102 (8,006.0002), 103 (2,006.0003), 110 (12,003.0001), 111 (12,003.0002), 114 (9,022.0002), 118 (10,013.0003), 121 (10,013.0004), 124 (2,004.0002), 128 (10,023.0001)
+- **Bin 21 (0.42000, 0.44000) [dark green]**: 1 (3,001.0001), 16 (8,019.0003), 21 (8,005.0003), 34 (11,002.0004), 63 (3,012.0002), 66 (8,012.0003), 87 (7,011.0002), 91 (12,008.0002), 105 (2,025.0003), 116 (7,022.0003)
+- **Bin 22 (0.44000, 0.46000) [dark green]**: 0 (1,001.0001), 28 (3,002.0002), 33 (7,002.0003), 69 (7,010.0002), 71 (1,010.0001), 86 (3,011.0002), 95 (5,007.0003), 109 (3,003.0002), 123 (2,004.0004)
+- **Bin 23 (0.46000, 0.48000) [dark green]**: 90 (7,008.0004), 94 (5,007.0001), 98 (6,006.0003), 117 (1,013.0003), 119 (12,013.0001), 120 (3,013.0001)
+- **Bin 24 (0.48000, 0.50000) [dark green]**: 92 (12,007.0002), 93 (8,007.0002), 104 (1,025.0002)
+- **Bin 25 (0.50000, 0.52000) [dark green]**: 29 (1,002.0002)
+- **Bin 26 (0.52000, 0.54000) [dark green]**: 14 (9,015.0004), 15 (12,015.0004)
+
+### Total True Positive Hard (NOK, correct) samples: 35
+---------- Samples in True Positive Hard (NOK, correct) bins ----------
+- **Bin 26 (0.52000, 0.54000) [dark orange]**: 48 (11,026.0003), 73 (10,033.0004)
+- **Bin 27 (0.54000, 0.56000) [dark orange]**: 6 (12,027.0003), 50 (6,026.0004), 74 (3,033.0004), 75 (1,033.0003)
+- **Bin 28 (0.56000, 0.58000) [dark orange]**: 8 (10,027.0001), 46 (8,032.0001), 76 (2,033.0003)
+- **Bin 29 (0.58000, 0.60000) [dark orange]**: 7 (3,027.0003), 47 (12,032.0001), 49 (6,026.0003), 77 (7,033.0002)
+- **Bin 30 (0.60000, 0.62000) [dark orange]**: 4 (6,027.0003), 36 (6,030.0002), 37 (9,030.0001), 38 (1,030.0003), 39 (3,030.0003), 40 (10,030.0004), 42 (10,030.0003), 43 (11,030.0001), 45 (12,032.0002), 51 (1,026.0002), 60 (4,031.0002)
+- **Bin 31 (0.62000, 0.64000) [dark orange]**: 5 (1,027.0002), 41 (2,030.0001), 44 (7,030.0003), 58 (3,031.0001), 59 (7,031.0002)
+- **Bin 32 (0.64000, 0.66000) [dark orange]**: 52 (5,028.0001), 53 (3,028.0004), 54 (1,028.0001), 56 (8,028.0001), 122 (6,029.0002)
+- **Bin 33 (0.66000, 0.68000) [dark orange]**: 55 (3,028.0001)
+
+### Total False Positive Hard (OK, misclassified) samples: 3
+---------- Samples in False Positive Hard (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [dark red]**: 78 (6,014.0001), 80 (9,020.0004)
+- **Bin 29 (0.58000, 0.60000) [dark red]**: 79 (7,014.0001)
+
+### Total False Negative Hard (NOK, misclassified) samples: 0
+---------- Samples in False Negative Hard (NOK, misclassified) bins ----------
+
+### Total True Negative Soft (OK, correct) samples: 1
+---------- Samples in True Negative Soft (OK, correct) bins ----------
+- **Bin 26 (0.52000, 0.54000) [light green]**: 96 (9,007.0004)
+
+### Total True Positive Soft (NOK, correct) samples: 0
+---------- Samples in True Positive Soft (NOK, correct) bins ----------
+
+### Total False Positive Soft (OK, misclassified) samples: 4
+---------- Samples in False Positive Soft (OK, misclassified) bins ----------
+- **Bin 27 (0.54000, 0.56000) [light red]**: 57 (12,018.0004), 61 (1,016.0002), 68 (12,009.0004), 97 (12,024.0004)
+
+### Total False Negative Soft (NOK, misclassified) samples: 0
+---------- Samples in False Negative Soft (NOK, misclassified) bins ----------
+
+DB delta OK (100% OK of train): 0.0020 (DB = 0.5375)
+
+Anomaly score distribution plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+
+<<<<<<<<<<<< PAIR PLOT >>>>>>>>>>>>
+
+> Creating pair plot for [ws_ls1_(ctrl+E1)]-IF_fdet_7 / test...
+
+Pair plot logged at C:\AFD\fault_detection\logs\asml\NXE\full_wafer\train\ws_ls1\ctrl\set_E1\IF\tswp_4\[ws_ls1_(ctrl+E1)]-IF_fdet_7\test
+
+
+===========================================================================
+
+Fault detection model '[ws_ls1_(ctrl+E1)]-IF_fdet_7' training completed.
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-10-30 12:59:00

@@ -56,6 +56,7 @@ class FaultDetectorInferConfig:
             # 'anomaly_score_dist_simple-2'   : [False, {'is_pred':False, 'is_log_x': False}],
             'anomaly_score_dist_advance-1'    : [False, {'num': 1, 'is_log_x': False, 'is_log_y': True}],
             'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
+            'anomaly_score_dist_advance-2'    : [True, {'num': 2, 'is_log_x': False, 'is_log_y': False}],
             # 'anomaly_score_dist_advance-2'    : [True, {'num': 2}],
             'pair_plot'                     : [True, {}],
         }
