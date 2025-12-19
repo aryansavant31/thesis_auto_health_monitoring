@@ -61,7 +61,7 @@ class DataConfig:
         self.machine_type = 'M005'
         self.scenario = 'scene_1'
 
-        self.signal_types = MSDGroupMaker().m005_m4_vel
+        self.signal_types = MSDGroupMaker().m005_m4_pos
         
         self.fs = None #np.array([[48000]])    # sampling frequency matrix, set in the data.prep.py
         self.format = 'hdf5'  # options: hdf5
@@ -92,20 +92,20 @@ class DataConfig:
     def set_train_dataset(self):
         # key: [get_augment_config('OG')] for key in self.view.healthy_types if key.startswith(self.set_id)
         e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][:100]
-        ds_keys_ok = [f"ok_ds_{i}" for i in range(1, 26)] # if int(key.split("_")[1]) in ds_nums]
+        ds_keys_ok = [f"ok_ds_{i}" for i in range(1, 101)] # if int(key.split("_")[1]) in ds_nums]
 
         self.healthy_configs   = {
             # '0_N': [get_augment_config('OG')],
             # '1_N': [get_augment_config('OG')],
             # 'series_tp': [get_augment_config('OG')]  
-            #key: [get_augment_config('OG')] for key in ds_keys_ok
+            key: [get_augment_config('OG')] for key in ds_keys_ok
             # 'ds_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_2': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_3': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_4': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             # 'ds_5': [get_augment_config('OG')],
 
-            key: [get_augment_config('OG')] for key in e1_keys
+            #key: [get_augment_config('OG')] for key in e1_keys
             #key: [get_augment_config('gau', mean=0, snr_db=6)] for key in e1_keys
 
         }
@@ -118,14 +118,14 @@ class DataConfig:
         e1_keys_nok = [key for key in self.view.unhealthy_types if key.startswith('(sim)_E1')][:10]
 
 
-        top_faults = ['5', '6', '7', '3', '8', '9', '10']
+        top_faults = ['5', '6', '7', '4', '8', '9', '10']
         ds_keys_top_nok = [f"top_add_{i}_ds_{j}" for i in top_faults for j in range(1, 3)]
         ds_keys_mod_nok = [f"mod_4_f{i}_ds_1" for i in range(1, 5)]
         self.unhealthy_configs = {
 
-            key : value for key, value in zip(e1_keys_nok, f.ammf_ctrl_faults(2))
+            #key : value for key, value in zip(e1_keys_nok, f.ammf_ctrl_faults(2))
             
-            #key: [get_augment_config('OG')] for key in ds_keys_mod_nok
+            key: [get_augment_config('OG')] for key in ds_keys_mod_nok
             # 'ds_1_top_mod_fault_1': [get_augment_config('OG')],
             #'ds_1_mod_fault_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             #'0_B-007': [get_augment_config('OG')],
@@ -191,7 +191,7 @@ class DataConfig:
         ds_keys_ok = [f"ok_ds_{i}" for i in range(101, 141)]
         self.healthy_configs   = {
             #"ds_12": [get_augment_config('OG')],
-            key: [get_augment_config('OG')] for key in ds_keys_ok
+            #key: [get_augment_config('OG')] for key in ds_keys_ok
             #'ds_5': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],
             #'0_N': [get_augment_config('OG')], 
             #'series_tp': [get_augment_config('OG')]  
@@ -210,7 +210,8 @@ class DataConfig:
         ds_keys_mod_nok = [f"mod_5_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
 
         self.unhealthy_configs = {
-            key: [get_augment_config('OG')] for key in ds_keys_mod_nok
+            'top_add_10_ds_3': [get_augment_config('OG')]
+            #key: [get_augment_config('OG')] for key in ds_keys_mod_nok
             #key : value for key, value in zip(e1_keys_nok, all_ctrl_l4_faults)
             # 'top_add_10_ds_1': [get_augment_config('OG')],
             #'series_intcon_fault_l1': [get_augment_config('OG')]  
@@ -405,9 +406,9 @@ class DataSweep:
         #                      MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
         #                      MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
         #                      #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
-        self.signal_types = [MSDGroupMaker().m005_m4_vel]
-        self.window_length = [1100]
-        self.stride = [1100]
+        self.signal_types = [MSDGroupMaker().m005_all]
+        self.window_length = [100]
+        self.stride = [100]
 
 
         if self.run_type == 'train':
@@ -446,9 +447,10 @@ class DataSweep:
             e1_keys = [key for key in self.view.healthy_types if key.startswith('E1')][100:]
             ds_keys_ok = [f"ok_ds_{i}" for i in range(101, 141)]
             self.healthy_configs = [
+                {}
                 #{key: [get_augment_config('OG')] for key in ds_keys_ok}
             #     # no noise
-                  {key: [get_augment_config('OG')] for key in e1_keys}
+                  #{key: [get_augment_config('OG')] for key in e1_keys}
             #     #{'ds_5': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37),
             #               #get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=41), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=40)],}
 
@@ -466,7 +468,25 @@ class DataSweep:
             ds_keys_mod_nok = [f"mod_4_f{i}_ds_{j}" for i in range(1, 5) for j in range(2, 5)]
 
             self.unhealthy_configs = [
+
+                # # healthy top, seen
+                # {'ds_1': [get_augment_config('OG')]},
+                
+                # # seen topologyies, seen traj
+                # {'top_add_1_ds_1': [get_augment_config('OG')]},
                 # {'top_add_2_ds_1': [get_augment_config('OG')]},
+                # {'top_add_3_ds_1': [get_augment_config('OG')]},
+                # {'top_add_4_ds_1': [get_augment_config('OG')]},
+                # {'top_add_5_ds_1': [get_augment_config('OG')]},
+                # {'top_add_6_ds_1': [get_augment_config('OG')]},
+                # {'top_add_7_ds_1': [get_augment_config('OG')]},
+                # {'top_add_8_ds_1': [get_augment_config('OG')]},
+                # {'top_add_9_ds_1': [get_augment_config('OG')]},
+                # {'top_add_10_ds_1': [get_augment_config('OG')]},
+
+                # unseen traj
+                # healthy top, unseen
+                #{'ds_12': [get_augment_config('OG')]},
                 # {'top_add_1_ds_3': [get_augment_config('OG')]},
                 # {'top_add_2_ds_3': [get_augment_config('OG')]},
                 # {'top_add_3_ds_3': [get_augment_config('OG')]},
@@ -476,10 +496,10 @@ class DataSweep:
                 # {'top_add_7_ds_3': [get_augment_config('OG')]},
                 # {'top_add_8_ds_3': [get_augment_config('OG')]},
                 # {'top_add_9_ds_3': [get_augment_config('OG')]},
-                # {'top_add_10_ds_3': [get_augment_config('OG')]},
+                {'top_add_10_ds_3': [get_augment_config('OG')]},
 
                 #{key: [get_augment_config('OG')] for key in ds_keys_mod_nok}
-                {key : value for key, value in zip(e1_keys_nok, f.ammf_ctrl_faults(3))}
+                #{key : value for key, value in zip(e1_keys_nok, f.ammf_ctrl_faults(3))}
 
                 #{'ds_1_mod_fault_1': [get_augment_config('OG'), get_augment_config('gau', mean=0, snr_db=45), get_augment_config('gau', mean=0, snr_db=42), get_augment_config('gau', mean=0, snr_db=36), get_augment_config('gau', mean=0, snr_db=38), get_augment_config('gau', mean=0, snr_db=37)],}
                 # # obvious fault

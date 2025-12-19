@@ -1,0 +1,58 @@
+=== SCRIPT EXECUTION LOG ===
+Script: topology_estimation.multi_infer.py
+Base Name: iswp_3
+Start Time: 2025-11-10 18:27:13
+End Time: 2025-11-10 18:28:08
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26200)
+
+Python Version: 3.12.3 | packaged by conda-forge | (main, Apr 15 2024, 18:20:11) [MSC v.1938 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting nri model inference sweep...
+
+Processing 1 data groups
+
+Data Config Sweep Summary:
+Run type: custom_test
+------------------------------
+Total combinations: 1
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{}]
+  signal_types: 1 values -> [{'node_group_name': 'm005', 'signal_group_name': 'apv', 'group': {'mass_1': ['acc', 'pos', 'vel'], 'mass_2': ['acc', 'pos', 'vel'], 'mass_3': ['acc', 'pos', 'vel'], 'mass_4': ['acc', 'pos', 'vel'], 'mass_5': ['acc', 'pos', 'vel']}, 'subsystems': [[0, 1, 2], [3, 4]]}]
+  stride: 1 values -> [100]
+  unhealthy_configs: 1 values -> [{'ds_12': [{'type': 'OG', 'add_next': False}]}]
+  window_length: 1 values -> [100]
+
+Parameter Sweep Summary:
+Total combinations: 2
+
+Parameters and their values:
+  batch_size: 1 values -> [50]
+
+Number of models selected: 2
+Selected models are as follows:
+------------------------------
+  Model 1: checkpoints
+  Model 2: checkpoints
+
+Parallelizing 2 nri configurations across 8 workers...
+
+Since running configs sequenctially, using device: cpu
+  Completed config 1: [m005_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.3/custom_test_1
+  Completed config 2: [m005_(apv+G)]-(E=f_mlp1_og_D=gru)_edge_est_2.4/custom_test_1
+
+===========================================================================
+
+===========================================================================
+
+Nri model 'custom_test' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\topology_estimation\docs\sweep_logs\nri\custom_test_sweeps\iswp_3_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2025-11-10 18:28:08

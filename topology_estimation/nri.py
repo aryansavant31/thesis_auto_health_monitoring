@@ -535,15 +535,19 @@ class NRI(LightningModule):
         # Loss calculation
         # encoder loss
         if self.loss_type_encoder == 'kld':
-            if self.prior is not None:
-                mean_kl_per_edge, mean_kl_per_sample = kl_categorical(edge_pred, self.prior, num_nodes)
-            else:
-                mean_kl_per_edge, mean_kl_per_sample = kl_categorical_uniform(
-                    edge_pred, num_nodes, add_const=self.add_const_kld
-                )
-            loss_encoder = mean_kl_per_sample
+            if self.is_decoder_stabilized:
+                if self.prior is not None:
+                    mean_kl_per_edge, mean_kl_per_sample = kl_categorical(edge_pred, self.prior, num_nodes)
+                else:
+                    mean_kl_per_edge, mean_kl_per_sample = kl_categorical_uniform(
+                        edge_pred, num_nodes, add_const=self.add_const_kld
+                    )
+                loss_encoder = mean_kl_per_sample
 
-        beta = self.beta_scheduler(self.custom_step) if self.is_beta_annealing else 1.0
+                beta = self.beta_scheduler(self.custom_step) if self.is_beta_annealing else 1.0
+            else:
+                loss_encoder = torch.tensor(0.0, device=self.device)
+                beta = 0
 
         # encoder warmup loss
         if self.is_enc_warmup or self.sustain_enc_warmup:  
@@ -631,8 +635,8 @@ class NRI(LightningModule):
             'beta': beta if self.is_beta_annealing else 1.0,
             'gamma': gamma if self.is_enc_warmup else 0.0,
             'temp': temp,
-            'loss_encoder': loss_encoder,
-            'ce_loss_encoder': ce_loss_encoder,
+            'loss_encoder': beta*loss_encoder,
+            'ce_loss_encoder': gamma*ce_loss_encoder,
             'entropy_per_edge': mean_entropy_per_edge,
             'loss_decoder': loss_decoder,
             'loss_decoder_per_node': loss_decoder_per_node,
@@ -1256,20 +1260,29 @@ class NRI(LightningModule):
             "font.family": "serif",
             "mathtext.fontset": "cm",  # Computer Modern math
         })
+        #plt.rcParams['text.usetex'] = True
+        plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}\usepackage{mathrsfs}'
+
+        main_fontsize = 25
+        plt.rcParams['axes.titlesize'] = main_fontsize
+        plt.rcParams['axes.labelsize'] = main_fontsize*0.9
+        plt.rcParams['legend.fontsize'] = main_fontsize*0.8
+        plt.rcParams['xtick.labelsize'] = main_fontsize*0.9
+        plt.rcParams['ytick.labelsize'] = main_fontsize*0.9
 
         # create a figure with 3 subplots in a vertical grid
-        i = 4 if self.train_losses[f'enc/train_warmup_losses'] != [] else 3
-        fig, axes = plt.subplots(i, 2, figsize=(18, i*3), dpi=100) #13
+        i = 3 if self.train_losses[f'enc/train_warmup_losses'] != [] else 2
+        fig, axes = plt.subplots(i, 2, figsize=(20, i*5), dpi=100) #13
 
-        fig.text(
-            0.5,           # x position (0=left, 1=right)
-            0.01,          # y position (0=bottom, 1=top)
-            f"[{self.model_id}]", 
-            ha='center', 
-            va='bottom', 
-            fontsize=7,    # small font size
-            color='gray'
-        )
+        # fig.text(
+        #     0.5,           # x position (0=left, 1=right)
+        #     0.01,          # y position (0=bottom, 1=top)
+        #     f"[{self.model_id}]", 
+        #     ha='center', 
+        #     va='bottom', 
+        #     fontsize=7,    # small font size
+        #     color='gray'
+        # )
 
         j = i
         if self.train_losses[f'enc/train_warmup_losses'] != []:
@@ -1277,40 +1290,75 @@ class NRI(LightningModule):
             val_warmup_steps = [epoch * self.n_steps_per_epoch for epoch in range(1, len(self.train_losses[f'enc/val_warmup_losses']) + 1)] if self.train_losses[f'enc/val_warmup_losses'] != [] else []
 
             # plot encoder warmup losses
+            if hasattr(self, 'dec_stabilize_step'):
+                if self.dec_stabilize_step is not None:
+                    axes[i-j, 0].axvline(
+                        x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                        label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
+                    )
             axes[i-j, 0].plot(train_warmup_steps, self.train_losses[f'enc/train_warmup_losses'], label='train loss', color='purple')
             axes[i-j, 0].plot(val_warmup_steps, self.train_losses[f'enc/val_warmup_losses'], label='val loss', color='magenta', linestyle='--', marker='o', markersize=4)
-            axes[i-j, 0].set_title('Encoder Warmup Losses (CE)')
-            axes[i-j, 0].set_xlabel('Training steps')
-            axes[i-j, 0].set_ylabel('Loss')
+            
+            axes[i-j, 0].set_title(r'$\text{Encoder: Cross-Entropy Loss } \ (\gamma(\nu)\cdot\mathcal{L}_\mathrm{CE})$')
+            axes[i-j, 0].set_xlabel(r'$\text{Training steps } (\nu)$')
+            axes[i-j, 0].set_ylabel(r'$\gamma(\nu)\cdot\mathcal{L}_\mathrm{CE}$')
             axes[i-j, 0].legend()
             axes[i-j, 0].grid(True)
 
+            # if hasattr(self, 'enc_warmup_end_step'):
+            #     if self.enc_warmup_end_step is not None:
+            #         axes[i-j, 0].axvline(
+            #             x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
+            #             label='encoder assist end step'
+            #         )
+
             # plot encoder warmup gamma
+            if hasattr(self, 'dec_stabilize_step'):
+                if self.dec_stabilize_step is not None:
+                    axes[i-j, 1].axvline(
+                        x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                        label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
+                    )
             axes[i-j, 1].plot(train_steps, self.train_gains['enc_warmup_loss/gamma'], label='gamma', color='brown')
-            axes[i-j, 1].set_title('Encoder Warmup Loss Gain (Gamma)')
-            axes[i-j, 1].set_xlabel('Training steps')
-            axes[i-j, 1].set_ylabel('Gamma')
+            axes[i-j, 1].set_title(r'$\text{Gain } \gamma(\nu)$')
+            axes[i-j, 1].set_xlabel(r'$\text{Training steps } (\nu)$')
+            axes[i-j, 1].set_ylabel(r'$\gamma(\nu)$')
             axes[i-j, 1].grid(True)
             axes[i-j, 1].legend()
+            
 
             j -= 1
 
         # plot encoder losses
+        if hasattr(self, 'dec_stabilize_step'):
+                if self.dec_stabilize_step is not None:
+                    axes[i-j, 0].axvline(
+                        x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                        label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
+                    )
         axes[i-j, 0].plot(train_steps, self.train_losses[f'enc/train_losses'], label='train loss', color='olive')
         axes[i-j, 0].plot(val_steps, self.train_losses[f'enc/val_losses'], label='val loss', color='green', linestyle='--', marker='o', markersize=4)
-        axes[i-j, 0].set_title(f'Encoder Losses ({self.loss_type_encoder.upper()})')
-        axes[i-j, 0].set_xlabel('Training steps')
-        axes[i-j, 0].set_ylabel('Loss')
+        axes[i-j, 0].set_title(r'$\text{Encoder: KLD Loss } \ ( )$')
+        axes[i-j, 0].set_xlabel(r'$\text{Training steps } (\nu)$')
+        axes[i-j, 0].set_ylabel(r'$\beta(\nu)\cdot\mathcal{L}_\mathrm{KLD}$')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
+        
 
         # plot encoder beta
+        if hasattr(self, 'dec_stabilize_step'):
+                if self.dec_stabilize_step is not None:
+                    axes[i-j, 1].axvline(
+                        x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                        label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
+                    )
         axes[i-j, 1].plot(train_steps, self.train_gains['enc_loss/beta'], label='beta', color='teal')
-        axes[i-j, 1].set_title('Encoder Loss Gain (Beta)')
-        axes[i-j, 1].set_xlabel('Training steps')
-        axes[i-j, 1].set_ylabel('Beta')
+        axes[i-j, 1].set_title(r'$\text{Gain } \beta(\nu)$')
+        axes[i-j, 1].set_xlabel(r'$\text{Training steps } (\nu)$')
+        axes[i-j, 1].set_ylabel(r'$\beta(\nu)$')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
+        
 
         j -= 1
 
@@ -1321,55 +1369,63 @@ class NRI(LightningModule):
         if hasattr(self, 'dec_stabilize_step'):
             if self.dec_stabilize_step is not None:
                 axes[i-j, 0].axvline(
-                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
-                    label='encoder assist start step'
+                    x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                    label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
                 )
 
-        if hasattr(self, 'enc_warmup_end_step'):
-            if self.enc_warmup_end_step is not None:
-                axes[i-j, 0].axvline(
-                    x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
-                    label='encoder assist end step'
-                )
+        # if hasattr(self, 'enc_warmup_end_step'):
+        #     if self.enc_warmup_end_step is not None:
+        #         axes[i-j, 0].axvline(
+        #             x=self.enc_warmup_end_step, color='red', linestyle=':', linewidth=1.8,
+        #             label='encoder assist end step'
+        #         )
 
-        axes[i-j, 0].set_title(f'Decoder Losses ({self.loss_type_decoder.upper()})')
-        axes[i-j, 0].set_ylabel('Loss (log)')
-        axes[i-j, 0].set_xlabel('Training steps')
+        axes[i-j, 0].set_title(r'$\text{Decoder: Mean Absolute Error Loss } \ (\mathcal{L}_\mathrm{MAE})$')
+        axes[i-j, 0].set_ylabel(r'$\mathcal{L}_\mathrm{MAE} \text{ (log scale)}$')
+        axes[i-j, 0].set_xlabel(r'$\text{Training steps } (\nu)$')
         axes[i-j, 0].set_yscale('log')
         axes[i-j, 0].legend()
         axes[i-j, 0].grid(True)
 
-        # plot decoder gain
-        axes[i-j, 1].plot(train_steps, self.train_gains['dec_loss/alpha'], label='alpha', color='navy')
-        axes[i-j, 1].set_title('Decoder Loss Gain (Alpha)')
-        axes[i-j, 1].set_xlabel('Training steps')
-        axes[i-j, 1].set_ylabel('Alpha')
+        # plot edge accuracy
+        #axes[i-j, 1].plot(train_steps, self.train_gains['dec_loss/alpha'], label='alpha', color='navy')
+        axes[i-j, 1].plot(train_steps, self.train_accuracies[f'enc/train_edge_accuracy'], label='train accuracy', color='green')
+        axes[i-j, 1].plot(val_steps, self.train_accuracies[f'enc/val_edge_accuracy'], label='val accuracy', color='lightgreen', linestyle='--', marker='o', markersize=4)
+        if hasattr(self, 'dec_stabilize_step'):
+            if self.dec_stabilize_step is not None:
+                axes[i-j, 1].axvline(
+                    x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
+                    label=r'$\nu_{\mathscr{D}_\text{stab}} \text{: Phase 2 start}$'
+                )
+        axes[i-j, 1].set_title(r'$\text{Edge Prediction Accuracy } (a)$')
+        axes[i-j, 1].set_xlabel(r'$\text{Training steps } (\nu)$')
+        axes[i-j, 1].set_ylabel(r'a')
         axes[i-j, 1].legend()
         axes[i-j, 1].grid(True)
 
         j -= 1
 
-        # plot nri losses
-        axes[i-j, 0].plot(train_steps, self.train_losses[f'nri/train_losses'], label='train loss', color='red')
-        axes[i-j, 0].plot(val_steps, self.train_losses[f'nri/val_losses'], label='val loss', color='orange', linestyle='--', marker='o', markersize=4)
-        axes[i-j, 0].set_title('NRI Losses (Encoder + Decoder)')
-        axes[i-j, 0].set_ylabel('Loss (log)')
-        axes[i-j, 0].set_xlabel('Training steps')
-        axes[i-j, 0].set_yscale('log')
-        axes[i-j, 0].legend()
-        axes[i-j, 0].grid(True)
+        # # plot nri losses
+        # axes[i-j, 0].plot(train_steps, self.train_losses[f'nri/train_losses'], label='train loss', color='red')
+        # axes[i-j, 0].plot(val_steps, self.train_losses[f'nri/val_losses'], label='val loss', color='orange', linestyle='--', marker='o', markersize=4)
+        # axes[i-j, 0].set_title('NRI Losses (Encoder + Decoder)')
+        # axes[i-j, 0].set_ylabel('Loss (log)')
+        # axes[i-j, 0].set_xlabel('Training steps')
+        # axes[i-j, 0].set_yscale('log')
+        # axes[i-j, 0].legend()
+        # axes[i-j, 0].grid(True)
 
-        # plot nri gain
-        axes[i-j, 1].plot(train_steps, self.train_gains['nri_loss/delta'], label='delta', color='darkred')
-        axes[i-j, 1].set_title('NRI Loss Gain (Delta)')
-        axes[i-j, 1].set_ylabel('Delta')
-        axes[i-j, 1].set_xlabel('Training steps')
-        axes[i-j, 1].legend()
-        axes[i-j, 1].grid(True)
+        # # plot nri gain
+        # axes[i-j, 1].plot(train_steps, self.train_gains['nri_loss/delta'], label='delta', color='darkred')
+        # axes[i-j, 1].set_title('NRI Loss Gain (Delta)')
+        # axes[i-j, 1].set_ylabel('Delta')
+        # axes[i-j, 1].set_xlabel('Training steps')
+        # axes[i-j, 1].legend()
+        # axes[i-j, 1].grid(True)
 
-        fig.suptitle(f"Train and Validation Losses", fontsize=15) # 15
+        #fig.suptitle(f"Train and Validation Losses", fontsize=15) # 15
         # adjust subplot spacing to prevent label overlap
-        plt.subplots_adjust(left=0.08, bottom=0.08, right=0.95, top=0.91, wspace=0.2, hspace=0.55)
+        plt.subplots_adjust(left=0.1, bottom=0.08, right=0.95, top=0.91, wspace=0.35, hspace=0.8)
 
         # save loss plot if logger is avaialble
         if self.logger:
@@ -1418,7 +1474,7 @@ class NRI(LightningModule):
         if hasattr(self, 'dec_stabilize_step'):
             if self.dec_stabilize_step is not None:
                 plt.axvline(
-                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
+                    x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
                     label='encoder assist start step'
                 )
         if hasattr(self, 'enc_warmup_end_step'):
@@ -1483,7 +1539,7 @@ class NRI(LightningModule):
         if hasattr(self, 'dec_stabilize_step'):
             if self.dec_stabilize_step is not None:
                 plt.axvline(
-                    x=self.dec_stabilize_step, color='black', linestyle=':', linewidth=1.8,
+                    x=self.dec_stabilize_step, color='red', linestyle=':', linewidth=1.8,
                     label='encoder assist start step'
                 )
         if hasattr(self, 'enc_warmup_end_step'):
@@ -1537,8 +1593,8 @@ class NRI(LightningModule):
             print(f"\nCreating decoder output plot for {subsystem} for rep '{rep_num[sample_idx]:,.4f}' for {self.model_id}...")
 
         # apply inverse transform to get back to original data space
-        # if self.decoder.raw_data_normalizer:
-        #     x_pred, target = self.apply_inverse_transform(x_pred, target)
+        if self.decoder.raw_data_normalizer:
+            x_pred, target = self.apply_inverse_transform(x_pred, target)
 
         # convert tensors to numpy arrays for plotting
         x_pred = x_pred.detach().cpu().numpy()
@@ -1557,14 +1613,13 @@ class NRI(LightningModule):
 
         # update font settings for plots
         plt.rcParams.update({
-            "text.usetex": False,   # No external LaTeX
+            "text.usetex": True,   # No external LaTeX
             "font.family": "serif",
             "mathtext.fontset": "cm",  # Computer Modern math
-            "font.size": 14,
-            'legend.fontsize': 10
         })
+        plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath} \usepackage{amssymb}'
 
-        subplot_fontsize = max(14, int(12 - 0.5 * (n_nodes + n_dims) / 2))
+        subplot_fontsize = max(22, int(12 - 0.5 * (n_nodes + n_dims) / 2))
         suptitle_fontsize = subplot_fontsize + 2
         
         # create figure with subplots for each node and dimension
@@ -1573,18 +1628,20 @@ class NRI(LightningModule):
             axes = np.expand_dims(axes, axis=0)  # ensure axes is 2D for consistent indexing
         if n_dims == 1:
             axes = np.expand_dims(axes, axis=1)
+        
+        fig.patch.set_alpha(0)
 
-        fig.suptitle(f"Output Trajectories of {subsystem} ({" ".join(type.capitalize().split('_'))} data)", fontsize=suptitle_fontsize, y=0.98)
+        #fig.suptitle(f"Output Trajectories of {subsystem} ({" ".join(type.capitalize().split('_'))} data)", fontsize=suptitle_fontsize, y=0.98)
         plt.tight_layout(rect=[0, 0, 0.93, 0.99])
-        fig.text(
-            0.5,           # x position (0=left, 1=right)
-            0.01,          # y position (0=bottom, 1=top)
-            f"(Sample {rep_num[sample_idx]:,.4f}): [{self.model_id}]", 
-            ha='center', 
-            va='bottom', 
-            fontsize=6,    # small font size
-            color='gray'
-        )
+        # fig.text(
+        #     0.5,           # x position (0=left, 1=right)
+        #     0.01,          # y position (0=bottom, 1=top)
+        #     f"(Sample {rep_num[sample_idx]:,.4f}): [{self.model_id}]", 
+        #     ha='center', 
+        #     va='bottom', 
+        #     fontsize=6,    # small font size
+        #     color='gray'
+        # )
 
         cmap = plt.cm.Paired  # or plt.cm.tab20, plt.cm.Set2, etc.
         num_colors = cmap.N // 2  # Number of color pairs available 
@@ -1594,6 +1651,9 @@ class NRI(LightningModule):
 
             for dim in range(n_dims):
                 ax = axes[node, dim]
+
+                # ax.locator_params(axis='x', nbins=4, tight=True)
+                # ax.locator_params(axis='y', nbins=3, tight=True)
 
                 # extract data for the current node and dim
                 timesteps = np.arange(n_comps)
@@ -1610,18 +1670,18 @@ class NRI(LightningModule):
                 color_pred = cmap((dim * 2 + 1) / cmap.N)
 
                 # Ground truth: dotted, lighter
-                ax.plot(timesteps, gt, label="ground truth", color=color_gt, linestyle=":", linewidth=2, alpha=1)
+                ax.plot(timesteps, gt, label=r"$\mathbb{S}_{+} \text{ (ground truth)}$", color=color_gt, linestyle=":", linewidth=2, alpha=1)
                 # Prediction: solid, more opaque
-                ax.plot(timesteps, pred, label="prediction", color=color_pred, linestyle="-", alpha=1.0)
+                ax.plot(timesteps, pred, label=r"$\hat{\mathbb{S}}_{+} \text{ (prediction)}$", color=color_pred, linestyle="-", alpha=1.0)
 
                 prediction_start_step = n_comps - self.decoder.final_pred_steps if self.decoder.is_burn_in else 0
                 if prediction_start_step > 0:
-                    ax.axvline(x=prediction_start_step - 1, color='red', linestyle=':', label='start of prediction', linewidth=1.8)
+                    ax.axvline(x=prediction_start_step - 1, color='red', linestyle=':', label=fr'$n_b = {prediction_start_step}$', linewidth=1.8)
 
                 if self.decoder.show_conf_band:
                     ax.fill_between(timesteps, conf_band_lower, conf_band_upper, color=color_pred, alpha=0.2, label="relative confidence")
 
-                ax.set_xlabel("timesteps")
+                ax.set_xlabel(r"$\text{timesteps } n$")
                 if dim_names[dim] == "acc":
                     unit = " (m/s²)"
                     measurement = "Acceleration"
@@ -1635,18 +1695,58 @@ class NRI(LightningModule):
                     unit = ""
                 ax.set_ylabel(f"{dim_names[dim]}{unit}")
                 ax.legend(loc="upper right")
-                ax.set_title(f"{" ".join(node_names[node].capitalize().split('_'))} ({measurement} v/s Timesteps)", fontsize=subplot_fontsize)
+
+                # Convert node name like 'mass_1' to 'Module 1'
+                node_label = node_names[node]
+                if node_label.startswith("mass_"):
+                    module_num = node_label.split("_")[1]
+                    display_name = f"Module {module_num}"
+                else:
+                    display_name = " ".join(node_label.capitalize().split('_'))
+                #ax.set_title(f"{display_name} ({measurement} v/s Timesteps)", fontsize=subplot_fontsize)
+                
                 ax.grid(True)
 
+                # --------- NEW: Save individual node-dim plot as transparent PNG ---------
+                fig_ind, ax_ind = plt.subplots(figsize=(8, 4), dpi=100)
+                fig_ind.patch.set_alpha(0)
+                ax_ind.plot(timesteps, gt, label=r"$\mathbb{S}_{+} \text{ (ground truth)}$", color=color_gt, linestyle=":", linewidth=3.5, alpha=0.8)
+                ax_ind.plot(timesteps, pred, label=r"$\hat{\mathbb{S}}_{+} \text{ (prediction)}$", color=color_pred, linestyle="-", linewidth=4, alpha=1.0)
+                if prediction_start_step > 0:
+                    ax_ind.axvline(x=prediction_start_step - 1, color='red', linestyle=':', label=fr'$n_b = {prediction_start_step}$', linewidth=4)
+                if self.decoder.show_conf_band:
+                    ax_ind.fill_between(timesteps, conf_band_lower, conf_band_upper, color=color_pred, alpha=0.2, label="relative confidence")
+                ax_ind.set_xlabel(r"$n$", fontsize=42)
+                ax_ind.set_ylabel(f"{unit}", fontsize=42)
+                ax_ind.legend(loc="upper right", fontsize=22)
+                ax_ind.grid(True)
+                ax_ind.tick_params(axis='both', labelsize=40)
+
+                # Increase the number of ticks
+                ax_ind.locator_params(axis='x', nbins=5)  # Increase x-axis ticks (adjust nbins as needed)
+                ax_ind.locator_params(axis='y', nbins=4)  # Increase y-axis ticks (adjust nbins as needed)
+                # Optional: set title
+                # ax_ind.set_title(f"{display_name} - {measurement}")
+
+                # Save with transparent background
+                if self.logger:
+                    save_dir = self.logger.log_dir
+                else:
+                    save_dir = "."
+
+                fname = f"dec_output_{display_name}_{dim_names[dim]}.png"
+                fig_ind.savefig(os.path.join(save_dir, fname), dpi=300, bbox_inches='tight', transparent=True)
+                plt.close(fig_ind)
+
         # adjust subplot spacing to prevent label overlap
-        plt.subplots_adjust(left=0.08, bottom=0.12, right=0.95, top=0.88, wspace=0.3, hspace=0.55)
+        plt.subplots_adjust(left=0.08, bottom=0.12, right=0.95, top=0.88, wspace=0.45, hspace=0.6)
 
         # save the plot if logger is available
         if self.logger:
             self.logger.experiment.add_figure(f"{self.tb_tag}/{self.model_id}/{self.run_type}/{subsystem}/decoder_output_plot_{type}", fig, global_step=self.custom_step, close=True)
 
             if is_end:
-                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{subsystem}_{type}_({self.model_id}).png'), dpi=500)
+                fig.savefig(os.path.join(self.logger.log_dir, f'dec_output_{subsystem}_{type}_({self.model_id}).png'), dpi=500, bbox_inches='tight')
                 print(f"\nDecoder output plot for {subsystem} and rep '{rep_num[sample_idx]}' logged at {self.logger.log_dir}\n")
         else:
             if is_end:

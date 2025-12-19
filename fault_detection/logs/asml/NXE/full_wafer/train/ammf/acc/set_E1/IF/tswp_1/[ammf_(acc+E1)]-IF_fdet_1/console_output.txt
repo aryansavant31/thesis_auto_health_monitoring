@@ -130,7 +130,7 @@ Dataset selections:
   (104) (sim)_E1_set01_M=mAS23    : [glitch(prob=0.03, std_fac=1.9, add_next=True), sine(freqs=[1, 2, 3], std_facs=[1.7, 1.9, 2], add_next=False)]
   (105) (sim)_E1_set01_M=mBF92    : [glitch(prob=0.02, std_fac=1.5, add_next=True), sine(freqs=[1, 2, 4], std_facs=[1.8, 2, 1.9], add_next=False)]
   (106) (sim)_E1_set01_M=mBH22    : [glitch(prob=0.05, std_fac=1.9, add_next=True), sine(freqs=[1, 3, 5, 7], std_facs=[1.6, 2.1, 1.8, 1.9], add_next=False)]
-  (107) (sim)_E1_set01_M=mBI93    : [glitch(prob=0.07, std_fac=2, add_next=True), sine(freqs=[3, 2], std_facs=[1.8, 2], add_next=False)]
+  (107) (sim)_E1_set01_M=mBI93    : [glitchfse(prob=0.07, std_fac=2, add_next=True), sine(freqs=[3, 2], std_facs=[1.8, 2], add_next=False)]
   (108) (sim)_E1_set01_M=mBJ96    : [glitch(prob=0.08, std_fac=1.8, add_next=True), sine(freqs=[2, 4], std_facs=[1.8, 1.5], add_next=False)]
   (109) (sim)_E1_set01_M=mBK70    : [glitch(prob=0.09, std_fac=2.2, add_next=True), sine(freqs=[2, 4, 5], std_facs=[2, 1.8, 1.5], add_next=False)]
   (110) (sim)_E1_set01_M=mBN34    : [glitch(prob=0.03, std_fac=1.9, add_next=True), sine(freqs=[1, 2, 3], std_facs=[1.7, 1.9, 2], add_next=False)]

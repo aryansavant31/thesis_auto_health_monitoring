@@ -53,8 +53,8 @@ class FaultDetectorTrainConfig:
         self.data_config = data_config
 
     # 1: Training parameters
-        self.model_num = 1
-        self.train_sweep = 5
+        self.model_num = 86
+        self.train_sweep = 0
         self.is_log = True
 
         # dataset parameters
@@ -83,10 +83,8 @@ class FaultDetectorTrainConfig:
     # Input process parameters
         self.domain_config = get_domain_config('time+freq')
         self.raw_data_norm = None
-        self.domain_config = get_domain_config('time+freq')
-        self.raw_data_norm = None
         self.feat_configs = [
-            get_freq_feat_config('first_n_modes', n_modes=2),
+            get_freq_feat_config('first_n_modes', n_modes=4),
             # obvious fault feat
             # get_time_feat_config('rms'),
             # get_time_feat_config('wilson_amplitude'),
@@ -113,13 +111,11 @@ class FaultDetectorTrainConfig:
         ] 
         self.reduc_config = None
         self.feat_norm = 'std'
-        self.feat_norm = 'std'
 
     # Feature selection parameters
         self.feat_selector_config = get_reduc_config('LDA', n_comps=1)  # feature selection config
-        self.feat_selector_config = get_reduc_config('LDA', n_comps=1)  # feature selection config
         self.n_splits = 5  # number of splits for feature selection
-        self.n_feats = 6  # number of features to select
+        self.n_feats = 13  # number of features to select
 
     # 3: Hyperparameters and plots
         self.hparams = self.get_hparams()

@@ -351,7 +351,7 @@ class NRITrainConfig:
 
     # 1: Training parameters   
 
-        self.model_num = 3 # 2 raw time data, 3 psd feats, 4 time feats
+        self.model_num = 31 # 2 raw time data, 3 psd feats, 4 time feats
         self.continue_training = False
         self.is_log = True
         self.train_sweep = 4.3 # 3.1 - mse loss # 2 - using some possible configuration, 3 - most of tp config
@@ -390,10 +390,10 @@ class NRITrainConfig:
         self.is_enc_warmup = True       # if True, then only train encoder with cross entrop loss until accuracy reaches warmup_acc_cutoff
 
         # if encoder warmup is True
-        self.warmup_acc_cutoff = 0.99   # accuracy cutoff for encoder warmup
+        self.warmup_acc_cutoff = 1.1   # accuracy cutoff for encoder warmup
         self.sustain_enc_warmup = True  # if True, then re-enable encoder warmup if edge accuracy drops below cutoff during training
         self.final_gamma = 1
-        self.warmup_frac_gamma = 0.01    # fraction of total steps for warmup
+        self.warmup_frac_gamma = 0.1    # fraction of total steps for warmup
 
         self.dec_loss_stabilize_steps = 80  # Number of steps with constant loss to consider decoder stabilized
         self.dec_loss_bound_update_interval = 5  # Interval (in steps) to update loss bounds. Less value means more frequent updates.

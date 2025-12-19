@@ -510,7 +510,14 @@ class TrainerFaultDetector:
         best_db_ok, best_db_nok, best_db = -1, -1, -1
         best_thresh = None
 
-        for thresh in np.linspace(val_df['scores'].min(), val_df['scores'].max(), num=200):
+        # Store values for plotting
+        tau_values = np.linspace(val_df['scores'].min(), val_df['scores'].max(), num=200)
+        f1_scores = []
+        db_combineds = []
+        precisions = []
+        recalls = []
+
+        for thresh in tau_values:
 
             filtered_df['pred_label'] = np.where(filtered_df['scores'] > thresh, -1, 1)  # -1 for anomaly, 1 for normal
 
@@ -522,6 +529,12 @@ class TrainerFaultDetector:
             db_delta_ok = thresh - mean_ok_score
             db_delta_nok = mean_nok_score - thresh
             db_combined = min(db_delta_ok, db_delta_nok)
+
+            # Store for plot
+            f1_scores.append(metrics['f1_score'])
+            db_combineds.append(db_combined)
+            precisions.append(metrics['precision'])
+            recalls.append(metrics['recall'])
 
             if (metrics['f1_score'] > best_f1) or (metrics['f1_score'] == best_f1 and db_combined > best_db):
                 best_f1 = metrics['f1_score']
@@ -537,6 +550,100 @@ class TrainerFaultDetector:
         print(f"\nBest threshold: {best_thresh:.4f} with db_ok: {best_db_ok:.4f}")
         print(f"Validation Precision: {best_precison:.4f}, Recall: {best_recall:.4f}, F1-Score: {best_f1:.4f}")
 
+        # --- Plot threshold tuning ---
+        import matplotlib.pyplot as plt
+
+        main_fontsize = 28
+
+        tau_f1_star_idx = np.argmax(f1_scores)
+        tau_f1_star = tau_values[tau_f1_star_idx]
+        tau_star = best_thresh
+
+        plt.rcParams.update({
+            "font.family": "serif",
+            "font.serif": ["Times New Roman"],
+            "mathtext.fontset": "cm",
+        })
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 9), dpi=120, sharex=True, gridspec_kw={'height_ratios': [2, 1]})
+
+        # --- Top: F1 score ---
+        ax1.plot(tau_values, f1_scores, color='tab:orange', label=r"$F_1(\tau)$", linewidth=2)
+        ax1.axvline(tau_f1_star, color='purple', linestyle=':', linewidth=2.5, label=r"$\tau^\ast_{F_1}$")
+        ax1.text(tau_f1_star+0.001, min(f1_scores)+0.001, rf"$\tau^\ast_{{F_1}} = {tau_f1_star:.2f}$", color='purple', fontsize=main_fontsize*0.75, ha='left', va='bottom', alpha=0.85)
+        # Big dot at max F1
+        ax1.scatter(tau_f1_star, f1_scores[tau_f1_star_idx], color='tab:orange', s=180, zorder=5, alpha=0.85)
+        ax1.text(
+            tau_f1_star - 0.03 * (tau_values[-1] - tau_values[0]),  # a bit to the left
+            f1_scores[tau_f1_star_idx],
+            rf"$\text{{max }} F_1(\tau^*_{{F_1}})$", # ={tau_f1_star:.2f}
+            color='tab:orange', fontsize=main_fontsize*0.75, ha='right', va='center', alpha=0.85
+        )
+        ax1.set_ylabel(r"$F_1(\tau)$", fontsize=main_fontsize)
+        ax1.set_title(r"Stage 1: Maximization of F$_1$-score", fontsize=main_fontsize-1)
+        ax1.legend(fontsize=main_fontsize*0.6)
+        ax1.grid(True, which='both', linestyle='--', alpha=0.3)
+
+        # --- Bottom: db_combined ---
+        # Before tau_f1_star: dotted, low alpha
+        ax2.plot(
+            tau_values[:tau_f1_star_idx+1], db_combineds[:tau_f1_star_idx+1],
+            color='tab:blue', linestyle=':', linewidth=2, alpha=0.4
+        )
+        # After (and at) tau_f1_star: solid, normal alpha
+        ax2.plot(
+            tau_values[tau_f1_star_idx:], db_combineds[tau_f1_star_idx:],
+            color='tab:blue', linestyle='-', linewidth=2, alpha=1.0, label=r"$\Delta_\text{min}(\tau)$"
+        )
+        ax2.axvline(tau_star, color='green', linestyle=':', linewidth=2.5, label=r"$\tau^\ast$")
+        ax2.text(tau_star+0.001, min(db_combineds)+0.001, rf"$\tau^\ast = {tau_star:.2f} \text{{ (final)}}$", color='green', fontsize=main_fontsize*0.75, ha='left', va='bottom', alpha=0.85)
+        # Big dot at max Delta_min after tau_f1_star
+        db_post_f1 = db_combineds[tau_f1_star_idx:]
+        tau_post_f1 = tau_values[tau_f1_star_idx:]
+        max_db_idx = np.argmax(db_post_f1)
+        max_db_val = db_post_f1[max_db_idx]
+        max_db_tau = tau_post_f1[max_db_idx]
+        ax2.scatter(max_db_tau, max_db_val, color='tab:blue', s=180, zorder=5, alpha=0.85)
+        ax2.text(
+            max_db_tau - 0.03 * (tau_values[-1] - tau_values[0]),  # a bit to the left
+            max_db_val,
+            r"max $\Delta_\text{min}$" + rf"$(\tau \geq \tau^*_{{F_1}})$", # {max_db_tau:.2f}
+            color='tab:blue', fontsize=main_fontsize*0.75, ha='right', va='center', alpha=0.85
+        )
+        ax2.set_ylabel(r"$\Delta_\text{min}(\tau)$", fontsize=main_fontsize)
+        ax2.set_xlabel(r"$\tau$", fontsize=main_fontsize)
+        ax2.set_title(r"Stage 2: Maximization of Class Separation", fontsize=main_fontsize-0.5)
+        ax2.legend(fontsize=main_fontsize*0.6)
+        ax2.grid(True, which='both', linestyle='--', alpha=0.3)
+
+        ax1.tick_params(axis='both', labelsize=main_fontsize*0.9, width=2, length=8)  # Top plot
+        ax2.tick_params(axis='both', labelsize=main_fontsize*0.9, width=2, length=8)  # Bottom plot
+
+        # --- Mark Stage 1 and Stage 2 regions ---
+        # Shade Stage 1 (min tau to tau_f1_star)
+        # ax1.axvspan(tau_values[0], tau_f1_star, color='grey', alpha=0.08, zorder=0)
+        # ax2.axvspan(tau_values[0], tau_f1_star, color='grey', alpha=0.08, zorder=0)
+        # # Shade Stage 2 (tau_f1_star to max tau)
+        # ax1.axvspan(tau_f1_star, tau_values[-1], color='yellow', alpha=0.10, zorder=0)
+        # ax2.axvspan(tau_f1_star, tau_values[-1], color='yellow', alpha=0.10, zorder=0)
+
+        # Add text labels for stages
+        # y1 = max(f1_scores) - 0.05 * (max(f1_scores) - min(f1_scores))
+        # y2 = max(db_combineds) - 0.05 * (max(db_combineds) - min(db_combineds))
+        # ax1.text((tau_values[0] + tau_f1_star) / 2, y1, "Stage 1", color='black', fontsize=main_fontsize*0.7, ha='center', va='bottom', alpha=0.7)
+        # ax1.text((tau_f1_star + tau_values[-1]) / 2, y1, "Stage 2", color='black', fontsize=main_fontsize*0.7, ha='center', va='bottom', alpha=0.7)
+        # ax2.text((tau_values[0] + tau_f1_star) / 2, y2, "Stage 1", color='black', fontsize=main_fontsize*0.7, ha='center', va='bottom', alpha=0.7)
+        # ax2.text((tau_f1_star + tau_values[-1]) / 2, y2, "Stage 2", color='black', fontsize=main_fontsize*0.7, ha='center', va='bottom', alpha=0.7)
+
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.3)
+
+        # Save plot
+        if self.logger:
+            plot_path = os.path.join(self.logger.log_dir, "threshold_plot.png")
+            fig.savefig(plot_path, dpi=300)
+            print(f"\nThreshold tuning plot saved at {plot_path}")
+        plt.close(fig)
 
     def get_pred_metrics(self, df, level=None):
         if level is not None:
