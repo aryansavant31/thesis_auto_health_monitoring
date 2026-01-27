@@ -1,0 +1,824 @@
+=== SCRIPT EXECUTION LOG ===
+Script: fault_detection.multi_infer.py
+Base Name: iswp_3
+Start Time: 2026-01-11 17:48:38
+End Time: 2026-01-11 19:10:48
+
+CPU: Intel64 Family 6 Model 154 Stepping 3, GenuineIntel (Cores: 20), Max Frequency: 2300.00 MHz
+GPUs Detected: 1
+GPU 0: NVIDIA GeForce RTX 3050 Ti Laptop GPU, Memory: 4.00 GB
+OS: Windows 11 (10.0.26200)
+
+Python Version: 3.12.3 | packaged by conda-forge | (main, Apr 15 2024, 18:20:11) [MSC v.1938 64 bit (AMD64)]
+========================================================================================================================
+
+
+Starting fault detection model inference sweep...
+
+Processing 12 data groups
+
+Data Config Sweep Summary:
+Run type: predict
+------------------------------
+Total combinations: 12
+
+Parameters and their values:
+  healthy_configs: 1 values -> [{}]
+  signal_types: 12 values -> [{'node_group_name': 'mass_1', 'signal_group_name': 'acc', 'group': {'mass_1': ['acc']}}, {'node_group_name': 'mass_1', 'signal_group_name': 'pos', 'group': {'mass_1': ['pos']}}, {'node_group_name': 'mass_1', 'signal_group_name': 'vel', 'group': {'mass_1': ['vel']}}, {'node_group_name': 'mass_2', 'signal_group_name': 'acc', 'group': {'mass_2': ['acc']}}, {'node_group_name': 'mass_2', 'signal_group_name': 'pos', 'group': {'mass_2': ['pos']}}, {'node_group_name': 'mass_2', 'signal_group_name': 'vel', 'group': {'mass_2': ['vel']}}, {'node_group_name': 'mass_3', 'signal_group_name': 'acc', 'group': {'mass_3': ['acc']}}, {'node_group_name': 'mass_3', 'signal_group_name': 'pos', 'group': {'mass_3': ['pos']}}, {'node_group_name': 'mass_3', 'signal_group_name': 'vel', 'group': {'mass_3': ['vel']}}, {'node_group_name': 'mass_4', 'signal_group_name': 'acc', 'group': {'mass_4': ['acc']}}, {'node_group_name': 'mass_4', 'signal_group_name': 'pos', 'group': {'mass_4': ['pos']}}, {'node_group_name': 'mass_4', 'signal_group_name': 'vel', 'group': {'mass_4': ['vel']}}]
+  stride: 1 values -> [1100]
+  unhealthy_configs: 1 values -> [{'mod_1_f2_ds_3': [{'type': 'OG', 'add_next': False}]}]
+  window_length: 1 values -> [1100]
+Next fault detection infer folder will be: predict_2
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_1)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_1)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_1)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_2)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_2)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_2)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_3)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_3)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Node group mismatch: Model(mass_4) != Data(mass_3)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(acc)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(acc)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(pos)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+> Incompatible model found: [mass_4_(vel+G)]-IF_fdet_40
+Incompatible parameters:
+  - Signal group mismatch: Model(vel) != Data(pos)
+Since model [mass_4_(vel+G)]-IF_fdet_40 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(acc+G)]-IF_fdet_64
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_1_(acc+G)]-IF_fdet_64 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(pos+G)]-IF_fdet_7
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_1_(pos+G)]-IF_fdet_7 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_1_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_1) != Data(mass_4)
+Since model [mass_1_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(acc+G)]-IF_fdet_45
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_2_(acc+G)]-IF_fdet_45 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(pos+G)]-IF_fdet_4
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_2_(pos+G)]-IF_fdet_4 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_2_(vel+G)]-IF_fdet_29
+Incompatible parameters:
+  - Node group mismatch: Model(mass_2) != Data(mass_4)
+Since model [mass_2_(vel+G)]-IF_fdet_29 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(acc+G)]-IF_fdet_47
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_3_(acc+G)]-IF_fdet_47 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(pos+G)]-IF_fdet_30
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_3_(pos+G)]-IF_fdet_30 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_3_(vel+G)]-IF_fdet_55
+Incompatible parameters:
+  - Node group mismatch: Model(mass_3) != Data(mass_4)
+Since model [mass_3_(vel+G)]-IF_fdet_55 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(acc+G)]-IF_fdet_42
+Incompatible parameters:
+  - Signal group mismatch: Model(acc) != Data(vel)
+Since model [mass_4_(acc+G)]-IF_fdet_42 is incompatible, it is skipped...
+
+> Incompatible model found: [mass_4_(pos+G)]-IF_fdet_35
+Incompatible parameters:
+  - Signal group mismatch: Model(pos) != Data(vel)
+Since model [mass_4_(pos+G)]-IF_fdet_35 is incompatible, it is skipped...
+Next fault detection infer folder will be: predict_61
+
+Parameter Sweep Summary:
+Total combinations: 12
+
+Parameters and their values:
+  batch_size: 1 values -> [1]
+  cutoff_freq: 1 values -> [0]
+
+Number of models selected: 12
+Selected models are as follows:
+------------------------------
+  Model 1: [mass_1_(acc+G)]-IF_fdet_64
+  Model 2: [mass_1_(pos+G)]-IF_fdet_7
+  Model 3: [mass_1_(vel+G)]-IF_fdet_55
+  Model 4: [mass_2_(acc+G)]-IF_fdet_45
+  Model 5: [mass_2_(pos+G)]-IF_fdet_4
+  Model 6: [mass_2_(vel+G)]-IF_fdet_29
+  Model 7: [mass_3_(acc+G)]-IF_fdet_47
+  Model 8: [mass_3_(pos+G)]-IF_fdet_30
+  Model 9: [mass_3_(vel+G)]-IF_fdet_55
+  Model 10: [mass_4_(acc+G)]-IF_fdet_42
+  Model 11: [mass_4_(pos+G)]-IF_fdet_35
+  Model 12: [mass_4_(vel+G)]-IF_fdet_40
+
+Parallelizing 12 fault detection configurations across 8 workers...
+  Completed config 7: [mass_3_(acc+G)]-IF_fdet_47/predict_61
+  Completed config 8: [mass_3_(pos+G)]-IF_fdet_30/predict_61
+  Completed config 1: [mass_1_(acc+G)]-IF_fdet_64/predict_2
+  Completed config 5: [mass_2_(pos+G)]-IF_fdet_4/predict_61
+  Completed config 4: [mass_2_(acc+G)]-IF_fdet_45/predict_61
+  Completed config 6: [mass_2_(vel+G)]-IF_fdet_29/predict_61
+  Completed config 3: [mass_1_(vel+G)]-IF_fdet_55/predict_61
+  Completed config 2: [mass_1_(pos+G)]-IF_fdet_7/predict_61
+  Completed config 9: [mass_3_(vel+G)]-IF_fdet_55/predict_61
+  Completed config 10: [mass_4_(acc+G)]-IF_fdet_42/predict_61
+  Completed config 11: [mass_4_(pos+G)]-IF_fdet_35/predict_61
+  Completed config 12: [mass_4_(vel+G)]-IF_fdet_40/predict_61
+
+===========================================================================
+
+===========================================================================
+
+
+{'module': ['mass_3', 'mass_3', 'mass_1', 'mass_2', 'mass_2', 'mass_2', 'mass_1', 'mass_1', 'mass_3', 'mass_4', 'mass_4', 'mass_4'], 'signal_type': ['acc', 'pos', 'acc', 'pos', 'acc', 'vel', 'vel', 'pos', 'vel', 'acc', 'pos', 'vel'], 'score': [-0.04139977303988662, 0.0995161089394826, 0.19257447238657782, -0.07786851756826929, 0.00567119953821027, -0.02439968255097924, 0.15560082453133206, 0.002220257110578272, -0.004512864191183352, 0.12086791725483087, 0.17878140866360354, 0.15574137846226316], 'pred_label': [-1.0, -0.5, 1.0, -1.0, -0.5, -1.0, 1.0, -0.5, -0.5, 1.0, 1.0, 1.0]}
+
+Fault detection model 'predict' sweep completed. Sweep log saved at: C:\Aryan_Savant\Thesis_Projects\my_work\AFD_thesis\fault_detection\docs\sweep_logs\predict_sweeps\iswp_3_output.txt
+
+
+=== EXECUTION COMPLETED ===
+Log saved at: 2026-01-11 19:10:48

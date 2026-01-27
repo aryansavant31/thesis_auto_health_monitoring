@@ -884,9 +884,7 @@ class TrainerFaultDetector:
 
         print('\n' + 75*'-')
 
-        return {'pred_labels': 0, 
-                'scores': 0,
-                'reps': 0} # 0 is placeholder
+        return self.df_machine
     
     def test(self, fault_detector:FaultDetector, test_loader):
         """

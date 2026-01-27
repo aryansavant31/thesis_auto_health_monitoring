@@ -33,29 +33,22 @@ class DataConfig:
         |   |   |   |       |── (edges)
 
         |   |   |   |       |── (nodes)
-        |   |   |   |          |── `timestep_id`
-        |   |   |   |               |── `augment` (N1.25, N2.5)
-        |   |   |   |                   |── `node_type`
-        |   |   |   |                       |── `signal_type`
+        |   |   |   |           |── `node_name`
+        |   |   |   |               |── `signal_type`
 
         Attributes
         ----------
         application : str
             Dataset applications available:
             - BER: Bearing dataset
-            - MSD: Mass-Spring-Damper dataset (fs=1000)
-            - SPP: Spring-Particles dataset
-            - ASM: ASML dataset
+            - MSD: Mass-Spring-Damper dataset
 
         To view rest of the attribute options, run this file directly.
         """
         self.run_type  = run_type  # options: train, custom_test, predict
     
         self.application_map = {'BER':'bearing',
-                                'MSD':'mass_sp_dm',
-                                'SPP':'spring_particles',
-                                'ASM':'asml',
-                                'ASMT':'asml_trial'}
+                                'MSD':'mass_sp_dm'}
         
         self.application = 'MSD'
         self.machine_type = 'M005'
@@ -69,7 +62,7 @@ class DataConfig:
         # segement data
         self.window_length      = 1100
         self.stride             = 1100
-        self.start_from_timestep = 2000  #1000 number of initial samples to chop off from the start of the signal
+        self.start_from_timestep = 2000  # number of initial samples to chop off from the start of the signal
 
         self.use_custom_max_timesteps = False
         self.max_timesteps     = 10000
@@ -401,14 +394,14 @@ class DataSweep:
         self.view = DatasetViewer(DataConfig())
 
 
-        # self.signal_types = [MSDGroupMaker().m005_m1_acc, MSDGroupMaker().m005_m1_pos, MSDGroupMaker().m005_m1_vel,
-        #                      MSDGroupMaker().m005_m2_acc, MSDGroupMaker().m005_m2_pos, MSDGroupMaker().m005_m2_vel,
-        #                      MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
-        #                      MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
-        #                      #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
-        self.signal_types = [MSDGroupMaker().m005_all]
-        self.window_length = [100]
-        self.stride = [100]
+        self.signal_types = [MSDGroupMaker().m005_m1_acc, MSDGroupMaker().m005_m1_pos, MSDGroupMaker().m005_m1_vel,
+                             MSDGroupMaker().m005_m2_acc, MSDGroupMaker().m005_m2_pos, MSDGroupMaker().m005_m2_vel,
+                             MSDGroupMaker().m005_m3_acc, MSDGroupMaker().m005_m3_pos, MSDGroupMaker().m005_m3_vel,
+                             MSDGroupMaker().m005_m4_acc, MSDGroupMaker().m005_m4_pos, MSDGroupMaker().m005_m4_vel,]
+                             #MSDGroupMaker().m005_m5_acc, MSDGroupMaker().m005_m5_pos, MSDGroupMaker().m005_m5_vel]
+        # self.signal_types = [MSDGroupMaker().m005_all]
+        self.window_length = [1100]
+        self.stride = [1100]
 
 
         if self.run_type == 'train':
@@ -582,7 +575,7 @@ class DataSweep:
                 {}
             ]
             self.unhealthy_configs = [
-                {'mod_1_f2_ds_6': [get_augment_config('OG')]}
+                {'mod_1_f2_ds_3': [get_augment_config('OG')]}
             ]
             
     def get_sweep_configs(self):

@@ -1,9 +1,31 @@
 function [f, dfdxu, x, u] = generalized_msd_2(M, conn, nl_index, k, d, k_wall, d_wall)
+% Description
+% The generalized Mass Spring Damper (MSD) code offers you to simulate the
+% dynamics of multiple masses connected via springs and dampers. The motion
+% is simulated in 1 dimension along the horizontal axis. 
+% With this toolbox, you can make various configurations of the MSD
+% network. The picture "msd_network_schematic" attached with these code files provides a pictorial
+% represeantion of the various connection you can make. 
+% Based on the number of masses in the system, you make a machine. 
+% The configuration of the topology can vary between healthy and unhealthy.
+% There are two files to alter the system. These can be found in .../machines/<machine_name>/<healthy or unhealthy>/<topology name>/
+% `config_machine_param.m` and `generate_machine`.
+
+% `generate_machine.m`: design the connections by adding which pairs of
+% masses you need the spring and damper connected. This is added in
+% conn.pairs varaible.
+% `config_machine_param.m`: design the value of the mass, spring and
+% damper. There are two types of springs and dampers. (i) The ones that
+% connect two masses (denoted by just spring_k and damper_d) and (ii) The
+% ones that connect mass to a wall (wall is a immovable object with
+% infinite mass). These are denoted by k_wall_lin, d_wall_lin
+% respectively. 
+
 
     % ---------- ARGUMENT VALIDATION ----------
     arguments
         M (1,1) {mustBeInteger, mustBePositive}
-        conn struct  % Connection structure
+        conn struct  % Connection (topology) structure made up of masses, springs and dampers
         nl_index struct
         k function_handle
         d function_handle
