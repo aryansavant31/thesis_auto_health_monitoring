@@ -142,7 +142,7 @@ is simulated in 1 dimension along the horizontal axis.
 With this toolbox, you can make various configurations of the MSD
 network. The picture "msd_network_schematic" attached with these code files provides a pictorial represeantion of the various connection you can make.
 
-![architecture](AFD_thesis/msd_network_schematic.png)
+![architecture](data\matlab_scripts\msd_scripts\msd_network_schematic_example.png)
 
 Based on the number of masses in the system, you make a machine. 
 The configuration of the topology can vary between healthy and unhealthy.
