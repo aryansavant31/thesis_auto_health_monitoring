@@ -2,10 +2,12 @@
 
 ## Project Overview
 
+![architecture](health_monitoring_framework.png)
+
 This is a comprehensive toolbox designed for health monitoring faults in networked systems. The toolbox integrates three interconnected machine learning pipelines:
 
-1. **Fault Detection** - Identifies whether a anomaly exists in the module-level.
-2. **Topology Estimation** - Identifies if there is a system-level anomaly by learning the underlying connections between system modules.
+1. **Fault Detection (i.e. Module-level health monitoring)** - Identifies whether a anomaly exists in the module-level.
+2. **Topology Estimation (i.e. System-level health monitoring)** - Identifies if there is a system-level anomaly by learning the underlying connections between system modules.
 3. **Feature Extraction** - Extracts meaningful features from raw sensor data
 4. **Data Pipeline** - Handles data loading, preprocessing, and augmentation from multiple datasets
 
@@ -13,9 +15,9 @@ This is a research thesis project that provides end-to-end health monitoring cap
 
 ---
 
-## Core Modules
+## Core blocks
 
-### 1. **Fault Detection Module** (`fault_detection/`)
+### 1. **Fault Detection Block (Module-level Health Monitoring)** (`fault_detection/`)
 
 **Purpose:** Detects whether each module in system is operating healthy or unhealthy.
 
@@ -40,7 +42,7 @@ Raw Data → Feature Extraction → Anomaly Detection Model → Fault/No-Fault C
 
 ---
 
-### 2. **Topology Estimation Module** (`topology_estimation/`)
+### 2. **Topology Estimation Block (System-level Health Monitoring)** (`topology_estimation/`)
 
 **Purpose:** Estimates the underlying graph structure (which components are connected) from multivariate time series data using Neural Relational Inference (NRI).
 
@@ -68,7 +70,7 @@ Time Series Data → Feature extraction → NRI Encoder → Latent Graph Represe
 
 ---
 
-### 3. **Feature Extraction Module** (`feature_extraction/`)
+### 3. **Feature Extraction Block** (`feature_extraction/`)
 
 **Purpose:** Extracts both time-domain and frequency-domain features from raw sensor data.
 
@@ -105,7 +107,7 @@ Time Series Data → Feature extraction → NRI Encoder → Latent Graph Represe
 
 ---
 
-### 4. **Data Module** (`data/`)
+### 4. **Data loading and preprocessing** (`data/`)
 
 **Purpose:** Manages data loading, preprocessing, augmentation, and dataset handling.
 
@@ -288,7 +290,7 @@ AFD_thesis/
 │   ├── extractor.py, ff.py, tf.py
 │   ├── selector.py, performance.py
 │   ├── ranking_utils/        # Advanced ranking algorithms
-│   ├── lucas/                # Legacy implementations
+│   ├── lucas/                
 │   ├── settings/
 │   └── logs/
 │
@@ -298,12 +300,10 @@ AFD_thesis/
 │   ├── augment.py            # Data augmentation
 │   ├── config.py, faults.py
 │   └── datasets/
-│       ├── asml/             # ASML dataset processors
 │       ├── bearing/          # CWRU bearing dataset
 │       ├── mass_sp_dm/       # Mass-spring-damper
 │       └── spring_particles/ # Multi-particle systems
 │
-├── main.py                    # Master CLI interface
 └── afd_env.yml               # Conda environment specification
 ```
 
